@@ -38,4 +38,3 @@ class ContentConsumptionModel {
       'is_completed': isCompleted,
     };
   }
-} 

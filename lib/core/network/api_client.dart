@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
-import '../errors/app_exceptions.dart';
-import '../config/app_config.dart';
+import '../../src/core/errors/app_exceptions.dart';
+import '../../src/core/config/app_config.dart';
 
 /// APIクライアントクラス
 /// 
