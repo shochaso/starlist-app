@@ -1,0 +1,81 @@
+name: starlist
+description: "スターとファンを繋ぐコンテンツ消費共有プラットフォーム"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.7.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  
+  # 状態管理
+  riverpod: ^2.5.0
+  flutter_riverpod: ^2.5.0
+  hooks_riverpod: ^2.5.0
+  flutter_hooks: ^0.20.5
+  
+  # ルーティング
+  go_router: ^13.2.0
+  
+  # ネットワーク
+  dio: ^5.4.1
+  http: ^1.2.1
+  
+  # ローカルストレージ
+  shared_preferences: ^2.2.2
+  sqflite: ^2.3.2
+  path_provider: ^2.1.2
+  
+  # 認証
+  supabase_flutter: ^2.3.4
+  firebase_auth: ^4.17.7
+  firebase_core: ^2.25.6
+  flutter_appauth: ^6.0.4
+  
+  # UI/UX
+  flutter_svg: ^2.0.10+1
+  cached_network_image: ^3.3.1
+  image_picker: ^1.0.7
+  photo_view: ^0.14.0
+  shimmer: ^3.0.0
+  lottie: ^3.0.0
+  intl: ^0.19.0
+  
+  # 解析/追跡
+  firebase_analytics: ^10.8.8
+  firebase_crashlytics: ^3.4.17
+  
+  # OCR処理
+  google_ml_kit: ^0.16.3
+  
+  # YouTube API
+  youtube_explode_dart: ^2.0.4
+  
+  # Spotify API
+  spotify: ^0.13.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  build_runner: ^2.4.8
+  mockito: ^5.4.4
+  bloc_test: ^9.1.6
+
+flutter:
+  uses-material-design: true
+  
+  assets:
+    - assets/images/
+    - assets/icons/
+    - assets/animations/
+  
+  fonts:
+    - family: Noto Sans JP
+      fonts:
+        - asset: assets/fonts/NotoSansJP-Regular.otf
+        - asset: assets/fonts/NotoSansJP-Bold.otf
+          weight: 700
