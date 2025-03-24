@@ -1,4 +1,4 @@
-# Starlist アプリ 要件定義書
+# Starlist アプリ 要件定義書　　https://github.com/shochaso/starlist.git
 
 この要件定義書は、Starlistアプリの開発指針を体系的にまとめたものです。プロジェクト概要から技術スタック、差別化戦略までを網羅しています。
 
