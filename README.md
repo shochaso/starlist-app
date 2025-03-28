@@ -16,6 +16,8 @@ Starlistは、ユーザーがお気に入りのコンテンツを管理し、共
 - Firebase
 - YouTube Data API
 - Stripe
+- Supabase (新規追加)
+- Hive (ローカルキャッシュ)
 
 ## 開発環境のセットアップ
 
@@ -24,6 +26,7 @@ Starlistは、ユーザーがお気に入りのコンテンツを管理し、共
 - Firebase CLI
 - Android Studio / Xcode
 - Git
+- Supabase CLI
 
 ### インストール手順
 1. リポジトリのクローン
@@ -49,10 +52,53 @@ firebase login
 firebase init
 ```
 
-5. アプリの実行
+5. Supabaseの設定
+```bash
+# Supabase CLIがインストールされていることを確認
+supabase init
+supabase start
+
+# マイグレーションの実行
+supabase db reset
+```
+
+6. アプリの実行
 ```bash
 flutter run
 ```
+
+## 環境変数
+アプリの実行には以下の環境変数が必要です：
+
+```
+SUPABASE_URL=your_supabase_url
+SUPABASE_ANON_KEY=your_supabase_anon_key
+YOUTUBE_API_KEY=your_youtube_api_key
+```
+
+開発時には以下のようにして環境変数を渡すことができます：
+
+```bash
+flutter run --dart-define=SUPABASE_URL=your_url --dart-define=SUPABASE_ANON_KEY=your_key --dart-define=YOUTUBE_API_KEY=your_key
+```
+
+## ランキング機能
+
+Starlistのランキング機能は、ユーザーの活動スコアに基づいてリアルタイムでランキングを表示します。
+
+### 特徴
+
+- 日次、週次、月次、年次、全期間のランキング表示
+- ユーザーのランキング位置の表示
+- 周辺ユーザーの表示（自分の前後のランキング）
+- キャッシュによるオフライン表示と高速読み込み
+
+### 技術的実装
+
+- Supabaseを使用したバックエンド処理
+- カスタムRPC関数による効率的なランキング計算
+- Hiveを使用したローカルキャッシュ
+- Riverpodによる状態管理
 
 ## テスト
 ```bash
@@ -74,6 +120,9 @@ flutter drive --target=test_driver/app.dart
 # 本番環境へのデプロイ
 ./scripts/deploy.sh production
 ```
+
+## リリース計画
+2023年4月30日の初回リリースを予定しています。詳細なリリース計画は[RELEASE_TODO.md](RELEASE_TODO.md)を参照してください。
 
 ## プロジェクト構造
 ```
@@ -99,6 +148,9 @@ test/
   ├── core/
   ├── features/
   └── helpers/
+supabase/
+  └── migrations/
+      └── 20230420000000_create_rankings.sql
 ```
 
 ## コントリビューション
@@ -119,3 +171,4 @@ test/
 - Firebase Team
 - YouTube Data API Team
 - Stripe Team
+- Supabase Team

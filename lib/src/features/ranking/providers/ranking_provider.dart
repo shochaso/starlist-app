@@ -1,4 +1,8 @@
 import "package:flutter/foundation.dart";
+import "package:flutter_riverpod/flutter_riverpod.dart";
+import "package:hive/hive.dart";
+import "package:hive_flutter/hive_flutter.dart";
+import "package:supabase_flutter/supabase_flutter.dart";
 import "package:starlist/src/features/ranking/models/ranking_entry.dart";
 import "package:starlist/src/features/ranking/services/ranking_service.dart";
 
@@ -100,3 +104,35 @@ class RankingProvider extends ChangeNotifier {
     }
   }
 }
+
+// Hiveのランキングキャッシュボックスプロバイダー
+final rankingCacheBoxProvider = FutureProvider<Box<dynamic>>((ref) async {
+  await Hive.initFlutter();
+  return await Hive.openBox('rankingCache');
+});
+
+// Supabaseクライアントプロバイダー
+final supabaseClientProvider = Provider<SupabaseClient>((ref) {
+  return Supabase.instance.client;
+});
+
+// ランキングサービスプロバイダー
+final rankingServiceProvider = Provider<RankingService>((ref) {
+  final supabaseClient = ref.watch(supabaseClientProvider);
+  final cacheBox = ref.watch(rankingCacheBoxProvider).value;
+  
+  if (cacheBox == null) {
+    throw Exception('ランキングキャッシュボックスが初期化されていません。');
+  }
+  
+  return RankingServiceImpl(
+    supabaseClient: supabaseClient, 
+    cacheBox: cacheBox,
+  );
+});
+
+// ランキングプロバイダー
+final rankingProvider = ChangeNotifierProvider<RankingProvider>((ref) {
+  final rankingService = ref.watch(rankingServiceProvider);
+  return RankingProvider(rankingService);
+});

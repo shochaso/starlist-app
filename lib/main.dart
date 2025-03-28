@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'src/features/data_integration/models/youtube_video.dart';
 import 'src/features/data_integration/repositories/youtube_repository.dart';
@@ -7,7 +9,23 @@ import 'src/features/data_integration/services/youtube_api_service.dart';
 import 'src/widgets/consumption_data_widget.dart';
 import 'src/widgets/youtube_search_screen.dart';
 
-void main() {
+// 環境変数（本番環境では.envファイルや安全な方法で管理）
+const String supabaseUrl = String.fromEnvironment('SUPABASE_URL');
+const String supabaseAnonKey = String.fromEnvironment('SUPABASE_ANON_KEY');
+const String youtubeApiKey = String.fromEnvironment('YOUTUBE_API_KEY');
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // Hiveの初期化
+  await Hive.initFlutter();
+  
+  // Supabaseの初期化
+  await Supabase.initialize(
+    url: supabaseUrl,
+    anonKey: supabaseAnonKey,
+  );
+  
   runApp(const ProviderScope(child: StarlistApp()));
 }
 
@@ -37,16 +55,13 @@ class StarlistHomePage extends ConsumerStatefulWidget {
 class _StarlistHomePageState extends ConsumerState<StarlistHomePage> {
   int _selectedIndex = 0;
   
-  // 仮のAPIキー（実際のアプリでは環境変数や安全な方法で管理する必要があります）
-  final String _apiKey = 'YOUR_YOUTUBE_API_KEY';
-  
   @override
   void initState() {
     super.initState();
     
     // YouTubeリポジトリの初期化
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final youtubeApiService = YouTubeApiService(apiKey: _apiKey);
+      final youtubeApiService = YouTubeApiService(apiKey: youtubeApiKey);
       final youtubeRepository = YouTubeRepository(apiService: youtubeApiService);
       
       ref.read(youtubeRepositoryProvider.notifier).state = youtubeRepository;
