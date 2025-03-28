@@ -1,46 +1,79 @@
-import 'package:flutter/foundation.dart';
+import "dart:developer" as developer;
+import "package:path_provider/path_provider.dart";
+import "dart:io";
 
-/// ロガークラス
-///
-/// アプリケーション全体のログを管理します。
+enum LogLevel {
+  debug,
+  info,
+  warning,
+  error,
+}
+
 class Logger {
-  /// コンストラクタ
-  Logger();
+  static final Logger _instance = Logger._internal();
+  factory Logger() => _instance;
+  Logger._internal();
 
-  /// 情報ログを記録
-  void info(String message) {
-    if (kDebugMode) {
-      print('[INFO] $message');
+  File? _logFile;
+  bool _isInitialized = false;
+
+  Future<void> initialize() async {
+    if (_isInitialized) return;
+
+    final appDir = await getApplicationDocumentsDirectory();
+    final logDir = Directory("${appDir.path}/logs");
+    if (!await logDir.exists()) {
+      await logDir.create(recursive: true);
     }
-    // 実際の実装では適切なロギングライブラリを使用
-    // 例: Firebase Crashlytics, Sentry など
+
+    _logFile = File("${logDir.path}/app.log");
+    _isInitialized = true;
   }
-  
-  /// 警告ログを記録
-  void warning(String message) {
-    if (kDebugMode) {
-      print('[WARNING] $message');
+
+  Future<void> log(LogLevel level, String message, {Object? error, StackTrace? stackTrace}) async {
+    await initialize();
+
+    final timestamp = DateTime.now().toIso8601String();
+    final logMessage = "[$timestamp] ${level.name.toUpperCase()}: $message";
+
+    // コンソールに出力
+    switch (level) {
+      case LogLevel.debug:
+        developer.log(message);
+        break;
+      case LogLevel.info:
+        developer.log(message, name: "INFO");
+        break;
+      case LogLevel.warning:
+        developer.log(message, name: "WARNING");
+        break;
+      case LogLevel.error:
+        developer.log(message, name: "ERROR", error: error, stackTrace: stackTrace);
+        break;
     }
-    // 実際の実装では適切なロギングライブラリを使用
-  }
-  
-  /// エラーログを記録
-  void error(String message, [dynamic error]) {
-    if (kDebugMode) {
-      print('[ERROR] $message: $error');
-      if (error is Error) {
-        print(error.stackTrace);
+
+    // ファイルに出力
+    if (_logFile != null) {
+      await _logFile!.writeAsString("$logMessage\n", mode: FileMode.append);
+      if (error != null) {
+        await _logFile!.writeAsString("Error: $error\n", mode: FileMode.append);
+      }
+      if (stackTrace != null) {
+        await _logFile!.writeAsString("StackTrace: $stackTrace\n", mode: FileMode.append);
       }
     }
-    // 実際の実装では適切なロギングライブラリを使用
   }
-  
-  /// メトリクスを記録
-  void metric(String name, double value, {Map<String, String>? tags}) {
-    if (kDebugMode) {
-      print('[METRIC] $name: $value ${tags != null ? tags : ''}');
+
+  Future<void> debug(String message) => log(LogLevel.debug, message);
+  Future<void> info(String message) => log(LogLevel.info, message);
+  Future<void> warning(String message) => log(LogLevel.warning, message);
+  Future<void> error(String message, {Object? error, StackTrace? stackTrace}) =>
+      log(LogLevel.error, message, error: error, stackTrace: stackTrace);
+
+  Future<void> clearLogs() async {
+    if (_logFile != null && await _logFile!.exists()) {
+      await _logFile!.delete();
+      await _logFile!.create();
     }
-    // 実際の実装ではパフォーマンスモニタリングサービスを使用
-    // 例: Firebase Performance Monitoring など
   }
 }

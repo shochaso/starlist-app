@@ -1,140 +1,123 @@
-import 'dart:async';
-import 'package:flutter/foundation.dart';
+import "package:starlist/src/core/cache/cache_service.dart";
+import "package:starlist/src/features/auth/models/user_model.dart";
+import "package:starlist/src/features/payment/models/payment_model.dart";
+import "package:starlist/src/features/privacy/models/privacy_settings.dart";
+import "package:starlist/src/features/ranking/models/ranking_entry.dart";
+import "package:starlist/src/features/subscription/models/subscription_plan.dart";
+import "package:starlist/src/features/subscription/models/subscription_status.dart";
+import "package:starlist/src/features/youtube/models/youtube_video.dart";
 
-/// キャッシュマネージャークラス
-///
-/// アプリケーション全体のキャッシュを管理します。
 class CacheManager {
-  /// インメモリキャッシュ
-  final Map<String, _CacheEntry> _cache = {};
-  
-  /// デフォルトの有効期限
-  final Duration _defaultExpiry = const Duration(hours: 1);
-  
-  /// ロガー
-  final Logger? _logger;
-  
-  /// コンストラクタ
-  CacheManager({Logger? logger}) : _logger = logger;
-  
-  /// キャッシュからデータを取得
-  Future<T?> get<T>(String key) async {
-    final entry = _cache[key];
-    if (entry == null) {
-      _logInfo('Cache miss: $key');
-      return null;
-    }
-    
-    // 有効期限チェック
-    if (entry.expiry.isBefore(DateTime.now())) {
-      _logInfo('Cache expired: $key');
-      _cache.remove(key);
-      return null;
-    }
-    
-    _logInfo('Cache hit: $key');
-    return entry.data as T?;
+  final CacheService _cache;
+
+  CacheManager(this._cache);
+
+  // User
+  Future<void> cacheUser(UserModel user) async {
+    await _cache.set("user_${user.id}", user.toJson());
   }
-  
-  /// キャッシュにデータを保存
-  Future<void> set<T>(String key, T data, {Duration? expiry}) async {
-    final expiryDuration = expiry ?? _defaultExpiry;
-    final expiryTime = DateTime.now().add(expiryDuration);
-    
-    _cache[key] = _CacheEntry(
-      data: data,
-      expiry: expiryTime,
+
+  Future<UserModel?> getCachedUser(String userId) async {
+    final data = await _cache.get<Map<String, dynamic>>("user_$userId");
+    if (data == null) return null;
+    return UserModel.fromJson(data);
+  }
+
+  // Payment
+  Future<void> cachePayments(String userId, List<PaymentModel> payments) async {
+    await _cache.set(
+      "payments_$userId",
+      payments.map((p) => p.toJson()).toList(),
     );
-    
-    _logInfo('Cache set: $key, expires at: $expiryTime');
   }
-  
-  /// キャッシュからデータを削除
-  Future<void> remove(String key) async {
-    _cache.remove(key);
-    _logInfo('Cache removed: $key');
-  }
-  
-  /// キャッシュをクリア
-  Future<void> clear() async {
-    _cache.clear();
-    _logInfo('Cache cleared');
-  }
-  
-  /// 期限切れのキャッシュをクリア
-  Future<void> clearExpired() async {
-    final now = DateTime.now();
-    final expiredKeys = _cache.keys.where((key) => _cache[key]!.expiry.isBefore(now)).toList();
-    
-    for (final key in expiredKeys) {
-      _cache.remove(key);
-    }
-    
-    _logInfo('Expired cache cleared: ${expiredKeys.length} entries removed');
-  }
-  
-  /// キャッシュの統計情報を取得
-  Map<String, dynamic> getStats() {
-    final now = DateTime.now();
-    final totalEntries = _cache.length;
-    final expiredEntries = _cache.values.where((entry) => entry.expiry.isBefore(now)).length;
-    final validEntries = totalEntries - expiredEntries;
-    
-    return {
-      'total_entries': totalEntries,
-      'valid_entries': validEntries,
-      'expired_entries': expiredEntries,
-      'memory_usage_estimate': _estimateMemoryUsage(),
-    };
-  }
-  
-  /// メモリ使用量を推定（非常に大まかな推定）
-  int _estimateMemoryUsage() {
-    // 非常に大まかな推定
-    // 実際の実装ではより正確な方法を使用すべき
-    return _cache.entries.fold<int>(0, (sum, entry) {
-      // キーのサイズ + データのサイズ（大まかな推定）
-      return sum + entry.key.length * 2 + _estimateObjectSize(entry.value.data);
-    });
-  }
-  
-  /// オブジェクトサイズを推定（非常に大まかな推定）
-  int _estimateObjectSize(dynamic obj) {
-    if (obj == null) return 0;
-    if (obj is String) return obj.length * 2;
-    if (obj is num) return 8;
-    if (obj is bool) return 1;
-    if (obj is List) return obj.fold<int>(0, (sum, item) => sum + _estimateObjectSize(item));
-    if (obj is Map) {
-      return obj.entries.fold<int>(0, (sum, entry) => 
-        sum + _estimateObjectSize(entry.key) + _estimateObjectSize(entry.value));
-    }
-    // その他のオブジェクトは大まかに100バイトと推定
-    return 100;
-  }
-  
-  /// 情報ログを記録
-  void _logInfo(String message) {
-    _logger?.info('CacheManager: $message');
-  }
-}
 
-/// キャッシュエントリクラス
-class _CacheEntry {
-  final dynamic data;
-  final DateTime expiry;
-  
-  _CacheEntry({
-    required this.data,
-    required this.expiry,
-  });
-}
+  Future<List<PaymentModel>?> getCachedPayments(String userId) async {
+    final data = await _cache.get<List<dynamic>>("payments_$userId");
+    if (data == null) return null;
+    return data.map((json) => PaymentModel.fromJson(json)).toList();
+  }
 
-/// ロガークラス（簡易版）
-class Logger {
-  void info(String message) {
-    if (kDebugMode) {
-      print('[INFO] $message');
-    }
+  // Privacy Settings
+  Future<void> cachePrivacySettings(String userId, PrivacySettings settings) async {
+    await _cache.set("privacy_$userId", settings.toJson());
+  }
+
+  Future<PrivacySettings?> getCachedPrivacySettings(String userId) async {
+    final data = await _cache.get<Map<String, dynamic>>("privacy_$userId");
+    if (data == null) return null;
+    return PrivacySettings.fromJson(data);
+  }
+
+  // Ranking
+  Future<void> cacheRankings(RankingType type, List<RankingEntry> rankings) async {
+    await _cache.set(
+      "rankings_${type.toString().split(".").last}",
+      rankings.map((r) => r.toJson()).toList(),
+    );
+  }
+
+  Future<List<RankingEntry>?> getCachedRankings(RankingType type) async {
+    final data = await _cache.get<List<dynamic>>("rankings_${type.toString().split(".").last}");
+    if (data == null) return null;
+    return data.map((json) => RankingEntry.fromJson(json)).toList();
+  }
+
+  // Subscription
+  Future<void> cacheSubscriptionPlans(List<SubscriptionPlan> plans) async {
+    await _cache.set("subscription_plans", plans.map((p) => p.toJson()).toList());
+  }
+
+  Future<List<SubscriptionPlan>?> getCachedSubscriptionPlans() async {
+    final data = await _cache.get<List<dynamic>>("subscription_plans");
+    if (data == null) return null;
+    return data.map((json) => SubscriptionPlan.fromJson(json)).toList();
+  }
+
+  Future<void> cacheSubscriptionStatus(String userId, SubscriptionStatusModel status) async {
+    await _cache.set("subscription_status_$userId", status.toJson());
+  }
+
+  Future<SubscriptionStatusModel?> getCachedSubscriptionStatus(String userId) async {
+    final data = await _cache.get<Map<String, dynamic>>("subscription_status_$userId");
+    if (data == null) return null;
+    return SubscriptionStatusModel.fromJson(data);
+  }
+
+  // YouTube
+  Future<void> cacheVideo(YouTubeVideo video) async {
+    await _cache.set("video_${video.id}", video.toJson());
+  }
+
+  Future<YouTubeVideo?> getCachedVideo(String videoId) async {
+    final data = await _cache.get<Map<String, dynamic>>("video_$videoId");
+    if (data == null) return null;
+    return YouTubeVideo.fromJson(data);
+  }
+
+  Future<void> cacheSearchResults(String query, List<YouTubeVideo> videos) async {
+    await _cache.set(
+      "search_$query",
+      videos.map((v) => v.toJson()).toList(),
+    );
+  }
+
+  Future<List<YouTubeVideo>?> getCachedSearchResults(String query) async {
+    final data = await _cache.get<List<dynamic>>("search_$query");
+    if (data == null) return null;
+    return data.map((json) => YouTubeVideo.fromJson(json)).toList();
+  }
+
+  // Clear
+  Future<void> clearUserCache(String userId) async {
+    await Future.wait([
+      _cache.delete("user_$userId"),
+      _cache.delete("payments_$userId"),
+      _cache.delete("privacy_$userId"),
+      _cache.delete("subscription_status_$userId"),
+    ]);
+  }
+
+  Future<void> clearAllCache() async {
+    await _cache.clear();
   }
 }
