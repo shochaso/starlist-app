@@ -18,12 +18,33 @@ class SubscriptionPlansData {
     isPopular: false,
   );
 
-  /// 月額プラン
-  static final SubscriptionPlan monthlyPlan = SubscriptionPlan(
-    id: 'premium_monthly',
-    name: 'プレミアム月額',
-    description: '月額料金でプレミアム機能へのアクセス',
+  /// ライトプラン
+  static final SubscriptionPlan lightPlan = SubscriptionPlan(
+    id: 'light_monthly',
+    name: 'ライトプラン',
+    description: '月額料金でライト機能へのアクセス',
     price: 980,
+    currency: 'JPY',
+    billingPeriod: const Duration(days: 30),
+    features: [
+      '詳細なランキングデータへのアクセス',
+      'コンテンツへのアクセス（標準）',
+      '広告表示の軽減',
+      'プロフィールカスタマイズ',
+    ],
+    isPopular: true,
+    metadata: {
+      'savePercent': 0,
+      'trialDays': 7, // 7日間無料トライアル
+    },
+  );
+
+  /// スタンダードプラン
+  static final SubscriptionPlan standardPlan = SubscriptionPlan(
+    id: 'standard_monthly',
+    name: 'スタンダードプラン',
+    description: '月額料金でスタンダード機能へのアクセス',
+    price: 1980,
     currency: 'JPY',
     billingPeriod: const Duration(days: 30),
     features: [
@@ -33,21 +54,21 @@ class SubscriptionPlansData {
       'プロフィールカスタマイズ',
       'スター評価の詳細分析',
     ],
-    isPopular: true,
+    isPopular: false,
     metadata: {
       'savePercent': 0,
       'trialDays': 7, // 7日間無料トライアル
     },
   );
 
-  /// 年額プラン
-  static final SubscriptionPlan yearlyPlan = SubscriptionPlan(
-    id: 'premium_yearly',
-    name: 'プレミアム年額',
-    description: '年間契約でお得なプレミアム機能へのアクセス',
-    price: 9800,
+  /// プレミアムプラン
+  static final SubscriptionPlan premiumPlan = SubscriptionPlan(
+    id: 'premium_monthly',
+    name: 'プレミアムプラン',
+    description: '月額料金でプレミアム機能へのアクセス',
+    price: 2980,
     currency: 'JPY',
-    billingPeriod: const Duration(days: 365),
+    billingPeriod: const Duration(days: 30),
     features: [
       '詳細なランキングデータへのアクセス',
       'すべてのコンテンツへのアクセス',
@@ -56,10 +77,11 @@ class SubscriptionPlansData {
       'スター評価の詳細分析',
       'プレミアムサポート',
       '限定イベントへの招待',
+      'VIPステータス',
     ],
     isPopular: false,
     metadata: {
-      'savePercent': 17, // 月額比で17%お得
+      'savePercent': 0,
       'trialDays': 14, // 14日間無料トライアル
     },
   );
@@ -67,7 +89,8 @@ class SubscriptionPlansData {
   /// 利用可能なすべてのプラン
   static List<SubscriptionPlan> get allPlans => [
     freePlan,
-    monthlyPlan,
-    yearlyPlan,
+    lightPlan,
+    standardPlan,
+    premiumPlan,
   ];
 } 

@@ -116,7 +116,7 @@ class _SubscriptionPlansScreenState extends ConsumerState<SubscriptionPlansScree
                   Text(
                     '• サブスクリプションは期間終了まで自動更新されます\n'
                     '• 解約はいつでも可能で、次の請求期間に適用されます\n'
-                    '• お支払いはVISA、JCB、PayPay、メルペイ等の決済方法が利用可能です',
+                    '• お支払いは各種クレジットカードおよび決済サービスが利用可能です',
                     style: TextStyle(fontSize: 14),
                   ),
                 ],
