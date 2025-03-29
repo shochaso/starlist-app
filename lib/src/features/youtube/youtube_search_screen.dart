@@ -1,38 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../features/data_integration/models/youtube_video.dart';
-import '../features/data_integration/repositories/youtube_repository.dart';
-
-/// YouTubeデータを提供するプロバイダー
-final youtubeRepositoryProvider = Provider<YouTubeRepository>((ref) {
-  throw UnimplementedError('YouTubeRepositoryを初期化する必要があります');
-});
-
-/// 検索クエリの状態を管理するプロバイダー
-final searchQueryProvider = StateProvider<String>((ref) => '');
-
-/// 検索結果を提供するプロバイダー
-final searchResultsProvider = FutureProvider<List<YouTubeVideo>>((ref) async {
-  final repository = ref.watch(youtubeRepositoryProvider);
-  final query = ref.watch(searchQueryProvider);
-  
-  if (query.isEmpty) {
-    return [];
-  }
-  
-  return await repository.searchVideos(query);
-});
-
-/// チャンネル動画を提供するプロバイダー
-final channelVideosProvider = FutureProvider.family<List<YouTubeVideo>, String>((ref, channelId) async {
-  final repository = ref.watch(youtubeRepositoryProvider);
-  return await repository.getChannelVideos(channelId);
-});
+import '../data_integration/models/youtube_video.dart';
+import 'youtube_provider.dart';
 
 /// YouTube検索画面
 class YouTubeSearchScreen extends ConsumerStatefulWidget {
-  const YouTubeSearchScreen({Key? key}) : super(key: key);
+  final String? initialQuery;
+
+  const YouTubeSearchScreen({
+    Key? key,
+    this.initialQuery,
+  }) : super(key: key);
 
   @override
   ConsumerState<YouTubeSearchScreen> createState() => _YouTubeSearchScreenState();
@@ -43,6 +22,21 @@ class _YouTubeSearchScreenState extends ConsumerState<YouTubeSearchScreen> {
   final FocusNode _searchFocusNode = FocusNode();
 
   @override
+  void initState() {
+    super.initState();
+    
+    // 初期検索キーワードがある場合は設定する
+    if (widget.initialQuery != null && widget.initialQuery!.isNotEmpty) {
+      _searchController.text = widget.initialQuery!;
+      
+      // 少し遅延させて検索を実行（ビルド完了後）
+      Future.microtask(() {
+        ref.read(youtubeSearchQueryProvider.notifier).state = widget.initialQuery!;
+      });
+    }
+  }
+
+  @override
   void dispose() {
     _searchController.dispose();
     _searchFocusNode.dispose();
@@ -51,7 +45,7 @@ class _YouTubeSearchScreenState extends ConsumerState<YouTubeSearchScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final searchResults = ref.watch(searchResultsProvider);
+    final searchResults = ref.watch(youtubeSearchResultsProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -72,7 +66,7 @@ class _YouTubeSearchScreenState extends ConsumerState<YouTubeSearchScreen> {
                   icon: const Icon(Icons.clear),
                   onPressed: () {
                     _searchController.clear();
-                    ref.read(searchQueryProvider.notifier).state = '';
+                    ref.read(youtubeSearchQueryProvider.notifier).state = '';
                   },
                 ),
                 border: OutlineInputBorder(
@@ -82,7 +76,7 @@ class _YouTubeSearchScreenState extends ConsumerState<YouTubeSearchScreen> {
                 fillColor: Colors.grey[100],
               ),
               onSubmitted: (value) {
-                ref.read(searchQueryProvider.notifier).state = value;
+                ref.read(youtubeSearchQueryProvider.notifier).state = value;
               },
             ),
           ),
@@ -91,7 +85,7 @@ class _YouTubeSearchScreenState extends ConsumerState<YouTubeSearchScreen> {
           Expanded(
             child: searchResults.when(
               data: (videos) {
-                if (videos.isEmpty && ref.watch(searchQueryProvider).isNotEmpty) {
+                if (videos.isEmpty && ref.watch(youtubeSearchQueryProvider).isNotEmpty) {
                   return const Center(
                     child: Text('検索結果が見つかりませんでした'),
                   );

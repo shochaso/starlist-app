@@ -1,166 +1,80 @@
 # Starlist
 
-## 概要
-Starlistは、ユーザーがお気に入りのコンテンツを管理し、共有できるアプリケーションです。
+Starlistは、YouTube動画やウェブコンテンツを共有・発見するためのソーシャル・キュレーションアプリです。お気に入りのコンテンツを保存し、共有できます。
 
 ## 機能
-- ユーザー認証
-- サブスクリプション管理
-- 支払い処理
-- プライバシー設定
-- ランキングシステム
-- YouTube統合
 
-## 技術スタック
-- Flutter
-- Firebase
-- YouTube Data API
-- Stripe
-- Supabase (新規追加)
-- Hive (ローカルキャッシュ)
+- **お気に入り管理**: コンテンツをお気に入りに追加して整理
+- **ソーシャル機能**: スターやファンをフォロー、コンテンツの共有
+- **YouTube連携**: YouTube動画の検索と保存
+- **プロフィール管理**: カスタマイズ可能なプロフィール
 
-## 開発環境のセットアップ
+## セットアップ
 
-### 必要条件
-- Flutter SDK (3.x)
-- Firebase CLI
-- Android Studio / Xcode
-- Git
-- Supabase CLI
+### 前提条件
 
-### インストール手順
-1. リポジトリのクローン
-```bash
-git clone https://github.com/yourusername/starlist.git
-cd starlist
+- Flutter (最新版)
+- Supabase アカウント
+- YouTube Data API キー
+
+### 環境変数
+
+プロジェクトのルートに `.env` ファイルを作成し、以下の環境変数を設定してください：
+
+```
+SUPABASE_URL=あなたのSupabaseプロジェクトURL
+SUPABASE_ANON_KEY=あなたのSupabase匿名キー
+YOUTUBE_API_KEY=あなたのYouTube Data APIキー
 ```
 
-2. 依存関係のインストール
+### データベースのセットアップ
+
+1. Supabaseダッシュボードにログイン
+2. SQLエディタを開く
+3. このリポジトリの `supabase_setup.sql` ファイルの内容を実行
+
+### アプリケーションのインストール
+
 ```bash
+# 依存関係のインストール
 flutter pub get
-```
 
-3. 環境変数の設定
-```bash
-cp .env.example .env
-# .envファイルを編集して必要な環境変数を設定
-```
-
-4. Firebaseの設定
-```bash
-firebase login
-firebase init
-```
-
-5. Supabaseの設定
-```bash
-# Supabase CLIがインストールされていることを確認
-supabase init
-supabase start
-
-# マイグレーションの実行
-supabase db reset
-```
-
-6. アプリの実行
-```bash
+# アプリケーションの実行
 flutter run
 ```
 
-## 環境変数
-アプリの実行には以下の環境変数が必要です：
+## 使用方法
 
-```
-SUPABASE_URL=your_supabase_url
-SUPABASE_ANON_KEY=your_supabase_anon_key
-YOUTUBE_API_KEY=your_youtube_api_key
-```
+### ログイン/登録
 
-開発時には以下のようにして環境変数を渡すことができます：
+- アプリを初めて起動する際は、画面下部の「プロフィール」タブからログイン画面へ移動
+- メールアドレスとパスワードで登録またはログイン
 
-```bash
-flutter run --dart-define=SUPABASE_URL=your_url --dart-define=SUPABASE_ANON_KEY=your_key --dart-define=YOUTUBE_API_KEY=your_key
-```
+### コンテンツの探索
 
-## ランキング機能
+- 「ホーム」タブでおすすめのコンテンツを閲覧
+- 「検索」タブでYouTube動画を検索
 
-Starlistのランキング機能は、ユーザーの活動スコアに基づいてリアルタイムでランキングを表示します。
+### お気に入りの追加
 
-### 特徴
+1. コンテンツを閲覧中に「お気に入り」ボタンをタップ
+2. 必要に応じてメモやタグを追加
+3. お気に入り一覧はプロフィールで確認可能
 
-- 日次、週次、月次、年次、全期間のランキング表示
-- ユーザーのランキング位置の表示
-- 周辺ユーザーの表示（自分の前後のランキング）
-- キャッシュによるオフライン表示と高速読み込み
+## 貢献方法
 
-### 技術的実装
+バグ報告や機能リクエストは、Issueを作成してください。
 
-- Supabaseを使用したバックエンド処理
-- カスタムRPC関数による効率的なランキング計算
-- Hiveを使用したローカルキャッシュ
-- Riverpodによる状態管理
+プルリクエストは以下の手順で行ってください：
 
-## テスト
-```bash
-# ユニットテストの実行
-flutter test
-
-# 統合テストの実行
-flutter drive --target=test_driver/app.dart
-```
-
-## デプロイメント
-```bash
-# 開発環境へのデプロイ
-./scripts/deploy.sh development
-
-# ステージング環境へのデプロイ
-./scripts/deploy.sh staging
-
-# 本番環境へのデプロイ
-./scripts/deploy.sh production
-```
-
-## リリース計画
-2023年4月30日の初回リリースを予定しています。詳細なリリース計画は[RELEASE_TODO.md](RELEASE_TODO.md)を参照してください。
-
-## プロジェクト構造
-```
-lib/
-  ├── src/
-  │   ├── core/
-  │   │   ├── api/
-  │   │   ├── cache/
-  │   │   ├── config/
-  │   │   ├── error/
-  │   │   ├── performance/
-  │   │   └── security/
-  │   ├── features/
-  │   │   ├── auth/
-  │   │   ├── payment/
-  │   │   ├── privacy/
-  │   │   ├── ranking/
-  │   │   ├── subscription/
-  │   │   └── youtube/
-  │   └── shared/
-  └── main.dart
-test/
-  ├── core/
-  ├── features/
-  └── helpers/
-supabase/
-  └── migrations/
-      └── 20230420000000_create_rankings.sql
-```
-
-## コントリビューション
-1. このリポジトリをフォーク
-2. 新しいブランチを作成 (`git checkout -b feature/amazing-feature`)
-3. 変更をコミット (`git commit -m "Add some amazing feature"`)
-4. ブランチにプッシュ (`git push origin feature/amazing-feature`)
+1. リポジトリをフォーク
+2. 機能ブランチを作成 (`git checkout -b feature/amazing-feature`)
+3. 変更をコミット (`git commit -m 'Add some amazing feature'`)
+4. ブランチをプッシュ (`git push origin feature/amazing-feature`)
 5. プルリクエストを作成
 
 ## ライセンス
+
 このプロジェクトはMITライセンスの下で公開されています。詳細は[LICENSE](LICENSE)ファイルを参照してください。
 
 ## 作者
