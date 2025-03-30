@@ -50,7 +50,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
     Future.delayed(const Duration(seconds: 3), () {
       _notificationService.showNotification(
         title: 'Starlistへようこそ',
-        body: 'あなたの消費習慣を記録・共有しましょう',
+        body: 'あなたのスターの日常を記録・共有しましょう',
         type: NotificationType.system,
       );
     });
@@ -119,7 +119,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
   
   Future<void> _shareApp() async {
     await _sharingService.shareText(
-      text: 'Starlistで消費習慣を記録・共有しよう！',
+      text: 'Starlistでスターの日常を記録・共有しよう！',
       subject: 'Starlistアプリを共有',
     );
   }
@@ -345,7 +345,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
           ),
           const SizedBox(height: 24),
           
-          // 消費習慣データ
+          // スターの日常データ
           const Expanded(
             child: ConsumptionDataWidget(
               userId: 'demo-user-id',
