@@ -6,7 +6,7 @@ import 'models/content_consumption_model.dart';
 import 'providers/content_provider.dart';
 import '../auth/providers/user_provider.dart';
 
-/// 消費習慣データを表示するウィジェット
+/// スターの日常データを表示するウィジェット
 class ConsumptionDataWidget extends ConsumerWidget {
   final String userId;
   final bool showHeader;

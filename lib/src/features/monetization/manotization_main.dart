@@ -180,11 +180,11 @@ class _StarlistHomePageState extends ConsumerState<StarlistHomePage> {
                 ),
                 const SizedBox(height: 24),
                 
-                // 消費習慣データ
+                // スターの日常データ
                 const Expanded(
-                  child: ConsumptionDataWidget(
+                  child: DailyLifeDataWidget(
                     userId: 'user123',
-                    title: '私の消費習慣',
+                    title: '私のスターの日常',
                   ),
                 ),
               ],
