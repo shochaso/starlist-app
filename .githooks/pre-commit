@@ -1,0 +1,20 @@
+#!/bin/bash
+# pre-commit hook to automatically update Task.md
+
+# Check if Task.md exists
+if [ -f "Task.md" ]; then
+  echo "Updating Task.md status..."
+
+  # Update completed tasks (progress to completed)
+  perl -i -pe 's/\[ \] (P[0-3] 🔄 .+)$/[x] \1 ✅ 完了/g' Task.md
+
+  # Change status emoji for completed tasks
+  perl -i -pe 's/🔄 (.*✅ 完了)$/✅ \1/g' Task.md
+
+  # Add changes to staging
+  git add Task.md
+  echo "Task.md updated and staged"
+fi
+
+# Exit successfully
+exit 0 
