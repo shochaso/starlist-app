@@ -20,6 +20,7 @@ import 'screens/fan_home_screen.dart';
 import 'screens/landing_screen.dart';
 import 'screens/fan_register_screen.dart';
 import 'screens/register_screen.dart';
+import 'screens/starlist_home_screen.dart';
 
 // Riverpodプロバイダー名の衝突を避けるため
 final supabaseUrlProvider = Provider<String>((ref) {
@@ -86,7 +87,7 @@ class MyApp extends ConsumerWidget {
     return MaterialApp(
       title: 'Starlist',
       theme: AppTheme.lightTheme,
-      home: const LandingScreen(), // ランディングページをホームに設定
+      home: const StarlistHomeScreen(), // 新しいStarlistHomeScreenを使用
       debugShowCheckedModeBanner: false,
       routes: {
         '/home': (context) => const HomeScreen(),
