@@ -230,14 +230,14 @@ class _StarlistHomeScreenState extends ConsumerState<StarlistHomeScreen>
         ),
         const SizedBox(height: 16),
         SizedBox(
-          height: 200,
+          height: 180,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             itemCount: _recommendedStars.length,
             itemBuilder: (context, index) {
               final star = _recommendedStars[index];
               return Container(
-                width: 144,
+                width: 120,
                 margin: EdgeInsets.only(
                   left: index == 0 ? 0 : 12,
                   right: index == _recommendedStars.length - 1 ? 0 : 0,
@@ -308,13 +308,14 @@ class _StarlistHomeScreenState extends ConsumerState<StarlistHomeScreen>
       ),
       padding: const EdgeInsets.all(16),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: 80,
-            height: 80,
+            width: 60,
+            height: 60,
             decoration: BoxDecoration(
               gradient: star.gradient,
-              borderRadius: BorderRadius.circular(40),
+              borderRadius: BorderRadius.circular(30),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withOpacity(0.1),
@@ -327,59 +328,67 @@ class _StarlistHomeScreenState extends ConsumerState<StarlistHomeScreen>
               margin: const EdgeInsets.all(2),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(38),
+                borderRadius: BorderRadius.circular(28),
               ),
               child: Icon(
                 star.icon,
                 color: star.iconColor,
-                size: 32,
+                size: 24,
               ),
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           Text(
             star.name,
             style: const TextStyle(
-              fontSize: 14,
+              fontSize: 12,
               fontWeight: FontWeight.w600,
               color: Color(0xFF333333),
+            ),
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 2),
+          Text(
+            star.category,
+            style: const TextStyle(
+              fontSize: 10,
+              color: Color(0xFF8E8E93),
             ),
             textAlign: TextAlign.center,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
-          const SizedBox(height: 4),
-          Text(
-            star.category,
-            style: const TextStyle(
-              fontSize: 12,
-              color: Color(0xFF8E8E93),
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 12),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () {},
-              style: ElevatedButton.styleFrom(
-                backgroundColor: star.isFollowing 
-                    ? const Color(0xFFE9E9EB) 
-                    : const Color(0xFF007AFF),
-                foregroundColor: star.isFollowing 
-                    ? const Color(0xFF007AFF) 
-                    : Colors.white,
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                padding: const EdgeInsets.symmetric(vertical: 6),
-              ),
-              child: Text(
-                star.isFollowing ? 'フォロー中' : 'フォロー',
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
+          const SizedBox(height: 8),
+          Expanded(
+            child: Align(
+              alignment: Alignment.bottomCenter,
+              child: SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {},
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: star.isFollowing 
+                        ? const Color(0xFFE9E9EB) 
+                        : const Color(0xFF007AFF),
+                    foregroundColor: star.isFollowing 
+                        ? const Color(0xFF007AFF) 
+                        : Colors.white,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    minimumSize: const Size(0, 28),
+                  ),
+                  child: Text(
+                    star.isFollowing ? 'フォロー中' : 'フォロー',
+                    style: const TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -511,14 +520,14 @@ class _StarlistHomeScreenState extends ConsumerState<StarlistHomeScreen>
           ),
           const SizedBox(height: 12),
           SizedBox(
-            height: 200,
+            height: 180,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
               itemCount: genre.stars.length,
               itemBuilder: (context, index) {
                 final star = genre.stars[index];
                 return Container(
-                  width: 144,
+                  width: 120,
                   margin: EdgeInsets.only(
                     left: index == 0 ? 0 : 12,
                     right: index == genre.stars.length - 1 ? 0 : 0,
