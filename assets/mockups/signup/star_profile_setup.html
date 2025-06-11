@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Starlist - プロフィール設定</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <style>
+        /* 基本スタイル */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+        
+        /* iOS風コンテナ */
+        .ios-container {
+            max-width: 390px;
+            margin: 20px auto;
+            background: white;
+            border-radius: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            overflow: hidden;
+            position: relative;
+        }
+        
+        /* iOS風ヘッダー */
+        .ios-header {
+            height: 44px;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            border-bottom: 1px solid #f1f1f1;
+        }
+        
+        /* iOS風コンテンツエリア */
+        .ios-content {
+            padding: 20px;
+            background: white;
+        }
+        
+        /* iOS風プライマリボタン */
+        .ios-button {
+            background: #007AFF;
+            color: white;
+            border-radius: 10px;
+            padding: 12px 20px;
+            width: 100%;
+            text-align: center;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .ios-button:hover {
+            background: #0062cc;
+        }
+        
+        /* iOS風セカンダリボタン */
+        .ios-button.secondary {
+            background: #E9E9EB;
+            color: #007AFF;
+        }
+        .ios-button.secondary:hover {
+            background: #d1d1d3;
+        }
+        
+        /* iOS風入力フィールド */
+        .ios-input {
+            border: 1px solid #E9E9EB;
+            border-radius: 10px;
+            padding: 12px 15px;
+            width: 100%;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+        .ios-input:focus {
+            border-color: #007AFF;
+            outline: none;
+        }
+        
+        /* iOS風テキストエリア */
+        .ios-textarea {
+            border: 1px solid #E9E9EB;
+            border-radius: 10px;
+            padding: 12px 15px;
+            width: 100%;
+            margin-bottom: 15px;
+            font-size: 16px;
+            min-height: 100px;
+            resize: vertical;
+        }
+        .ios-textarea:focus {
+            border-color: #007AFF;
+            outline: none;
+        }
+        
+        /* プロフィール写真アップロード */
+        .profile-upload-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .profile-image-preview {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background-color: #f0f0f0;
+            margin-bottom: 10px;
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            border: 3px solid #E9E9EB;
+        }
+        
+        .profile-image-preview i {
+            color: #ccc;
+        }
+        
+        .profile-upload-button {
+            color: #007AFF;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        #profile-image-input {
+            display: none;
+        }
+        
+        /* ジャンルカード */
+        .card-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: flex-start;
+            gap: 8px;
+            padding: 10px 0;
+        }
+        
+        .genre-card {
+            width: calc(33.333% - 6px);
+            padding: 10px 5px;
+            margin: 0;
+            border-radius: 12px;
+            background: #f5f5f7;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+            box-sizing: border-box;
+            min-height: 60px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .genre-card p {
+            font-size: 12px;
+            line-height: 1.2;
+            word-break: break-all;
+        }
+        
+        .genre-card:hover,
+        .genre-card.selected {
+            background: #E5F2FF;
+            border: 1px solid #007AFF;
+        }
+        
+        .genre-card.selected {
+            position: relative;
+        }
+        
+        .genre-card.selected::after {
+            content: '✓';
+            position: absolute;
+            top: 3px;
+            right: 3px;
+            background: #007AFF;
+            color: white;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+        }
+        
+        /* SNS入力欄 */
+        .sns-input-group {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .sns-input-group i,
+        .sns-input-group .x-logo {
+            width: 30px;
+            text-align: center;
+            margin-right: 10px;
+            font-size: 1.3em;
+        }
+        
+        .sns-input-group input {
+            flex: 1;
+            margin-bottom: 0;
+        }
+        
+        .x-logo {
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+        
+        /* プログレス表示 */
+        .progress-header {
+            background: linear-gradient(135deg, #007AFF, #5AC8FA);
+            color: white;
+            padding: 20px;
+            margin: -20px -20px 20px -20px;
+        }
+        
+        .progress-bar {
+            background: rgba(255, 255, 255, 0.3);
+            height: 6px;
+            border-radius: 3px;
+            margin: 10px 0;
+        }
+        
+        .progress-fill {
+            background: white;
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+        
+        /* セクションカード */
+        .section-card {
+            border: 1px solid #E9E9EB;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            background: white;
+        }
+        
+        .section-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .section-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+        }
+        
+        .section-title {
+            flex-grow: 1;
+        }
+        
+        .section-status {
+            font-size: 12px;
+            padding: 4px 8px;
+            border-radius: 12px;
+        }
+        
+        .status-completed {
+            background: #E8F5E8;
+            color: #34C759;
+        }
+        
+        .status-pending {
+            background: #FFF3CD;
+            color: #FF9500;
+        }
+        
+        /* スキップボタン */
+        .skip-button {
+            color: #8E8E93;
+            text-decoration: underline;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+        
+        /* 文字数カウンター */
+        .char-counter {
+            text-align: right;
+            font-size: 12px;
+            color: #8E8E93;
+            margin-top: -10px;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-content">
+
+        <!-- プロフィール設定メイン画面 -->
+        <div class="ios-container" id="main-screen">
+            <div class="ios-header">
+                <a href="#" class="absolute left-4 text-blue-500">戻る</a>
+                <h2 class="text-lg font-semibold">プロフィール設定</h2>
+                <a href="#" class="absolute right-4 text-blue-500" onclick="goToDashboard()">スキップ</a>
+            </div>
+            <div class="ios-content">
+                <div class="progress-header">
+                    <div class="flex justify-between items-center mb-2">
+                        <h3 class="font-semibold">プロフィール完成度</h3>
+                        <span class="text-sm" id="progress-percentage">25%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progress-fill" style="width: 25%"></div>
+                    </div>
+                    <p class="text-sm opacity-90">プロフィールを充実させてファンに見つけてもらいやすくしましょう</p>
+                </div>
+
+                <!-- プロフィール写真セクション -->
+                <div class="section-card">
+                    <div class="section-header">
+                        <div class="section-icon" style="background: #E5F2FF;">
+                            <i class="fas fa-user text-blue-500"></i>
+                        </div>
+                        <div class="section-title">
+                            <h3 class="font-semibold">プロフィール写真</h3>
+                            <p class="text-sm text-gray-500">ファンがあなたを認識しやすくなります</p>
+                        </div>
+                        <div class="section-status status-pending" id="photo-status">未設定</div>
+                    </div>
+                    <button class="ios-button" onclick="showPhotoSetup()">写真を設定する</button>
+                </div>
+
+                <!-- 活動ジャンルセクション -->
+                <div class="section-card">
+                    <div class="section-header">
+                        <div class="section-icon" style="background: #E8F5E8;">
+                            <i class="fas fa-tags text-green-500"></i>
+                        </div>
+                        <div class="section-title">
+                            <h3 class="font-semibold">活動ジャンル</h3>
+                            <p class="text-sm text-gray-500">あなたの活動分野を教えてください</p>
+                        </div>
+                        <div class="section-status status-pending" id="genre-status">未設定</div>
+                    </div>
+                    <button class="ios-button" onclick="showGenreSetup()">ジャンルを選択する</button>
+                </div>
+
+                <!-- 自己紹介セクション -->
+                <div class="section-card">
+                    <div class="section-header">
+                        <div class="section-icon" style="background: #FFF3E0;">
+                            <i class="fas fa-edit text-orange-500"></i>
+                        </div>
+                        <div class="section-title">
+                            <h3 class="font-semibold">自己紹介</h3>
+                            <p class="text-sm text-gray-500">あなたの活動について教えてください</p>
+                        </div>
+                        <div class="section-status status-pending" id="bio-status">未設定</div>
+                    </div>
+                    <button class="ios-button" onclick="showBioSetup()">自己紹介を書く</button>
+                </div>
+
+                <!-- SNS連携セクション -->
+                <div class="section-card">
+                    <div class="section-header">
+                        <div class="section-icon" style="background: #F3E5F5;">
+                            <i class="fas fa-share-alt text-purple-500"></i>
+                        </div>
+                        <div class="section-title">
+                            <h3 class="font-semibold">SNS連携</h3>
+                            <p class="text-sm text-gray-500">他の活動も紹介できます（任意）</p>
+                        </div>
+                        <div class="section-status status-pending" id="sns-status">未設定</div>
+                    </div>
+                    <button class="ios-button secondary" onclick="showSNSSetup()">SNSを連携する</button>
+                </div>
+
+                <button class="ios-button mt-6" onclick="goToDashboard()">管理画面に進む</button>
+            </div>
+        </div>
+
+        <!-- プロフィール写真設定画面 -->
+        <div class="ios-container mt-10 hidden" id="photo-setup">
+            <div class="ios-header">
+                <a href="#" class="absolute left-4 text-blue-500" onclick="showMainScreen()">戻る</a>
+                <h2 class="text-lg font-semibold">プロフィール写真</h2>
+            </div>
+            <div class="ios-content">
+                <h2 class="text-xl font-bold mb-4">プロフィール写真を設定</h2>
+                <p class="text-gray-500 mb-6">ファンがあなたを認識しやすくなる写真を選んでください。</p>
+
+                <div class="profile-upload-area">
+                    <div class="profile-image-preview" id="profile-preview">
+                        <i class="fas fa-user text-4xl"></i>
+                    </div>
+                    <label for="profile-image-input" class="profile-upload-button">写真を選択</label>
+                    <input type="file" id="profile-image-input" accept="image/*">
+                </div>
+
+                <div class="notification-card">
+                    <div class="flex items-start">
+                        <i class="fas fa-info-circle text-blue-500 mt-1 mr-3"></i>
+                        <div class="text-sm">
+                            <p class="font-medium mb-1">写真のガイドライン</p>
+                            <ul class="text-gray-600 space-y-1">
+                                <li>• 顔がはっきり見える写真</li>
+                                <li>• 正方形に近い比率がおすすめ</li>
+                                <li>• ファイルサイズは5MB以下</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="ios-button mb-2" onclick="savePhoto()">保存する</button>
+                <button class="skip-button" onclick="showMainScreen()">後で設定する</button>
+            </div>
+        </div>
+
+        <!-- ジャンル選択画面 -->
+        <div class="ios-container mt-10 hidden" id="genre-setup">
+            <div class="ios-header">
+                <a href="#" class="absolute left-4 text-blue-500" onclick="showMainScreen()">戻る</a>
+                <h2 class="text-lg font-semibold">活動ジャンル</h2>
+            </div>
+            <div class="ios-content">
+                <h2 class="text-xl font-bold mb-4">活動ジャンルを選択</h2>
+                <p class="text-gray-500 mb-6">あなたの主な活動分野を選んでください（複数選択可）。</p>
+
+                <div class="card-container">
+                    <div class="genre-card" data-genre="actor">
+                        <p>俳優/女優</p>
+                    </div>
+                    <div class="genre-card" data-genre="musician">
+                        <p>歌手/ミュージシャン</p>
+                    </div>
+                    <div class="genre-card" data-genre="model">
+                        <p>モデル</p>
+                    </div>
+                    <div class="genre-card" data-genre="comedian">
+                        <p>芸人/タレント</p>
+                    </div>
+                    <div class="genre-card" data-genre="voice_actor">
+                        <p>声優</p>
+                    </div>
+                    <div class="genre-card" data-genre="vtuber">
+                        <p>VTuber</p>
+                    </div>
+                    <div class="genre-card" data-genre="influencer">
+                        <p>インフルエンサー</p>
+                    </div>
+                    <div class="genre-card" data-genre="idol">
+                        <p>アイドル</p>
+                    </div>
+                    <div class="genre-card" data-genre="creator">
+                        <p>クリエイター</p>
+                    </div>
+                </div>
+
+                <div class="text-center my-4">
+                    <span id="selected-genre-count" class="text-sm text-gray-500">0個選択中</span>
+                </div>
+
+                <button class="ios-button mb-2" onclick="saveGenres()">保存する</button>
+                <button class="skip-button" onclick="showMainScreen()">後で設定する</button>
+            </div>
+        </div>
+
+        <!-- 自己紹介設定画面 -->
+        <div class="ios-container mt-10 hidden" id="bio-setup">
+            <div class="ios-header">
+                <a href="#" class="absolute left-4 text-blue-500" onclick="showMainScreen()">戻る</a>
+                <h2 class="text-lg font-semibold">自己紹介</h2>
+            </div>
+            <div class="ios-content">
+                <h2 class="text-xl font-bold mb-4">自己紹介を書く</h2>
+                <p class="text-gray-500 mb-6">あなたの活動内容や経歴などを自由に記入してください。</p>
+
+                <textarea class="ios-textarea" id="bio-textarea" placeholder="例：音楽活動をしています。主にポップスを歌っており、YouTubeでカバー動画を投稿しています。ファンの皆さんと一緒に音楽を楽しみたいです！" maxlength="500"></textarea>
+                <div class="char-counter">
+                    <span id="char-count">0</span>/500文字
+                </div>
+
+                <div class="notification-card">
+                    <div class="flex items-start">
+                        <i class="fas fa-lightbulb text-yellow-500 mt-1 mr-3"></i>
+                        <div class="text-sm">
+                            <p class="font-medium mb-1">自己紹介のコツ</p>
+                            <ul class="text-gray-600 space-y-1">
+                                <li>• どんな活動をしているか</li>
+                                <li>• ファンへのメッセージ</li>
+                                <li>• 趣味や特技</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="ios-button mb-2" onclick="saveBio()">保存する</button>
+                <button class="skip-button" onclick="showMainScreen()">後で設定する</button>
+            </div>
+        </div>
+
+        <!-- SNS連携画面 -->
+        <div class="ios-container mt-10 hidden" id="sns-setup">
+            <div class="ios-header">
+                <a href="#" class="absolute left-4 text-blue-500" onclick="showMainScreen()">戻る</a>
+                <h2 class="text-lg font-semibold">SNS連携</h2>
+            </div>
+            <div class="ios-content">
+                <h2 class="text-xl font-bold mb-4">SNSアカウントを連携</h2>
+                <p class="text-gray-500 mb-6">他のSNSでの活動もファンに紹介できます（任意）。</p>
+
+                <div class="sns-input-group">
+                    <span class="x-logo text-black">𝕏</span>
+                    <input type="text" class="ios-input" placeholder="X (旧Twitter) のユーザー名 (@なし)">
+                </div>
+                <div class="sns-input-group">
+                    <i class="fab fa-instagram text-pink-500"></i>
+                    <input type="text" class="ios-input" placeholder="Instagram のユーザー名">
+                </div>
+                <div class="sns-input-group">
+                    <i class="fab fa-youtube text-red-600"></i>
+                    <input type="text" class="ios-input" placeholder="YouTubeチャンネルのURL">
+                </div>
+                <div class="sns-input-group">
+                    <i class="fab fa-tiktok text-pink-600"></i>
+                    <input type="text" class="ios-input" placeholder="TikTok のユーザー名">
+                </div>
+                <div class="sns-input-group">
+                    <i class="fas fa-link text-gray-500"></i>
+                    <input type="text" class="ios-input" placeholder="その他のウェブサイトURL">
+                </div>
+
+                <div class="notification-card">
+                    <div class="flex items-start">
+                        <i class="fas fa-info-circle text-blue-500 mt-1 mr-3"></i>
+                        <p class="text-sm">入力された情報はプロフィールに表示され、ファンがあなたの他の活動をフォローするのに役立ちます。</p>
+                    </div>
+                </div>
+
+                <button class="ios-button mb-2" onclick="saveSNS()">保存する</button>
+                <button class="skip-button" onclick="showMainScreen()">後で設定する</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        let completedSections = new Set();
+        
+        function showMainScreen() {
+            hideAllScreens();
+            document.getElementById('main-screen').classList.remove('hidden');
+        }
+        
+        function showPhotoSetup() {
+            hideAllScreens();
+            document.getElementById('photo-setup').classList.remove('hidden');
+        }
+        
+        function showGenreSetup() {
+            hideAllScreens();
+            document.getElementById('genre-setup').classList.remove('hidden');
+        }
+        
+        function showBioSetup() {
+            hideAllScreens();
+            document.getElementById('bio-setup').classList.remove('hidden');
+        }
+        
+        function showSNSSetup() {
+            hideAllScreens();
+            document.getElementById('sns-setup').classList.remove('hidden');
+        }
+        
+        function hideAllScreens() {
+            const screens = ['main-screen', 'photo-setup', 'genre-setup', 'bio-setup', 'sns-setup'];
+            screens.forEach(screen => {
+                document.getElementById(screen).classList.add('hidden');
+            });
+        }
+        
+        function updateProgress() {
+            const totalSections = 4;
+            const completedCount = completedSections.size;
+            const percentage = Math.round(((completedCount + 1) / totalSections) * 100); // +1 for basic info
+            
+            document.getElementById('progress-percentage').textContent = percentage + '%';
+            document.getElementById('progress-fill').style.width = percentage + '%';
+        }
+        
+        function markSectionCompleted(section) {
+            completedSections.add(section);
+            const statusElement = document.getElementById(section + '-status');
+            statusElement.textContent = '完了';
+            statusElement.className = 'section-status status-completed';
+            updateProgress();
+        }
+        
+        function savePhoto() {
+            markSectionCompleted('photo');
+            showMainScreen();
+        }
+        
+        function saveGenres() {
+            const selectedGenres = document.querySelectorAll('.genre-card.selected');
+            if (selectedGenres.length === 0) {
+                alert('少なくとも1つのジャンルを選択してください');
+                return;
+            }
+            markSectionCompleted('genre');
+            showMainScreen();
+        }
+        
+        function saveBio() {
+            const bioText = document.getElementById('bio-textarea').value.trim();
+            if (bioText.length < 10) {
+                alert('自己紹介は10文字以上入力してください');
+                return;
+            }
+            markSectionCompleted('bio');
+            showMainScreen();
+        }
+        
+        function saveSNS() {
+            markSectionCompleted('sns');
+            showMainScreen();
+        }
+        
+        function goToDashboard() {
+            alert('管理画面に移動します');
+        }
+        
+        // プロフィール写真プレビュー
+        document.addEventListener('DOMContentLoaded', function() {
+            const profileImageInput = document.getElementById('profile-image-input');
+            const profilePreview = document.getElementById('profile-preview');
+            
+            if (profileImageInput && profilePreview) {
+                profileImageInput.addEventListener('change', function(event) {
+                    const file = event.target.files[0];
+                    if (file && file.type.startsWith('image/')) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            const existingIcon = profilePreview.querySelector('i');
+                            if (existingIcon) {
+                                profilePreview.removeChild(existingIcon);
+                            }
+                            profilePreview.style.backgroundImage = `url(${e.target.result})`;
+                            profilePreview.style.backgroundSize = 'cover';
+                            profilePreview.style.backgroundPosition = 'center';
+                        }
+                        reader.readAsDataURL(file);
+                    }
+                });
+            }
+            
+            // ジャンル選択
+            const genreCards = document.querySelectorAll('.genre-card');
+            const selectedGenreCountElement = document.getElementById('selected-genre-count');
+            
+            function updateSelectedGenreCount() {
+                const count = document.querySelectorAll('.genre-card.selected').length;
+                if (selectedGenreCountElement) {
+                    selectedGenreCountElement.textContent = `${count}個選択中`;
+                }
+            }
+            
+            genreCards.forEach(card => {
+                card.addEventListener('click', function() {
+                    this.classList.toggle('selected');
+                    updateSelectedGenreCount();
+                });
+            });
+            
+            // 文字数カウンター
+            const bioTextarea = document.getElementById('bio-textarea');
+            const charCount = document.getElementById('char-count');
+            
+            if (bioTextarea && charCount) {
+                bioTextarea.addEventListener('input', function() {
+                    charCount.textContent = this.value.length;
+                });
+            }
+        });
+    </script>
+</body>
+</html> 

@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Starlist - スター登録</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <style>
+        /* メルカリ風ダークテーマ */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: #1a1a1a;
+            color: #ffffff;
+            min-height: 100vh;
+        }
+        
+        /* メインコンテナ */
+        .main-container {
+            max-width: 390px;
+            margin: 0 auto;
+            min-height: 100vh;
+            background: #1a1a1a;
+            position: relative;
+        }
+        
+        /* ヘッダー */
+        .header {
+            padding: 60px 20px 40px;
+            text-align: center;
+            background: #1a1a1a;
+        }
+        
+        /* ロゴ */
+        .logo {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #FF6B6B, #4ECDC4);
+            border-radius: 20px;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 32px rgba(255, 107, 107, 0.3);
+        }
+        
+        .logo i {
+            font-size: 32px;
+            color: white;
+        }
+        
+        /* タイトル */
+        .title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #FF6B6B, #4ECDC4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .subtitle {
+            font-size: 16px;
+            color: #888;
+            margin-bottom: 40px;
+        }
+        
+        /* コンテンツエリア */
+        .content {
+            padding: 0 20px 40px;
+        }
+        
+        /* セクションタイトル */
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 30px;
+            color: #ffffff;
+        }
+        
+        /* ソーシャルログインボタン */
+        .social-button {
+            width: 100%;
+            padding: 16px 20px;
+            border-radius: 12px;
+            border: none;
+            margin-bottom: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .social-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+            transition: left 0.5s;
+        }
+        
+        .social-button:hover::before {
+            left: 100%;
+        }
+        
+        .social-button i {
+            margin-right: 12px;
+            font-size: 20px;
+        }
+        
+        /* メールボタン */
+        .email-button {
+            background: #f5f5f5;
+            color: #333;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .email-button:hover {
+            background: #eeeeee;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        /* Appleボタン */
+        .apple-button {
+            background: #000000;
+            color: #ffffff;
+            border: 1px solid #333;
+        }
+        
+        .apple-button:hover {
+            background: #1a1a1a;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        
+        /* Googleボタン */
+        .google-button {
+            background: #ffffff;
+            color: #333;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .google-button:hover {
+            background: #f9f9f9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        /* LINEボタン */
+        .line-button {
+            background: #00B900;
+            color: #ffffff;
+        }
+        
+        .line-button:hover {
+            background: #009900;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,185,0,0.3);
+        }
+        
+        /* Facebookボタン */
+        .facebook-button {
+            background: #1877F2;
+            color: #ffffff;
+        }
+        
+        .facebook-button:hover {
+            background: #166FE5;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(24,119,242,0.3);
+        }
+        
+        /* 利用規約テキスト */
+        .terms-text {
+            font-size: 12px;
+            color: #888;
+            text-align: center;
+            margin: 30px 0;
+            line-height: 1.5;
+        }
+        
+        .terms-text a {
+            color: #4ECDC4;
+            text-decoration: none;
+        }
+        
+        .terms-text a:hover {
+            text-decoration: underline;
+        }
+        
+        /* 区切り線 */
+        .divider {
+            margin: 40px 0;
+            position: relative;
+            text-align: center;
+        }
+        
+        .divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: #333;
+        }
+        
+        .divider span {
+            background: #1a1a1a;
+            padding: 0 20px;
+            color: #888;
+            font-size: 14px;
+        }
+        
+        /* ログインリンク */
+        .login-section {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 1px solid #333;
+        }
+        
+        .login-title {
+            font-size: 18px;
+            color: #ffffff;
+            margin-bottom: 20px;
+        }
+        
+        .login-button {
+            width: 100%;
+            padding: 16px 20px;
+            background: transparent;
+            color: #FF6B6B;
+            border: 2px solid #FF6B6B;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .login-button:hover {
+            background: #FF6B6B;
+            color: #ffffff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255,107,107,0.3);
+        }
+        
+        /* アニメーション */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .fade-in-up {
+            animation: fadeInUp 0.6s ease-out;
+        }
+        
+        /* ローディング状態 */
+        .loading {
+            pointer-events: none;
+            opacity: 0.7;
+        }
+        
+        .loading::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 20px;
+            height: 20px;
+            margin: -10px 0 0 -10px;
+            border: 2px solid transparent;
+            border-top: 2px solid currentColor;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* レスポンシブ対応 */
+        @media (max-width: 390px) {
+            .main-container {
+                max-width: 100%;
+            }
+            
+            .header {
+                padding: 40px 15px 30px;
+            }
+            
+            .content {
+                padding: 0 15px 30px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <!-- ヘッダー -->
+        <div class="header fade-in-up">
+            <div class="logo">
+                <i class="fas fa-star"></i>
+            </div>
+            <h1 class="title">Starlist</h1>
+            <p class="subtitle">スターの日常をもっと身近に</p>
+        </div>
+        
+        <!-- メインコンテンツ -->
+        <div class="content">
+            <h2 class="section-title fade-in-up">スター登録</h2>
+            
+            <!-- ソーシャルログインボタン -->
+            <div class="fade-in-up" style="animation-delay: 0.1s;">
+                <button class="social-button email-button" onclick="signUpWithEmail()">
+                    <i class="fas fa-envelope"></i>
+                    メールアドレスで登録
+                </button>
+                
+                <button class="social-button apple-button" onclick="signUpWithApple()">
+                    <i class="fab fa-apple"></i>
+                    Appleでサインアップ
+                </button>
+                
+                <button class="social-button google-button" onclick="signUpWithGoogle()">
+                    <i class="fab fa-google"></i>
+                    Googleで登録
+                </button>
+                
+                <button class="social-button line-button" onclick="signUpWithLine()">
+                    <i class="fab fa-line"></i>
+                    LINEで登録
+                </button>
+                
+                <button class="social-button facebook-button" onclick="signUpWithFacebook()">
+                    <i class="fab fa-facebook-f"></i>
+                    Facebookで登録
+                </button>
+            </div>
+            
+            <!-- 利用規約 -->
+            <div class="terms-text fade-in-up" style="animation-delay: 0.2s;">
+                <a href="#" onclick="showTerms()">利用規約</a>及び<a href="#" onclick="showPrivacy()">プライバシーポリシー</a>に同意の上、登録又はログインへお進みください。
+            </div>
+            
+            <!-- ログインセクション -->
+            <div class="login-section fade-in-up" style="animation-delay: 0.3s;">
+                <h3 class="login-title">アカウントをお持ちの方</h3>
+                <button class="login-button" onclick="goToLogin()">
+                    ログイン
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ローディング状態の管理
+        function setLoading(button, isLoading) {
+            if (isLoading) {
+                button.classList.add('loading');
+                button.disabled = true;
+            } else {
+                button.classList.remove('loading');
+                button.disabled = false;
+            }
+        }
+
+        // メール登録
+        function signUpWithEmail() {
+            const button = event.target;
+            setLoading(button, true);
+            
+            setTimeout(() => {
+                setLoading(button, false);
+                alert('メール登録画面に移動します');
+                // 実際の実装では、メール登録フォームに遷移
+            }, 1000);
+        }
+
+        // Apple認証
+        function signUpWithApple() {
+            const button = event.target;
+            setLoading(button, true);
+            
+            setTimeout(() => {
+                setLoading(button, false);
+                alert('Apple認証を開始します');
+                // 実際の実装では、Apple Sign-In SDKを使用
+                // AppleID.auth.signIn()
+            }, 1000);
+        }
+
+        // Google認証
+        function signUpWithGoogle() {
+            const button = event.target;
+            setLoading(button, true);
+            
+            setTimeout(() => {
+                setLoading(button, false);
+                alert('Google認証を開始します');
+                // 実際の実装では、Google Sign-In SDKを使用
+                // gapi.auth2.getAuthInstance().signIn()
+            }, 1000);
+        }
+
+        // LINE認証
+        function signUpWithLine() {
+            const button = event.target;
+            setLoading(button, true);
+            
+            setTimeout(() => {
+                setLoading(button, false);
+                alert('LINE認証を開始します');
+                // 実際の実装では、LINE Login SDKを使用
+            }, 1000);
+        }
+
+        // Facebook認証
+        function signUpWithFacebook() {
+            const button = event.target;
+            setLoading(button, true);
+            
+            setTimeout(() => {
+                setLoading(button, false);
+                alert('Facebook認証を開始します');
+                // 実際の実装では、Facebook SDK for JavaScriptを使用
+                // FB.login()
+            }, 1000);
+        }
+
+        // ログイン画面へ
+        function goToLogin() {
+            alert('ログイン画面に移動します');
+            // 実際の実装では、ログイン画面に遷移
+        }
+
+        // 利用規約表示
+        function showTerms() {
+            alert('利用規約を表示します');
+            // 実際の実装では、利用規約モーダルまたはページを表示
+        }
+
+        // プライバシーポリシー表示
+        function showPrivacy() {
+            alert('プライバシーポリシーを表示します');
+            // 実際の実装では、プライバシーポリシーモーダルまたはページを表示
+        }
+
+        // ページロード時のアニメーション
+        document.addEventListener('DOMContentLoaded', function() {
+            // 要素を順次表示
+            const elements = document.querySelectorAll('.fade-in-up');
+            elements.forEach((element, index) => {
+                element.style.animationDelay = `${index * 0.1}s`;
+            });
+        });
+
+        // 実際のAuth実装例（Firebase Auth）
+        /*
+        // Firebase Auth設定
+        import { initializeApp } from 'firebase/app';
+        import { 
+            getAuth, 
+            signInWithPopup, 
+            GoogleAuthProvider, 
+            FacebookAuthProvider,
+            OAuthProvider 
+        } from 'firebase/auth';
+
+        const firebaseConfig = {
+            // Firebase設定
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        // Google認証
+        async function signUpWithGoogle() {
+            const provider = new GoogleAuthProvider();
+            try {
+                const result = await signInWithPopup(auth, provider);
+                const user = result.user;
+                // ユーザー情報をSupabaseに保存
+                await createUserProfile(user);
+            } catch (error) {
+                console.error('Google認証エラー:', error);
+            }
+        }
+
+        // Apple認証
+        async function signUpWithApple() {
+            const provider = new OAuthProvider('apple.com');
+            try {
+                const result = await signInWithPopup(auth, provider);
+                const user = result.user;
+                await createUserProfile(user);
+            } catch (error) {
+                console.error('Apple認証エラー:', error);
+            }
+        }
+
+        // ユーザープロフィール作成
+        async function createUserProfile(user) {
+            const { data, error } = await supabase
+                .from('users')
+                .insert([
+                    {
+                        id: user.uid,
+                        email: user.email,
+                        display_name: user.displayName,
+                        profile_image_url: user.photoURL,
+                        is_star: true,
+                        created_at: new Date().toISOString()
+                    }
+                ]);
+            
+            if (error) {
+                console.error('ユーザー作成エラー:', error);
+            } else {
+                // 登録完了後の処理
+                window.location.href = '/dashboard';
+            }
+        }
+        */
+    </script>
+</body>
+</html> 

@@ -10,6 +10,8 @@ import 'src/features/data_integration/repositories/youtube_repository.dart';
 import 'src/features/data_integration/services/youtube_api_service.dart';
 import 'src/features/auth/screens/login_screen.dart';
 import 'src/features/auth/screens/signup_screen.dart';
+import 'features/auth/screens/star_signup_screen.dart';
+import 'features/auth/screens/star_email_signup_screen.dart';
 import 'src/features/auth/supabase_provider.dart';
 import 'src/features/auth/providers/user_provider.dart';
 import 'src/features/favorites/widgets/favorite_list.dart';
@@ -21,6 +23,18 @@ import 'screens/landing_screen.dart';
 import 'screens/fan_register_screen.dart';
 import 'screens/register_screen.dart';
 import 'screens/starlist_home_screen.dart';
+import 'screens/starlist_main_screen.dart';
+import 'features/star/screens/star_dashboard_screen.dart';
+import 'features/subscription/screens/plan_management_screen.dart';
+import 'features/app/screens/settings_screen.dart';
+import 'features/data_integration/screens/data_import_screen.dart';
+import 'features/search/screens/search_screen.dart';
+import 'features/follow/screens/follow_screen.dart';
+import 'features/mylist/screens/mylist_screen.dart';
+import 'features/profile/screens/profile_screen.dart';
+import 'features/star/screens/schedule_management_screen.dart';
+import 'features/star/screens/star_profile_screen.dart';
+import 'providers/theme_provider.dart';
 
 // Riverpodプロバイダー名の衝突を避けるため
 final supabaseUrlProvider = Provider<String>((ref) {
@@ -59,44 +73,32 @@ final youtubeRepositoryProvider = Provider<YouTubeRepository>((ref) {
 
 final userTypeProvider = StateProvider<String>((ref) => 'fan');
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  
-  // 環境変数のロード
-  await dotenv.load(fileName: '.env');
-  
-  // Supabaseの初期化
-  await Supabase.initialize(
-    url: dotenv.env['SUPABASE_URL'] ?? '',
-    anonKey: dotenv.env['SUPABASE_ANON_KEY'] ?? ''
-  );
-  
-  // アプリの実行
-  runApp(
-    const ProviderScope(
-      child: MyApp(),
-    ),
-  );
+void main() {
+  runApp(const ProviderScope(child: MyApp()));
 }
 
 class MyApp extends ConsumerWidget {
-  const MyApp({super.key});
+  const MyApp({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final themeMode = ref.watch(themeProvider);
+    
     return MaterialApp(
       title: 'Starlist',
-      theme: AppTheme.lightTheme,
-      home: const StarlistHomeScreen(), // 新しいStarlistHomeScreenを使用
-      debugShowCheckedModeBanner: false,
+      theme: AppThemes.lightTheme,
+      darkTheme: AppThemes.darkTheme,
+      themeMode: themeMode == AppThemeMode.light ? ThemeMode.light : ThemeMode.dark,
+      home: const StarlistMainScreen(),
       routes: {
-        '/home': (context) => const HomeScreen(),
-        '/login': (context) => const LoginScreen(),
-        '/signup': (context) => const SignupScreen(),
-        '/fan_register': (context) => const FanRegisterScreen(),
-        '/register': (context) => const RegisterScreen(isStar: false),
-        '/star_register': (context) => const RegisterScreen(isStar: true),
+        '/star-signup': (context) => const StarSignupScreen(),
+        '/star-email-signup': (context) => const StarEmailSignupScreen(),
+        '/star-dashboard': (context) => const StarDashboardScreen(),
+        '/plan-management': (context) => const PlanManagementScreen(),
+        '/settings': (context) => const SettingsScreen(),
+        '/data-import': (context) => const DataImportScreen(),
       },
+      debugShowCheckedModeBanner: false,
     );
   }
 }
@@ -170,6 +172,150 @@ class SimpleHomeScreen extends StatelessWidget {
                 );
               },
               child: const Text('タイムライン表示'),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                // スター登録画面に移動
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const StarSignupScreen(),
+                  ),
+                );
+              },
+              child: const Text('スター登録画面'),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                // スターダッシュボード画面に移動
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const StarDashboardScreen(),
+                  ),
+                );
+              },
+              child: const Text('スターダッシュボード'),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                // プラン管理画面に移動
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const PlanManagementScreen(),
+                  ),
+                );
+              },
+              child: const Text('プラン管理'),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                // 設定画面に移動
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const SettingsScreen(),
+                  ),
+                );
+              },
+              child: const Text('設定'),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                // データ取り込み画面に移動
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const DataImportScreen(),
+                  ),
+                );
+              },
+              child: const Text('データ取り込み'),
+            ),
+            const SizedBox(height: 20),
+            const Text(
+              '新しく追加された画面',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                // 検索画面に移動
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const SearchScreen(),
+                  ),
+                );
+              },
+              child: const Text('検索画面'),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                // フォロー中画面に移動
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const FollowScreen(),
+                  ),
+                );
+              },
+              child: const Text('フォロー中画面'),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                // マイリスト画面に移動
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const MylistScreen(),
+                  ),
+                );
+              },
+              child: const Text('マイリスト画面'),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                // マイページ画面に移動
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const ProfileScreen(),
+                  ),
+                );
+              },
+              child: const Text('マイページ画面'),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                // スケジュール管理画面に移動
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const ScheduleManagementScreen(),
+                  ),
+                );
+              },
+              child: const Text('スケジュール管理'),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                // スタープロフィール画面に移動（ファン視点）
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const StarProfileScreen(
+                      starId: 'star_001',
+                      starName: 'テックレビューアー田中',
+                    ),
+                  ),
+                );
+              },
+              child: const Text('スタープロフィール（ファン視点）'),
             ),
           ],
         ),

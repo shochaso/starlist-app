@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Starlist - スター登録（改善版）</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <style>
+        /* 基本スタイル */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+        
+        /* iOS風コンテナ */
+        .ios-container {
+            max-width: 390px;
+            margin: 20px auto;
+            background: white;
+            border-radius: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            overflow: hidden;
+            position: relative;
+        }
+        
+        /* iOS風ヘッダー */
+        .ios-header {
+            height: 44px;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            border-bottom: 1px solid #f1f1f1;
+        }
+        
+        /* iOS風コンテンツエリア */
+        .ios-content {
+            padding: 20px;
+            background: white;
+        }
+        
+        /* iOS風プライマリボタン */
+        .ios-button {
+            background: #007AFF;
+            color: white;
+            border-radius: 10px;
+            padding: 12px 20px;
+            width: 100%;
+            text-align: center;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .ios-button:hover {
+            background: #0062cc;
+        }
+        
+        /* iOS風セカンダリボタン */
+        .ios-button.secondary {
+            background: #E9E9EB;
+            color: #007AFF;
+        }
+        .ios-button.secondary:hover {
+            background: #d1d1d3;
+        }
+        
+        /* iOS風入力フィールド */
+        .ios-input {
+            border: 1px solid #E9E9EB;
+            border-radius: 10px;
+            padding: 12px 15px;
+            width: 100%;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+        .ios-input:focus {
+            border-color: #007AFF;
+            outline: none;
+        }
+        
+        /* ソーシャルログインボタン */
+        .social-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid #E9E9EB;
+            background: white;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .social-button:hover {
+            background: #f5f5f7;
+        }
+        
+        /* チェックボックスコンテナ */
+        .checkbox-container {
+            display: flex;
+            align-items: flex-start;
+            margin: 15px 0;
+        }
+        .checkbox-container input {
+            margin-right: 10px;
+            margin-top: 2px;
+        }
+        
+        /* セクション区切り線 */
+        .section-divider {
+            margin: 30px 0;
+            border-top: 1px solid #E9E9EB;
+            position: relative;
+        }
+        .section-divider::before {
+            content: attr(data-title);
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            padding: 0 15px;
+            color: #8E8E93;
+            font-size: 14px;
+        }
+        
+        /* ステップインジケーター */
+        .step-indicator {
+            background: #f5f5f7;
+            color: #8E8E93;
+            padding: 3px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            display: inline-block;
+            margin-bottom: 5px;
+        }
+        
+        /* 通知カード */
+        .notification-card {
+            background: #F2F2F7;
+            border-radius: 12px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        
+        /* 簡素化されたフローインジケーター */
+        .flow-nav {
+            display: flex;
+            justify-content: center;
+            padding: 15px 0 5px;
+        }
+        
+        .flow-circle {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin: 0 6px;
+            background-color: #ddd;
+        }
+        
+        .flow-circle.active {
+            background-color: #007AFF;
+        }
+        
+        .flow-circle.completed {
+            background-color: #34C759;
+        }
+        
+        /* プログレスバー */
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background-color: #E9E9EB;
+            border-radius: 2px;
+            margin-bottom: 20px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background-color: #007AFF;
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+        
+        /* 必須マーク */
+        .required {
+            color: #FF3B30;
+            font-size: 14px;
+        }
+        
+        /* 任意マーク */
+        .optional {
+            color: #8E8E93;
+            font-size: 12px;
+        }
+        
+        /* 利用規約スクロールエリア */
+        .terms-scroll {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #E9E9EB;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+            background: #f9f9f9;
+        }
+        
+        /* 成功アイコン */
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #34C759, #30D158);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+        }
+        
+        /* プロフィール完成度カード */
+        .profile-completion-card {
+            background: linear-gradient(135deg, #007AFF, #5AC8FA);
+            color: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .completion-progress {
+            background: rgba(255, 255, 255, 0.3);
+            height: 6px;
+            border-radius: 3px;
+            margin: 10px 0;
+        }
+        
+        .completion-fill {
+            background: white;
+            height: 100%;
+            border-radius: 3px;
+            width: 25%;
+            transition: width 0.3s ease;
+        }
+        
+        /* 次のステップカード */
+        .next-step-card {
+            border: 1px solid #E9E9EB;
+            border-radius: 12px;
+            padding: 15px;
+            margin: 10px 0;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .next-step-card:hover {
+            background: #f5f5f7;
+            border-color: #007AFF;
+        }
+        
+        .step-icon {
+            width: 40px;
+            height: 40px;
+            background: #f0f0f0;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-content">
+
+        <!-- ステップ1: 基本情報 -->
+        <div class="ios-container" id="step1">
+            <div class="ios-header">
+                <a href="#" class="absolute left-4 text-blue-500">キャンセル</a>
+                <h2 class="text-lg font-semibold">スターアカウント作成</h2>
+            </div>
+            <div class="flow-nav">
+                <div class="flow-circle active"></div>
+                <div class="flow-circle"></div>
+            </div>
+            <div class="ios-content">
+                <div class="step-indicator">ステップ 1/2</div>
+                <h2 class="text-xl font-bold mb-2">基本情報を入力</h2>
+                <p class="text-gray-500 mb-6">スターとして活動を始めるために必要な最小限の情報を入力してください。</p>
+                
+                <!-- ソーシャルログイン -->
+                <div class="social-button mb-3">
+                    <i class="fab fa-google text-red-500 mr-3"></i>
+                    <span>Googleで続行</span>
+                </div>
+                <div class="social-button mb-4">
+                    <i class="fab fa-apple text-black mr-3"></i>
+                    <span>Apple IDで続行</span>
+                </div>
+                
+                <div class="section-divider" data-title="または"></div>
+                
+                <form>
+                    <div class="mb-3">
+                        <label class="block text-sm font-medium mb-1">
+                            ユーザーネーム <span class="required">*</span>
+                        </label>
+                        <input type="text" class="ios-input" placeholder="半角英数字（例：star_name123）">
+                        <p class="text-xs text-gray-500">ファンがあなたを見つけるためのIDです</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="block text-sm font-medium mb-1">
+                            表示名 <span class="required">*</span>
+                        </label>
+                        <input type="text" class="ios-input" placeholder="ファンに表示される名前">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="block text-sm font-medium mb-1">
+                            メールアドレス <span class="required">*</span>
+                        </label>
+                        <input type="email" class="ios-input" placeholder="連絡用メールアドレス">
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium mb-1">
+                            パスワード <span class="required">*</span>
+                        </label>
+                        <input type="password" class="ios-input" placeholder="8文字以上">
+                    </div>
+                    
+                    <button type="button" class="ios-button mb-4" onclick="showStep2()">次へ</button>
+                </form>
+                
+                <div class="text-center mt-4">
+                    <p class="text-sm text-gray-500">すでにアカウントをお持ちですか？ <a href="#" class="text-blue-500">ログイン</a></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ステップ2: 利用規約同意 -->
+        <div class="ios-container mt-10 hidden" id="step2">
+            <div class="ios-header">
+                <a href="#" class="absolute left-4 text-blue-500" onclick="showStep1()">戻る</a>
+                <h2 class="text-lg font-semibold">スターアカウント作成</h2>
+            </div>
+            <div class="flow-nav">
+                <div class="flow-circle completed"></div>
+                <div class="flow-circle active"></div>
+            </div>
+            <div class="ios-content">
+                <div class="step-indicator">ステップ 2/2</div>
+                <h2 class="text-xl font-bold mb-4">利用規約への同意</h2>
+                <p class="text-gray-500 mb-4">スターとして活動を開始するために、利用規約をご確認ください。</p>
+
+                <div class="terms-scroll">
+                    <h3 class="font-semibold mb-2">Starlist スター利用規約（要約）</h3>
+                    <div class="text-sm text-gray-600 space-y-3">
+                        <div>
+                            <h4 class="font-medium">✓ アカウント管理</h4>
+                            <p class="text-xs">正確な情報を提供し、アカウントを適切に管理してください。</p>
+                        </div>
+                        <div>
+                            <h4 class="font-medium">✓ コンテンツ配信</h4>
+                            <p class="text-xs">ファンに向けて適切なコンテンツを配信し、第三者の権利を尊重してください。</p>
+                        </div>
+                        <div>
+                            <h4 class="font-medium">✓ 禁止事項</h4>
+                            <p class="text-xs">違法行為、誹謗中傷、虚偽情報の流布は禁止されています。</p>
+                        </div>
+                        <div>
+                            <h4 class="font-medium">✓ 収益化</h4>
+                            <p class="text-xs">収益化機能の利用は別途定める規定に従います。</p>
+                        </div>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-gray-200">
+                        <a href="#" class="text-blue-500 text-sm">完全版の利用規約を読む</a>
+                    </div>
+                </div>
+
+                <div class="checkbox-container mb-4">
+                    <input type="checkbox" id="terms-consent">
+                    <label for="terms-consent" class="text-sm">
+                        <span class="font-medium">スター利用規約</span>および
+                        <span class="font-medium">プライバシーポリシー</span>に同意します
+                    </label>
+                </div>
+
+                <button type="button" class="ios-button mb-4" onclick="showCompletion()">同意してアカウントを作成</button>
+            </div>
+        </div>
+
+        <!-- 完了画面 -->
+        <div class="ios-container mt-10 hidden" id="completion">
+            <div class="ios-header">
+                <h2 class="text-lg font-semibold">アカウント作成完了</h2>
+            </div>
+            <div class="ios-content">
+                <div class="text-center mb-6">
+                    <div class="success-icon">
+                        <i class="fas fa-check text-white text-3xl"></i>
+                    </div>
+                    <h1 class="text-2xl font-bold mb-2">スターアカウント作成完了！</h1>
+                    <p class="text-gray-500">Starlistでの活動を開始しましょう</p>
+                </div>
+
+                <!-- プロフィール完成度 -->
+                <div class="profile-completion-card">
+                    <div class="flex justify-between items-center mb-2">
+                        <h3 class="font-semibold">プロフィール完成度</h3>
+                        <span class="text-sm">25%</span>
+                    </div>
+                    <div class="completion-progress">
+                        <div class="completion-fill"></div>
+                    </div>
+                    <p class="text-sm opacity-90">プロフィールを充実させてファンに見つけてもらいやすくしましょう</p>
+                </div>
+
+                <!-- 次のステップ -->
+                <div class="mb-6">
+                    <h3 class="font-semibold mb-3">次にやること</h3>
+                    
+                    <div class="next-step-card" onclick="goToProfile()">
+                        <div class="flex items-center">
+                            <div class="step-icon">
+                                <i class="fas fa-user text-blue-500"></i>
+                            </div>
+                            <div class="flex-grow">
+                                <h4 class="font-medium">プロフィール写真を設定</h4>
+                                <p class="text-sm text-gray-500">ファンがあなたを認識しやすくなります</p>
+                            </div>
+                            <i class="fas fa-chevron-right text-gray-400"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="next-step-card" onclick="goToGenre()">
+                        <div class="flex items-center">
+                            <div class="step-icon">
+                                <i class="fas fa-tags text-green-500"></i>
+                            </div>
+                            <div class="flex-grow">
+                                <h4 class="font-medium">活動ジャンルを選択</h4>
+                                <p class="text-sm text-gray-500">あなたの活動分野を教えてください</p>
+                            </div>
+                            <i class="fas fa-chevron-right text-gray-400"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="next-step-card" onclick="goToSNS()">
+                        <div class="flex items-center">
+                            <div class="step-icon">
+                                <i class="fas fa-share-alt text-purple-500"></i>
+                            </div>
+                            <div class="flex-grow">
+                                <h4 class="font-medium">SNSアカウントを連携</h4>
+                                <p class="text-sm text-gray-500 optional">任意 - 他の活動も紹介できます</p>
+                            </div>
+                            <i class="fas fa-chevron-right text-gray-400"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="button" class="ios-button mb-2" onclick="goToDashboard()">管理画面に進む</button>
+                <button type="button" class="ios-button secondary" onclick="goToProfile()">プロフィールを完成させる</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        function showStep1() {
+            document.getElementById('step1').classList.remove('hidden');
+            document.getElementById('step2').classList.add('hidden');
+            document.getElementById('completion').classList.add('hidden');
+        }
+
+        function showStep2() {
+            document.getElementById('step1').classList.add('hidden');
+            document.getElementById('step2').classList.remove('hidden');
+            document.getElementById('completion').classList.add('hidden');
+        }
+
+        function showCompletion() {
+            const termsCheckbox = document.getElementById('terms-consent');
+            if (!termsCheckbox.checked) {
+                alert('利用規約への同意が必要です');
+                return;
+            }
+            
+            document.getElementById('step1').classList.add('hidden');
+            document.getElementById('step2').classList.add('hidden');
+            document.getElementById('completion').classList.remove('hidden');
+        }
+
+        function goToProfile() {
+            alert('プロフィール設定画面に移動します');
+        }
+
+        function goToGenre() {
+            alert('ジャンル選択画面に移動します');
+        }
+
+        function goToSNS() {
+            alert('SNS連携画面に移動します');
+        }
+
+        function goToDashboard() {
+            alert('管理画面に移動します');
+        }
+
+        // フォーム入力時のリアルタイムバリデーション
+        document.addEventListener('DOMContentLoaded', function() {
+            const inputs = document.querySelectorAll('.ios-input');
+            inputs.forEach(input => {
+                input.addEventListener('input', function() {
+                    if (this.value.trim()) {
+                        this.style.borderColor = '#34C759';
+                    } else {
+                        this.style.borderColor = '#E9E9EB';
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html> 
