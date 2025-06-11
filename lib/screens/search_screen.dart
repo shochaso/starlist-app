@@ -553,13 +553,15 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
         const SizedBox(height: 16),
         SizedBox(
           height: 140,
-          child: ListView.builder(
+          child: ListView.separated(
             scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.only(left: 16, right: 16),
             itemCount: stars.length,
+            separatorBuilder: (context, index) => const SizedBox(width: 16),
             itemBuilder: (context, index) {
-              return Container(
+              return SizedBox(
                 width: 128,
-                margin: const EdgeInsets.only(right: 16),
                 child: stars[index],
               );
             },

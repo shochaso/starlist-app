@@ -517,7 +517,7 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
         IconButton(
           icon: Icon(Icons.settings_outlined, color: isDark ? Colors.white54 : Colors.black54),
           onPressed: () {},
-        ),
+          ),
       ],
     );
   }
@@ -758,15 +758,16 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
         const SizedBox(height: 16),
         SizedBox(
           height: 120,
-          child: PageView.builder(
-            controller: PageController(viewportFraction: 0.92),
-            padEnds: true,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.only(left: 16, right: 16),
             itemCount: youtubeHistory.length,
+            separatorBuilder: (context, index) => const SizedBox(width: 16),
             itemBuilder: (context, index) {
               final video = youtubeHistory[index];
     return Container(
-                width: MediaQuery.of(context).size.width * 0.88,
-                margin: const EdgeInsets.only(right: 8),
+                width: MediaQuery.of(context).size.width * 0.85,
                 padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
                   color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
@@ -786,14 +787,15 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
                       width: 60,
                       height: 45,
                 decoration: BoxDecoration(
+                        color: const Color(0xFFFF0000).withOpacity(0.2),
                         borderRadius: BorderRadius.circular(8),
-                      ),
+                ),
                       child: ServiceIcons.buildIcon(
                         serviceId: 'youtube',
                         size: 24,
                         isDark: false,
-                      ),
-                    ),
+                ),
+              ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Column(
@@ -817,6 +819,8 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
                               fontSize: 12,
                               color: isDark ? Colors.white70 : Colors.black54,
                             ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                           const SizedBox(height: 2),
                           Row(
@@ -845,8 +849,8 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
                 ),
               );
             },
+            ),
           ),
-        ),
       ],
     );
   }
@@ -908,7 +912,7 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
                           fontSize: 10,
                           color: Color(0xFF10B981),
                           fontWeight: FontWeight.w600,
-                    ),
+                            ),
                   ),
                           ),
                         ],
@@ -920,7 +924,7 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
                     fontSize: 12,
                     color: Colors.black54,
             ),
-          ),
+                ),
               ],
             ),
           ),
@@ -930,7 +934,7 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
             decoration: BoxDecoration(
               color: const Color(0xFF667EEA),
               borderRadius: BorderRadius.circular(8),
-            ),
+                    ),
             child: const Text(
               '見る',
               style: TextStyle(
@@ -938,7 +942,7 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
               ),
-            ),
+                    ),
           ),
         ],
       ),
@@ -953,7 +957,7 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [Color(0xFFFEF3C7), Color(0xFFFDE68A)],
-        ),
+                    ),
               borderRadius: BorderRadius.circular(16),
         border: Border.all(color: const Color(0xFFFDE68A)),
             ),
@@ -965,14 +969,14 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
                 colors: [Color(0xFFFFE66D), Color(0xFFFF6B35)],
-                    ),
+                ),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: const Icon(
               Icons.star,
                     color: Colors.white,
                     size: 24,
-                  ),
+                ),
                 ),
                 const SizedBox(width: 16),
           Expanded(
@@ -1105,8 +1109,8 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
                       color: (isDark ? Colors.black : Colors.black).withOpacity(0.05),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
-                    ),
-                  ],
+          ),
+        ],
       ),
       child: Row(
         children: [
@@ -1116,13 +1120,13 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
             decoration: BoxDecoration(
                         color: (notification['iconColor'] as Color).withOpacity(0.2),
                         borderRadius: BorderRadius.circular(8),
-                      ),
+            ),
                       child: Icon(
                         notification['icon'] as IconData,
                         color: notification['iconColor'] as Color,
                         size: 16,
-                      ),
-                    ),
+            ),
+          ),
                     const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -1146,10 +1150,10 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
                             style: TextStyle(
                               fontSize: 12,
                               color: isDark ? Colors.white70 : Colors.grey[600],
-                            ),
+                  ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                          ),
+                ),
                           const SizedBox(height: 2),
                 Text(
                             notification['time'] as String,
@@ -1169,7 +1173,7 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
                           color: Color(0xFF4ECDC4),
                           shape: BoxShape.circle,
                         ),
-                      ),
+            ),
                   ],
                 ),
               );
@@ -1188,15 +1192,16 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
         const SizedBox(height: 16),
         SizedBox(
           height: 100,
-          child: ListView.builder(
+          child: ListView.separated(
             scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.only(left: 16, right: 16),
             itemCount: trendingTopics.length,
+            separatorBuilder: (context, index) => const SizedBox(width: 16),
             itemBuilder: (context, index) {
               final topic = trendingTopics[index];
     return Container(
                 width: 160,
-                margin: const EdgeInsets.only(right: 12),
                 padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
                   gradient: LinearGradient(
@@ -1208,6 +1213,13 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
                     ],
         ),
         borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: topic['color'].withOpacity(0.3),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1220,22 +1232,25 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
                         fontWeight: FontWeight.w600,
                     color: Colors.white,
                       ),
-                    ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+              ),
                     const SizedBox(height: 4),
                     Text(
                       '${topic['posts']} 投稿',
                       style: const TextStyle(
                   fontSize: 12,
                         color: Colors.white,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
             ],
           ),
               );
             },
+            ),
           ),
-        ),
-      ],
+        ],
     );
   }
 
@@ -1244,20 +1259,21 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildSectionTitle('プレイリスト'),
-          const SizedBox(height: 16),
+        const SizedBox(height: 16),
         SizedBox(
           height: 120,
-          child: ListView.builder(
+          child: ListView.separated(
             scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.only(left: 16, right: 16),
             itemCount: featuredPlaylists.length,
+            separatorBuilder: (context, index) => const SizedBox(width: 16),
             itemBuilder: (context, index) {
               final playlist = featuredPlaylists[index];
-              return Container(
+    return Container(
                 width: 180,
-                margin: const EdgeInsets.only(right: 12),
                 padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
+      decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
@@ -1266,82 +1282,100 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
                       playlist['thumbnail'].withOpacity(0.7),
                     ],
                   ),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      playlist['title'],
-                      style: const TextStyle(
-                        fontSize: 16,
-                fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      playlist['description'],
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: Colors.white,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+                      color: playlist['thumbnail'].withOpacity(0.3),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+                      playlist['title'],
+            style: const TextStyle(
+                        fontSize: 16,
+              fontWeight: FontWeight.w600,
+                        color: Colors.white,
+            ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+          ),
+                    const SizedBox(height: 4),
+          Text(
+                      playlist['description'],
+            style: const TextStyle(
+                        fontSize: 12,
+                        color: Colors.white,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+              ),
+                  ],
+                ),
               );
             },
           ),
-        ),
-      ],
+          ),
+        ],
     );
   }
 
   Widget _buildRecommendedStarsSection() {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
         _buildSectionTitle('おすすめスター'),
         const SizedBox(height: 16),
         SizedBox(
           height: 220,
-          child: PageView.builder(
-            controller: PageController(viewportFraction: 0.9),
-            padEnds: false,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.only(left: 16, right: 16),
             itemCount: recommendedStars.length,
+            separatorBuilder: (context, index) => const SizedBox(width: 16),
             itemBuilder: (context, index) {
               final star = recommendedStars[index];
-              return _buildStarCard(star, 350);
+              return SizedBox(
+                width: MediaQuery.of(context).size.width * 0.85,
+                child: _buildStarCard(star, 180),
+              );
             },
-          ),
-        ),
-      ],
+                ),
+              ),
+            ],
     );
   }
 
   Widget _buildNewStarsSection() {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
         _buildSectionTitle('新しく参加したスター'),
-            const SizedBox(height: 16),
+        const SizedBox(height: 16),
         SizedBox(
           height: 220,
-          child: PageView.builder(
-            controller: PageController(viewportFraction: 0.9),
-            padEnds: false,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.only(left: 16, right: 16),
             itemCount: newStars.length,
+            separatorBuilder: (context, index) => const SizedBox(width: 16),
             itemBuilder: (context, index) {
               final star = newStars[index];
-              return _buildStarCard(star, 350);
+              return SizedBox(
+                width: MediaQuery.of(context).size.width * 0.85,
+                child: _buildStarCard(star, 180),
+              );
             },
-          ),
-        ),
+                ),
+              ),
       ],
     );
   }
@@ -1396,12 +1430,12 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
         children: [
               Text(
                   star.name,
-                style: TextStyle(
+            style: TextStyle(
                     fontSize: 16,
-                  fontWeight: FontWeight.w600,
+              fontWeight: FontWeight.w600,
                     color: isDark ? Colors.white : Colors.black87,
-                  ),
-                ),
+            ),
+          ),
                 const SizedBox(height: 4),
                 Text(
                   star.category,
@@ -1433,15 +1467,15 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
                     ),
               elevation: 0,
               minimumSize: const Size(60, 32),
-            ),
+                  ),
             child: Text(
               star.isFollowing ? 'フォロー中' : 'フォロー',
               style: const TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
-                  ),
                 ),
               ),
+          ),
         ],
       ),
     );
