@@ -4,6 +4,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../src/core/components/service_icons.dart';
 import '../../../providers/theme_provider.dart';
+import 'youtube_import_screen.dart';
 
 class DataImportScreen extends ConsumerStatefulWidget {
   const DataImportScreen({super.key});
@@ -441,59 +442,59 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
       child: Container(
         decoration: BoxDecoration(
           color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(color: isDark ? const Color(0xFF333333) : const Color(0xFFE5E7EB)),
           boxShadow: [
             BoxShadow(
-              color: (isDark ? Colors.black : Colors.black).withOpacity(0.08),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
+              color: (isDark ? Colors.black : Colors.black).withOpacity(0.06),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
             ),
           ],
         ),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(12),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                width: 56,
-                height: 56,
+                width: 48,
+                height: 48,
                 decoration: BoxDecoration(
                   gradient: ServiceIcons.getServiceGradient(service['id']!),
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(12),
                   boxShadow: [
                     BoxShadow(
-                      color: ServiceIcons.getService(service['id']!)?.color.withOpacity(0.3) ?? const Color(0xFF4ECDC4).withOpacity(0.3),
-                      blurRadius: 8,
-                      offset: const Offset(0, 4),
+                      color: ServiceIcons.getService(service['id']!)?.color.withOpacity(0.2) ?? const Color(0xFF4ECDC4).withOpacity(0.2),
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
                     ),
                   ],
                 ),
                 child: ServiceIcons.buildIcon(
                   serviceId: service['id']!,
-                  size: 28,
+                  size: 24,
                   isDark: false,
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
               Text(
                 service['name'],
                 style: TextStyle(
                   color: isDark ? Colors.white : Colors.black87,
-                  fontSize: 14,
+                  fontSize: 12,
                   fontWeight: FontWeight.bold,
                 ),
                 textAlign: TextAlign.center,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 2),
               Text(
                 service['description'],
                 style: TextStyle(
                   color: isDark ? Colors.grey[400] : Colors.black54,
-                  fontSize: 11,
+                  fontSize: 10,
                 ),
                 textAlign: TextAlign.center,
                 maxLines: 2,
@@ -675,10 +676,20 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
   }
 
   void _selectServiceForOCR(String serviceId) {
-    setState(() {
-      selectedCategory = serviceId;
-      showProcessingResults = false;
-    });
+    if (serviceId == 'youtube') {
+      // YouTube専用画面に遷移
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const YouTubeImportScreen(),
+        ),
+      );
+    } else {
+      setState(() {
+        selectedCategory = serviceId;
+        showProcessingResults = false;
+      });
+    }
   }
 
   void _showAllServices() {
@@ -714,7 +725,7 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
                     crossAxisCount: 2,
                     crossAxisSpacing: 16,
                     mainAxisSpacing: 16,
-                    childAspectRatio: 1.2,
+                    childAspectRatio: 1.0,
                   ),
                   itemCount: dataCategories.length,
                   itemBuilder: (context, index) {

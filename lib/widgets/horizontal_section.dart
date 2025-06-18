@@ -74,8 +74,9 @@ class HorizontalSection extends StatelessWidget {
         SizedBox(
           height: itemHeight,
           child: ListView.builder(
-            padding: EdgeInsets.symmetric(horizontal: 16),
             scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            padding: EdgeInsets.symmetric(horizontal: 16),
             itemCount: children.length,
             itemBuilder: (context, index) {
               return Container(
