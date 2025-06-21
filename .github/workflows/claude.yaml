@@ -30,14 +30,13 @@ jobs:
       - name: Run Claude Code Action
         env:
           ANTHROPIC_API_KEY: ${{ secrets.CLAUDE_API_KEY }} # ここでシークレットを参照
+        - name: Run Claude Code Action
         run: |
-          # issueの本文を読み込み、Claudeに指示を出すコマンドを実行
-          # 例: claude code-actions --issue-body "${{ github.event.issue.body }}" --issue-number "${{ github.event.issue.number }}"
-          # 詳細なコマンドはGRLL氏のリポジトリのドキュメントを参照して、リポジトリの目的と合わせて調整してください
-          echo "Claude Code Action is running..."
-          # ここに具体的なClaude Code Actionのコマンドを記述します。
-          # 例えば、Pull Requestのコードを分析してコメントする場合など。
-          # GRLL氏のフォークされたリポジトリのREADMEやquickstart guideを参照し、
-          # 実際の使用例に合わせてコマンドを記述してください。
-          # 一般的には以下のような形式になる可能性があります（あくまで例です）:
-          # claude code-actions review-pr --issue-number ${{ github.event.issue.number }} --repo ${{ github.repository }} --token ${{ secrets.GITHUB_TOKEN }}
+          echo "Starting Claude Code Action..."
+          # claude-code-actions CLI を実行してIssueの内容を処理します。
+          # 実際のコマンドはツールの仕様に合わせてください。
+          claude code-actions --issue-number ${{ github.event.issue.number }}
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          # アクションがIssueを読み取るためにGITHUB_TOKENが必要な場合が多いです
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}} --repo ${{ github.repository }} --token ${{ secrets.GITHUB_TOKEN }}
