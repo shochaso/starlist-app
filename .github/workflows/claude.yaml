@@ -1,4 +1,4 @@
-# claude.yaml (これは例です。具体的なワークフローはGRLL氏のリポジトリのものを参照してください)
+# claude.yaml
 name: Claude Code Actions
 
 on:
@@ -14,29 +14,31 @@ jobs:
       issues: write
       pull-requests: write
       contents: write
-      repository-projects: write
+      repository-projects: write # Project (Beta)へのアクセスに必要
+      
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4 # v3からv4に更新
 
       - name: Set up Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4 # v3からv4に更新
         with:
-          node-version: '18'
+          node-version: '20' # '18'からLTS版の'20'に更新
 
       - name: Install Claude Code Actions CLI
+        # (注) このパッケージ名は、お使いのツールのドキュメントで正しいか再度確認してください
         run: npm install -g @anthropic-ai/claude-code
 
       - name: Run Claude Code Action
+        # envブロックはrunと同じ階層に1つだけ書きます
         env:
-          ANTHROPIC_API_KEY: ${{ secrets.CLAUDE_API_KEY }} # ここでシークレットを参照
-        - name: Run Claude Code Action
-        run: |
-          echo "Starting Claude Code Action..."
-          # claude-code-actions CLI を実行してIssueの内容を処理します。
-          # 実際のコマンドはツールの仕様に合わせてください。
-          claude code-actions --issue-number ${{ github.event.issue.number }}
-        env:
+          # (注) secrets.ANTHROPIC_API_KEYという名前に統一します。
+          # GitHubのSettings > Secretsでこの名前でAPIキーを登録してください。
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          # アクションがIssueを読み取るためにGITHUB_TOKENが必要な場合が多いです
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}} --repo ${{ github.repository }} --token ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "Starting Claude Code Action on issue #${{ github.event.issue.number }}..."
+          
+          # 壊れていたコマンドを修正。引数（--issue-numberなど）は、このように1行のコマンドに続けます。
+          # GITHUB_TOKENはenvで渡しているため、--token引数は不要な場合が多いです。
+          claude code-actions --issue-number ${{ github.event.issue.number }} --repo ${{ github.repository }}
