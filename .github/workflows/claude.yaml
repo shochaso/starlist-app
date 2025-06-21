@@ -14,7 +14,7 @@ jobs:
       pull-requests: write
       contents: write
       repository-projects: write
-      
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -27,10 +27,10 @@ jobs:
       - name: Install Claude Code Actions CLI
         run: npm install -g @anthropic-ai/claude-code
 
-      - name: Run Claude Code Action
+      - name: Run Claude Code Action (DEBUG - Check Help)
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "Starting Claude Code Action on issue #${{ github.event.issue.number }}..."
-          claude code-actions --issue-number ${{ github.event.issue.number }} --repo ${{ github.repository }}
+          echo "Checking available options for the CLI tool..."
+          claude code-actions --help
