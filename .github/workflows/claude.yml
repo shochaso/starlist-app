@@ -6,28 +6,173 @@ on:
   pull_request_review_comment:
     types: [created]
   issues:
-    types: [opened, assigned]
-  pull_request_review:
-    types: [submitted]
+    types: [opened]
 
 jobs:
   claude-response:
     runs-on: ubuntu-latest
+    if: contains(github.event.comment.body, '@claude') || github.event_name == 'issues'
     permissions:
-      contents: write
+      contents: read
       pull-requests: write
       issues: write
-      statuses: write
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Run Claude Code Action
-        uses: anthropics/claude-code-action@beta
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          anthropic_api_key: ${{ secrets.CLAUDE_API_KEY }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          # model: "claude-3-5-sonnet-20241022" # 必要に応じてモデルを指定
-          # trigger_phrase: "@claude" # デフォルトは @claude
-          # max_turns: "5" # 会話のターン数を制限 
+          node-version: '18'
+
+      - name: Claude Code Assistant
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const https = require('https');
+            
+            // Claude APIにリクエストを送信する関数
+            async function callClaude(prompt) {
+              const data = JSON.stringify({
+                model: "claude-3-5-sonnet-20241022",
+                max_tokens: 4000,
+                messages: [{
+                  role: "user",
+                  content: prompt
+                }]
+              });
+              
+              const options = {
+                hostname: 'api.anthropic.com',
+                port: 443,
+                path: '/v1/messages',
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'x-api-key': '${{ secrets.CLAUDE_API_KEY }}',
+                  'anthropic-version': '2023-06-01',
+                  'Content-Length': data.length
+                }
+              };
+              
+              return new Promise((resolve, reject) => {
+                const req = https.request(options, (res) => {
+                  let responseData = '';
+                  res.on('data', (chunk) => {
+                    responseData += chunk;
+                  });
+                  res.on('end', () => {
+                    try {
+                      const parsed = JSON.parse(responseData);
+                      resolve(parsed);
+                    } catch (e) {
+                      reject(e);
+                    }
+                  });
+                });
+                
+                req.on('error', (e) => {
+                  reject(e);
+                });
+                
+                req.write(data);
+                req.end();
+              });
+            }
+            
+            // コンテキスト情報を取得
+            let contextInfo = '';
+            let prompt = '';
+            
+            if (context.eventName === 'issue_comment') {
+              const comment = context.payload.comment.body;
+              const issue = context.payload.issue;
+              
+              contextInfo = `
+              Issue: ${issue.title}
+              Issue Body: ${issue.body}
+              Comment: ${comment}
+              Repository: ${context.repo.owner}/${context.repo.repo}
+              `;
+              
+              prompt = `あなたはStarlistアプリ（Flutter/Dart）の開発アシスタントです。以下のGitHub IssueとコメントについてFlutter/Dartの専門知識を活用して回答してください：
+
+              ${contextInfo}
+              
+              回答は日本語で、具体的なコード例やFlutterベストプラクティスを含めてください。`;
+              
+            } else if (context.eventName === 'issues') {
+              const issue = context.payload.issue;
+              
+              contextInfo = `
+              New Issue: ${issue.title}
+              Issue Body: ${issue.body}
+              Repository: ${context.repo.owner}/${context.repo.repo}
+              `;
+              
+              prompt = `あなたはStarlistアプリ（Flutter/Dart）の開発アシスタントです。新しいIssueが作成されました。Flutter/Dartの専門知識を活用して分析と提案をしてください：
+
+              ${contextInfo}
+              
+              以下の観点から分析してください：
+              1. 技術的な実装方法
+              2. 必要な依存関係
+              3. 考慮すべきベストプラクティス
+              4. 潜在的な課題と解決策
+              
+              回答は日本語で、具体的なコード例を含めてください。`;
+            }
+            
+            try {
+              console.log('Calling Claude API...');
+              const response = await callClaude(prompt);
+              
+              if (response.content && response.content[0] && response.content[0].text) {
+                const claudeResponse = response.content[0].text;
+                
+                // GitHub IssueまたはPRにコメントを投稿
+                if (context.eventName === 'issue_comment') {
+                  await github.rest.issues.createComment({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: context.payload.issue.number,
+                    body: `🤖 **Claude Assistant**\n\n${claudeResponse}`
+                  });
+                } else if (context.eventName === 'issues') {
+                  await github.rest.issues.createComment({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: context.payload.issue.number,
+                    body: `🤖 **Claude Assistant - Issue Analysis**\n\n${claudeResponse}`
+                  });
+                }
+                
+                console.log('Claude response posted successfully');
+              } else {
+                console.error('Invalid response from Claude API:', response);
+              }
+              
+            } catch (error) {
+              console.error('Error calling Claude API:', error);
+              
+              // エラーの場合もコメントを投稿
+              const errorMessage = `🚨 **Claude Assistant Error**\n\nSorry, I encountered an error while processing your request. Please try again later.`;
+              
+              if (context.eventName === 'issue_comment') {
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: context.payload.issue.number,
+                  body: errorMessage
+                });
+              } else if (context.eventName === 'issues') {
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: context.payload.issue.number,
+                  body: errorMessage
+                });
+              }
+            } 
