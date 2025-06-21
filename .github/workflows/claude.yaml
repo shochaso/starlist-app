@@ -24,13 +24,13 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install Claude Code Actions CLI
-        run: npm install -g @anthropic-ai/claude-code
+      - name: Install Correct Claude Code Actions CLI
+        run: npm install -g <ここに正しいパッケージ名を書く>
 
-      - name: Run Claude Code Action (DEBUG - Check Help)
+      - name: Run Correct Claude Code Action
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "Checking available options for the CLI tool..."
-          claude code-actions --help
+          echo "Starting the correct Claude Action..."
+          <ここに正しいコマンドを書く> --issue-number ${{ github.event.issue.number }} --repo ${{ github.repository }}
