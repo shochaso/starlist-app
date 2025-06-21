@@ -1,0 +1,1688 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
+import 'dart:typed_data';
+import '../../../src/core/components/service_icons.dart';
+import '../../../providers/theme_provider.dart';
+
+class YouTubeImportScreen extends ConsumerStatefulWidget {
+  const YouTubeImportScreen({super.key});
+
+  @override
+  ConsumerState<YouTubeImportScreen> createState() => _YouTubeImportScreenState();
+}
+
+class _YouTubeImportScreenState extends ConsumerState<YouTubeImportScreen>
+    with TickerProviderStateMixin {
+  String selectedImportType = 'history'; // history, channel, playlist, search
+  final TextEditingController _textController = TextEditingController();
+  final TextEditingController _urlController = TextEditingController();
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
+  bool isProcessing = false;
+  List<Map<String, dynamic>> processedVideos = [];
+  List<Map<String, dynamic>> extractedVideos = [];
+  File? selectedImage;
+  final ImagePicker _imagePicker = ImagePicker();
+  bool showConfirmation = false;
+
+  // YouTube取り込みタイプ
+  final List<Map<String, dynamic>> importTypes = [
+    {
+      'id': 'history',
+      'title': '視聴履歴',
+      'subtitle': 'YouTube視聴履歴の取り込み',
+      'icon': Icons.history,
+      'color': const Color(0xFFFF0000),
+      'description': 'YouTubeの視聴履歴を手動入力またはOCRで取り込みます',
+    },
+    {
+      'id': 'channel',
+      'title': 'チャンネル',
+      'subtitle': 'お気に入りチャンネルの登録',
+      'icon': Icons.person,
+      'color': const Color(0xFFFF4444),
+      'description': 'YouTubeチャンネルのURLや名前を入力して登録します',
+    },
+    {
+      'id': 'playlist',
+      'title': 'プレイリスト',
+      'subtitle': 'プレイリストの取り込み',
+      'icon': Icons.playlist_play,
+      'color': const Color(0xFFFF6666),
+      'description': 'YouTubeプレイリストのURLを入力して取り込みます',
+    },
+    {
+      'id': 'search',
+      'title': '検索履歴',
+      'subtitle': 'YouTube検索履歴の記録',
+      'icon': Icons.search,
+      'color': const Color(0xFFFF8888),
+      'description': 'YouTube検索履歴を手動で記録します',
+    },
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+    _fadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeInOut,
+    ));
+    _animationController.forward();
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    _textController.dispose();
+    _urlController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final themeMode = ref.watch(themeProvider);
+    final isDark = themeMode == AppThemeMode.dark;
+
+    return Scaffold(
+      backgroundColor: isDark ? const Color(0xFF1A1A1A) : const Color(0xFFF8FAFC),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: Icon(
+            Icons.arrow_back,
+            color: isDark ? Colors.white : Colors.black87,
+          ),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Row(
+          children: [
+            Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: const Color(0xFFFF0000),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: ServiceIcons.buildIcon(
+                serviceId: 'youtube',
+                size: 20,
+                isDark: false,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Text(
+              'YouTube データ取り込み',
+              style: TextStyle(
+                color: isDark ? Colors.white : Colors.black87,
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
+      body: FadeTransition(
+        opacity: _fadeAnimation,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // 取り込みタイプ選択
+              _buildImportTypeSelection(),
+              const SizedBox(height: 24),
+              
+              // 選択されたタイプの入力フォーム
+              _buildInputForm(),
+              
+              // 抽出結果の確認画面
+              if (showConfirmation && extractedVideos.isNotEmpty) ...[
+                const SizedBox(height: 24),
+                _buildConfirmationScreen(),
+              ],
+              
+              // 処理結果
+              if (processedVideos.isNotEmpty) ...[
+                const SizedBox(height: 24),
+                _buildProcessingResults(),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildImportTypeSelection() {
+    final themeMode = ref.watch(themeProvider);
+    final isDark = themeMode == AppThemeMode.dark;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          '取り込みタイプを選択',
+          style: TextStyle(
+            color: isDark ? Colors.white : Colors.black87,
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 16),
+        GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            crossAxisSpacing: 12,
+            mainAxisSpacing: 12,
+            childAspectRatio: 1.1,
+          ),
+          itemCount: importTypes.length,
+          itemBuilder: (context, index) {
+            final type = importTypes[index];
+            final isSelected = selectedImportType == type['id'];
+            
+            return GestureDetector(
+              onTap: () {
+                setState(() {
+                  selectedImportType = type['id'];
+                });
+              },
+              child: Container(
+                decoration: BoxDecoration(
+                  color: isSelected 
+                      ? (type['color'] as Color).withOpacity(0.1)
+                      : (isDark ? const Color(0xFF2A2A2A) : Colors.white),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: isSelected 
+                        ? (type['color'] as Color)
+                        : (isDark ? const Color(0xFF333333) : const Color(0xFFE5E7EB)),
+                    width: isSelected ? 2 : 1,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: (isDark ? Colors.black : Colors.black).withOpacity(0.06),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        width: 48,
+                        height: 48,
+                        decoration: BoxDecoration(
+                          color: (type['color'] as Color).withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Icon(
+                          type['icon'] as IconData,
+                          color: type['color'] as Color,
+                          size: 24,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        type['title'],
+                        style: TextStyle(
+                          color: isDark ? Colors.white : Colors.black87,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        type['subtitle'],
+                        style: TextStyle(
+                          color: isDark ? Colors.grey[400] : Colors.black54,
+                          fontSize: 11,
+                        ),
+                        textAlign: TextAlign.center,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildInputForm() {
+    final themeMode = ref.watch(themeProvider);
+    final isDark = themeMode == AppThemeMode.dark;
+    final selectedType = importTypes.firstWhere((type) => type['id'] == selectedImportType);
+
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: isDark ? const Color(0xFF333333) : const Color(0xFFE5E7EB),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: (isDark ? Colors.black : Colors.black).withOpacity(0.08),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // ヘッダー
+            Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: (selectedType['color'] as Color).withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(
+                    selectedType['icon'] as IconData,
+                    color: selectedType['color'] as Color,
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        selectedType['title'],
+                        style: TextStyle(
+                          color: isDark ? Colors.white : Colors.black87,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      Text(
+                        selectedType['description'],
+                        style: TextStyle(
+                          color: isDark ? Colors.grey[400] : Colors.black54,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
+
+            // URL入力（チャンネルの場合のみ）
+            if (selectedImportType == 'channel') ...[
+              Text(
+                'URL',
+                style: TextStyle(
+                  color: isDark ? Colors.white : Colors.black87,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Container(
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF1A1A1A) : const Color(0xFFF8FAFC),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: isDark ? const Color(0xFF444444) : const Color(0xFFE5E7EB),
+                  ),
+                ),
+                child: TextField(
+                  controller: _urlController,
+                  style: TextStyle(
+                    color: isDark ? Colors.white : Colors.black87,
+                    fontSize: 16,
+                  ),
+                  decoration: InputDecoration(
+                    hintText: selectedImportType == 'channel' 
+                        ? 'https://www.youtube.com/channel/...'
+                        : 'https://www.youtube.com/playlist?list=...',
+                    hintStyle: TextStyle(
+                      color: isDark ? Colors.grey[500] : Colors.black38,
+                    ),
+                    border: InputBorder.none,
+                    contentPadding: const EdgeInsets.all(16),
+                    prefixIcon: Icon(
+                      Icons.link,
+                      color: isDark ? Colors.grey[500] : Colors.black38,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+            ],
+
+            // テキスト入力エリア
+            Text(
+              _getInputLabel(),
+              style: TextStyle(
+                color: isDark ? Colors.white : Colors.black87,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Container(
+              height: 240,
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF1A1A1A) : const Color(0xFFF8FAFC),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: isDark ? const Color(0xFF444444) : const Color(0xFFE5E7EB),
+                ),
+              ),
+              child: TextField(
+                controller: _textController,
+                maxLines: null,
+                expands: true,
+                style: TextStyle(
+                  color: isDark ? Colors.white : Colors.black87,
+                  fontSize: 14,
+                  height: 1.4,
+                ),
+                decoration: InputDecoration(
+                  hintText: _getPlaceholderText(),
+                  hintStyle: TextStyle(
+                    color: isDark ? Colors.grey[500] : Colors.black38,
+                    fontSize: 12,
+                    height: 1.3,
+                  ),
+                  border: InputBorder.none,
+                  contentPadding: const EdgeInsets.all(16),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            // 画像選択（視聴履歴のみ）
+            if (selectedImportType == 'history') ...[
+              const SizedBox(height: 20),
+              Text(
+                'またはスクリーンショットから読み込み',
+                style: TextStyle(
+                  color: isDark ? Colors.white : Colors.black87,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 8),
+              if (selectedImage != null) ...[
+                Container(
+                  height: 200,
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: isDark ? const Color(0xFF444444) : const Color(0xFFE5E7EB),
+                    ),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Image.file(
+                      selectedImage!,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+              ],
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: _pickImage,
+                      icon: const Icon(Icons.image, size: 18),
+                      label: Text(selectedImage == null ? '画像を選択' : '画像を変更'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: isDark ? const Color(0xFF444444) : const Color(0xFFF1F5F9),
+                        foregroundColor: isDark ? Colors.white : Colors.black87,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 0,
+                      ),
+                    ),
+                  ),
+                  if (selectedImage != null) ...[
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: isProcessing ? null : _processImageOCR,
+                        icon: isProcessing 
+                            ? const SizedBox(
+                                width: 18,
+                                height: 18,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                ),
+                              )
+                            : const Icon(Icons.text_fields, size: 18),
+                        label: Text(isProcessing ? '解析中...' : '画像を解析'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF8B5CF6),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          elevation: 0,
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+              const SizedBox(height: 20),
+            ],
+
+            // アクションボタン
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () async {
+                      final clipboardData = await Clipboard.getData('text/plain');
+                      if (clipboardData?.text != null) {
+                        _textController.text = clipboardData!.text!;
+                      }
+                    },
+                    icon: const Icon(Icons.content_paste, size: 18),
+                    label: const Text('ペースト'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: isDark ? const Color(0xFF444444) : const Color(0xFFF1F5F9),
+                      foregroundColor: isDark ? Colors.white : Colors.black87,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      elevation: 0,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  flex: 2,
+                  child: ElevatedButton.icon(
+                    onPressed: isProcessing ? null : _processYouTubeData,
+                    icon: isProcessing 
+                        ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            ),
+                          )
+                        : const Icon(Icons.upload, size: 18),
+                    label: Text(isProcessing ? '処理中...' : 'データを取り込む'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFFF0000),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      elevation: 0,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProcessingResults() {
+    final themeMode = ref.watch(themeProvider);
+    final isDark = themeMode == AppThemeMode.dark;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: isDark ? const Color(0xFF333333) : const Color(0xFFE5E7EB),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: (isDark ? Colors.black : Colors.black).withOpacity(0.08),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF10B981).withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(
+                    Icons.check_circle,
+                    color: Color(0xFF10B981),
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '取り込み完了',
+                        style: TextStyle(
+                          color: isDark ? Colors.white : Colors.black87,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      Text(
+                        '${processedVideos.length}件のデータが正常に取り込まれました',
+                        style: TextStyle(
+                          color: isDark ? Colors.grey[400] : Colors.black54,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            
+            // 取り込まれたデータのプレビュー
+            ...processedVideos.take(3).map((video) => Container(
+              margin: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF1A1A1A) : const Color(0xFFF8FAFC),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: isDark ? const Color(0xFF444444) : const Color(0xFFE5E7EB),
+                ),
+              ),
+              child: Row(
+                children: [
+                  // サムネイル
+                  Container(
+                    width: 80,
+                    height: 60,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: isDark ? const Color(0xFF333333) : const Color(0xFFE5E7EB),
+                      ),
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Stack(
+                        children: [
+                          // サムネイル画像（実際の実装ではNetwork.imageを使用）
+                          Container(
+                            width: double.infinity,
+                            height: double.infinity,
+                            color: const Color(0xFFFF0000).withOpacity(0.1),
+                            child: const Icon(
+                              Icons.play_arrow,
+                              color: Color(0xFFFF0000),
+                              size: 24,
+                            ),
+                          ),
+                          // 再生時間表示
+                          if (video['duration'] != null)
+                            Positioned(
+                              bottom: 4,
+                              right: 4,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withOpacity(0.8),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Text(
+                                  video['duration'],
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // タイトル（クリック可能）
+                        GestureDetector(
+                          onTap: () {
+                            // 動画URLを開く（実際の実装では url_launcher を使用）
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('動画を開く: ${video['title']}'),
+                                backgroundColor: const Color(0xFF10B981),
+                              ),
+                            );
+                          },
+                          child: Text(
+                            video['title'] ?? 'タイトル不明',
+                            style: TextStyle(
+                              color: isDark ? Colors.white : Colors.black87,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              decoration: TextDecoration.underline,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          video['channel'] ?? 'チャンネル不明',
+                          style: TextStyle(
+                            color: isDark ? Colors.grey[400] : Colors.black54,
+                            fontSize: 12,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        if (video['watchDate'] != null) ...[
+                          const SizedBox(height: 2),
+                          Text(
+                            '視聴日: ${video['watchDate']}',
+                            style: TextStyle(
+                              color: isDark ? Colors.grey[500] : Colors.black38,
+                              fontSize: 10,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                  // 詳細ボタン
+                  IconButton(
+                    onPressed: () {
+                      _showVideoDetails(video);
+                    },
+                    icon: Icon(
+                      Icons.info_outline,
+                      color: isDark ? Colors.grey[400] : Colors.black54,
+                      size: 20,
+                    ),
+                  ),
+                ],
+              ),
+            )).toList(),
+            
+            if (processedVideos.length > 3) ...[
+              const SizedBox(height: 12),
+              Text(
+                '他 ${processedVideos.length - 3}件のデータ',
+                style: TextStyle(
+                  color: isDark ? Colors.grey[400] : Colors.black54,
+                  fontSize: 12,
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _getInputLabel() {
+    switch (selectedImportType) {
+      case 'history':
+        return '視聴履歴データ';
+      case 'channel':
+        return 'チャンネル情報';
+      case 'playlist':
+        return 'プレイリスト情報';
+      case 'search':
+        return '検索履歴';
+      default:
+        return 'データ';
+    }
+  }
+
+  String _getPlaceholderText() {
+    switch (selectedImportType) {
+      case 'history':
+        return '''例：
+動画タイトル: iPhone 15 Pro Max 詳細レビュー
+チャンネル: テックレビューアー田中
+視聴日: 2024/01/15
+視聴時間: 25:30
+
+動画タイトル: Flutter 3.0 新機能解説
+チャンネル: プログラミング講師伊藤
+視聴日: 2024/01/14
+視聴時間: 32:15
+
+またはYouTubeの視聴履歴画面をOCRで読み取ったテキストをペーストしてください''';
+      case 'channel':
+        return '''例：
+チャンネル名: テックレビューアー田中
+説明: 最新ガジェットのレビューチャンネル
+登録者数: 24.5万人
+カテゴリ: テクノロジー
+
+チャンネル名: 料理研究家佐藤
+説明: 簡単で美味しい料理レシピ
+登録者数: 18.3万人
+カテゴリ: 料理・グルメ''';
+      case 'playlist':
+        return '''例：
+プレイリスト名: お気に入りガジェットレビュー
+動画数: 15本
+作成者: テックレビューアー田中
+説明: 2024年のおすすめガジェット
+
+プレイリスト名: 作業用BGM
+動画数: 32本
+作成者: Music Channel
+説明: 集中力アップの音楽''';
+      case 'search':
+        return '''例：
+検索キーワード: iPhone 15 レビュー
+検索日: 2024/01/15
+
+検索キーワード: Flutter 入門
+検索日: 2024/01/14
+
+検索キーワード: 料理 レシピ 簡単
+検索日: 2024/01/13''';
+      default:
+        return 'データを入力してください';
+    }
+  }
+
+  Future<void> _processYouTubeData() async {
+    if (_textController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('データを入力してください'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      isProcessing = true;
+    });
+
+    // シミュレートされた処理
+    await Future.delayed(const Duration(seconds: 2));
+
+    // 入力されたテキストを解析
+    final videos = _parseExtractedText(_textController.text);
+    
+    if (videos.isEmpty) {
+      setState(() {
+        isProcessing = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('動画情報を抽出できませんでした。入力形式を確認してください。'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      isProcessing = false;
+      extractedVideos = videos.map((video) => {
+        ...video,
+        'isSelected': true, // デフォルトで選択状態
+        'isPublic': false,  // デフォルトで非公開
+      }).toList();
+      showConfirmation = true;
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('${videos.length}件の動画情報を抽出しました！内容を確認してください。'),
+        backgroundColor: const Color(0xFF10B981),
+        duration: const Duration(seconds: 4),
+      ),
+    );
+  }
+
+  List<Map<String, dynamic>> _generateSampleData() {
+    switch (selectedImportType) {
+      case 'history':
+        return [
+          {
+            'title': 'iPhone 15 Pro Max 詳細レビュー',
+            'channel': 'テックレビューアー田中',
+            'duration': '25:30',
+            'watchDate': '2024/01/15',
+          },
+          {
+            'title': 'Flutter 3.0 新機能解説',
+            'channel': 'プログラミング講師伊藤',
+            'duration': '32:15',
+            'watchDate': '2024/01/14',
+          },
+          {
+            'title': '簡単チキンカレーの作り方',
+            'channel': '料理研究家佐藤',
+            'duration': '12:45',
+            'watchDate': '2024/01/13',
+          },
+        ];
+      case 'channel':
+        return [
+          {
+            'title': 'テックレビューアー田中',
+            'channel': 'テクノロジー・ガジェット',
+            'subscribers': '24.5万人',
+          },
+          {
+            'title': '料理研究家佐藤',
+            'channel': '料理・グルメ',
+            'subscribers': '18.3万人',
+          },
+        ];
+      default:
+        return [
+          {
+            'title': 'サンプルデータ1',
+            'channel': 'サンプルチャンネル',
+          },
+          {
+            'title': 'サンプルデータ2',
+            'channel': 'サンプルチャンネル2',
+          },
+        ];
+    }
+  }
+
+  Future<void> _pickImage() async {
+    try {
+      final XFile? image = await _imagePicker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 1920,
+        maxHeight: 1080,
+        imageQuality: 85,
+      );
+      
+      if (image != null) {
+        setState(() {
+          selectedImage = File(image.path);
+        });
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('画像の選択に失敗しました: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  Future<void> _processImageOCR() async {
+    if (selectedImage == null) return;
+
+    setState(() {
+      isProcessing = true;
+    });
+
+    try {
+      // シミュレートされたOCR処理
+      await Future.delayed(const Duration(seconds: 3));
+
+      // 実際のYouTube履歴画面から抽出されるようなテキストをシミュレート
+      final extractedText = _textController.text.isNotEmpty 
+          ? _textController.text 
+          : '''【Flutter入門】初心者向け完全ガイド
+プログラミング講師 山田太郎
+3日前 • 45:30
+
+iPhone 15 Pro Max 実機レビュー！カメラ性能が凄すぎる
+ガジェットレビューチャンネル
+1週間前 • 25:15
+
+【料理】10分で作る簡単パスタレシピ
+クッキングママ 田中花子  
+2日前 • 12:45
+
+【音楽】作業用BGM - Lo-Fi Hip Hop Mix
+ChillMusic Official
+5日前 • 2:15:30
+
+プログラミング学習のコツ教えます
+コーディング先生 佐藤
+1日前 • 18:22''';
+
+      // テキストエリアに抽出されたテキストを設定
+      _textController.text = extractedText;
+
+      // 抽出されたデータを解析してビデオ情報を生成
+      final videos = _parseExtractedText(extractedText);
+      
+      setState(() {
+        isProcessing = false;
+        extractedVideos = videos.map((video) => {
+          ...video,
+          'isSelected': true, // デフォルトで選択状態
+          'isPublic': false,  // デフォルトで非公開
+        }).toList();
+        showConfirmation = true;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('画像から${videos.length}件の動画情報を抽出しました！内容を確認してください。'),
+          backgroundColor: const Color(0xFF10B981),
+          duration: const Duration(seconds: 4),
+        ),
+      );
+    } catch (e) {
+      setState(() {
+        isProcessing = false;
+      });
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('画像の解析に失敗しました: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  List<Map<String, dynamic>> _parseExtractedText(String text) {
+    final videos = <Map<String, dynamic>>[];
+    final lines = text.split('\n');
+    
+    String? currentTitle;
+    String? currentChannel;
+    String? currentDuration;
+    String? currentWatchDate;
+    
+    for (int i = 0; i < lines.length; i++) {
+      final line = lines[i].trim();
+      if (line.isEmpty) continue;
+      
+      // YouTube履歴の一般的なパターンを解析
+      // パターン1: 動画タイトル行
+      if (!line.contains('•') && !line.contains('前') && !line.contains('時間') && !line.contains(':')) {
+        // 前のビデオを保存
+        if (currentTitle != null && currentChannel != null) {
+          videos.add({
+            'title': currentTitle,
+            'channel': currentChannel,
+            'duration': currentDuration ?? '',
+            'watchDate': currentWatchDate ?? '',
+            'thumbnail': _generateThumbnailUrl(currentTitle),
+            'videoUrl': _generateVideoUrl(currentTitle),
+          });
+        }
+        
+        currentTitle = line;
+        currentChannel = null;
+        currentDuration = null;
+        currentWatchDate = null;
+      }
+      // パターン2: チャンネル名行
+      else if (currentTitle != null && currentChannel == null && !line.contains('•')) {
+        currentChannel = line;
+      }
+      // パターン3: 時間情報行（"3日前 • 45:30"のような形式）
+      else if (line.contains('•')) {
+        final parts = line.split('•');
+        if (parts.length >= 2) {
+          currentWatchDate = parts[0].trim();
+          currentDuration = parts[1].trim();
+        }
+      }
+      // パターン4: 旧形式のサポート（動画タイトル:, チャンネル:）
+      else if (line.startsWith('動画タイトル:')) {
+        if (currentTitle != null && currentChannel != null) {
+          videos.add({
+            'title': currentTitle,
+            'channel': currentChannel,
+            'duration': currentDuration ?? '',
+            'watchDate': currentWatchDate ?? '',
+            'thumbnail': _generateThumbnailUrl(currentTitle),
+            'videoUrl': _generateVideoUrl(currentTitle),
+          });
+        }
+        currentTitle = line.substring('動画タイトル:'.length).trim();
+        currentChannel = null;
+        currentDuration = null;
+        currentWatchDate = null;
+      } else if (line.startsWith('チャンネル:') && currentTitle != null) {
+        currentChannel = line.substring('チャンネル:'.length).trim();
+      } else if (line.startsWith('視聴日:') && currentTitle != null) {
+        currentWatchDate = line.substring('視聴日:'.length).trim();
+      } else if (line.startsWith('視聴時間:') && currentTitle != null) {
+        currentDuration = line.substring('視聴時間:'.length).trim();
+      }
+    }
+    
+    // 最後のビデオを追加
+    if (currentTitle != null && currentChannel != null) {
+      videos.add({
+        'title': currentTitle,
+        'channel': currentChannel,
+        'duration': currentDuration ?? '',
+        'watchDate': currentWatchDate ?? '',
+        'thumbnail': _generateThumbnailUrl(currentTitle),
+        'videoUrl': _generateVideoUrl(currentTitle),
+      });
+    }
+    
+    return videos;
+  }
+
+  String _generateThumbnailUrl(String title) {
+    // 実際の実装では、タイトルからYouTube検索APIを使用してサムネイルを取得
+    // ここではプレースホルダー画像を返す
+    return 'https://img.youtube.com/vi/dQw4w9WgXcQ/mqdefault.jpg';
+  }
+
+  String _generateVideoUrl(String title) {
+    // 実際の実装では、タイトルからYouTube検索APIを使用して動画URLを取得
+    // ここではサンプルURLを返す
+    return 'https://www.youtube.com/watch?v=dQw4w9WgXcQ';
+  }
+
+  void _showVideoDetails(Map<String, dynamic> video) {
+    final themeMode = ref.read(themeProvider);
+    final isDark = themeMode == AppThemeMode.dark;
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: isDark ? const Color(0xFF2A2A2A) : Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Row(
+            children: [
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFF0000),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(
+                  Icons.play_arrow,
+                  color: Colors.white,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  '動画詳細',
+                  style: TextStyle(
+                    color: isDark ? Colors.white : Colors.black87,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildDetailRow('タイトル', video['title'] ?? 'タイトル不明', isDark),
+                const SizedBox(height: 12),
+                _buildDetailRow('チャンネル', video['channel'] ?? 'チャンネル不明', isDark),
+                if (video['duration'] != null) ...[
+                  const SizedBox(height: 12),
+                  _buildDetailRow('再生時間', video['duration'], isDark),
+                ],
+                if (video['watchDate'] != null) ...[
+                  const SizedBox(height: 12),
+                  _buildDetailRow('視聴日', video['watchDate'], isDark),
+                ],
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('サムネイル画像をクリップボードにコピーしました'),
+                              backgroundColor: Color(0xFF10B981),
+                            ),
+                          );
+                        },
+                        icon: const Icon(Icons.image, size: 16),
+                        label: const Text('サムネイル'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: isDark ? const Color(0xFF444444) : const Color(0xFFF1F5F9),
+                          foregroundColor: isDark ? Colors.white : Colors.black87,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          elevation: 0,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('動画URLをクリップボードにコピーしました'),
+                              backgroundColor: Color(0xFF10B981),
+                            ),
+                          );
+                        },
+                        icon: const Icon(Icons.link, size: 16),
+                        label: const Text('動画URL'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFFF0000),
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          elevation: 0,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(
+                '閉じる',
+                style: TextStyle(
+                  color: isDark ? Colors.grey[400] : Colors.black54,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildDetailRow(String label, String value, bool isDark) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            color: isDark ? Colors.grey[400] : Colors.black54,
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF1A1A1A) : const Color(0xFFF8FAFC),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: isDark ? const Color(0xFF333333) : const Color(0xFFE5E7EB),
+            ),
+          ),
+          child: Text(
+            value,
+            style: TextStyle(
+              color: isDark ? Colors.white : Colors.black87,
+              fontSize: 14,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildConfirmationScreen() {
+    final themeMode = ref.watch(themeProvider);
+    final isDark = themeMode == AppThemeMode.dark;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: isDark ? const Color(0xFF333333) : const Color(0xFFE5E7EB),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: (isDark ? Colors.black : Colors.black).withOpacity(0.08),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // ヘッダー
+            Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF8B5CF6).withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(
+                    Icons.check_circle_outline,
+                    color: Color(0xFF8B5CF6),
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '抽出結果を確認',
+                        style: TextStyle(
+                          color: isDark ? Colors.white : Colors.black87,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      Text(
+                        '${extractedVideos.length}件の動画が見つかりました。内容を確認して取り込む動画を選択してください。',
+                        style: TextStyle(
+                          color: isDark ? Colors.grey[400] : Colors.black54,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
+
+            // 全体操作ボタン
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      setState(() {
+                        for (int i = 0; i < extractedVideos.length; i++) {
+                          extractedVideos[i]['isSelected'] = true;
+                        }
+                      });
+                    },
+                    icon: const Icon(Icons.select_all, size: 16),
+                    label: const Text('全て選択'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: isDark ? const Color(0xFF444444) : const Color(0xFFF1F5F9),
+                      foregroundColor: isDark ? Colors.white : Colors.black87,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      elevation: 0,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      setState(() {
+                        for (int i = 0; i < extractedVideos.length; i++) {
+                          extractedVideos[i]['isSelected'] = false;
+                        }
+                      });
+                    },
+                    icon: const Icon(Icons.deselect, size: 16),
+                    label: const Text('全て解除'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: isDark ? const Color(0xFF444444) : const Color(0xFFF1F5F9),
+                      foregroundColor: isDark ? Colors.white : Colors.black87,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      elevation: 0,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+
+            // 動画リスト
+            ...extractedVideos.asMap().entries.map((entry) {
+              final index = entry.key;
+              final video = entry.value;
+              final isSelected = video['isSelected'] ?? false;
+              final isPublic = video['isPublic'] ?? false;
+
+              return Container(
+                margin: const EdgeInsets.only(bottom: 12),
+                decoration: BoxDecoration(
+                  color: isSelected 
+                      ? (isDark ? const Color(0xFF1A1A1A) : const Color(0xFFF8FAFC))
+                      : (isDark ? const Color(0xFF333333) : const Color(0xFFE5E7EB)).withOpacity(0.3),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: isSelected 
+                        ? const Color(0xFF8B5CF6)
+                        : (isDark ? const Color(0xFF444444) : const Color(0xFFE5E7EB)),
+                    width: isSelected ? 2 : 1,
+                  ),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    children: [
+                      Row(
+                        children: [
+                          // 選択チェックボックス
+                          Checkbox(
+                            value: isSelected,
+                            onChanged: (bool? value) {
+                              setState(() {
+                                extractedVideos[index]['isSelected'] = value ?? false;
+                              });
+                            },
+                            activeColor: const Color(0xFF8B5CF6),
+                          ),
+                          const SizedBox(width: 12),
+                          
+                          // サムネイル
+                          Container(
+                            width: 80,
+                            height: 60,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: isDark ? const Color(0xFF333333) : const Color(0xFFE5E7EB),
+                              ),
+                            ),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: Stack(
+                                children: [
+                                  Container(
+                                    width: double.infinity,
+                                    height: double.infinity,
+                                    color: const Color(0xFFFF0000).withOpacity(0.1),
+                                    child: const Icon(
+                                      Icons.play_arrow,
+                                      color: Color(0xFFFF0000),
+                                      size: 24,
+                                    ),
+                                  ),
+                                  if (video['duration'] != null && video['duration'].isNotEmpty)
+                                    Positioned(
+                                      bottom: 4,
+                                      right: 4,
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                                        decoration: BoxDecoration(
+                                          color: Colors.black.withOpacity(0.8),
+                                          borderRadius: BorderRadius.circular(4),
+                                        ),
+                                        child: Text(
+                                          video['duration'],
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          
+                          // 動画情報
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  video['title'] ?? 'タイトル不明',
+                                  style: TextStyle(
+                                    color: isSelected 
+                                        ? (isDark ? Colors.white : Colors.black87)
+                                        : (isDark ? Colors.grey[500] : Colors.black45),
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  video['channel'] ?? 'チャンネル不明',
+                                  style: TextStyle(
+                                    color: isSelected 
+                                        ? (isDark ? Colors.grey[400] : Colors.black54)
+                                        : (isDark ? Colors.grey[600] : Colors.black38),
+                                    fontSize: 12,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                if (video['watchDate'] != null && video['watchDate'].isNotEmpty) ...[
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    video['watchDate'],
+                                    style: TextStyle(
+                                      color: isSelected 
+                                          ? (isDark ? Colors.grey[500] : Colors.black38)
+                                          : (isDark ? Colors.grey[600] : Colors.black26),
+                                      fontSize: 10,
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      
+                      // 公開設定（選択されている場合のみ表示）
+                      if (isSelected) ...[
+                        const SizedBox(height: 12),
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: isDark ? const Color(0xFF333333) : const Color(0xFFF1F5F9),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(
+                                isPublic ? Icons.public : Icons.lock,
+                                color: isPublic ? const Color(0xFF10B981) : const Color(0xFF6B7280),
+                                size: 16,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                '公開設定',
+                                style: TextStyle(
+                                  color: isDark ? Colors.white : Colors.black87,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              const Spacer(),
+                              Switch(
+                                value: isPublic,
+                                onChanged: (bool value) {
+                                  setState(() {
+                                    extractedVideos[index]['isPublic'] = value;
+                                  });
+                                },
+                                activeColor: const Color(0xFF10B981),
+                                inactiveThumbColor: const Color(0xFF6B7280),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              );
+            }).toList(),
+
+            const SizedBox(height: 20),
+
+            // 確定ボタン
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      setState(() {
+                        showConfirmation = false;
+                        extractedVideos.clear();
+                      });
+                    },
+                    icon: const Icon(Icons.cancel, size: 18),
+                    label: const Text('キャンセル'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: isDark ? const Color(0xFF444444) : const Color(0xFFF1F5F9),
+                      foregroundColor: isDark ? Colors.white : Colors.black87,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      elevation: 0,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  flex: 2,
+                  child: ElevatedButton.icon(
+                    onPressed: () => _confirmAndImportVideos(),
+                    icon: const Icon(Icons.upload, size: 18),
+                    label: Text('選択した動画を取り込む (${extractedVideos.where((v) => v['isSelected'] == true).length}件)'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF8B5CF6),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      elevation: 0,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _confirmAndImportVideos() {
+    final selectedVideos = extractedVideos.where((v) => v['isSelected'] == true).toList();
+    
+    if (selectedVideos.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('取り込む動画を選択してください'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      processedVideos = selectedVideos;
+      showConfirmation = false;
+      extractedVideos.clear();
+    });
+
+    final publicCount = selectedVideos.where((v) => v['isPublic'] == true).length;
+    final privateCount = selectedVideos.length - publicCount;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('${selectedVideos.length}件の動画を取り込みました！（公開: $publicCount件、非公開: $privateCount件）'),
+        backgroundColor: const Color(0xFF10B981),
+        duration: const Duration(seconds: 4),
+      ),
+    );
+  }
+} 

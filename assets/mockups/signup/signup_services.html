@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Starlist - サービス選択</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <style>
+        /* 基本スタイル */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+        /* iOS風コンテナ */
+        .ios-container {
+            max-width: 390px; /* iPhone 12/13 Proの幅に合わせる */
+            margin: 20px auto;
+            background: white;
+            border-radius: 30px; /* iOS風の丸み */
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            overflow: hidden;
+            position: relative;
+        }
+        /* iOS風ヘッダー */
+        .ios-header {
+            height: 44px; /* iOSの標準的なヘッダー高さ */
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            border-bottom: 1px solid #f1f1f1;
+        }
+        /* iOS風コンテンツエリア */
+        .ios-content {
+            padding: 20px;
+            background: white;
+        }
+        /* iOS風プライマリボタン */
+        .ios-button {
+            background: #007AFF; /* iOS標準ブルー */
+            color: white;
+            border-radius: 10px;
+            padding: 12px 20px;
+            width: 100%;
+            text-align: center;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .ios-button:hover {
+            background: #0062cc; /* ホバー時の色変化 */
+        }
+        /* ステップインジケーター */
+        .step-indicator {
+            background: #f5f5f7;
+            color: #8E8E93;
+            padding: 3px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            display: inline-block;
+            margin-bottom: 5px;
+        }
+        /* 簡素化されたフローインジケーター (円形) */
+        .flow-nav {
+            display: flex;
+            justify-content: center;
+            padding: 15px 0 5px; /* 上下のパディング調整 */
+        }
+        .flow-circle {
+            width: 6px; /* ドットより少し小さめ */
+            height: 6px;
+            border-radius: 50%;
+            margin: 0 4px;
+            background-color: #ddd; /* 未完了の色 */
+        }
+        .flow-circle.active {
+            background-color: #007AFF; /* 現在のステップの色 */
+        }
+        .flow-circle.completed {
+            background-color: #34C759; /* 完了したステップの色 (iOSグリーン) */
+        }
+        /* Xロゴスタイル */
+        .x-logo {
+            font-weight: bold;
+            font-size: 1.2em; /* アイコンサイズに合わせる */
+        }
+        /* カードコンテナ（折り返し表示） */
+        .card-container {
+            display: flex;
+            flex-wrap: wrap; /* 折り返しを有効に */
+            justify-content: flex-start; /* 左寄せで配置 */
+            gap: 8px; /* カード間の隙間 */
+            padding: 10px 0;
+        }
+        /* ジャンル/スター/SNSカード共通スタイル */
+        .genre-card, .star-card, .sns-card {
+            width: calc(25% - 6px); /* 4列表示 (gapを考慮) */
+            padding: 10px 5px; /* パディングを調整 */
+            margin: 0; /* マージンを削除 (gapで管理) */
+            border-radius: 12px;
+            background: #f5f5f7;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent; /* 選択時の枠線分のスペースを確保 */
+            box-sizing: border-box; /* パディングとボーダーを幅に含める */
+        }
+        /* アイコンサイズ */
+        .sns-icon {
+            font-size: 20px; /* アイコンサイズを少し小さく */
+            margin-bottom: 5px; /* アイコンとテキストの間隔を調整 */
+            height: 24px; /* 高さを固定して揃える */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+        }
+        /* カード内テキストサイズ */
+        .sns-card p {
+            font-size: 11px; /* テキストサイズを小さく */
+            line-height: 1.2; /* 行高調整 */
+            word-break: break-all; /* 必要に応じて単語の途中でも改行 */
+            min-height: 2.4em; /* テキストエリアの高さを確保 (2行分) */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        /* カードホバー/選択時スタイル */
+        .genre-card:hover, .star-card:hover, .sns-card:hover,
+        .genre-card.selected, .star-card.selected, .sns-card.selected {
+            background: #E5F2FF; /* ライトブルー */
+            border: 1px solid #007AFF;
+        }
+        /* カード選択時のチェックマーク */
+        .genre-card.selected, .star-card.selected, .sns-card.selected {
+            position: relative;
+        }
+        .genre-card.selected::after, .star-card.selected::after, .sns-card.selected::after {
+            content: '✓';
+            position: absolute;
+            top: 3px; /* 位置調整 */
+            right: 3px; /* 位置調整 */
+            background: #007AFF;
+            color: white;
+            width: 16px; /* サイズ調整 */
+            height: 16px; /* サイズ調整 */
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px; /* サイズ調整 */
+        }
+    </style>
+</head>
+<body>
+    <div class="main-content">
+        <!-- サービス選択画面 -->
+        <div class="ios-container">
+            <div class="ios-header">
+                <a href="#" class="absolute left-4 text-blue-500">戻る</a>
+                <h2 class="text-lg font-semibold">アカウント作成</h2>
+            </div>
+            <div class="flow-nav">
+                <div class="flow-circle completed"></div>
+                <div class="flow-circle completed"></div>
+                <div class="flow-circle active"></div>
+                <div class="flow-circle"></div>
+            </div>
+            <div class="ios-content">
+                <div class="step-indicator">ステップ 3/4</div>
+                <h2 class="text-xl font-bold mb-4">普段利用するサービス</h2>
+                <p class="text-gray-500 mb-6">普段利用するSNSや配信サイトを選択してください。連携機能の向上に役立ちます。（複数選択可）</p>
+
+                <h3 class="text-base font-semibold mb-2">SNS</h3>
+                <div class="card-container">
+                    <div class="sns-card selected">
+                        <div class="sns-icon text-black"><span class="x-logo">𝕏</span></div>
+                        <p>X</p>
+                    </div>
+                    <div class="sns-card selected">
+                        <div class="sns-icon text-blue-600"><i class="fab fa-facebook"></i></div>
+                        <p>Facebook</p>
+                    </div>
+                    <div class="sns-card">
+                        <div class="sns-icon text-black"><i class="fas fa-mobile-alt"></i></div>
+                        <p>BeReal</p>
+                    </div>
+                    <div class="sns-card">
+                        <div class="sns-icon text-blue-500"><i class="fas fa-at"></i></div>
+                        <p>Threads</p>
+                    </div>
+                </div>
+
+                <h3 class="text-base font-semibold mb-2 mt-4">動画/配信サイト</h3>
+                <div class="card-container">
+                    <div class="sns-card selected">
+                        <div class="sns-icon text-red-600"><i class="fab fa-youtube"></i></div>
+                        <p>YouTube</p>
+                    </div>
+                    <div class="sns-card">
+                        <div class="sns-icon text-pink-500"><i class="fab fa-instagram"></i></div>
+                        <p>Instagram</p>
+                    </div>
+                    <div class="sns-card">
+                        <div class="sns-icon text-pink-600"><i class="fab fa-tiktok"></i></div>
+                        <p>TikTok</p>
+                    </div>
+                    <div class="sns-card">
+                        <div class="sns-icon text-purple-600"><i class="fab fa-twitch"></i></div>
+                        <p>Twitch</p>
+                    </div>
+                    <div class="sns-card">
+                        <div class="sns-icon text-blue-400"><i class="fas fa-microphone"></i></div>
+                        <p>ツイキャス</p>
+                    </div>
+                    <div class="sns-card">
+                        <div class="sns-icon text-pink-500"><i class="fas fa-video"></i></div>
+                        <p>ふわっち</p>
+                    </div>
+                    <div class="sns-card">
+                        <div class="sns-icon text-green-500"><i class="fas fa-tree"></i></div>
+                        <p>Palmu</p>
+                    </div>
+                    <div class="sns-card">
+                        <div class="sns-icon text-blue-400"><i class="fas fa-broadcast-tower"></i></div>
+                        <p>TwitCasting</p>
+                    </div>
+                    <div class="sns-card">
+                        <div class="sns-icon text-red-500"><i class="fas fa-tv"></i></div>
+                        <p>SHOWROOM</p>
+                    </div>
+                    <div class="sns-card selected">
+                        <div class="sns-icon text-purple-500"><i class="fas fa-video"></i></div>
+                        <p>17LIVE</p>
+                    </div>
+                    <div class="sns-card">
+                        <div class="sns-icon text-green-400"><i class="fas fa-laugh"></i></div>
+                        <p>ニコニコ</p>
+                    </div>
+                    <div class="sns-card">
+                        <div class="sns-icon text-green-500"><i class="fab fa-line"></i></div>
+                        <p>LINE LIVE</p>
+                    </div>
+                    <div class="sns-card">
+                        <div class="sns-icon text-blue-500"><i class="fas fa-gamepad"></i></div>
+                        <p>Mildom</p>
+                    </div>
+                    <div class="sns-card">
+                        <div class="sns-icon text-orange-500"><i class="fas fa-play-circle"></i></div>
+                        <p>OPENREC</p>
+                    </div>
+                    <div class="sns-card">
+                        <div class="sns-icon text-blue-400"><i class="fas fa-mobile-alt"></i></div>
+                        <p>Mirrativ</p>
+                    </div>
+                    <div class="sns-card">
+                        <div class="sns-icon text-indigo-500"><i class="fas fa-vr-cardboard"></i></div>
+                        <p>REALITY</p>
+                    </div>
+                    <div class="sns-card">
+                        <div class="sns-icon text-pink-400"><i class="fas fa-smile"></i></div>
+                        <p>IRIAM</p>
+                    </div>
+                    <div class="sns-card">
+                        <div class="sns-icon text-blue-600"><i class="fas fa-globe"></i></div>
+                        <p>BIGO LIVE</p>
+                    </div>
+                    <div class="sns-card selected">
+                        <div class="sns-icon text-yellow-500"><i class="fas fa-microphone"></i></div>
+                        <p>Spoon</p>
+                    </div>
+                    <div class="sns-card selected">
+                        <div class="sns-icon text-pink-300"><i class="fas fa-heart"></i></div>
+                        <p>Pococha</p>
+                    </div>
+                    <div class="sns-card">
+                        <div class="sns-icon text-orange-500"><i class="fas fa-comment"></i></div>
+                        <p>TangoMe</p>
+                    </div>
+                    <div class="sns-card">
+                        <div class="sns-icon text-pink-400"><i class="fas fa-fan"></i></div>
+                        <p>Fantia</p>
+                    </div>
+                    <div class="sns-card">
+                        <div class="sns-icon text-pink-500"><i class="fas fa-box-open"></i></div>
+                        <p>Fanbox</p>
+                    </div>
+                    <div class="sns-card">
+                        <div class="sns-icon text-blue-500"><i class="fab fa-vimeo-v"></i></div>
+                        <p>Vimeo</p>
+                    </div>
+                    <div class="sns-card">
+                        <div class="sns-icon text-blue-600"><i class="fab fa-facebook"></i></div>
+                        <p>Facebook Live</p>
+                    </div>
+                </div>
+
+                <div class="text-center my-6">
+                    <span id="selected-count" class="text-sm text-gray-500">6個選択中</span>
+                </div>
+
+                <button type="button" class="ios-button mb-4">次へ</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 選択状態の切り替え
+            const selectableCards = document.querySelectorAll('.sns-card');
+            const selectedCountElement = document.getElementById('selected-count');
+
+            // 選択数を更新する関数
+            function updateSelectedCount() {
+                const count = document.querySelectorAll('.sns-card.selected').length;
+                if (selectedCountElement) {
+                    selectedCountElement.textContent = `${count}個選択中`;
+                }
+            }
+
+            // サービスカード (複数選択)
+            selectableCards.forEach(card => {
+                card.addEventListener('click', function() {
+                    this.classList.toggle('selected');
+                    updateSelectedCount(); // 選択数を更新
+                });
+            });
+
+            // 初期選択数を表示 (ページ読み込み時)
+            updateSelectedCount();
+        });
+    </script>
+</body>
+</html> 

@@ -1,0 +1,935 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+
+class SettingsScreen extends StatefulWidget {
+  const SettingsScreen({super.key});
+
+  @override
+  State<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
+  // 設定状態
+  bool _pushNotifications = true;
+  bool _emailNotifications = true;
+  bool _dataSync = true;
+  bool _autoBackup = false;
+  bool _darkMode = true;
+  bool _analytics = true;
+  String _language = 'ja';
+  String _dataRetention = '1year';
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFF1A1A1A),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // ヘッダー
+              Container(
+                padding: const EdgeInsets.all(16),
+                child: const Text(
+                  '設定',
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+              
+              // ユーザープロフィール
+              _buildUserProfile(),
+              const SizedBox(height: 24),
+              
+              _buildAccountSettings(),
+              const SizedBox(height: 24),
+              _buildPrivacySettings(),
+              const SizedBox(height: 24),
+              _buildNotificationSettings(),
+              const SizedBox(height: 24),
+              _buildDataSettings(),
+              const SizedBox(height: 24),
+              _buildAppSettings(),
+              const SizedBox(height: 24),
+              _buildSupportSettings(),
+              const SizedBox(height: 24),
+              _buildDangerZone(),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildUserProfile() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF4ECDC4), Color(0xFF44A08D)],
+        ),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        children: [
+          CircleAvatar(
+            radius: 30,
+            backgroundColor: Colors.white.withOpacity(0.2),
+            child: const Icon(
+              Icons.person,
+              color: Colors.white,
+              size: 30,
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'スターユーザー',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                const Text(
+                  'star@example.com',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Text(
+                    'プレミアム',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.edit, color: Colors.white),
+            onPressed: () => _editProfile(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAccountSettings() {
+    return _buildSettingsSection(
+      'アカウント',
+      [
+        _buildSettingsItem(
+          Icons.person_outline,
+          'プロフィール編集',
+          'プロフィール情報を変更',
+          () => _editProfile(),
+        ),
+        _buildSettingsItem(
+          Icons.lock_outline,
+          'パスワード変更',
+          'パスワードを変更',
+          () => _changePassword(),
+        ),
+        _buildSettingsItem(
+          Icons.link,
+          'SNS連携',
+          'ソーシャルメディアアカウントの管理',
+          () => _manageSocialLinks(),
+        ),
+        _buildSettingsItem(
+          Icons.verified_user_outlined,
+          '二段階認証',
+          'アカウントのセキュリティを強化',
+          () => _setupTwoFactor(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPrivacySettings() {
+    return _buildSettingsSection(
+      'プライバシー',
+      [
+        _buildSwitchItem(
+          Icons.visibility_outlined,
+          'プロフィール公開',
+          'プロフィールを他のユーザーに公開',
+          true,
+          (value) => {},
+        ),
+        _buildSwitchItem(
+          Icons.analytics_outlined,
+          'データ分析',
+          'アプリの改善のためのデータ収集',
+          _analytics,
+          (value) => setState(() => _analytics = value),
+        ),
+        _buildSettingsItem(
+          Icons.shield_outlined,
+          'データ管理',
+          '個人データの管理と削除',
+          () => _manageData(),
+        ),
+        _buildSettingsItem(
+          Icons.policy_outlined,
+          'プライバシーポリシー',
+          'プライバシーポリシーを確認',
+          () => _showPrivacyPolicy(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildNotificationSettings() {
+    return _buildSettingsSection(
+      '通知',
+      [
+        _buildSwitchItem(
+          Icons.notifications_outlined,
+          'プッシュ通知',
+          'アプリからの通知を受け取る',
+          _pushNotifications,
+          (value) => setState(() => _pushNotifications = value),
+        ),
+        _buildSwitchItem(
+          Icons.email_outlined,
+          'メール通知',
+          '重要な更新をメールで受け取る',
+          _emailNotifications,
+          (value) => setState(() => _emailNotifications = value),
+        ),
+        _buildSettingsItem(
+          Icons.tune,
+          '通知設定の詳細',
+          '通知の種類と頻度を設定',
+          () => _configureNotifications(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDataSettings() {
+    return _buildSettingsSection(
+      'データ',
+      [
+        _buildSwitchItem(
+          Icons.sync,
+          'データ同期',
+          'デバイス間でデータを同期',
+          _dataSync,
+          (value) => setState(() => _dataSync = value),
+        ),
+        _buildSwitchItem(
+          Icons.backup_outlined,
+          '自動バックアップ',
+          'データを自動的にバックアップ',
+          _autoBackup,
+          (value) => setState(() => _autoBackup = value),
+        ),
+        _buildDropdownItem(
+          Icons.schedule,
+          'データ保持期間',
+          'データを保持する期間',
+          _dataRetention,
+          {
+            '3months': '3ヶ月',
+            '6months': '6ヶ月',
+            '1year': '1年',
+            '2years': '2年',
+            'forever': '無期限',
+          },
+          (value) => setState(() => _dataRetention = value!),
+        ),
+        _buildSettingsItem(
+          Icons.download_outlined,
+          'データエクスポート',
+          'データをダウンロード',
+          () => _exportData(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAppSettings() {
+    return _buildSettingsSection(
+      'アプリ',
+      [
+        _buildSwitchItem(
+          Icons.dark_mode_outlined,
+          'ダークモード',
+          'ダークテーマを使用',
+          _darkMode,
+          (value) => setState(() => _darkMode = value),
+        ),
+        _buildDropdownItem(
+          Icons.language,
+          '言語',
+          'アプリの表示言語',
+          _language,
+          {
+            'ja': '日本語',
+            'en': 'English',
+            'ko': '한국어',
+            'zh': '中文',
+          },
+          (value) => setState(() => _language = value!),
+        ),
+        _buildSettingsItem(
+          Icons.storage_outlined,
+          'キャッシュクリア',
+          'アプリのキャッシュを削除',
+          () => _clearCache(),
+        ),
+        _buildSettingsItem(
+          Icons.info_outline,
+          'アプリ情報',
+          'バージョン情報とライセンス',
+          () => _showAppInfo(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSupportSettings() {
+    return _buildSettingsSection(
+      'サポート',
+      [
+        _buildSettingsItem(
+          Icons.help_outline,
+          'ヘルプセンター',
+          'よくある質問と使い方',
+          () => _showHelp(),
+        ),
+        _buildSettingsItem(
+          Icons.feedback_outlined,
+          'フィードバック',
+          'アプリの改善提案',
+          () => _sendFeedback(),
+        ),
+        _buildSettingsItem(
+          Icons.bug_report_outlined,
+          'バグ報告',
+          '問題を報告',
+          () => _reportBug(),
+        ),
+        _buildSettingsItem(
+          Icons.contact_support_outlined,
+          'お問い合わせ',
+          'サポートチームに連絡',
+          () => _contactSupport(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDangerZone() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: const Color(0xFF2A2A2A),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFFF6B6B).withOpacity(0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
+            children: [
+              Icon(Icons.warning, color: Color(0xFFFF6B6B), size: 20),
+              SizedBox(width: 8),
+              Text(
+                '危険な操作',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFFFF6B6B),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          _buildDangerItem(
+            Icons.logout,
+            'ログアウト',
+            'アカウントからログアウト',
+            () => _logout(),
+          ),
+          _buildDangerItem(
+            Icons.delete_forever,
+            'アカウント削除',
+            'アカウントを完全に削除',
+            () => _deleteAccount(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSettingsSection(String title, List<Widget> children) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: Colors.white,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Container(
+          decoration: BoxDecoration(
+            color: const Color(0xFF2A2A2A),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFF333333)),
+          ),
+          child: Column(children: children),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSettingsItem(IconData icon, String title, String subtitle, VoidCallback onTap) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          HapticFeedback.lightImpact();
+          onTap();
+        },
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              Icon(icon, color: const Color(0xFF4ECDC4), size: 24),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Color(0xFF888888),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(Icons.chevron_right, color: Color(0xFF888888)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSwitchItem(IconData icon, String title, String subtitle, bool value, Function(bool) onChanged) {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        children: [
+          Icon(icon, color: const Color(0xFF4ECDC4), size: 24),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  subtitle,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Color(0xFF888888),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Switch(
+            value: value,
+            onChanged: onChanged,
+            activeColor: const Color(0xFF4ECDC4),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDropdownItem(
+    IconData icon,
+    String title,
+    String subtitle,
+    String value,
+    Map<String, String> options,
+    Function(String?) onChanged,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        children: [
+          Icon(icon, color: const Color(0xFF4ECDC4), size: 24),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  subtitle,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Color(0xFF888888),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          DropdownButton<String>(
+            value: value,
+            onChanged: onChanged,
+            dropdownColor: const Color(0xFF2A2A2A),
+            style: const TextStyle(color: Colors.white),
+            underline: Container(),
+            items: options.entries.map((entry) {
+              return DropdownMenuItem<String>(
+                value: entry.key,
+                child: Text(entry.value),
+              );
+            }).toList(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDangerItem(IconData icon, String title, String subtitle, VoidCallback onTap) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          HapticFeedback.lightImpact();
+          onTap();
+        },
+        borderRadius: BorderRadius.circular(8),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          child: Row(
+            children: [
+              Icon(icon, color: const Color(0xFFFF6B6B), size: 20),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: Color(0xFFFF6B6B),
+                      ),
+                    ),
+                    Text(
+                      subtitle,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Color(0xFF888888),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(Icons.chevron_right, color: Color(0xFFFF6B6B), size: 16),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // アクションメソッド
+  void _editProfile() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF2A2A2A),
+        title: const Text(
+          'プロフィール編集',
+          style: TextStyle(color: Colors.white),
+        ),
+        content: const Text(
+          'プロフィール編集機能は実装予定です。',
+          style: TextStyle(color: Color(0xFF888888)),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text(
+              'OK',
+              style: TextStyle(color: Color(0xFF4ECDC4)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _changePassword() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('パスワード変更画面に移動します'),
+        backgroundColor: Color(0xFF4ECDC4),
+      ),
+    );
+  }
+
+  void _manageSocialLinks() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('SNS連携管理画面に移動します'),
+        backgroundColor: Color(0xFF4ECDC4),
+      ),
+    );
+  }
+
+  void _setupTwoFactor() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('二段階認証設定画面に移動します'),
+        backgroundColor: Color(0xFF4ECDC4),
+      ),
+    );
+  }
+
+  void _manageData() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('データ管理画面に移動します'),
+        backgroundColor: Color(0xFF4ECDC4),
+      ),
+    );
+  }
+
+  void _showPrivacyPolicy() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('プライバシーポリシーを表示します'),
+        backgroundColor: Color(0xFF4ECDC4),
+      ),
+    );
+  }
+
+  void _configureNotifications() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('通知設定詳細画面に移動します'),
+        backgroundColor: Color(0xFF4ECDC4),
+      ),
+    );
+  }
+
+  void _exportData() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF2A2A2A),
+        title: const Text(
+          'データエクスポート',
+          style: TextStyle(color: Colors.white),
+        ),
+        content: const Text(
+          'データのエクスポートを開始しますか？\n完了までに数分かかる場合があります。',
+          style: TextStyle(color: Color(0xFF888888)),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text(
+              'キャンセル',
+              style: TextStyle(color: Color(0xFF888888)),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('データエクスポートを開始しました'),
+                  backgroundColor: Color(0xFF4ECDC4),
+                ),
+              );
+            },
+            child: const Text(
+              'エクスポート',
+              style: TextStyle(color: Color(0xFF4ECDC4)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _clearCache() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF2A2A2A),
+        title: const Text(
+          'キャッシュクリア',
+          style: TextStyle(color: Colors.white),
+        ),
+        content: const Text(
+          'アプリのキャッシュを削除しますか？\nこの操作は元に戻せません。',
+          style: TextStyle(color: Color(0xFF888888)),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text(
+              'キャンセル',
+              style: TextStyle(color: Color(0xFF888888)),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('キャッシュを削除しました'),
+                  backgroundColor: Color(0xFF4ECDC4),
+                ),
+              );
+            },
+            child: const Text(
+              '削除',
+              style: TextStyle(color: Color(0xFFFF6B6B)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showAppInfo() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF2A2A2A),
+        title: const Text(
+          'アプリ情報',
+          style: TextStyle(color: Colors.white),
+        ),
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Starlist',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+              ),
+            ),
+            SizedBox(height: 8),
+            Text(
+              'バージョン: 1.0.0',
+              style: TextStyle(color: Color(0xFF888888)),
+            ),
+            Text(
+              'ビルド: 100',
+              style: TextStyle(color: Color(0xFF888888)),
+            ),
+            SizedBox(height: 16),
+            Text(
+              '© 2024 Starlist Inc.',
+              style: TextStyle(color: Color(0xFF888888)),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text(
+              'OK',
+              style: TextStyle(color: Color(0xFF4ECDC4)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showHelp() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('ヘルプセンターに移動します'),
+        backgroundColor: Color(0xFF4ECDC4),
+      ),
+    );
+  }
+
+  void _sendFeedback() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('フィードバック画面に移動します'),
+        backgroundColor: Color(0xFF4ECDC4),
+      ),
+    );
+  }
+
+  void _reportBug() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('バグ報告画面に移動します'),
+        backgroundColor: Color(0xFF4ECDC4),
+      ),
+    );
+  }
+
+  void _contactSupport() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('サポートに連絡します'),
+        backgroundColor: Color(0xFF4ECDC4),
+      ),
+    );
+  }
+
+  void _logout() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF2A2A2A),
+        title: const Text(
+          'ログアウト',
+          style: TextStyle(color: Colors.white),
+        ),
+        content: const Text(
+          'ログアウトしますか？',
+          style: TextStyle(color: Color(0xFF888888)),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text(
+              'キャンセル',
+              style: TextStyle(color: Color(0xFF888888)),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('ログアウトしました'),
+                  backgroundColor: Color(0xFF4ECDC4),
+                ),
+              );
+            },
+            child: const Text(
+              'ログアウト',
+              style: TextStyle(color: Color(0xFFFF6B6B)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _deleteAccount() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF2A2A2A),
+        title: const Text(
+          'アカウント削除',
+          style: TextStyle(color: Color(0xFFFF6B6B)),
+        ),
+        content: const Text(
+          'アカウントを削除すると、すべてのデータが永久に失われます。\nこの操作は元に戻せません。\n\n本当に削除しますか？',
+          style: TextStyle(color: Color(0xFF888888)),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text(
+              'キャンセル',
+              style: TextStyle(color: Color(0xFF888888)),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('アカウント削除処理を開始しました'),
+                  backgroundColor: Color(0xFFFF6B6B),
+                ),
+              );
+            },
+            child: const Text(
+              '削除',
+              style: TextStyle(color: Color(0xFFFF6B6B)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+} 

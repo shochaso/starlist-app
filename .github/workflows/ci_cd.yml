@@ -1,0 +1,80 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: "3.x"
+        channel: "stable"
+
+    - name: Install dependencies
+      run: flutter pub get
+
+    - name: Run tests
+      run: flutter test
+
+    - name: Build APK
+      run: flutter build apk --release
+
+    - name: Upload APK
+      uses: actions/upload-artifact@v2
+      with:
+        name: release-apk
+        path: build/app/outputs/flutter-apk/app-release.apk
+
+  deploy-staging:
+    needs: test
+    if: github.ref == "refs/heads/develop"
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: "3.x"
+        channel: "stable"
+
+    - name: Install dependencies
+      run: flutter pub get
+
+    - name: Build for staging
+      run: flutter build apk --release
+
+    - name: Deploy to staging
+      run: echo "Deploy to staging"
+      # ステージング環境へのデプロイメントコマンド
+
+  deploy-production:
+    needs: test
+    if: github.ref == "refs/heads/main"
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: "3.x"
+        channel: "stable"
+
+    - name: Install dependencies
+      run: flutter pub get
+
+    - name: Build for production
+      run: flutter build apk --release
+
+    - name: Deploy to production
+      run: echo "Deploy to production"
+      # 本番環境へのデプロイメントコマンド

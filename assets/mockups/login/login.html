@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Starlist - ログインフロー</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <style>
+        /* 基本スタイル */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+        /* iOS風コンテナ */
+        .ios-container {
+            max-width: 390px; /* iPhone 12/13 Proの幅に合わせる */
+            margin: 20px auto;
+            background: white;
+            border-radius: 30px; /* iOS風の丸み */
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            overflow: hidden;
+            position: relative;
+        }
+        /* iOS風ヘッダー */
+        .ios-header {
+            height: 44px; /* iOSの標準的なヘッダー高さ */
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            border-bottom: 1px solid #f1f1f1;
+        }
+        /* iOS風コンテンツエリア */
+        .ios-content {
+            padding: 20px;
+            background: white;
+        }
+        /* iOS風プライマリボタン */
+        .ios-button {
+            background: #007AFF; /* iOS標準ブルー */
+            color: white;
+            border-radius: 10px;
+            padding: 12px 20px;
+            width: 100%;
+            text-align: center;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .ios-button:hover {
+            background: #0062cc; /* ホバー時の色変化 */
+        }
+        /* iOS風セカンダリボタン */
+        .ios-button.secondary {
+            background: #E9E9EB; /* iOSライトグレー */
+            color: #007AFF;
+        }
+        .ios-button.secondary:hover {
+            background: #d1d1d3;
+        }
+        /* iOS風入力フィールド */
+        .ios-input {
+            border: 1px solid #E9E9EB;
+            border-radius: 10px;
+            padding: 12px 15px;
+            width: 100%;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+        .ios-input:focus {
+            border-color: #007AFF;
+            outline: none;
+        }
+        /* ソーシャルログインボタン */
+        .social-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid #E9E9EB;
+            background: white;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .social-button:hover {
+            background: #f5f5f7;
+        }
+        /* チェックボックスコンテナ */
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+        }
+        .checkbox-container input {
+            margin-right: 10px;
+        }
+        /* セクション区切り線 */
+        .section-divider {
+            margin: 60px 0;
+            border-top: 1px solid #E9E9EB;
+            position: relative;
+        }
+        .section-divider::before {
+            content: attr(data-title); /* data-title属性の内容を表示 */
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            padding: 0 15px;
+            color: #8E8E93; /* iOSグレー */
+            font-size: 14px;
+        }
+        /* フローインジケーター（ドット） */
+        .flow-indicator {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        .flow-dot {
+            width: 8px;
+            height: 8px;
+            background: #E9E9EB;
+            border-radius: 50%;
+            margin: 0 3px;
+        }
+        .flow-dot.active {
+            background: #007AFF;
+        }
+        /* Xロゴスタイル */
+        .x-logo {
+            font-weight: bold;
+            font-size: 1.2em; /* アイコンサイズに合わせる */
+        }
+        /* 簡素化されたフローインジケーター (円形) */
+        .flow-nav {
+            display: flex;
+            justify-content: center;
+            padding: 15px 0 5px; /* 上下のパディング調整 */
+        }
+        .flow-circle {
+            width: 6px; /* ドットより少し小さめ */
+            height: 6px;
+            border-radius: 50%;
+            margin: 0 4px;
+            background-color: #ddd; /* 未完了の色 */
+        }
+        .flow-circle.active {
+            background-color: #007AFF; /* 現在のステップの色 */
+        }
+        .flow-circle.completed {
+            background-color: #34C759; /* 完了したステップの色 (iOSグリーン) */
+        }
+        /* 通知カード */
+        .notification-card {
+            background: #F2F2F7; /* iOS設定画面風グレー */
+            border-radius: 12px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        /* 年齢選択用スタイル */
+        .age-selector {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px; /* ボタン間の間隔を調整 */
+        }
+        .age-range {
+            padding: 12px 10px;
+            border-radius: 10px;
+            background: #f5f5f7;
+            text-align: center;
+            flex: 1; /* 利用可能なスペースを均等に分割 */
+            margin: 0 4px; /* ボタン間の間隔 */
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 14px; /* フォントサイズ */
+            border: 1px solid transparent; /* 選択時の枠線スペース確保 */
+            white-space: nowrap; /* テキストが折り返さないようにする */
+        }
+        .age-range:hover, .age-range.selected {
+            background: #E5F2FF;
+            border: 1px solid #007AFF;
+        }
+        .age-range.selected {
+            position: relative;
+        }
+        .age-range.selected::after {
+            content: '✓';
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: #007AFF;
+            color: white;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-content">
+        <div class="ios-container">
+            <div class="ios-header">
+                <h2 class="text-xl font-bold">Starlist</h2>
+            </div>
+            <div class="ios-content">
+                <div class="text-center mb-8">
+                    <div class="w-20 h-20 bg-blue-500 rounded-2xl mx-auto mb-4 flex items-center justify-center">
+                        <i class="fas fa-star text-white text-3xl"></i>
+                    </div>
+                    <h1 class="text-2xl font-bold mb-2">Starlistへようこそ</h1>
+                    <p class="text-gray-500">スターの日常をもっと身近に</p>
+                </div>
+
+                <form>
+                    <input type="email" class="ios-input" placeholder="メールアドレスまたはユーザー名">
+                    <input type="password" class="ios-input" placeholder="パスワード">
+                    <button type="button" class="ios-button mb-4">ログイン</button>
+                </form>
+
+                <div class="text-center mb-4">
+                    <a href="#password-reset" class="text-blue-500">パスワードをお忘れですか？</a>
+                </div>
+
+                <div class="text-center mb-6">
+                    <a href="#create-account" class="text-blue-500 font-semibold">アカウントを作成</a>
+                </div>
+
+                <div class="section-divider" data-title="または"></div>
+
+                <div class="mt-6">
+                    <div class="social-button">
+                        <i class="fab fa-google mr-3 text-red-500"></i>
+                        Googleでログイン
+                    </div>
+                    <div class="social-button">
+                        <span class="x-logo mr-3 text-black">𝕏</span>
+                        Xでログイン
+                    </div>
+                    <div class="social-button">
+                        <i class="fab fa-facebook mr-3 text-blue-600"></i>
+                        Facebookでログイン
+                    </div>
+                </div>
+
+                <div class="mt-8 text-center">
+                    <p class="text-gray-500 text-sm">ログインすることで、Starlistの<a href="#" class="text-blue-500">利用規約</a>および<a href="#" class="text-blue-500">プライバシーポリシー</a>に同意したことになります。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html> 

@@ -1,0 +1,33 @@
+name: Claude Assistant
+
+on:
+  issue_comment:
+    types: [created]
+  pull_request_review_comment:
+    types: [created]
+  issues:
+    types: [opened, assigned]
+  pull_request_review:
+    types: [submitted]
+
+jobs:
+  claude-response:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+      statuses: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run Claude Code Action
+        uses: anthropics/claude-code-action@beta
+        with:
+          anthropic_api_key: ${{ secrets.CLAUDE_API_KEY }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          # model: "claude-3-5-sonnet-20241022" # 必要に応じてモデルを指定
+          # trigger_phrase: "@claude" # デフォルトは @claude
+          # max_turns: "5" # 会話のターン数を制限 

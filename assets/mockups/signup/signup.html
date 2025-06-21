@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Starlist - アカウント作成</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <style>
+        /* 基本スタイル */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+        /* iOS風コンテナ */
+        .ios-container {
+            max-width: 390px; /* iPhone 12/13 Proの幅に合わせる */
+            margin: 20px auto;
+            background: white;
+            border-radius: 30px; /* iOS風の丸み */
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            overflow: hidden;
+            position: relative;
+        }
+        /* iOS風ヘッダー */
+        .ios-header {
+            height: 44px; /* iOSの標準的なヘッダー高さ */
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            border-bottom: 1px solid #f1f1f1;
+        }
+        /* iOS風コンテンツエリア */
+        .ios-content {
+            padding: 20px;
+            background: white;
+        }
+        /* iOS風プライマリボタン */
+        .ios-button {
+            background: #007AFF; /* iOS標準ブルー */
+            color: white;
+            border-radius: 10px;
+            padding: 12px 20px;
+            width: 100%;
+            text-align: center;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .ios-button:hover {
+            background: #0062cc; /* ホバー時の色変化 */
+        }
+        /* iOS風入力フィールド */
+        .ios-input {
+            border: 1px solid #E9E9EB;
+            border-radius: 10px;
+            padding: 12px 15px;
+            width: 100%;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+        .ios-input:focus {
+            border-color: #007AFF;
+            outline: none;
+        }
+        /* チェックボックスコンテナ */
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+        }
+        .checkbox-container input {
+            margin-right: 10px;
+        }
+        /* ステップインジケーター */
+        .step-indicator {
+            background: #f5f5f7;
+            color: #8E8E93;
+            padding: 3px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            display: inline-block;
+            margin-bottom: 5px;
+        }
+        /* 簡素化されたフローインジケーター (円形) */
+        .flow-nav {
+            display: flex;
+            justify-content: center;
+            padding: 15px 0 5px; /* 上下のパディング調整 */
+        }
+        .flow-circle {
+            width: 6px; /* ドットより少し小さめ */
+            height: 6px;
+            border-radius: 50%;
+            margin: 0 4px;
+            background-color: #ddd; /* 未完了の色 */
+        }
+        .flow-circle.active {
+            background-color: #007AFF; /* 現在のステップの色 */
+        }
+        .flow-circle.completed {
+            background-color: #34C759; /* 完了したステップの色 (iOSグリーン) */
+        }
+        /* 年齢選択用スタイル */
+        .age-selector {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px; /* ボタン間の間隔を調整 */
+        }
+        .age-range {
+            padding: 12px 10px;
+            border-radius: 10px;
+            background: #f5f5f7;
+            text-align: center;
+            flex: 1; /* 利用可能なスペースを均等に分割 */
+            margin: 0 4px; /* ボタン間の間隔 */
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 14px; /* フォントサイズ */
+            border: 1px solid transparent; /* 選択時の枠線スペース確保 */
+            white-space: nowrap; /* テキストが折り返さないようにする */
+        }
+        .age-range:hover, .age-range.selected {
+            background: #E5F2FF;
+            border: 1px solid #007AFF;
+        }
+        .age-range.selected {
+            position: relative;
+        }
+        .age-range.selected::after {
+            content: '✓';
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: #007AFF;
+            color: white;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+        /* 通知カード */
+        .notification-card {
+            background: #F2F2F7; /* iOS設定画面風グレー */
+            border-radius: 12px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-content">
+        <!-- アカウント作成ステップ1 -->
+        <div class="ios-container">
+            <div class="ios-header">
+                <a href="#" class="absolute left-4 text-blue-500">キャンセル</a>
+                <h2 class="text-lg font-semibold">アカウント作成</h2>
+            </div>
+            <div class="flow-nav">
+                <div class="flow-circle active"></div>
+                <div class="flow-circle"></div>
+                <div class="flow-circle"></div>
+                <div class="flow-circle"></div>
+            </div>
+            <div class="ios-content">
+                <div class="step-indicator">ステップ 1/4</div>
+                <h2 class="text-xl font-bold mb-4">基本情報を入力</h2>
+                <p class="text-gray-500 mb-6">Starlistアカウントを作成するために必要な情報を入力してください。</p>
+                <form>
+                    <input type="text" class="ios-input" placeholder="ユーザーネーム">
+                    <input type="text" class="ios-input" placeholder="表示名">
+                    <input type="email" class="ios-input" placeholder="メールアドレス">
+                    <input type="password" class="ios-input" placeholder="パスワード（8文字以上）">
+                    <div class="checkbox-container mb-6">
+                        <input type="checkbox" id="marketing-consent">
+                        <label for="marketing-consent" class="text-sm text-gray-500">Starlistからのお知らせやキャンペーン情報を受け取る</label>
+                    </div>
+                    <button type="button" class="ios-button mb-4">次へ</button>
+                </form>
+                <div class="text-center mt-4">
+                    <p class="text-sm text-gray-500">すでにアカウントをお持ちですか？ <a href="#" class="text-blue-500">ログイン</a></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- アカウント作成ステップ2 -->
+        <div class="ios-container mt-10">
+            <div class="ios-header">
+                <a href="#" class="absolute left-4 text-blue-500">戻る</a>
+                <h2 class="text-lg font-semibold">アカウント作成</h2>
+            </div>
+            <div class="flow-nav">
+                <div class="flow-circle completed"></div>
+                <div class="flow-circle active"></div>
+                <div class="flow-circle"></div>
+                <div class="flow-circle"></div>
+            </div>
+            <div class="ios-content">
+                <div class="step-indicator">ステップ 2/4</div>
+                <h2 class="text-xl font-bold mb-4">年齢確認</h2>
+                <p class="text-gray-500 mb-6">あなたの年齢層を教えてください。より良いコンテンツをお届けするために使用されます。</p>
+                <div class="age-selector">
+                    <div class="age-range">10代</div>
+                    <div class="age-range selected">20代</div>
+                    <div class="age-range">30代</div>
+                    <div class="age-range">40代</div>
+                </div>
+                <div class="age-selector">
+                    <div class="age-range">50代</div>
+                    <div class="age-range">60代</div>
+                    <div class="age-range">70代+</div>
+                    <div class="age-range">回答しない</div>
+                </div>
+                <div class="mt-6 mb-6">
+                    <p class="text-xs text-gray-500 mb-2">※年齢情報は個人を特定するために使用されることはありません。</p>
+                    <p class="text-xs text-gray-500">※あなたに合ったコンテンツの推奨やサービス改善のために活用されます。</p>
+                </div>
+                <button type="button" class="ios-button mb-4">次へ</button>
+            </div>
+        </div>
+
+        <!-- アカウント作成ステップ4 -->
+        <div class="ios-container mt-10">
+            <div class="ios-header">
+                <a href="#" class="absolute left-4 text-blue-500">戻る</a>
+                <h2 class="text-lg font-semibold">アカウント作成</h2>
+            </div>
+            <div class="flow-nav">
+                <div class="flow-circle completed"></div>
+                <div class="flow-circle completed"></div>
+                <div class="flow-circle completed"></div>
+                <div class="flow-circle active"></div>
+            </div>
+            <div class="ios-content">
+                <div class="step-indicator">ステップ 4/4</div>
+                <h2 class="text-xl font-bold mb-4">利用規約と個人情報保護方針</h2>
+                <p class="text-gray-500 mb-6">続行する前に、下記の規約をご確認ください。</p>
+                <div class="bg-gray-50 p-4 rounded-lg mb-6 h-48 overflow-y-auto">
+                    <h3 class="font-semibold mb-2">Starlist利用規約</h3>
+                    <p class="text-xs text-gray-500 mb-3">最終更新日: 2023年4月1日</p>
+                    <p class="text-sm text-gray-600 mb-2">1. はじめに</p>
+                    <p class="text-xs text-gray-500 mb-3">Starlist（以下「本サービス」）をご利用いただきありがとうございます。本利用規約（以下「本規約」）は、ユーザーと当社との間の法的合意を構成し、本サービスの利用に適用されます。</p>
+                    <p class="text-sm text-gray-600 mb-2">2. アカウント</p>
+                    <p class="text-xs text-gray-500 mb-3">本サービスを利用するには、アカウントの作成が必要です。アカウント情報の保護はユーザーの責任となります。</p>
+                    <p class="text-sm text-gray-600 mb-2">3. プライバシー</p>
+                    <p class="text-xs text-gray-500 mb-3">当社のプライバシーポリシーは、本サービスの利用に伴い当社が収集するデータとその使用方法について説明しています。</p>
+                    <p class="text-sm text-gray-600 mb-2">4. コンテンツとライセンス</p>
+                    <p class="text-xs text-gray-500 mb-3">ユーザーは、本サービスに投稿するコンテンツの所有権を保持しますが、当社に対して世界的、非独占的、ロイヤリティフリーのライセンスを付与します。</p>
+                    <p class="text-sm text-gray-600 mb-2">5. 禁止行為</p>
+                    <p class="text-xs text-gray-500 mb-3">違法なコンテンツの投稿、他のユーザーへの嫌がらせ、サービスの機能を妨害する行為は禁止されています。</p>
+                </div>
+                <div class="checkbox-container mb-4">
+                    <input type="checkbox" id="terms-consent-final">
+                    <label for="terms-consent-final" class="text-sm"><span class="text-gray-800 font-medium">利用規約</span>に同意します</label>
+                </div>
+                <div class="checkbox-container mb-6">
+                    <input type="checkbox" id="privacy-consent-final">
+                    <label for="privacy-consent-final" class="text-sm"><span class="text-gray-800 font-medium">個人情報保護方針</span>に同意します</label>
+                </div>
+                <button type="button" class="ios-button mb-4">同意してアカウント作成</button>
+            </div>
+        </div>
+
+        <!-- アカウント作成完了 -->
+        <div class="ios-container mt-10">
+            <div class="ios-header">
+                <h2 class="text-lg font-semibold">アカウント作成完了</h2>
+            </div>
+            <div class="ios-content">
+                <div class="text-center mb-8">
+                    <div class="w-20 h-20 bg-green-500 rounded-full mx-auto mb-4 flex items-center justify-center">
+                        <i class="fas fa-check text-white text-3xl"></i>
+                    </div>
+                    <h1 class="text-2xl font-bold mb-2">アカウント設定完了!</h1>
+                    <p class="text-gray-500">Starlistへようこそ</p>
+                </div>
+                <div class="bg-blue-50 p-4 rounded-lg mb-6">
+                    <div class="flex items-start">
+                        <i class="fas fa-info-circle text-blue-500 mt-1 mr-3"></i>
+                        <p class="text-sm">あなたの好みに基づいたコンテンツをホーム画面に表示しています。ぜひチェックしてみてください。</p>
+                    </div>
+                </div>
+                <div class="notification-card">
+                    <h3 class="font-semibold mb-2">次のステップ</h3>
+                    <ul class="text-sm text-gray-600">
+                        <li class="flex items-center mb-3">
+                            <i class="fas fa-user-circle text-blue-500 mr-2"></i>
+                            プロフィールを完成させる
+                        </li>
+                        <li class="flex items-center mb-3">
+                            <i class="fas fa-star text-blue-500 mr-2"></i>
+                            好きなスターをフォローする
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-bell text-blue-500 mr-2"></i>
+                            通知設定を確認する
+                        </li>
+                    </ul>
+                </div>
+                <button type="button" class="ios-button mt-6 mb-4">ホームに進む</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 年齢範囲 (単一選択)
+            const ageRanges = document.querySelectorAll('.age-range');
+            ageRanges.forEach(range => {
+                range.addEventListener('click', function() {
+                    ageRanges.forEach(r => r.classList.remove('selected'));
+                    this.classList.add('selected');
+                });
+            });
+        });
+    </script>
+</body>
+</html> 
