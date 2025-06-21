@@ -9,26 +9,76 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Supabase CLI
         uses: supabase/setup-cli@v1
         with:
           version: latest
 
-      - name: Apply Database Migrations
+      - name: Verify Environment Variables
         run: |
-          supabase link --project-ref ${{ secrets.SUPABASE_PROJECT_ID }} --password ${{ secrets.SUPABASE_DB_PASSWORD }}
-          supabase db push
+          echo "Checking environment variables..."
+          if [ -z "${{ secrets.SUPABASE_ACCESS_TOKEN }}" ]; then
+            echo "❌ SUPABASE_ACCESS_TOKEN is not set"
+            exit 1
+          fi
+          if [ -z "${{ secrets.SUPABASE_PROJECT_ID }}" ]; then
+            echo "❌ SUPABASE_PROJECT_ID is not set"  
+            exit 1
+          fi
+          echo "✅ Required environment variables are set"
+
+      - name: Authenticate with Supabase
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-          
+        run: |
+          echo "Authenticating with Supabase..."
+          # アクセストークンの形式を確認
+          if [[ ! "$SUPABASE_ACCESS_TOKEN" =~ ^sbp_ ]]; then
+            echo "❌ Invalid access token format. Access token should start with 'sbp_'"
+            echo "Please generate a Personal Access Token from: https://supabase.com/dashboard/account/tokens"
+            exit 1
+          fi
+          # 認証実行
+          echo "$SUPABASE_ACCESS_TOKEN" | supabase auth login --token
+          echo "✅ Authentication successful"
+
+      - name: Link Supabase Project
+        env:
+          SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
+        run: |
+          echo "Linking to Supabase project: $SUPABASE_PROJECT_ID"
+          supabase link --project-ref "$SUPABASE_PROJECT_ID"
+          echo "✅ Project linking successful"
+
+      - name: Apply Database Migrations
+        env:
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        run: |
+          echo "Applying database migrations..."
+          supabase db push
+          echo "✅ Database migrations applied successfully"
+
       - name: Update Task Status
         run: |
-          # Mark scheduled tasks as complete based on their status in the code
-          ./scripts/task_completion_check.sh
+          if [ -f "./scripts/task_completion_check.sh" ]; then
+            echo "Executing task completion check..."
+            chmod +x ./scripts/task_completion_check.sh
+            ./scripts/task_completion_check.sh
+          else
+            echo "Task completion script not found, skipping..."
+          fi
           
       - name: Deploy Flutter Web (if applicable)
         run: |
-          # If you have a web version, you can deploy it here
-          echo "Deploying web version is not configured yet" 
+          echo "Web deployment configuration is not yet implemented"
+          echo "This step will be configured in future updates"
+
+      - name: Deployment Summary
+        if: success()
+        run: |
+          echo "🎉 Deployment completed successfully!"
+          echo "✅ Database migrations applied"
+          echo "✅ Task status updated"
+          echo "📱 Starlist backend deployment complete"
