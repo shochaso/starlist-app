@@ -18,14 +18,6 @@ jobs:
       issues: write
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-
       - name: Claude Code Assistant
         uses: actions/github-script@v7
         with:
@@ -158,7 +150,7 @@ jobs:
               console.error('Error calling Claude API:', error);
               
               // エラーの場合もコメントを投稿
-              const errorMessage = `🚨 **Claude Assistant Error**\n\nSorry, I encountered an error while processing your request. Please try again later.`;
+              const errorMessage = `🚨 **Claude Assistant Error**\n\nSorry, I encountered an error while processing your request. Please try again later.\n\nError: ${error.message}`;
               
               if (context.eventName === 'issue_comment') {
                 await github.rest.issues.createComment({
