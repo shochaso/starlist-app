@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart';
+1import 'package:flutter/foundation.dart';
 
 /// スターP取引タイプ
 enum StarPointTransactionType {
