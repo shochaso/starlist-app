@@ -1,3 +1,4 @@
+# Claude AI を利用して Issue や Pull Request に応答する GitHub Action
 name: Claude Code Actions
 
 on:
@@ -19,36 +20,14 @@ jobs:
       contents: write
 
     steps:
-      # Step 1: リポジトリのコードをチェックアウト
-      - name: Checkout code
-        uses: actions/checkout@v4
-        # pull_request_target イベントの場合、PRのヘッドをチェックアウトするとセキュリティリスクがあるため
-        # アクションが必要とする場合を除き、ベースブランチをチェックアウトするのが安全です。
-        # このツールはAPI経由で差分を取得するため、通常はベースブランチのチェックアウトで問題ありません。
-
-      # Step 2: Node.js 環境をセットアップ
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      # Step 1: Sturdy社のClaude Actionを利用
+      # [修正] 存在しないnpmパッケージをインストールする代わりに、実績のあるGitHub Actionを使用します。
+      # これにより、Node.jsのセットアップやnpmインストールが不要になり、ワークフローがシンプルになります。
+      - name: Run Claude Action
+        uses: sturdy-dev/claude-action@v1
         with:
-          node-version: '20'
-          # [修正] 'cache: npm' を削除しました。
-          # 理由: このオプションは package-lock.json を必要としますが、
-          # npm install -g (グローバルインストール) ではこのファイルが生成されないため、
-          # "Dependencies lock file is not found" エラーが発生します。
-          # CLIツール1つのインストールは高速なため、キャッシュがなくても影響は軽微です。
-
-      # Step 3: Claude Code Actions CLI をインストール
-      - name: Install Claude Code Actions CLI
-        run: npm install -g @claude-code-actions/cli
-
-      # Step 4: Claude Code Action を実行
-      - name: Run Claude Code Action
-        env:
-          # GitHub Secrets に登録した Anthropic APIキーと、GitHubが提供するトークンを環境変数として渡す
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          echo "Starting Claude Code Action..."
-          # IssueとPull Requestの両方に対応するため、|| 演算子で適切な番号を取得
-          claude-code-actions --issue-number ${{ github.event.issue.number || github.event.pull_request.number }} --repo ${{ github.repository }}
+          # GitHub Secretsに登録したAnthropic APIキーを渡します
+          anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
+          # GitHubが自動的に生成するトークンを渡します
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
