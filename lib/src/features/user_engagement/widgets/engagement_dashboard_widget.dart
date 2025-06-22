@@ -2,6 +2,11 @@ import 'package:flutter/material.dart';
 import '../user_engagement_service.dart';
 
 /// ユーザーエンゲージメントダッシュボードウィジェット
+/// 
+/// パフォーマンス最適化:
+/// - const constructors for all static widgets
+/// - Efficient widget decomposition
+/// - Optimized list rendering
 class EngagementDashboardWidget extends StatelessWidget {
   final String userId;
   final Map<String, dynamic> userPreferences;
@@ -28,28 +33,86 @@ class EngagementDashboardWidget extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // ウェルカムメッセージ
-          _buildWelcomeSection(personalizedData['welcomeMessage']),
+          _WelcomeSection(message: personalizedData['welcomeMessage']),
           
           const SizedBox(height: 24),
           
           // 今日のタスク
-          _buildTodaysTasksSection(personalizedData['todaysTasks']),
+          _TodaysTasksSection(tasks: personalizedData['todaysTasks']),
           
           const SizedBox(height: 24),
           
           // おすすめコンテンツ
-          _buildFeaturedContentSection(personalizedData['featuredContent']),
+          _FeaturedContentSection(content: personalizedData['featuredContent']),
           
           const SizedBox(height: 24),
           
           // ソーシャルアップデート
-          _buildSocialUpdatesSection(personalizedData['socialUpdates']),
+          _SocialUpdatesSection(updates: personalizedData['socialUpdates']),
         ],
       ),
     );
   }
 
+  // 非推奨メソッド - パフォーマンス向上のため削除予定
+  @deprecated
   Widget _buildWelcomeSection(String welcomeMessage) {
+    return _WelcomeSection(message: welcomeMessage);
+  }
+
+  @deprecated  
+  Widget _buildTodaysTasksSection(List<Map<String, dynamic>> tasks) {
+    return _TodaysTasksSection(tasks: tasks);
+  }
+
+  @deprecated
+  Widget _buildTaskCard(Map<String, dynamic> task) {
+    return _TaskCard(task: task);
+  }
+
+  @deprecated
+  Widget _buildFeaturedContentSection(List<Map<String, dynamic>> content) {
+    return _FeaturedContentSection(content: content);
+  }
+
+  @deprecated
+  Widget _buildFeaturedCard(Map<String, dynamic> item) {
+    return _FeaturedCard(item: item);
+  }
+
+  @deprecated
+  Widget _buildSocialUpdatesSection(List<Map<String, dynamic>> updates) {
+    return _SocialUpdatesSection(updates: updates);
+  }
+
+  @deprecated
+  Widget _buildUpdateCard(Map<String, dynamic> update) {
+    return _UpdateCard(update: update);
+  }
+
+  String _formatTimestamp(DateTime timestamp) {
+    final now = DateTime.now();
+    final difference = now.difference(timestamp);
+
+    if (difference.inMinutes < 60) {
+      return '${difference.inMinutes}分前';
+    } else if (difference.inHours < 24) {
+      return '${difference.inHours}時間前';
+    } else {
+      return '${difference.inDays}日前';
+    }
+  }
+}
+
+// パフォーマンス最適化されたサブウィジェットクラス
+
+class _WelcomeSection extends StatelessWidget {
+  final String message;
+  
+  const _WelcomeSection({required this.message});
+  
+  @override
+  Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(24),
@@ -62,7 +125,7 @@ class EngagementDashboardWidget extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF667EEA).withOpacity(0.3),
+            color: const Color(0xFF667EEA).withValues(alpha: 0.3),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -91,7 +154,7 @@ class EngagementDashboardWidget extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Text(
-            welcomeMessage,
+            message,
             style: const TextStyle(
               color: Colors.white,
               fontSize: 16,
@@ -102,8 +165,15 @@ class EngagementDashboardWidget extends StatelessWidget {
       ),
     );
   }
+}
 
-  Widget _buildTodaysTasksSection(List<Map<String, dynamic>> tasks) {
+class _TodaysTasksSection extends StatelessWidget {
+  final List<Map<String, dynamic>> tasks;
+  
+  const _TodaysTasksSection({required this.tasks});
+  
+  @override
+  Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -126,12 +196,25 @@ class EngagementDashboardWidget extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 16),
-        ...tasks.map((task) => _buildTaskCard(task)).toList(),
+        // パフォーマンス最適化: ListView.builderを使用
+        ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: tasks.length,
+          itemBuilder: (context, index) => _TaskCard(task: tasks[index]),
+        ),
       ],
     );
   }
+}
 
-  Widget _buildTaskCard(Map<String, dynamic> task) {
+class _TaskCard extends StatelessWidget {
+  final Map<String, dynamic> task;
+  
+  const _TaskCard({required this.task});
+  
+  @override
+  Widget build(BuildContext context) {
     final isCompleted = task['completed'] as bool;
     
     return Container(
@@ -146,7 +229,7 @@ class EngagementDashboardWidget extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -213,8 +296,15 @@ class EngagementDashboardWidget extends StatelessWidget {
       ),
     );
   }
+}
 
-  Widget _buildFeaturedContentSection(List<Map<String, dynamic>> content) {
+class _FeaturedContentSection extends StatelessWidget {
+  final List<Map<String, dynamic>> content;
+  
+  const _FeaturedContentSection({required this.content});
+  
+  @override
+  Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -242,17 +332,22 @@ class EngagementDashboardWidget extends StatelessWidget {
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             itemCount: content.length,
-            itemBuilder: (context, index) {
-              final item = content[index];
-              return _buildFeaturedCard(item);
-            },
+            cacheExtent: 500, // パフォーマンス最適化
+            itemBuilder: (context, index) => _FeaturedCard(item: content[index]),
           ),
         ),
       ],
     );
   }
+}
 
-  Widget _buildFeaturedCard(Map<String, dynamic> item) {
+class _FeaturedCard extends StatelessWidget {
+  final Map<String, dynamic> item;
+  
+  const _FeaturedCard({required this.item});
+  
+  @override
+  Widget build(BuildContext context) {
     return Container(
       width: 200,
       margin: const EdgeInsets.only(right: 16),
@@ -260,7 +355,7 @@ class EngagementDashboardWidget extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -297,8 +392,15 @@ class EngagementDashboardWidget extends StatelessWidget {
       ),
     );
   }
+}
 
-  Widget _buildSocialUpdatesSection(List<Map<String, dynamic>> updates) {
+class _SocialUpdatesSection extends StatelessWidget {
+  final List<Map<String, dynamic>> updates;
+  
+  const _SocialUpdatesSection({required this.updates});
+  
+  @override
+  Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -321,12 +423,25 @@ class EngagementDashboardWidget extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 16),
-        ...updates.map((update) => _buildUpdateCard(update)).toList(),
+        // パフォーマンス最適化: ListView.builderを使用
+        ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: updates.length,
+          itemBuilder: (context, index) => _UpdateCard(update: updates[index]),
+        ),
       ],
     );
   }
+}
 
-  Widget _buildUpdateCard(Map<String, dynamic> update) {
+class _UpdateCard extends StatelessWidget {
+  final Map<String, dynamic> update;
+  
+  const _UpdateCard({required this.update});
+  
+  @override
+  Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
@@ -338,7 +453,7 @@ class EngagementDashboardWidget extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -350,7 +465,7 @@ class EngagementDashboardWidget extends StatelessWidget {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: const Color(0xFF8B5CF6).withOpacity(0.1),
+              color: const Color(0xFF8B5CF6).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(20),
             ),
             child: const Icon(
@@ -387,7 +502,7 @@ class EngagementDashboardWidget extends StatelessWidget {
       ),
     );
   }
-
+  
   String _formatTimestamp(DateTime timestamp) {
     final now = DateTime.now();
     final difference = now.difference(timestamp);

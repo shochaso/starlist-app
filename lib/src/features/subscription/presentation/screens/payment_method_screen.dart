@@ -230,7 +230,7 @@ class _PaymentMethodScreenState extends ConsumerState<PaymentMethodScreen> {
                   Text(
                     '• サブスクリプションは自動更新されます\n'
                     '• いつでもアカウント設定から解約できます\n'
-                    '• ${widget.plan.metadata['trialDays'] != null ? '無料トライアル期間終了後' : ''}、選択した支払い方法で${widget.plan.billingPeriod.inDays == 30 ? '月' : '年'}額が自動的に請求されます',
+                    '• 選択した支払い方法で${widget.plan.billingPeriod.inDays == 30 ? '月' : '年'}額が自動的に請求されます',
                     style: TextStyle(
                       color: Colors.grey.shade700,
                       fontSize: 14,

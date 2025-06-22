@@ -4,8 +4,6 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide Provider;
 import 'package:starlist/theme/app_theme_enhanced.dart';
 import 'package:starlist/src/providers/theme_provider_enhanced.dart';
-import 'package:google_fonts/google_fonts.dart';
-
 // StarlistAppをインポート
 import 'src/features/data_integration/repositories/youtube_repository.dart';
 import 'src/features/data_integration/services/youtube_api_service.dart';
@@ -20,10 +18,6 @@ import 'src/features/favorites/providers/favorite_provider.dart';
 import 'src/features/star/screens/star_activity_timeline_screen.dart';
 import 'screens/star_home_screen.dart';
 import 'screens/fan_home_screen.dart';
-import 'screens/landing_screen.dart';
-import 'screens/fan_register_screen.dart';
-import 'screens/register_screen.dart';
-import 'screens/starlist_home_screen.dart';
 import 'screens/starlist_main_screen.dart';
 import 'features/star/screens/star_dashboard_screen.dart';
 import 'features/subscription/screens/plan_management_screen.dart';
@@ -35,9 +29,6 @@ import 'features/mylist/screens/mylist_screen.dart';
 import 'features/profile/screens/profile_screen.dart';
 import 'features/star/screens/schedule_management_screen.dart';
 import 'features/star/screens/star_profile_screen.dart';
-import 'src/features/youtube_easy/simple_youtube_widget.dart';
-import 'src/features/youtube_easy/youtube_import_widget.dart';
-import 'src/features/subscription/screens/subscription_plans_screen.dart';
 import 'src/widgets/theme_test_screen.dart';
 
 // Riverpodプロバイダー名の衝突を避けるため
@@ -111,6 +102,11 @@ class MyApp extends ConsumerWidget {
 class HomePage extends ConsumerWidget {
   const HomePage({super.key});
 
+  // Performance: Cached loading widget to prevent rebuilds
+  static const Widget _loadingWidget = Scaffold(
+    body: Center(child: CircularProgressIndicator()),
+  );
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final userState = ref.watch(userProvider);
@@ -128,9 +124,7 @@ class HomePage extends ConsumerWidget {
           return const FanHomeScreen();
         }
       },
-      loading: () => const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      ),
+      loading: () => _loadingWidget,
       error: (_, __) => const LoginScreen(),
     );
   }
@@ -401,8 +395,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    print('HomeScreen: buildメソッドが呼ばれました');
-    
+    // Performance: Removed debug print for production
     return Scaffold(
       body: IndexedStack(
         index: _currentIndex,
@@ -444,8 +437,7 @@ class HomeTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print('HomeTab: buildメソッドが呼ばれました');
-    
+    // Performance: Removed debug print for production
     return Scaffold(
       appBar: AppBar(
         title: const Text('Starlist'),
@@ -545,7 +537,7 @@ class SearchTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    print('SearchTab: buildメソッドが呼ばれました');
+    // Performance: Removed debug print for production
     final TextEditingController searchController = TextEditingController();
     
     return Scaffold(
@@ -638,7 +630,7 @@ class ProfileTab extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    print('ProfileTab: buildメソッドが呼ばれました');
+    // Performance: Removed debug print for production
     
     // 認証状態を取得
     final authState = ref.watch(authStateProvider);

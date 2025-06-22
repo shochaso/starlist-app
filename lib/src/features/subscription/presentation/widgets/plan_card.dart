@@ -18,7 +18,6 @@ class PlanCard extends StatelessWidget {
     final theme = Theme.of(context);
     final isPremium = plan.price > 0;
     final savePercent = (plan.metadata['savePercent'] as int?) ?? 0;
-    final trialDays = (plan.metadata['trialDays'] as int?) ?? 0;
     
     return GestureDetector(
       onTap: onTap,
@@ -150,17 +149,6 @@ class PlanCard extends StatelessWidget {
                         ),
                     ],
                   ),
-                  
-                  if (trialDays > 0) ...[
-                    const SizedBox(height: 8),
-                    Text(
-                      '最初の$trialDays日間は無料',
-                      style: TextStyle(
-                        color: theme.colorScheme.primary,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
                   
                   const SizedBox(height: 24),
                   

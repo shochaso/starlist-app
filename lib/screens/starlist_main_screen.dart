@@ -12,6 +12,7 @@ import '../features/app/screens/settings_screen.dart';
 import '../providers/user_provider.dart';
 import '../providers/theme_provider.dart';
 import '../src/core/components/service_icons.dart';
+import 'fan_home_screen.dart';
 
 // データモデル
 class StarData {
@@ -672,6 +673,41 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // テスト用: FanHomeScreenへのナビゲーションボタン
+          Container(
+            padding: const EdgeInsets.all(16),
+            child: ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (context) => const FanHomeScreen()),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF4ECDC4),
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.people, color: Colors.white),
+                  SizedBox(width: 8),
+                  Text(
+                    'ファン画面を見る（メンバーシッププラン含む）',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
+          
           // 最新YouTube履歴セクション（新規追加）
           _buildLatestYouTubeHistorySection(),
           const SizedBox(height: 24),

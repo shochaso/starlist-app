@@ -35,7 +35,6 @@ class SubscriptionPlansData {
     isPopular: true,
     metadata: {
       'savePercent': 0,
-      'trialDays': 7, // 7日間無料トライアル
     },
   );
 
@@ -57,7 +56,6 @@ class SubscriptionPlansData {
     isPopular: false,
     metadata: {
       'savePercent': 0,
-      'trialDays': 7, // 7日間無料トライアル
     },
   );
 
@@ -82,7 +80,6 @@ class SubscriptionPlansData {
     isPopular: false,
     metadata: {
       'savePercent': 0,
-      'trialDays': 14, // 14日間無料トライアル
     },
   );
 

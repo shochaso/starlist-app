@@ -251,7 +251,6 @@ class UserSubscription {
   final int priceJpy;
   final String? paymentMethodId;
   final DateTime? canceledAt;
-  final DateTime? trialEndAt;
   final Map<String, dynamic> metadata;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -267,7 +266,6 @@ class UserSubscription {
     required this.priceJpy,
     this.paymentMethodId,
     this.canceledAt,
-    this.trialEndAt,
     required this.metadata,
     required this.createdAt,
     required this.updatedAt,
@@ -292,7 +290,6 @@ class UserSubscription {
       priceJpy: json['price_jpy'],
       paymentMethodId: json['payment_method_id'],
       canceledAt: json['canceled_at'] != null ? DateTime.parse(json['canceled_at']) : null,
-      trialEndAt: json['trial_end_at'] != null ? DateTime.parse(json['trial_end_at']) : null,
       metadata: Map<String, dynamic>.from(json['metadata'] ?? {}),
       createdAt: DateTime.parse(json['created_at']),
       updatedAt: DateTime.parse(json['updated_at']),
@@ -312,7 +309,6 @@ class UserSubscription {
       'price_jpy': priceJpy,
       'payment_method_id': paymentMethodId,
       'canceled_at': canceledAt?.toIso8601String(),
-      'trial_end_at': trialEndAt?.toIso8601String(),
       'metadata': metadata,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
@@ -328,8 +324,6 @@ class UserSubscription {
   /// キャンセル済みかどうか
   bool get isCanceled => canceledAt != null;
 
-  /// トライアル期間中かどうか
-  bool get isInTrial => trialEndAt != null && DateTime.now().isBefore(trialEndAt!);
 
   /// 期限切れまでの日数
   int get daysUntilExpiry {
@@ -358,7 +352,6 @@ class UserSubscription {
         other.priceJpy == priceJpy &&
         other.paymentMethodId == paymentMethodId &&
         other.canceledAt == canceledAt &&
-        other.trialEndAt == trialEndAt &&
         mapEquals(other.metadata, metadata) &&
         other.createdAt == createdAt &&
         other.updatedAt == updatedAt;
@@ -376,7 +369,6 @@ class UserSubscription {
         priceJpy,
         paymentMethodId,
         canceledAt,
-        trialEndAt,
         metadata,
         createdAt,
         updatedAt,
