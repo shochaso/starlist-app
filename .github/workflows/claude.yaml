@@ -1,4 +1,3 @@
-# Claude AI を利用して Issue や Pull Request に応答する GitHub Action
 name: Claude Code Actions
 
 on:
@@ -32,8 +31,11 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          # npm の依存関係をキャッシュして、次回以降の実行を高速化
-          cache: 'npm'
+          # [修正] 'cache: npm' を削除しました。
+          # 理由: このオプションは package-lock.json を必要としますが、
+          # npm install -g (グローバルインストール) ではこのファイルが生成されないため、
+          # "Dependencies lock file is not found" エラーが発生します。
+          # CLIツール1つのインストールは高速なため、キャッシュがなくても影響は軽微です。
 
       # Step 3: Claude Code Actions CLI をインストール
       - name: Install Claude Code Actions CLI
