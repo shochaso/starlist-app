@@ -1,36 +1,52 @@
+# Claude AI を利用して Issue や Pull Request に応答する GitHub Action
 name: Claude Code Actions
 
 on:
+  # Issue が作成または編集された時に実行
   issues:
     types: [opened, edited]
+  # Pull Request が作成または編集された時に実行
+  # pull_request_target はフォークからのPRにも対応でき、安全にシークレットを利用するために推奨されます
   pull_request_target:
     types: [opened, edited]
 
 jobs:
   claude_action:
     runs-on: ubuntu-latest
+    # Action が Issue や PR にコメント・コミットするために必要な権限を付与
     permissions:
       issues: write
       pull-requests: write
       contents: write
-      repository-projects: write
 
     steps:
+      # Step 1: リポジトリのコードをチェックアウト
       - name: Checkout code
         uses: actions/checkout@v4
+        # pull_request_target イベントの場合、PRのヘッドをチェックアウトするとセキュリティリスクがあるため
+        # アクションが必要とする場合を除き、ベースブランチをチェックアウトするのが安全です。
+        # このツールはAPI経由で差分を取得するため、通常はベースブランチのチェックアウトで問題ありません。
 
+      # Step 2: Node.js 環境をセットアップ
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+          # npm の依存関係をキャッシュして、次回以降の実行を高速化
+          cache: 'npm'
 
-      - name: Install Correct Claude Code Actions CLI
-        run: npm install -g <ここに正しいパッケージ名を書く>
+      # Step 3: Claude Code Actions CLI をインストール
+      - name: Install Claude Code Actions CLI
+        run: npm install -g @claude-code-actions/cli
 
-      - name: Run Correct Claude Code Action
+      # Step 4: Claude Code Action を実行
+      - name: Run Claude Code Action
         env:
+          # GitHub Secrets に登録した Anthropic APIキーと、GitHubが提供するトークンを環境変数として渡す
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "Starting the correct Claude Action..."
-          <ここに正しいコマンドを書く> --issue-number ${{ github.event.issue.number }} --repo ${{ github.repository }}
+          echo "Starting Claude Code Action..."
+          # IssueとPull Requestの両方に対応するため、|| 演算子で適切な番号を取得
+          claude-code-actions --issue-number ${{ github.event.issue.number || github.event.pull_request.number }} --repo ${{ github.repository }}
+
