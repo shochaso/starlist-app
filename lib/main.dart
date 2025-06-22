@@ -35,6 +35,9 @@ import 'features/profile/screens/profile_screen.dart';
 import 'features/star/screens/schedule_management_screen.dart';
 import 'features/star/screens/star_profile_screen.dart';
 import 'providers/theme_provider.dart';
+import 'src/features/youtube_easy/simple_youtube_widget.dart';
+import 'src/features/youtube_easy/youtube_import_widget.dart';
+import 'src/features/subscription/screens/subscription_plans_screen.dart';
 
 // Riverpodプロバイダー名の衝突を避けるため
 final supabaseUrlProvider = Provider<String>((ref) {
