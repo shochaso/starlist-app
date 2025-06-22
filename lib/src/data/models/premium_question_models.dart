@@ -160,8 +160,8 @@ class PremiumQuestion {
   final String? answerExplanation;
   final DateTime? answeredAt;
   final bool isPublic;
-  final int sPointsSpent;
-  final int sPointsRefunded;
+  final int starPointsSpent;
+  final int starPointsRefunded;
   final Map<String, dynamic> metadata;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -180,8 +180,8 @@ class PremiumQuestion {
     this.answerExplanation,
     this.answeredAt,
     required this.isPublic,
-    required this.sPointsSpent,
-    required this.sPointsRefunded,
+    required this.starPointsSpent,
+    required this.starPointsRefunded,
     required this.metadata,
     required this.createdAt,
     required this.updatedAt,
@@ -203,8 +203,8 @@ class PremiumQuestion {
       answerExplanation: json['answer_explanation'],
       answeredAt: json['answered_at'] != null ? DateTime.parse(json['answered_at']) : null,
       isPublic: json['is_public'] ?? false,
-      sPointsSpent: json['s_points_spent'],
-      sPointsRefunded: json['s_points_refunded'] ?? 0,
+      starPointsSpent: json['s_points_spent'],
+      starPointsRefunded: json['s_points_refunded'] ?? 0,
       metadata: Map<String, dynamic>.from(json['metadata'] ?? {}),
       createdAt: DateTime.parse(json['created_at']),
       updatedAt: DateTime.parse(json['updated_at']),
@@ -227,8 +227,8 @@ class PremiumQuestion {
       'answer_explanation': answerExplanation,
       'answered_at': answeredAt?.toIso8601String(),
       'is_public': isPublic,
-      's_points_spent': sPointsSpent,
-      's_points_refunded': sPointsRefunded,
+      's_points_spent': starPointsSpent,
+      's_points_refunded': starPointsRefunded,
       'metadata': metadata,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
@@ -250,8 +250,8 @@ class PremiumQuestion {
     String? answerExplanation,
     DateTime? answeredAt,
     bool? isPublic,
-    int? sPointsSpent,
-    int? sPointsRefunded,
+    int? starPointsSpent,
+    int? starPointsRefunded,
     Map<String, dynamic>? metadata,
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -270,8 +270,8 @@ class PremiumQuestion {
       answerExplanation: answerExplanation ?? this.answerExplanation,
       answeredAt: answeredAt ?? this.answeredAt,
       isPublic: isPublic ?? this.isPublic,
-      sPointsSpent: sPointsSpent ?? this.sPointsSpent,
-      sPointsRefunded: sPointsRefunded ?? this.sPointsRefunded,
+      starPointsSpent: starPointsSpent ?? this.starPointsSpent,
+      starPointsRefunded: starPointsRefunded ?? this.starPointsRefunded,
       metadata: metadata ?? Map<String, dynamic>.from(this.metadata),
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -318,7 +318,7 @@ class PremiumQuestion {
   bool get isAnswered => status == PremiumQuestionStatus.answered;
 
   /// 返金済みかどうか
-  bool get isRefunded => status == PremiumQuestionStatus.refunded || sPointsRefunded > 0;
+  bool get isRefunded => status == PremiumQuestionStatus.refunded || starPointsRefunded > 0;
 
   /// 期限までの残り時間
   Duration? get timeRemaining {
@@ -356,8 +356,8 @@ class PremiumQuestion {
         other.answerExplanation == answerExplanation &&
         other.answeredAt == answeredAt &&
         other.isPublic == isPublic &&
-        other.sPointsSpent == sPointsSpent &&
-        other.sPointsRefunded == sPointsRefunded &&
+        other.starPointsSpent == starPointsSpent &&
+        other.starPointsRefunded == starPointsRefunded &&
         mapEquals(other.metadata, metadata) &&
         other.createdAt == createdAt &&
         other.updatedAt == updatedAt;
@@ -378,8 +378,8 @@ class PremiumQuestion {
         answerExplanation,
         answeredAt,
         isPublic,
-        sPointsSpent,
-        sPointsRefunded,
+        starPointsSpent,
+        starPointsRefunded,
         metadata,
         createdAt,
         updatedAt,
@@ -604,8 +604,8 @@ class PremiumQuestionStatistics {
     // 総収益を計算（返金分を除く）
     final totalEarnings = questions
         .where((q) => q.isAnswered)
-        .map((q) => q.sPointsSpent - q.sPointsRefunded)
-        .fold(0, (sum, earnings) => sum + earnings);
+        .map((q) => q.starPointsSpent - q.starPointsRefunded)
+        .fold<int>(0, (sum, earnings) => sum + earnings);
 
     return PremiumQuestionStatistics(
       starId: starId,

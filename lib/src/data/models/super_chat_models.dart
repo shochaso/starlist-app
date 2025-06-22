@@ -10,7 +10,7 @@ enum SuperChatEventType {
 
 /// Super Chat通貨タイプ
 enum SuperChatCurrency {
-  spt, // Sポイント
+  spt, // スターP
   jpy, // 日本円
   usd, // 米ドル
 }
@@ -37,7 +37,7 @@ class SuperChatMessage {
   final String? starReply;
   final DateTime? starRepliedAt;
   final bool isFeatured;
-  final int sPointsSpent;
+  final int starPointsSpent;
   final Map<String, dynamic> metadata;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -62,7 +62,7 @@ class SuperChatMessage {
     this.starReply,
     this.starRepliedAt,
     required this.isFeatured,
-    required this.sPointsSpent,
+    required this.starPointsSpent,
     required this.metadata,
     required this.createdAt,
     required this.updatedAt,
@@ -90,7 +90,7 @@ class SuperChatMessage {
       starReply: json['star_reply'],
       starRepliedAt: json['star_replied_at'] != null ? DateTime.parse(json['star_replied_at']) : null,
       isFeatured: json['is_featured'] ?? false,
-      sPointsSpent: json['s_points_spent'],
+      starPointsSpent: json['s_points_spent'],
       metadata: Map<String, dynamic>.from(json['metadata'] ?? {}),
       createdAt: DateTime.parse(json['created_at']),
       updatedAt: DateTime.parse(json['updated_at']),
@@ -119,7 +119,7 @@ class SuperChatMessage {
       'star_reply': starReply,
       'star_replied_at': starRepliedAt?.toIso8601String(),
       'is_featured': isFeatured,
-      's_points_spent': sPointsSpent,
+      's_points_spent': starPointsSpent,
       'metadata': metadata,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
@@ -147,7 +147,7 @@ class SuperChatMessage {
     String? starReply,
     DateTime? starRepliedAt,
     bool? isFeatured,
-    int? sPointsSpent,
+    int? starPointsSpent,
     Map<String, dynamic>? metadata,
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -172,7 +172,7 @@ class SuperChatMessage {
       starReply: starReply ?? this.starReply,
       starRepliedAt: starRepliedAt ?? this.starRepliedAt,
       isFeatured: isFeatured ?? this.isFeatured,
-      sPointsSpent: sPointsSpent ?? this.sPointsSpent,
+      starPointsSpent: starPointsSpent ?? this.starPointsSpent,
       metadata: metadata ?? Map<String, dynamic>.from(this.metadata),
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -254,7 +254,7 @@ class SuperChatMessage {
         other.starReply == starReply &&
         other.starRepliedAt == starRepliedAt &&
         other.isFeatured == isFeatured &&
-        other.sPointsSpent == sPointsSpent;
+        other.starPointsSpent == starPointsSpent;
   }
 
   @override
@@ -278,7 +278,7 @@ class SuperChatMessage {
         starReply,
         starRepliedAt,
         isFeatured,
-        sPointsSpent,
+        starPointsSpent,
       );
 }
 
