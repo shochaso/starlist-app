@@ -1,4 +1,5 @@
-name: CI/CD
+# Starlist アプリケーション CI/CD ワークフロー
+name: Starlist CI/CD
 
 on:
   push:
@@ -6,75 +7,114 @@ on:
   pull_request:
     branches: [ main, develop ]
 
+# 同一ブランチでのワークフローの同時実行をキャンセルし、デプロイの競合を防ぐ
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  test:
+  # 1. コードの静的解析とテストを実行するジョブ
+  lint_and_test:
+    name: Lint & Test
     runs-on: ubuntu-latest
+    steps:
+      - name: 1. Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 2. Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          # 技術要件(Flutter 3.10.0以上)を満たす安定版を指定 
+          flutter-version: '3.22.2' 
+          channel: 'stable'
+          # 依存関係をキャッシュして高速化
+          cache: true
+
+      - name: 3. Install dependencies
+        run: flutter pub get
+
+      - name: 4. Run static analysis
+        # 開発ルールに基づき、静的解析を実行 
+        run: flutter analyze
+
+      - name: 5. Run tests
+        # ユニットテスト、ウィジェットテストを実行
+        run: flutter test
+
+  # 2. テスト成功後、リリース用のアプリをビルドし、成果物をアップロードするジョブ
+  build:
+    name: Build Release Artifacts
+    # lint_and_test ジョブが成功した場合のみ実行
+    needs: lint_and_test
+    runs-on: ubuntu-latest
+    steps:
+      - name: 1. Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 2. Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.22.2'
+          channel: 'stable'
+          cache: true
+
+      - name: 3. Install dependencies
+        run: flutter pub get
+
+      - name: 4. Build Android APK and App Bundle
+        run: |
+          flutter build apk --release
+          flutter build appbundle --release
+
+      - name: 5. Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-artifacts
+          path: |
+            build/app/outputs/flutter-apk/app-release.apk
+            build/app/outputs/bundle/release/app-release.aab
+
+  # 3. developブランチへのプッシュ時にステージング環境へデプロイするジョブ
+  deploy_staging:
+    name: Deploy to Staging
+    # buildジョブが成功し、かつdevelopブランチへのプッシュがトリガーの場合のみ実行
+    needs: build
+    if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    environment: staging # オプション: GitHub Environmentsでステージング環境を定義
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Setup Flutter
-      uses: subosito/flutter-action@v2
-      with:
-        flutter-version: "3.x"
-        channel: "stable"
+      - name: 1. Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: release-artifacts
 
-    - name: Install dependencies
-      run: flutter pub get
+      - name: 2. Deploy to Staging
+        run: |
+          echo "Deploying APK to Staging environment..."
+          # ここにステージング環境へのデプロイメントコマンドを記述
+          # 例: fastlane deploy_staging or gcloud firebase appdistribution ...
 
-    - name: Run tests
-      run: flutter test
-
-    - name: Build APK
-      run: flutter build apk --release
-
-    - name: Upload APK
-      uses: actions/upload-artifact@v2
-      with:
-        name: release-apk
-        path: build/app/outputs/flutter-apk/app-release.apk
-
-  deploy-staging:
-    needs: test
-    if: github.ref == "refs/heads/develop"
+  # 4. mainブランチへのプッシュ時に本番環境へデプロイするジョブ
+  deploy_production:
+    name: Deploy to Production
+    # buildジョブが成功し、かつmainブランチへのプッシュがトリガーの場合のみ実行
+    needs: build
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
+    # GitHub Environments を使用して本番デプロイの承認ルールなどを設定可能
+    environment: 
+      name: production
+      url: https://starlist.app # あなたのアプリのURL
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Setup Flutter
-      uses: subosito/flutter-action@v2
-      with:
-        flutter-version: "3.x"
-        channel: "stable"
+      - name: 1. Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: release-artifacts
 
-    - name: Install dependencies
-      run: flutter pub get
-
-    - name: Build for staging
-      run: flutter build apk --release
-
-    - name: Deploy to staging
-      run: echo "Deploy to staging"
-      # ステージング環境へのデプロイメントコマンド
-
-  deploy-production:
-    needs: test
-    if: github.ref == "refs/heads/main"
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v2
-    - name: Setup Flutter
-      uses: subosito/flutter-action@v2
-      with:
-        flutter-version: "3.x"
-        channel: "stable"
-
-    - name: Install dependencies
-      run: flutter pub get
-
-    - name: Build for production
-      run: flutter build apk --release
-
-    - name: Deploy to production
-      run: echo "Deploy to production"
-      # 本番環境へのデプロイメントコマンド
+      - name: 2. Deploy to Production
+        run: |
+          echo "Deploying App Bundle to Production (Google Play)..."
+          # ここに本番環境へのデプロイメントコマンドを記述
+          # 例: fastlane deploy_production or a script to upload to Google Play Console
