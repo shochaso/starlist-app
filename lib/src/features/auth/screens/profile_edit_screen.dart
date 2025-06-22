@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
-import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 
-import '../models/user_model.dart';
 import '../providers/user_provider.dart';
 import '../validators/auth_validators.dart';
+import '../../../widgets/image_picker_widget.dart';
+import '../../../widgets/upload_progress_widget.dart';
+import '../../../providers/image_upload_provider.dart';
 
 class ProfileEditScreen extends ConsumerStatefulWidget {
   const ProfileEditScreen({Key? key}) : super(key: key);
@@ -57,15 +57,10 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
     );
   }
   
-  Future<void> _pickImage() async {
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-    
-    if (pickedFile != null) {
-      setState(() {
-        _profileImage = File(pickedFile.path);
-      });
-    }
+  void _onImageSelected(File imageFile) {
+    setState(() {
+      _profileImage = imageFile;
+    });
   }
   
   Future<void> _saveProfile() async {
@@ -91,8 +86,16 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
       // プロフィール画像のアップロード
       String? imageUrl;
       if (_profileImage != null) {
-        // TODO: 画像アップロード機能を実装
-        // imageUrl = await uploadProfileImage(_profileImage!, user.id);
+        try {
+          final profileImageUpload = ref.read(profileImageUploadProvider.notifier);
+          imageUrl = await profileImageUpload.uploadProfileImage(
+            userId: user.id,
+            imageFile: _profileImage!,
+            oldImageUrl: user.profileImageUrl,
+          );
+        } catch (e) {
+          throw Exception('画像のアップロードに失敗しました: ${e.toString()}');
+        }
       }
       
       // ユーザー名の更新
@@ -160,6 +163,9 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  // アップロード進捗表示
+                  const UploadProgressIndicator(),
+                  
                   // エラーメッセージ
                   if (_errorMessage != null)
                     Container(
@@ -177,35 +183,12 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
                   
                   // プロフィール画像
                   Center(
-                    child: Stack(
-                      children: [
-                        CircleAvatar(
-                          radius: 60,
-                          backgroundImage: _profileImage != null
-                              ? FileImage(_profileImage!) as ImageProvider
-                              : (user.profileImageUrl != null
-                                  ? NetworkImage(user.profileImageUrl!) as ImageProvider
-                                  : const AssetImage('assets/images/default_profile.png')),
-                          child: user.profileImageUrl == null && _profileImage == null
-                              ? const Icon(Icons.person, size: 60, color: Colors.white)
-                              : null,
-                        ),
-                        Positioned(
-                          bottom: 0,
-                          right: 0,
-                          child: Container(
-                            padding: const EdgeInsets.all(4),
-                            decoration: BoxDecoration(
-                              color: Theme.of(context).primaryColor,
-                              shape: BoxShape.circle,
-                            ),
-                            child: IconButton(
-                              icon: const Icon(Icons.camera_alt, color: Colors.white),
-                              onPressed: _isLoading ? null : _pickImage,
-                            ),
-                          ),
-                        ),
-                      ],
+                    child: ImagePickerWidget(
+                      onImageSelected: _onImageSelected,
+                      currentImageUrl: user.profileImageUrl,
+                      size: 120,
+                      placeholderIcon: Icons.person,
+                      placeholderText: '画像を選択',
                     ),
                   ),
                   const SizedBox(height: 24),

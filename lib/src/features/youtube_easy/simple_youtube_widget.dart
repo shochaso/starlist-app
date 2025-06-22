@@ -422,4 +422,184 @@ class _SimpleYouTubeWidgetState extends State<SimpleYouTubeWidget> {
       });
     }
   }
+
+  /// インポート方法選択セクション
+  Widget _buildImportMethodSelection() {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              '📥 視聴履歴をインポート',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+            ElevatedButton.icon(
+              onPressed: () => _showChannelIdDialog(),
+              icon: const Icon(Icons.upload),
+              label: const Text('チャンネルIDを入力'),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.purple),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// インポート結果表示
+  Widget _buildImportResult() {
+    if (currentChannel == null) return const SizedBox.shrink();
+    
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              '✅ インポート完了',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.green),
+            ),
+            const SizedBox(height: 8),
+            Text('チャンネル: ${currentChannel!.name}'),
+            Text('動画数: ${videos.length}件'),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// インポートした履歴リスト
+  Widget _buildImportedHistoryList() {
+    if (videos.isEmpty) return const SizedBox.shrink();
+    
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              '📋 視聴履歴',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+            ...videos.take(5).map((video) => ListTile(
+              title: Text(video.title),
+              subtitle: Text(video.description),
+              onTap: () => _launchVideo(video.id),
+            )).toList(),
+            if (videos.length > 5)
+              TextButton(
+                onPressed: () => _showAllVideos(),
+                child: Text('他${videos.length - 5}件を表示'),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// チャンネルID入力ダイアログ
+  void _showChannelIdDialog() {
+    final controller = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('チャンネルIDを入力'),
+        content: TextField(
+          controller: controller,
+          decoration: const InputDecoration(
+            hintText: 'UCxxxxxxxxxxxxxxxxxxxx',
+            labelText: 'チャンネルID',
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('キャンセル'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _importFromChannelId(controller.text);
+            },
+            child: const Text('インポート'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// チャンネルIDからインポート
+  Future<void> _importFromChannelId(String channelId) async {
+    setState(() {
+      isLoading = true;
+      errorMessage = null;
+    });
+
+    try {
+      final channel = await SimpleYouTubeService.getChannel(channelId);
+      if (channel != null) {
+        final channelVideos = await SimpleYouTubeService.getChannelVideos(channelId);
+        setState(() {
+          currentChannel = channel;
+          videos = channelVideos;
+        });
+      } else {
+        setState(() {
+          errorMessage = 'チャンネルが見つかりませんでした';
+        });
+      }
+    } catch (e) {
+      setState(() {
+        errorMessage = 'エラーが発生しました: $e';
+      });
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  /// 動画を開く
+  Future<void> _launchVideo(String videoId) async {
+    final url = 'https://www.youtube.com/watch?v=$videoId';
+    if (await canLaunchUrl(Uri.parse(url))) {
+      await launchUrl(Uri.parse(url));
+    }
+  }
+
+  /// 全動画表示
+  void _showAllVideos() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('全動画リスト'),
+        content: SizedBox(
+          width: double.maxFinite,
+          height: 400,
+          child: ListView.builder(
+            itemCount: videos.length,
+            itemBuilder: (context, index) {
+              final video = videos[index];
+              return ListTile(
+                title: Text(video.title),
+                subtitle: Text(video.description),
+                onTap: () => _launchVideo(video.id),
+              );
+            },
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('閉じる'),
+          ),
+        ],
+      ),
+    );
+  }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'youtube_history_importer.dart';
 import 'simple_youtube_setup.dart';
+import 'simple_youtube_service.dart';
 
 /// YouTuber履歴インポート画面（中学生向け）
 class YouTubeImportWidget extends StatefulWidget {
@@ -324,7 +325,7 @@ class _YouTubeImportWidgetState extends State<YouTubeImportWidget> {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.7),
+        color: Colors.white.withValues(alpha: 0.7),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(

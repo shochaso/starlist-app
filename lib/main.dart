@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide Provider;
-import 'package:starlist/theme/app_theme.dart';
+import 'package:starlist/theme/app_theme_enhanced.dart';
+import 'package:starlist/src/providers/theme_provider_enhanced.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 // StarlistAppをインポート
@@ -34,10 +35,10 @@ import 'features/mylist/screens/mylist_screen.dart';
 import 'features/profile/screens/profile_screen.dart';
 import 'features/star/screens/schedule_management_screen.dart';
 import 'features/star/screens/star_profile_screen.dart';
-import 'providers/theme_provider.dart';
 import 'src/features/youtube_easy/simple_youtube_widget.dart';
 import 'src/features/youtube_easy/youtube_import_widget.dart';
 import 'src/features/subscription/screens/subscription_plans_screen.dart';
+import 'src/widgets/theme_test_screen.dart';
 
 // Riverpodプロバイダー名の衝突を避けるため
 final supabaseUrlProvider = Provider<String>((ref) {
@@ -85,13 +86,13 @@ class MyApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final themeMode = ref.watch(themeProvider);
+    final themeState = ref.watch(themeProviderEnhanced);
     
     return MaterialApp(
       title: 'Starlist',
-      theme: AppThemes.lightTheme,
-      darkTheme: AppThemes.darkTheme,
-      themeMode: themeMode == AppThemeMode.light ? ThemeMode.light : ThemeMode.dark,
+      theme: AppThemeEnhanced.lightTheme,
+      darkTheme: AppThemeEnhanced.darkTheme,
+      themeMode: themeState.effectiveThemeMode,
       home: const StarlistMainScreen(),
       routes: {
         '/star-signup': (context) => const StarSignupScreen(),
@@ -100,6 +101,7 @@ class MyApp extends ConsumerWidget {
         '/plan-management': (context) => const PlanManagementScreen(),
         '/settings': (context) => const SettingsScreen(),
         '/data-import': (context) => const DataImportScreen(),
+        '/theme-test': (context) => const ThemeTestScreen(),
       },
       debugShowCheckedModeBanner: false,
     );
@@ -319,6 +321,18 @@ class SimpleHomeScreen extends StatelessWidget {
                 );
               },
               child: const Text('スタープロフィール（ファン視点）'),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                // テーマテスト画面に移動
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const ThemeTestScreen(),
+                  ),
+                );
+              },
+              child: const Text('テーマテスト'),
             ),
           ],
         ),

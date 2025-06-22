@@ -7,7 +7,8 @@ class MockData {
       Star(
         id: 'star1',
         name: 'ゆきりぬ',
-        category: 'YouTuber',
+        platforms: ['YouTuber'],
+        genres: ['教育', 'テクノロジー'],
         rank: 'プラチナ',
         followers: 56000,
         imageUrl: 'https://placehold.jp/150x150.png?text=ゆきりぬ',
@@ -15,7 +16,8 @@ class MockData {
       Star(
         id: 'star2',
         name: '水溜りボンド',
-        category: 'YouTuber',
+        platforms: ['YouTuber'],
+        genres: ['エンタメ', 'バラエティ'],
         rank: 'スーパー',
         followers: 235000,
         imageUrl: 'https://placehold.jp/150x150.png?text=水溜りボンド',
@@ -23,7 +25,8 @@ class MockData {
       Star(
         id: 'star3',
         name: '板倉の健ちゃん',
-        category: 'ストリーマー',
+        platforms: ['ストリーマー'],
+        genres: ['ゲーム'],
         rank: 'レギュラー',
         followers: 8700,
         imageUrl: 'https://placehold.jp/150x150.png?text=板倉の健ちゃん',
@@ -31,7 +34,8 @@ class MockData {
       Star(
         id: 'star4',
         name: 'ぺいんと',
-        category: 'イラストレーター',
+        platforms: ['イラストレーター'],
+        genres: ['アート', 'デザイン'],
         rank: 'プラチナ',
         followers: 78000,
         imageUrl: 'https://placehold.jp/150x150.png?text=ぺいんと',
@@ -39,7 +43,8 @@ class MockData {
       Star(
         id: 'star5',
         name: 'コムドット',
-        category: 'YouTuber',
+        platforms: ['YouTuber'],
+        genres: ['エンタメ', 'ライフスタイル'],
         rank: 'スーパー',
         followers: 420000,
         imageUrl: 'https://placehold.jp/150x150.png?text=コムドット',
@@ -47,7 +52,8 @@ class MockData {
       Star(
         id: 'star6',
         name: '古川優香',
-        category: 'モデル',
+        platforms: ['モデル', 'インフルエンサー'],
+        genres: ['ファッション', 'ビューティー'],
         rank: 'プラチナ',
         followers: 198000,
         imageUrl: 'https://placehold.jp/150x150.png?text=古川優香',

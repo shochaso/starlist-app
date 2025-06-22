@@ -212,7 +212,7 @@ class SubscriptionPlanCard extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
-          baseline: TextBaseline.alphabetic,
+          textBaseline: TextBaseline.alphabetic,
           crossAxisAlignment: CrossAxisAlignment.baseline,
           children: [
             Text(

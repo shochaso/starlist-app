@@ -1636,7 +1636,7 @@ class _StarDashboardScreenState extends State<StarDashboardScreen>
           Row(
             children: [
               Expanded(
-                child: _buildActionButton(
+                child: _buildActionButtonWithSubtitle(
                   '📥 履歴インポート',
                   '新しい視聴履歴を追加',
                   Colors.blue,
@@ -1645,7 +1645,7 @@ class _StarDashboardScreenState extends State<StarDashboardScreen>
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: _buildActionButton(
+                child: _buildActionButtonWithSubtitle(
                   '⚙️ 共有設定',
                   '公開する履歴を選択',
                   Colors.green,
@@ -1659,8 +1659,8 @@ class _StarDashboardScreenState extends State<StarDashboardScreen>
     );
   }
 
-  /// アクションボタン
-  Widget _buildActionButton(String title, String subtitle, Color color, VoidCallback onTap) {
+  /// アクションボタン（タイトル・サブタイトル付き）
+  Widget _buildActionButtonWithSubtitle(String title, String subtitle, Color color, VoidCallback onTap) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
