@@ -113,18 +113,6 @@ class ServiceIcons {
       backgroundColor: Color(0xFF0066CC),
       icon: Icons.business,
     ),
-    'skyflag': ServiceIconData(
-      name: 'SKYFLAG',
-      color: Color(0xFF00A0E9), // スカイブルー
-      backgroundColor: Color(0xFF00A0E9),
-      icon: Icons.flag,
-    ),
-    'ironsource': ServiceIconData(
-      name: 'ironSource',
-      color: Color(0xFF6B46C1), // パープル
-      backgroundColor: Color(0xFF6B46C1),
-      icon: Icons.source,
-    ),
     'linkedin': ServiceIconData(
       name: 'LinkedIn',
       color: Color(0xFF0A66C2), // 公式LinkedIn Blue

@@ -1,15 +1,15 @@
 import 'package:flutter/foundation.dart';
 
-/// Sポイント取引タイプ
-enum SPointTransactionType {
+/// スターP取引タイプ
+enum StarPointTransactionType {
   earned,  // 獲得
   spent,   // 使用
   bonus,   // ボーナス
   refund,  // 返金
 }
 
-/// Sポイント取引ソース
-enum SPointSourceType {
+/// スターP取引ソース
+enum StarPointSourceType {
   dailyLogin,      // 日次ログイン
   voting,          // 投票参加
   premiumQuestion, // プレミアム質問
@@ -23,9 +23,9 @@ enum VoteOption {
   B, // オプションB
 }
 
-/// Sポイント残高モデル
+/// スターP残高モデル
 @immutable
-class SPointBalance {
+class StarPointBalance {
   final String id;
   final String userId;
   final int balance;
@@ -34,7 +34,7 @@ class SPointBalance {
   final DateTime createdAt;
   final DateTime updatedAt;
 
-  const SPointBalance({
+  const StarPointBalance({
     required this.id,
     required this.userId,
     required this.balance,
@@ -44,9 +44,9 @@ class SPointBalance {
     required this.updatedAt,
   });
 
-  /// JSONからSPointBalanceを作成
-  factory SPointBalance.fromJson(Map<String, dynamic> json) {
-    return SPointBalance(
+  /// JSONからStarPointBalanceを作成
+  factory StarPointBalance.fromJson(Map<String, dynamic> json) {
+    return StarPointBalance(
       id: json['id'],
       userId: json['user_id'],
       balance: json['balance'] ?? 0,
@@ -57,7 +57,7 @@ class SPointBalance {
     );
   }
 
-  /// SPointBalanceをJSONに変換
+  /// StarPointBalanceをJSONに変換
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -71,7 +71,7 @@ class SPointBalance {
   }
 
   /// コピーを作成
-  SPointBalance copyWith({
+  StarPointBalance copyWith({
     String? id,
     String? userId,
     int? balance,
@@ -80,7 +80,7 @@ class SPointBalance {
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
-    return SPointBalance(
+    return StarPointBalance(
       id: id ?? this.id,
       userId: userId ?? this.userId,
       balance: balance ?? this.balance,
@@ -91,7 +91,7 @@ class SPointBalance {
     );
   }
 
-  /// Sポイントが足りているかチェック
+  /// スターPが足りているかチェック
   bool hasSufficientPoints(int requiredPoints) {
     return balance >= requiredPoints;
   }
@@ -99,7 +99,7 @@ class SPointBalance {
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    return other is SPointBalance &&
+    return other is StarPointBalance &&
         other.id == id &&
         other.userId == userId &&
         other.balance == balance &&
@@ -121,19 +121,19 @@ class SPointBalance {
       );
 }
 
-/// Sポイント取引履歴モデル
+/// スターP取引履歴モデル
 @immutable
-class SPointTransaction {
+class StarPointTransaction {
   final String id;
   final String userId;
   final int amount;
-  final SPointTransactionType transactionType;
-  final SPointSourceType sourceType;
+  final StarPointTransactionType transactionType;
+  final StarPointSourceType sourceType;
   final String? sourceId;
   final String? description;
   final DateTime createdAt;
 
-  const SPointTransaction({
+  const StarPointTransaction({
     required this.id,
     required this.userId,
     required this.amount,
@@ -144,19 +144,19 @@ class SPointTransaction {
     required this.createdAt,
   });
 
-  /// JSONからSPointTransactionを作成
-  factory SPointTransaction.fromJson(Map<String, dynamic> json) {
-    return SPointTransaction(
+  /// JSONからStarPointTransactionを作成
+  factory StarPointTransaction.fromJson(Map<String, dynamic> json) {
+    return StarPointTransaction(
       id: json['id'],
       userId: json['user_id'],
       amount: json['amount'],
-      transactionType: SPointTransactionType.values.firstWhere(
+      transactionType: StarPointTransactionType.values.firstWhere(
         (e) => e.name == json['transaction_type'],
-        orElse: () => SPointTransactionType.earned,
+        orElse: () => StarPointTransactionType.earned,
       ),
-      sourceType: SPointSourceType.values.firstWhere(
+      sourceType: StarPointSourceType.values.firstWhere(
         (e) => e.name == json['source_type'],
-        orElse: () => SPointSourceType.admin,
+        orElse: () => StarPointSourceType.admin,
       ),
       sourceId: json['source_id'],
       description: json['description'],
@@ -164,7 +164,7 @@ class SPointTransaction {
     );
   }
 
-  /// SPointTransactionをJSONに変換
+  /// StarPointTransactionをJSONに変換
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -190,7 +190,7 @@ class SPointTransaction {
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    return other is SPointTransaction &&
+    return other is StarPointTransaction &&
         other.id == id &&
         other.userId == userId &&
         other.amount == amount &&

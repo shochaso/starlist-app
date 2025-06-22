@@ -127,7 +127,7 @@ class _VotingPostCardState extends ConsumerState<VotingPostCard> with SingleTick
               ),
               const SizedBox(width: 4),
               Text(
-                '${widget.post.votingCost} SP',
+                '${widget.post.votingCost} スターP',
                 style: TextStyle(
                   color: theme.primaryColor,
                   fontWeight: FontWeight.bold,
@@ -530,7 +530,7 @@ class _VotingPostCardState extends ConsumerState<VotingPostCard> with SingleTick
               widget.onVoteCompleted?.call();
               // プロバイダーを無効化してデータを再取得
               ref.invalidate(userVoteForPostProvider);
-              ref.invalidate(userSPointBalanceProvider);
+              ref.invalidate(userStarPointBalanceProvider);
             }
           }
         },

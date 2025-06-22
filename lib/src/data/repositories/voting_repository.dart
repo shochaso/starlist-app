@@ -9,8 +9,8 @@ class VotingRepository {
     required SupabaseClient supabase,
   }) : _supabase = supabase;
 
-  /// Sポイント残高を取得
-  Future<SPointBalance?> getSPointBalance(String userId) async {
+  /// スターP残高を取得
+  Future<StarPointBalance?> getStarPointBalance(String userId) async {
     try {
       final response = await _supabase
           .from('s_points')
@@ -19,14 +19,14 @@ class VotingRepository {
           .maybeSingle();
 
       if (response == null) return null;
-      return SPointBalance.fromJson(response);
+      return StarPointBalance.fromJson(response);
     } catch (e) {
       throw Exception('Failed to get S-point balance: $e');
     }
   }
 
-  /// Sポイント取引履歴を取得
-  Future<List<SPointTransaction>> getSPointTransactions(
+  /// スターP取引履歴を取得
+  Future<List<StarPointTransaction>> getStarPointTransactions(
     String userId, {
     int limit = 50,
     int offset = 0,
@@ -40,7 +40,7 @@ class VotingRepository {
           .range(offset, offset + limit - 1);
 
       return response
-          .map<SPointTransaction>((json) => SPointTransaction.fromJson(json))
+          .map<StarPointTransaction>((json) => StarPointTransaction.fromJson(json))
           .toList();
     } catch (e) {
       throw Exception('Failed to get S-point transactions: $e');
@@ -232,8 +232,8 @@ class VotingRepository {
         });
   }
 
-  /// Sポイント残高のリアルタイム更新を監視
-  Stream<SPointBalance> watchSPointBalance(String userId) {
+  /// スターP残高のリアルタイム更新を監視
+  Stream<StarPointBalance> watchStarPointBalance(String userId) {
     return _supabase
         .from('s_points')
         .stream(primaryKey: ['id'])
@@ -242,11 +242,11 @@ class VotingRepository {
           if (data.isEmpty) {
             throw Exception('S-point balance not found');
           }
-          return SPointBalance.fromJson(data.first);
+          return StarPointBalance.fromJson(data.first);
         });
   }
 
-  /// Sポイントを手動で付与（管理者用）
+  /// スターPを手動で付与（管理者用）
   Future<void> grantSPoints(
     String userId,
     int amount,
@@ -262,7 +262,7 @@ class VotingRepository {
       });
 
       // 残高を更新
-      final currentBalance = await getSPointBalance(userId);
+      final currentBalance = await getStarPointBalance(userId);
       if (currentBalance != null) {
         await _supabase
             .from('s_points')
@@ -278,7 +278,7 @@ class VotingRepository {
     }
   }
 
-  /// 日次ログインボーナスSポイントを付与
+  /// 日次ログインボーナススターPを付与
   Future<bool> grantDailyLoginBonus(String userId) async {
     try {
       final today = DateTime.now().toIso8601String().substring(0, 10);

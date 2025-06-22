@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/voting_providers.dart';
 import '../widgets/voting_post_card.dart';
-import '../widgets/s_point_balance_widget.dart';
+import '../widgets/star_point_balance_widget.dart';
 import 'create_voting_post_screen.dart';
 import '../../../features/auth/providers/user_provider.dart';
 
@@ -49,8 +49,8 @@ class _VotingHomeScreenState extends ConsumerState<VotingHomeScreen> with Single
             backgroundColor: Theme.of(context).primaryColor,
             foregroundColor: Colors.white,
             actions: [
-              SPointBalanceWidget(
-                onTap: () => SPointBalanceDialog.show(context),
+              StarPointBalanceWidget(
+                onTap: () => StarPointBalanceDialog.show(context),
               ),
               const SizedBox(width: 8),
               if (user.isStar) ...[
@@ -218,7 +218,7 @@ class _VotingHomeScreenState extends ConsumerState<VotingHomeScreen> with Single
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                'Sポイントとは',
+                'スターPとは',
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
               SizedBox(height: 8),
@@ -258,9 +258,9 @@ class _VotingHomeScreenState extends ConsumerState<VotingHomeScreen> with Single
   }
 }
 
-/// Sポイント残高詳細ダイアログの表示用拡張
-extension SPointBalanceDialogExtension on SPointBalanceWidget {
+/// スターP残高詳細ダイアログの表示用拡張
+extension StarPointBalanceDialogExtension on StarPointBalanceWidget {
   static void show(BuildContext context) {
-    SPointBalanceDialog.show(context);
+    StarPointBalanceDialog.show(context);
   }
 }

@@ -42,16 +42,6 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
       'dataCount': 0,
       'lastSync': '未接続',
     },
-    'skyflag': {
-      'isConnected': true,
-      'dataCount': 45,
-      'lastSync': '2日前',
-    },
-    'ironsource': {
-      'isConnected': false,
-      'dataCount': 0,
-      'lastSync': '未接続',
-    },
   };
 
   // API接続対象サービス（統一されたサービスアイコンを使用）
@@ -72,18 +62,6 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
       'id': 'valuecommerce',
       'name': 'バリューコマース',
       'description': 'アフィリエイトリンク機能・商品情報取得',
-      'status': 'available',
-    },
-    {
-      'id': 'skyflag',
-      'name': 'SKYFLAG オファーウォール',
-      'description': 'Sポイント獲得機能・広告配信',
-      'status': 'available',
-    },
-    {
-      'id': 'ironsource',
-      'name': 'ironSource オファーウォール',
-      'description': 'Sポイント獲得機能・広告配信',
       'status': 'available',
     },
   ];
@@ -217,7 +195,9 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
     final isDark = themeMode == AppThemeMode.dark;
     
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF1A1A1A) : const Color(0xFFF8FAFC),
+      backgroundColor: isDark 
+          ? const Color(0xFF0A0A0B) 
+          : const Color(0xFFFBFBFD),
       body: SafeArea(
         child: selectedCategory == null
             ? _buildMainDashboard()
@@ -260,107 +240,222 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'スクリーンショット取込み',
-          style: TextStyle(
-            color: isDark ? Colors.white : Colors.black87,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
+        Row(
+          children: [
+            Container(
+              width: 4,
+              height: 24,
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF667EEA), Color(0xFF764BA2)],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Text(
+              'スクリーンショット取込み',
+              style: TextStyle(
+                color: isDark ? Colors.white : const Color(0xFF1A1A2E),
+                fontSize: 24,
+                fontWeight: FontWeight.w700,
+                letterSpacing: -0.5,
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: 8),
-        Text(
-          'スクリーンショットをOCRで読み取り、自動でデータを分類します',
-          style: TextStyle(
-            color: isDark ? Colors.grey[400] : Colors.black54,
-            fontSize: 14,
+        Padding(
+          padding: const EdgeInsets.only(left: 16),
+          child: Text(
+            'スクリーンショットをOCRで読み取り、自動でデータを分類します',
+            style: TextStyle(
+              color: isDark ? const Color(0xFFB0B3B8) : const Color(0xFF65676B),
+              fontSize: 16,
+              fontWeight: FontWeight.w400,
+            ),
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 24),
         
-        // メインOCRカード
+        // メインOCRカード - 超モダンデザイン
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(32),
           decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [Color(0xFF4ECDC4), Color(0xFF44A08D)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(20),
+            gradient: isDark 
+                ? const LinearGradient(
+                    colors: [
+                      Color(0xFF667EEA),
+                      Color(0xFF764BA2),
+                      Color(0xFF6B73FF),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  )
+                : const LinearGradient(
+                    colors: [
+                      Color(0xFFE0E7FF),
+                      Color(0xFFF3E8FF),
+                      Color(0xFFE0F2FE),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+            borderRadius: BorderRadius.circular(24),
+            border: isDark 
+                ? Border.all(color: const Color(0xFF9333EA).withValues(alpha: 0.3), width: 1)
+                : Border.all(color: const Color(0xFF667EEA).withValues(alpha: 0.2), width: 1),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF4ECDC4).withOpacity(0.3),
-                blurRadius: 20,
-                offset: const Offset(0, 10),
+                color: isDark 
+                    ? const Color(0xFF667EEA).withValues(alpha: 0.25) 
+                    : const Color(0xFF667EEA).withValues(alpha: 0.15),
+                blurRadius: 32,
+                offset: const Offset(0, 16),
+                spreadRadius: 0,
+              ),
+              BoxShadow(
+                color: isDark 
+                    ? Colors.black.withValues(alpha: 0.3) 
+                    : Colors.white.withValues(alpha: 0.8),
+                blurRadius: 1,
+                offset: const Offset(0, 1),
+                spreadRadius: 0,
               ),
             ],
           ),
           child: Column(
             children: [
+              // アイコンエリア - グラスモーフィズム風
               Container(
-                width: 80,
-                height: 80,
+                width: 96,
+                height: 96,
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(20),
+                  color: isDark 
+                      ? Colors.white.withValues(alpha: 0.15) 
+                      : const Color(0xFF667EEA).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(28),
+                  border: Border.all(
+                    color: isDark 
+                        ? Colors.white.withValues(alpha: 0.2) 
+                        : const Color(0xFF667EEA).withValues(alpha: 0.3),
+                    width: 1.5,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: isDark 
+                          ? Colors.black.withValues(alpha: 0.3) 
+                          : const Color(0xFF667EEA).withValues(alpha: 0.1),
+                      blurRadius: 16,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
                 ),
-                child: const Icon(
-                  Icons.camera_alt,
-                  color: Colors.white,
-                  size: 40,
+                child: Icon(
+                  Icons.camera_alt_rounded,
+                  color: isDark ? Colors.white : const Color(0xFF667EEA),
+                  size: 48,
                 ),
               ),
-              const SizedBox(height: 16),
-              const Text(
+              const SizedBox(height: 24),
+              Text(
                 'スクリーンショットを取込む',
                 style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
+                  color: isDark ? Colors.white : const Color(0xFF1A1A2E),
+                  fontSize: 22,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: -0.3,
                 ),
               ),
               const SizedBox(height: 8),
-              const Text(
+              Text(
                 'カメラで撮影またはギャラリーから選択',
                 style: TextStyle(
-                  color: Colors.white70,
-                  fontSize: 14,
+                  color: isDark 
+                      ? const Color(0xFFB0B3B8) 
+                      : const Color(0xFF65676B),
+                  fontSize: 16,
+                  fontWeight: FontWeight.w400,
                 ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 32),
               Row(
                 children: [
                   Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: () => _startOCRCapture('camera'),
-                      icon: const Icon(Icons.camera_alt, size: 20),
-                      label: const Text('カメラ'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: const Color(0xFF4ECDC4),
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: isDark 
+                                ? Colors.black.withValues(alpha: 0.3) 
+                                : const Color(0xFF667EEA).withValues(alpha: 0.15),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: ElevatedButton.icon(
+                        onPressed: () => _startOCRCapture('camera'),
+                        icon: const Icon(Icons.camera_alt_rounded, size: 22),
+                        label: const Text('カメラ', style: TextStyle(fontWeight: FontWeight.w600)),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: isDark 
+                              ? Colors.white 
+                              : const Color(0xFF667EEA),
+                          foregroundColor: isDark 
+                              ? const Color(0xFF667EEA) 
+                              : Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          elevation: 0,
                         ),
                       ),
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 16),
                   Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: () => _startOCRCapture('gallery'),
-                      icon: const Icon(Icons.photo_library, size: 20),
-                      label: const Text('ギャラリー'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white.withOpacity(0.2),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          side: const BorderSide(color: Colors.white, width: 1),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: isDark 
+                                ? Colors.black.withValues(alpha: 0.3) 
+                                : const Color(0xFF667EEA).withValues(alpha: 0.1),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: ElevatedButton.icon(
+                        onPressed: () => _startOCRCapture('gallery'),
+                        icon: const Icon(Icons.photo_library_rounded, size: 22),
+                        label: const Text('ギャラリー', style: TextStyle(fontWeight: FontWeight.w600)),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: isDark 
+                              ? Colors.white.withValues(alpha: 0.1) 
+                              : Colors.white,
+                          foregroundColor: isDark 
+                              ? Colors.white 
+                              : const Color(0xFF667EEA),
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            side: BorderSide(
+                              color: isDark 
+                                  ? Colors.white.withValues(alpha: 0.3) 
+                                  : const Color(0xFF667EEA).withValues(alpha: 0.2),
+                              width: 1.5,
+                            ),
+                          ),
+                          elevation: 0,
                         ),
                       ),
                     ),
@@ -441,14 +536,32 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
       onTap: () => _selectServiceForOCR(service['id']),
       child: Container(
         decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: isDark ? const Color(0xFF333333) : const Color(0xFFE5E7EB)),
+          color: isDark 
+              ? const Color(0xFF1C1C1E) 
+              : Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isDark 
+                ? const Color(0xFF38383A) 
+                : const Color(0xFFE5E7EB),
+            width: 1,
+          ),
           boxShadow: [
             BoxShadow(
-              color: (isDark ? Colors.black : Colors.black).withOpacity(0.06),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
+              color: isDark 
+                  ? Colors.black.withValues(alpha: 0.4) 
+                  : const Color(0xFF667EEA).withValues(alpha: 0.08),
+              blurRadius: 16,
+              offset: const Offset(0, 4),
+              spreadRadius: 0,
+            ),
+            BoxShadow(
+              color: isDark 
+                  ? Colors.white.withValues(alpha: 0.03) 
+                  : Colors.white.withValues(alpha: 0.9),
+              blurRadius: 1,
+              offset: const Offset(0, 1),
+              spreadRadius: 0,
             ),
           ],
         ),

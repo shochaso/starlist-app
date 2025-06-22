@@ -11,18 +11,18 @@ class VotingService {
     required VotingRepository repository,
   }) : _repository = repository;
 
-  /// Sポイント残高を取得
-  Future<SPointBalance?> getSPointBalance(String userId) async {
-    return await _repository.getSPointBalance(userId);
+  /// スターP残高を取得
+  Future<StarPointBalance?> getStarPointBalance(String userId) async {
+    return await _repository.getStarPointBalance(userId);
   }
 
-  /// Sポイント取引履歴を取得
-  Future<List<SPointTransaction>> getSPointTransactions(
+  /// スターP取引履歴を取得
+  Future<List<StarPointTransaction>> getStarPointTransactions(
     String userId, {
     int limit = 50,
     int offset = 0,
   }) async {
-    return await _repository.getSPointTransactions(
+    return await _repository.getStarPointTransactions(
       userId,
       limit: limit,
       offset: offset,
@@ -114,12 +114,12 @@ class VotingService {
         );
       }
 
-      // Sポイント残高をチェック
-      final balance = await _repository.getSPointBalance(userId);
+      // スターP残高をチェック
+      final balance = await _repository.getStarPointBalance(userId);
       if (balance == null) {
         return VotingResult(
           success: false,
-          message: 'Sポイント残高が見つかりません',
+          message: 'スターP残高が見つかりません',
           errorCode: VotingErrorCode.balanceNotFound,
         );
       }
@@ -185,7 +185,7 @@ class VotingService {
       final granted = await _repository.grantDailyLoginBonus(userId);
       return DailyBonusResult(
         granted: granted,
-        message: granted ? '日次ログインボーナス+10Sポイント獲得！' : '本日のボーナスは既に受け取り済みです',
+        message: granted ? '日次ログインボーナス+10スターP獲得！' : '本日のボーナスは既に受け取り済みです',
       );
     } catch (e) {
       return DailyBonusResult(
@@ -200,9 +200,9 @@ class VotingService {
     return _repository.watchVotingPost(votingPostId);
   }
 
-  /// Sポイント残高のリアルタイム更新を監視
-  Stream<SPointBalance> watchSPointBalance(String userId) {
-    return _repository.watchSPointBalance(userId);
+  /// スターP残高のリアルタイム更新を監視
+  Stream<StarPointBalance> watchStarPointBalance(String userId) {
+    return _repository.watchStarPointBalance(userId);
   }
 
   /// エラーコードを解析
@@ -241,7 +241,7 @@ class VotingResult {
 /// 投票エラーコード
 enum VotingErrorCode {
   alreadyVoted,      // 既に投票済み
-  insufficientPoints, // Sポイント不足
+  insufficientPoints, // スターP不足
   expired,           // 期限切れ
   notActive,         // 非アクティブ
   notFound,          // 見つからない

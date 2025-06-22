@@ -16,23 +16,23 @@ final votingServiceProvider = Provider<VotingService>((ref) {
   return VotingService(repository: repository);
 });
 
-/// 現在のユーザーのSポイント残高プロバイダー
-final currentUserSPointBalanceProvider = StreamProvider.family<SPointBalance?, String>((ref, userId) {
+/// 現在のユーザーのスターP残高プロバイダー
+final currentUserStarPointBalanceProvider = StreamProvider.family<StarPointBalance?, String>((ref, userId) {
   final service = ref.watch(votingServiceProvider);
-  return service.watchSPointBalance(userId).handleError((error, stackTrace) {
+  return service.watchStarPointBalance(userId).handleError((error, stackTrace) {
     // エラーハンドリング - ログを出力して null を返す
-    print('Sポイント残高取得エラー: $error');
+    print('スターP残高取得エラー: $error');
     return null;
   });
 });
 
-/// 現在のユーザーのSポイント残高（一回限り取得）
-final userSPointBalanceProvider = FutureProvider.family<SPointBalance?, String>((ref, userId) async {
+/// 現在のユーザーのスターP残高（一回限り取得）
+final userStarPointBalanceProvider = FutureProvider.family<StarPointBalance?, String>((ref, userId) async {
   final service = ref.watch(votingServiceProvider);
   try {
-    return await service.getSPointBalance(userId);
+    return await service.getStarPointBalance(userId);
   } catch (e) {
-    print('Sポイント残高取得エラー: $e');
+    print('スターP残高取得エラー: $e');
     return null;
   }
 });
@@ -90,13 +90,13 @@ final userVoteForPostProvider = FutureProvider.family.autoDispose<Vote?, UserVot
   }
 });
 
-/// Sポイント取引履歴プロバイダー
-final sPointTransactionsProvider = FutureProvider.family.autoDispose<List<SPointTransaction>, String>((ref, userId) async {
+/// スターP取引履歴プロバイダー
+final starPointTransactionsProvider = FutureProvider.family.autoDispose<List<StarPointTransaction>, String>((ref, userId) async {
   final service = ref.watch(votingServiceProvider);
   try {
-    return await service.getSPointTransactions(userId);
+    return await service.getStarPointTransactions(userId);
   } catch (e) {
-    print('Sポイント取引履歴取得エラー: $e');
+    print('スターP取引履歴取得エラー: $e');
     return [];
   }
 });
