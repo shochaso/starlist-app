@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import '../../../src/features/youtube_easy/star_watch_history_widget.dart';
 
 class StarDashboardScreen extends StatefulWidget {
   const StarDashboardScreen({super.key});
@@ -141,7 +142,7 @@ class _StarDashboardScreenState extends State<StarDashboardScreen>
                         ),
                         Tab(
                           child: Text(
-                            '収益',
+                            '視聴履歴',
                             style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
@@ -175,7 +176,7 @@ class _StarDashboardScreenState extends State<StarDashboardScreen>
                       controller: _tabController,
                       children: [
                         _buildOverviewTab(),
-                        _buildRevenueTab(),
+                        _buildWatchHistoryTab(),
                         _buildFansTab(),
                         _buildContentTab(),
                       ],
@@ -644,17 +645,17 @@ class _StarDashboardScreenState extends State<StarDashboardScreen>
     );
   }
 
-  Widget _buildRevenueTab() {
+  Widget _buildWatchHistoryTab() {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildRevenueOverview(),
+          _buildWatchHistoryOverview(),
           const SizedBox(height: 20),
-          _buildRevenueBreakdown(),
+          _buildWatchHistoryActions(),
           const SizedBox(height: 20),
-          _buildRevenueChart(),
+          _buildSharedHistoryPreview(),
         ],
       ),
     );
@@ -1520,6 +1521,328 @@ class _StarDashboardScreenState extends State<StarDashboardScreen>
       const SnackBar(
         content: Text('データ取り込み画面に移動します'),
         backgroundColor: Color(0xFF4ECDC4),
+      ),
+    );
+  }
+
+  /// 視聴履歴概要
+  Widget _buildWatchHistoryOverview() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF7E57C2), Color(0xFF9C27B0)],
+        ),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
+            children: [
+              Icon(Icons.video_library, color: Colors.white, size: 24),
+              SizedBox(width: 8),
+              Text(
+                '視聴履歴管理',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          const Text(
+            'YouTubeの視聴履歴をファンと共有して、\nより深いつながりを築きましょう',
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.white,
+              height: 1.4,
+            ),
+          ),
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              _buildHistoryStatCard('インポート済み', '12件', Icons.cloud_download),
+              const SizedBox(width: 16),
+              _buildHistoryStatCard('共有中', '8件', Icons.share),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 視聴履歴統計カード
+  Widget _buildHistoryStatCard(String label, String value, IconData icon) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.2),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Column(
+          children: [
+            Icon(icon, color: Colors.white, size: 20),
+            const SizedBox(height: 4),
+            Text(
+              value,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 11,
+                color: Colors.white,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 視聴履歴アクション
+  Widget _buildWatchHistoryActions() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: const Color(0xFF2A2A2A),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFF333333)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'クイックアクション',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: _buildActionButton(
+                  '📥 履歴インポート',
+                  '新しい視聴履歴を追加',
+                  Colors.blue,
+                  () => _navigateToWatchHistoryImport(),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildActionButton(
+                  '⚙️ 共有設定',
+                  '公開する履歴を選択',
+                  Colors.green,
+                  () => _configureSharing(),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// アクションボタン
+  Widget _buildActionButton(String title, String subtitle, Color color, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: color.withValues(alpha: 0.3)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: color,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              subtitle,
+              style: const TextStyle(
+                fontSize: 11,
+                color: Colors.grey,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 共有履歴プレビュー
+  Widget _buildSharedHistoryPreview() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: const Color(0xFF2A2A2A),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFF333333)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'ファンと共有中の履歴',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+              ),
+              TextButton(
+                onPressed: () => _viewAllSharedHistory(),
+                child: const Text(
+                  'すべて表示',
+                  style: TextStyle(color: Color(0xFF4ECDC4)),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          
+          // サンプル履歴アイテム
+          _buildSharedHistoryItem(
+            'Flutter 3.0の新機能解説',
+            'Flutter Official',
+            '2日前に視聴',
+            '👁️ 124人のファンが閲覧',
+          ),
+          const SizedBox(height: 12),
+          _buildSharedHistoryItem(
+            'プログラミング初心者向けTips',
+            'Tech Channel',
+            '1週間前に視聴',
+            '👁️ 89人のファンが閲覧',
+          ),
+          const SizedBox(height: 12),
+          _buildSharedHistoryItem(
+            'デザインパターン入門',
+            'Code Academy',
+            '2週間前に視聴',
+            '👁️ 156人のファンが閲覧',
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 共有履歴アイテム
+  Widget _buildSharedHistoryItem(String title, String channel, String watchTime, String viewCount) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFF333333),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 60,
+            height: 34,
+            decoration: BoxDecoration(
+              color: Colors.grey.shade700,
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: const Icon(Icons.play_arrow, color: Colors.white, size: 20),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.white,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  channel,
+                  style: const TextStyle(
+                    fontSize: 11,
+                    color: Colors.grey,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  '$watchTime • $viewCount',
+                  style: const TextStyle(
+                    fontSize: 10,
+                    color: Color(0xFF4ECDC4),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Icon(Icons.share, color: Colors.green, size: 16),
+        ],
+      ),
+    );
+  }
+
+  /// 視聴履歴インポート画面への遷移
+  void _navigateToWatchHistoryImport() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const StarWatchHistoryWidget(
+          starId: 'current_star_id', // 実際のスターIDを渡す
+        ),
+      ),
+    );
+  }
+
+  /// 共有設定
+  void _configureSharing() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('共有設定機能は開発中です'),
+        backgroundColor: Colors.blue,
+      ),
+    );
+  }
+
+  /// 全共有履歴表示
+  void _viewAllSharedHistory() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('全履歴表示機能は開発中です'),
+        backgroundColor: Colors.blue,
       ),
     );
   }

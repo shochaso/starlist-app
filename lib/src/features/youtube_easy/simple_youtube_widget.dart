@@ -3,9 +3,14 @@ import 'simple_youtube_service.dart';
 import 'simple_youtube_setup.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-/// 中学生でも簡単に使えるYouTube表示画面
+/// スター専用：視聴履歴インポート画面
 class SimpleYouTubeWidget extends StatefulWidget {
-  const SimpleYouTubeWidget({Key? key}) : super(key: key);
+  final String starId;
+  
+  const SimpleYouTubeWidget({
+    Key? key,
+    required this.starId,
+  }) : super(key: key);
 
   @override
   State<SimpleYouTubeWidget> createState() => _SimpleYouTubeWidgetState();
@@ -30,8 +35,8 @@ class _SimpleYouTubeWidgetState extends State<SimpleYouTubeWidget> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('📺 YouTube連携テスト'),
-        backgroundColor: Colors.red,
+        title: const Text('📺 視聴履歴インポート'),
+        backgroundColor: Colors.purple,
         foregroundColor: Colors.white,
       ),
       body: SingleChildScrollView(
@@ -39,20 +44,20 @@ class _SimpleYouTubeWidgetState extends State<SimpleYouTubeWidget> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ステップ1: 設定確認
-            _buildSetupSection(),
+            // スター向け説明
+            _buildStarExplanation(),
             const SizedBox(height: 20),
             
-            // ステップ2: YouTuber選択
-            _buildYouTuberSelection(),
+            // 視聴履歴インポート方法選択
+            _buildImportMethodSelection(),
             const SizedBox(height: 20),
             
-            // ステップ3: チャンネル情報表示
-            if (currentChannel != null) _buildChannelInfo(),
+            // インポート結果表示
+            if (currentChannel != null) _buildImportResult(),
             const SizedBox(height: 20),
             
-            // ステップ4: 動画リスト表示
-            _buildVideosList(),
+            // インポートした視聴履歴リスト
+            _buildImportedHistoryList(),
             
             // エラーメッセージ表示
             if (errorMessage != null) _buildErrorMessage(),
@@ -62,12 +67,10 @@ class _SimpleYouTubeWidgetState extends State<SimpleYouTubeWidget> {
     );
   }
 
-  /// 設定確認セクション
-  Widget _buildSetupSection() {
-    final isSetup = SimpleYouTubeSetup.isSetupComplete();
-    
+  /// スター向け説明セクション
+  Widget _buildStarExplanation() {
     return Card(
-      color: isSetup ? Colors.green.shade50 : Colors.red.shade50,
+      color: Colors.purple.shade50,
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -75,30 +78,27 @@ class _SimpleYouTubeWidgetState extends State<SimpleYouTubeWidget> {
           children: [
             Row(
               children: [
-                Icon(
-                  isSetup ? Icons.check_circle : Icons.error,
-                  color: isSetup ? Colors.green : Colors.red,
-                ),
+                const Icon(Icons.star, color: Colors.purple),
                 const SizedBox(width: 8),
-                Text(
-                  isSetup ? '✅ 設定完了！' : '❌ 設定が必要です',
+                const Text(
+                  '⭐ スター専用：視聴履歴共有',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: isSetup ? Colors.green.shade700 : Colors.red.shade700,
+                    color: Colors.purple,
                   ),
                 ),
               ],
             ),
-            if (!isSetup) ...[
-              const SizedBox(height: 8),
-              const Text(
-                '1. Google Cloud ConsoleでAPIキーを取得\n'
-                '2. simple_youtube_setup.dartのmyApiKeyに設定\n'
-                '3. アプリを再起動',
-                style: TextStyle(fontSize: 14),
-              ),
-            ],
+            const SizedBox(height: 12),
+            const Text(
+              'あなたのYouTube視聴履歴をファンと共有できます。\n\n'
+              '✅ ファンがあなたと同じ動画を発見\n'
+              '✅ 興味のあるコンテンツをシェア\n'
+              '✅ ファンとのつながりを深める\n'
+              '✅ プライベート設定で公開範囲を調整',
+              style: TextStyle(fontSize: 14),
+            ),
           ],
         ),
       ),
