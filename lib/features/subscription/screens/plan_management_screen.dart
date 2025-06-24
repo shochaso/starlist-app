@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../providers/theme_provider.dart';
+import '../../../src/widgets/common_app_bar.dart';
 
-class PlanManagementScreen extends StatefulWidget {
+class PlanManagementScreen extends ConsumerStatefulWidget {
   const PlanManagementScreen({super.key});
 
   @override
-  State<PlanManagementScreen> createState() => _PlanManagementScreenState();
+  ConsumerState<PlanManagementScreen> createState() => _PlanManagementScreenState();
 }
 
-class _PlanManagementScreenState extends State<PlanManagementScreen>
+class _PlanManagementScreenState extends ConsumerState<PlanManagementScreen>
     with TickerProviderStateMixin {
   late TabController _tabController;
   
@@ -18,9 +21,9 @@ class _PlanManagementScreenState extends State<PlanManagementScreen>
     {
       'id': 'light',
       'name': 'ライトプラン',
-      'price': 500,
+      'price': 980,
       'subscribers': 1250,
-      'revenue': 625000,
+      'revenue': 1225000, // 980 * 1250
       'features': ['基本コンテンツ閲覧', '月1回の限定投稿', 'コメント機能'],
       'color': const Color(0xFF95E1D3),
       'isActive': true,
@@ -28,9 +31,9 @@ class _PlanManagementScreenState extends State<PlanManagementScreen>
     {
       'id': 'standard',
       'name': 'スタンダードプラン',
-      'price': 2000,
+      'price': 1980,
       'subscribers': 850,
-      'revenue': 1700000,
+      'revenue': 1683000, // 1980 * 850
       'features': ['全コンテンツ閲覧', '週2回の限定投稿', 'DM機能', '優先サポート'],
       'color': const Color(0xFF4ECDC4),
       'isActive': true,
@@ -38,9 +41,9 @@ class _PlanManagementScreenState extends State<PlanManagementScreen>
     {
       'id': 'premium',
       'name': 'プレミアムプラン',
-      'price': 5000,
+      'price': 2980,
       'subscribers': 320,
-      'revenue': 1600000,
+      'revenue': 953600, // 2980 * 320
       'features': ['全コンテンツ閲覧', '毎日の限定投稿', 'ビデオ通話', '限定グッズ', '特別イベント招待'],
       'color': const Color(0xFFFFE66D),
       'isActive': true,
@@ -50,7 +53,7 @@ class _PlanManagementScreenState extends State<PlanManagementScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 1, vsync: this);
   }
 
   @override
@@ -59,31 +62,36 @@ class _PlanManagementScreenState extends State<PlanManagementScreen>
     super.dispose();
   }
 
+  void _navigateToHome(BuildContext context) {
+    // すべてのルートをクリアしてホーム画面に戻る
+    Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+  }
+
   @override
   Widget build(BuildContext context) {
+    final themeMode = ref.watch(themeProvider);
+    final isDark = themeMode == AppThemeMode.dark;
+    
     return Scaffold(
-      backgroundColor: const Color(0xFF1A1A1A),
+      backgroundColor: isDark ? const Color(0xFF1A1A1A) : const Color(0xFFF8FAFC),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1A1A1A),
+        backgroundColor: isDark ? const Color(0xFF1A1A1A) : Colors.white,
         elevation: 0,
-        title: const Text(
+        leading: IconButton(
+          icon: Icon(
+            Icons.home,
+            color: isDark ? Colors.white : Colors.black87,
+          ),
+          onPressed: () => _navigateToHome(context),
+        ),
+        title: Text(
           'プラン管理',
           style: TextStyle(
-            color: Colors.white,
+            color: isDark ? Colors.white : Colors.black87,
             fontSize: 20,
             fontWeight: FontWeight.w700,
           ),
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add, color: Colors.white),
-            onPressed: () => _showCreatePlanDialog(),
-          ),
-          IconButton(
-            icon: const Icon(Icons.analytics, color: Colors.white),
-            onPressed: () => _showAnalytics(),
-          ),
-        ],
         bottom: TabBar(
           controller: _tabController,
           indicatorColor: const Color(0xFF4ECDC4),
@@ -91,8 +99,6 @@ class _PlanManagementScreenState extends State<PlanManagementScreen>
           unselectedLabelColor: const Color(0xFF888888),
           tabs: const [
             Tab(text: 'プラン一覧'),
-            Tab(text: '統計'),
-            Tab(text: '設定'),
           ],
         ),
       ),
@@ -100,10 +106,9 @@ class _PlanManagementScreenState extends State<PlanManagementScreen>
         controller: _tabController,
         children: [
           _buildPlansTab(),
-          _buildStatisticsTab(),
-          _buildSettingsTab(),
         ],
       ),
+      bottomNavigationBar: _buildBottomNavigationBar(),
     );
   }
 
@@ -854,10 +859,104 @@ class _PlanManagementScreenState extends State<PlanManagementScreen>
     );
   }
 
+  Widget _buildBottomNavigationBar() {
+    final themeMode = ref.watch(themeProvider);
+    final isDark = themeMode == AppThemeMode.dark;
+    
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1A1A1A) : Colors.white,
+        border: Border(
+          top: BorderSide(
+            color: isDark ? const Color(0xFF333333) : const Color(0xFFE5E7EB),
+          ),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: (isDark ? Colors.black : Colors.black).withValues(alpha: 0.1),
+            blurRadius: 10,
+            offset: const Offset(0, -2),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        child: Container(
+          height: 70,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              _buildBottomNavItem(Icons.home, 'ホーム', () {
+                Navigator.popUntil(context, (route) => route.isFirst);
+              }),
+              _buildBottomNavItem(Icons.search, '検索', () {
+                Navigator.popUntil(context, (route) => route.isFirst);
+                // 検索タブに移動するロジックを追加
+              }),
+              _buildBottomNavItem(Icons.analytics, 'プラン', null, isSelected: true),
+              _buildBottomNavItem(Icons.star, 'マイリスト', () {
+                Navigator.popUntil(context, (route) => route.isFirst);
+                // マイリストタブに移動するロジックを追加
+              }),
+              _buildBottomNavItem(Icons.person, 'マイページ', () {
+                Navigator.popUntil(context, (route) => route.isFirst);
+                // マイページタブに移動するロジックを追加
+              }),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+  
+  Widget _buildBottomNavItem(IconData icon, String label, VoidCallback? onTap, {bool isSelected = false}) {
+    final themeMode = ref.watch(themeProvider);
+    final isDark = themeMode == AppThemeMode.dark;
+    
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 2),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                size: 22,
+                color: isSelected 
+                    ? const Color(0xFF4ECDC4) 
+                    : (isDark ? Colors.white54 : const Color(0xFF9CA3AF)),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w500,
+                  color: isSelected 
+                      ? const Color(0xFF4ECDC4) 
+                      : (isDark ? Colors.white54 : const Color(0xFF9CA3AF)),
+                ),
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   void _viewPlanDetails(Map<String, dynamic> plan) {
+    final themeMode = ref.read(themeProvider);
+    final isDark = themeMode == AppThemeMode.dark;
+    
     showModalBottomSheet(
       context: context,
-      backgroundColor: const Color(0xFF2A2A2A),
+      backgroundColor: isDark ? const Color(0xFF2A2A2A) : Colors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -869,32 +968,32 @@ class _PlanManagementScreenState extends State<PlanManagementScreen>
           children: [
             Text(
               plan['name'],
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w700,
-                color: Colors.white,
+                color: isDark ? Colors.white : Colors.black87,
               ),
             ),
             const SizedBox(height: 16),
             Text(
               '価格: ¥${_formatNumber(plan['price'])}/月',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 16,
-                color: Colors.white,
+                color: isDark ? Colors.white : Colors.black87,
               ),
             ),
             Text(
               '会員数: ${_formatNumber(plan['subscribers'])}人',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 16,
-                color: Colors.white,
+                color: isDark ? Colors.white : Colors.black87,
               ),
             ),
             Text(
               '月間収益: ¥${_formatNumber(plan['revenue'])}',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 16,
-                color: Colors.white,
+                color: isDark ? Colors.white : Colors.black87,
               ),
             ),
             const SizedBox(height: 20),

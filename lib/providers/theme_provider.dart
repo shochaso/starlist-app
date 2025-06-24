@@ -8,7 +8,7 @@ final themeProvider = StateNotifierProvider<ThemeNotifier, AppThemeMode>((ref) {
 });
 
 class ThemeNotifier extends StateNotifier<AppThemeMode> {
-  ThemeNotifier() : super(AppThemeMode.dark); // デフォルトはダークモード
+  ThemeNotifier() : super(AppThemeMode.light); // デフォルトはライトモード
   
   void toggleTheme() {
     state = state == AppThemeMode.light ? AppThemeMode.dark : AppThemeMode.light;
@@ -24,19 +24,19 @@ class AppThemes {
     brightness: Brightness.light,
     primarySwatch: Colors.blue,
     primaryColor: const Color(0xFF4ECDC4),
-    scaffoldBackgroundColor: Colors.white,
+    scaffoldBackgroundColor: const Color(0xFFF5F5F5),
     appBarTheme: const AppBarTheme(
-      backgroundColor: Colors.white,
+      backgroundColor: Color(0xFFF8F8F8),
       foregroundColor: Colors.black87,
       elevation: 0,
     ),
     bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-      backgroundColor: Colors.white,
+      backgroundColor: Color(0xFFF8F8F8),
       selectedItemColor: Color(0xFF4ECDC4),
       unselectedItemColor: Colors.black54,
     ),
     drawerTheme: const DrawerThemeData(
-      backgroundColor: Colors.white,
+      backgroundColor: Color(0xFFF8F8F8),
     ),
     textTheme: const TextTheme(
       bodyLarge: TextStyle(color: Colors.black87),

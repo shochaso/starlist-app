@@ -145,13 +145,13 @@ class FanMembershipPlans extends StatelessWidget {
             borderRadius: BorderRadius.circular(24),
             boxShadow: [
               BoxShadow(
-                color: gradient.colors.first.withOpacity(0.3),
+                color: gradient.colors.first.withValues(alpha: 0.3),
                 blurRadius: 20,
                 offset: const Offset(0, 10),
                 spreadRadius: 0,
               ),
               BoxShadow(
-                color: Colors.white.withOpacity(0.9),
+                color: Colors.white.withValues(alpha: 0.9),
                 blurRadius: 1,
                 offset: const Offset(0, 1),
                 spreadRadius: 0,
@@ -183,7 +183,7 @@ class FanMembershipPlans extends StatelessWidget {
                           description,
                           style: TextStyle(
                             fontSize: 14,
-                            color: Colors.white.withOpacity( 0.9),
+                            color: Colors.white.withValues(alpha: 0.9),
                             fontWeight: FontWeight.w400,
                           ),
                         ),
@@ -197,7 +197,7 @@ class FanMembershipPlans extends StatelessWidget {
                             originalPrice,
                             style: TextStyle(
                               fontSize: 14,
-                              color: Colors.white.withOpacity( 0.7),
+                              color: Colors.white.withValues(alpha: 0.7),
                               decoration: TextDecoration.lineThrough,
                             ),
                           ),
@@ -220,7 +220,7 @@ class FanMembershipPlans extends StatelessWidget {
                               period,
                               style: TextStyle(
                                 fontSize: 16,
-                                color: Colors.white.withOpacity( 0.8),
+                                color: Colors.white.withValues(alpha: 0.8),
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
@@ -239,7 +239,7 @@ class FanMembershipPlans extends StatelessWidget {
                         width: 20,
                         height: 20,
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity( 0.2),
+                          color: Colors.white.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: const Icon(
@@ -270,7 +270,7 @@ class FanMembershipPlans extends StatelessWidget {
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity( 0.1),
+                        color: Colors.black.withValues(alpha: 0.1),
                         blurRadius: 8,
                         offset: const Offset(0, 4),
                       ),
@@ -314,7 +314,7 @@ class FanMembershipPlans extends StatelessWidget {
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFFFF6B6B).withOpacity( 0.4),
+                    color: const Color(0xFFFF6B6B).withValues(alpha: 0.4),
                     blurRadius: 8,
                     offset: const Offset(0, 4),
                   ),
@@ -347,7 +347,7 @@ class FanMembershipPlans extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity( 0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 20,
             offset: const Offset(0, 10),
             spreadRadius: 0,
@@ -402,7 +402,7 @@ class FanMembershipPlans extends StatelessWidget {
                       '/月',
                       style: TextStyle(
                         fontSize: 16,
-                        color: const Color(0xFF10B981).withOpacity( 0.8),
+                        color: const Color(0xFF10B981).withValues(alpha: 0.8),
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -424,7 +424,7 @@ class FanMembershipPlans extends StatelessWidget {
                     width: 20,
                     height: 20,
                     decoration: BoxDecoration(
-                      color: const Color(0xFF10B981).withOpacity( 0.1),
+                      color: const Color(0xFF10B981).withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: const Icon(

@@ -1,48 +1,76 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../providers/theme_provider.dart';
+import '../../../providers/user_provider.dart';
+import '../../subscription/screens/plan_management_screen.dart';
+import '../../star/screens/star_dashboard_screen.dart';
+import '../../data_integration/screens/data_import_screen.dart';
+import '../../follow/screens/follow_screen.dart';
+import '../../../src/widgets/common_app_bar.dart';
 
-class SettingsScreen extends StatefulWidget {
+class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
 
   @override
-  State<SettingsScreen> createState() => _SettingsScreenState();
+  ConsumerState<SettingsScreen> createState() => _SettingsScreenState();
 }
 
-class _SettingsScreenState extends State<SettingsScreen> {
+class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   // 設定状態
   bool _pushNotifications = true;
   bool _emailNotifications = true;
-  bool _dataSync = true;
-  bool _autoBackup = false;
   bool _darkMode = true;
   bool _analytics = true;
   String _language = 'ja';
-  String _dataRetention = '1year';
+
+
 
   @override
   Widget build(BuildContext context) {
+    final themeMode = ref.watch(themeProvider);
+    final isDark = themeMode == AppThemeMode.dark;
+    
     return Scaffold(
-      backgroundColor: const Color(0xFF1A1A1A),
+      backgroundColor: isDark ? const Color(0xFF1A1A1A) : const Color(0xFFF8FAFC),
+      appBar: AppBar(
+        backgroundColor: isDark ? const Color(0xFF1A1A1A) : Colors.white,
+        elevation: 0,
+        leading: IconButton(
+          icon: Icon(
+            Icons.home,
+            color: isDark ? Colors.white : Colors.black87,
+          ),
+          onPressed: () => _navigateToHome(),
+        ),
+        title: Text(
+          '設定',
+          style: TextStyle(
+            color: isDark ? Colors.white : Colors.black87,
+            fontSize: 20,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        actions: [
+          Builder(
+            builder: (context) => IconButton(
+              icon: Icon(
+                Icons.menu,
+                color: isDark ? Colors.white : Colors.black87,
+              ),
+              onPressed: () => Scaffold.of(context).openDrawer(),
+            ),
+          ),
+        ],
+      ),
+      drawer: _buildDrawer(),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ヘッダー
-              Container(
-                padding: const EdgeInsets.all(16),
-                child: const Text(
-                  '設定',
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-              
               // ユーザープロフィール
               _buildUserProfile(),
               const SizedBox(height: 24),
@@ -52,8 +80,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
               _buildPrivacySettings(),
               const SizedBox(height: 24),
               _buildNotificationSettings(),
-              const SizedBox(height: 24),
-              _buildDataSettings(),
               const SizedBox(height: 24),
               _buildAppSettings(),
               const SizedBox(height: 24),
@@ -68,6 +94,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget _buildUserProfile() {
+    final themeMode = ref.watch(themeProvider);
+    final isDark = themeMode == AppThemeMode.dark;
+    
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
@@ -233,47 +262,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _buildDataSettings() {
-    return _buildSettingsSection(
-      'データ',
-      [
-        _buildSwitchItem(
-          Icons.sync,
-          'データ同期',
-          'デバイス間でデータを同期',
-          _dataSync,
-          (value) => setState(() => _dataSync = value),
-        ),
-        _buildSwitchItem(
-          Icons.backup_outlined,
-          '自動バックアップ',
-          'データを自動的にバックアップ',
-          _autoBackup,
-          (value) => setState(() => _autoBackup = value),
-        ),
-        _buildDropdownItem(
-          Icons.schedule,
-          'データ保持期間',
-          'データを保持する期間',
-          _dataRetention,
-          {
-            '3months': '3ヶ月',
-            '6months': '6ヶ月',
-            '1year': '1年',
-            '2years': '2年',
-            'forever': '無期限',
-          },
-          (value) => setState(() => _dataRetention = value!),
-        ),
-        _buildSettingsItem(
-          Icons.download_outlined,
-          'データエクスポート',
-          'データをダウンロード',
-          () => _exportData(),
-        ),
-      ],
-    );
-  }
 
   Widget _buildAppSettings() {
     return _buildSettingsSection(
@@ -348,13 +336,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget _buildDangerZone() {
+    final themeMode = ref.watch(themeProvider);
+    final isDark = themeMode == AppThemeMode.dark;
+    
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFF2A2A2A),
+        color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFFF6B6B).withOpacity(0.3)),
+        border: Border.all(color: const Color(0xFFFF6B6B).withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -392,23 +383,26 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget _buildSettingsSection(String title, List<Widget> children) {
+    final themeMode = ref.watch(themeProvider);
+    final isDark = themeMode == AppThemeMode.dark;
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           title,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w600,
-            color: Colors.white,
+            color: isDark ? Colors.white : Colors.black87,
           ),
         ),
         const SizedBox(height: 12),
         Container(
           decoration: BoxDecoration(
-            color: const Color(0xFF2A2A2A),
+            color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFF333333)),
+            border: Border.all(color: isDark ? const Color(0xFF333333) : const Color(0xFFE5E7EB)),
           ),
           child: Column(children: children),
         ),
@@ -683,66 +677,29 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  void _exportData() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF2A2A2A),
-        title: const Text(
-          'データエクスポート',
-          style: TextStyle(color: Colors.white),
-        ),
-        content: const Text(
-          'データのエクスポートを開始しますか？\n完了までに数分かかる場合があります。',
-          style: TextStyle(color: Color(0xFF888888)),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text(
-              'キャンセル',
-              style: TextStyle(color: Color(0xFF888888)),
-            ),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('データエクスポートを開始しました'),
-                  backgroundColor: Color(0xFF4ECDC4),
-                ),
-              );
-            },
-            child: const Text(
-              'エクスポート',
-              style: TextStyle(color: Color(0xFF4ECDC4)),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   void _clearCache() {
+    final themeMode = ref.read(themeProvider);
+    final isDark = themeMode == AppThemeMode.dark;
+    
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF2A2A2A),
-        title: const Text(
+        backgroundColor: isDark ? const Color(0xFF2A2A2A) : Colors.white,
+        title: Text(
           'キャッシュクリア',
-          style: TextStyle(color: Colors.white),
+          style: TextStyle(color: isDark ? Colors.white : Colors.black87),
         ),
-        content: const Text(
+        content: Text(
           'アプリのキャッシュを削除しますか？\nこの操作は元に戻せません。',
-          style: TextStyle(color: Color(0xFF888888)),
+          style: TextStyle(color: isDark ? const Color(0xFF888888) : Colors.black54),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text(
+            child: Text(
               'キャンセル',
-              style: TextStyle(color: Color(0xFF888888)),
+              style: TextStyle(color: isDark ? const Color(0xFF888888) : Colors.black54),
             ),
           ),
           TextButton(
@@ -766,15 +723,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   void _showAppInfo() {
+    final themeMode = ref.read(themeProvider);
+    final isDark = themeMode == AppThemeMode.dark;
+    
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF2A2A2A),
-        title: const Text(
+        backgroundColor: isDark ? const Color(0xFF2A2A2A) : Colors.white,
+        title: Text(
           'アプリ情報',
-          style: TextStyle(color: Colors.white),
+          style: TextStyle(color: isDark ? Colors.white : Colors.black87),
         ),
-        content: const Column(
+        content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -783,22 +743,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
-                color: Colors.white,
+                color: isDark ? Colors.white : Colors.black87,
               ),
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             Text(
               'バージョン: 1.0.0',
-              style: TextStyle(color: Color(0xFF888888)),
+              style: TextStyle(color: isDark ? const Color(0xFF888888) : Colors.black54),
             ),
             Text(
               'ビルド: 100',
-              style: TextStyle(color: Color(0xFF888888)),
+              style: TextStyle(color: isDark ? const Color(0xFF888888) : Colors.black54),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             Text(
               '© 2024 Starlist Inc.',
-              style: TextStyle(color: Color(0xFF888888)),
+              style: TextStyle(color: isDark ? const Color(0xFF888888) : Colors.black54),
             ),
           ],
         ),
@@ -852,24 +812,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   void _logout() {
+    final themeMode = ref.read(themeProvider);
+    final isDark = themeMode == AppThemeMode.dark;
+    
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF2A2A2A),
-        title: const Text(
+        backgroundColor: isDark ? const Color(0xFF2A2A2A) : Colors.white,
+        title: Text(
           'ログアウト',
-          style: TextStyle(color: Colors.white),
+          style: TextStyle(color: isDark ? Colors.white : Colors.black87),
         ),
-        content: const Text(
+        content: Text(
           'ログアウトしますか？',
-          style: TextStyle(color: Color(0xFF888888)),
+          style: TextStyle(color: isDark ? const Color(0xFF888888) : Colors.black54),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text(
+            child: Text(
               'キャンセル',
-              style: TextStyle(color: Color(0xFF888888)),
+              style: TextStyle(color: isDark ? const Color(0xFF888888) : Colors.black54),
             ),
           ),
           TextButton(
@@ -893,24 +856,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   void _deleteAccount() {
+    final themeMode = ref.read(themeProvider);
+    final isDark = themeMode == AppThemeMode.dark;
+    
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF2A2A2A),
+        backgroundColor: isDark ? const Color(0xFF2A2A2A) : Colors.white,
         title: const Text(
           'アカウント削除',
           style: TextStyle(color: Color(0xFFFF6B6B)),
         ),
-        content: const Text(
+        content: Text(
           'アカウントを削除すると、すべてのデータが永久に失われます。\nこの操作は元に戻せません。\n\n本当に削除しますか？',
-          style: TextStyle(color: Color(0xFF888888)),
+          style: TextStyle(color: isDark ? const Color(0xFF888888) : Colors.black54),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text(
+            child: Text(
               'キャンセル',
-              style: TextStyle(color: Color(0xFF888888)),
+              style: TextStyle(color: isDark ? const Color(0xFF888888) : Colors.black54),
             ),
           ),
           TextButton(
@@ -931,5 +897,203 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ],
       ),
     );
+  }
+
+  Widget _buildDrawer() {
+    final currentUser = ref.watch(currentUserProvider);
+    final themeMode = ref.watch(themeProvider);
+    final isDark = themeMode == AppThemeMode.dark;
+    
+    return Drawer(
+      backgroundColor: isDark ? const Color(0xFF1A1A1A) : Colors.white,
+      child: Column(
+        children: [
+          SafeArea(
+            child: Container(
+              margin: const EdgeInsets.only(top: 8),
+              padding: const EdgeInsets.all(16),
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Color(0xFF4ECDC4),
+                    Color(0xFF44A08D),
+                  ],
+                ),
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(20),
+                  bottomRight: Radius.circular(20),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(
+                      Icons.star,
+                      color: Colors.white,
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text(
+                          'Starlist',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                            letterSpacing: -0.3,
+                          ),
+                        ),
+                        Text(
+                          currentUser.isStar ? 'スター' : 'ファン',
+                          style: const TextStyle(
+                            color: Colors.white70,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close, color: Colors.white70, size: 20),
+                    onPressed: () => Navigator.of(context).pop(),
+                    constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                    padding: EdgeInsets.zero,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              children: [
+                _buildDrawerItem(Icons.home, 'ホーム', () => _navigateToHome()),
+                _buildDrawerItem(Icons.search, '検索', () => _navigateToSearch()),
+                _buildDrawerItem(Icons.people, 'フォロー中', () => _navigateToFollow()),
+                _buildDrawerItem(Icons.star, 'マイリスト', () => _navigateToMylist()),
+                // スターのみ表示
+                if (currentUser.isStar) ...[
+                  _buildDrawerItem(Icons.camera_alt, 'データ取込み', () => _navigateToDataImport()),
+                  _buildDrawerItem(Icons.analytics, 'スターダッシュボード', () => _navigateToStarDashboard()),
+                  _buildDrawerItem(Icons.workspace_premium, 'プランを管理', () => _navigateToPlanManagement()),
+                ],
+                _buildDrawerItem(Icons.person, 'マイページ', () => _navigateToProfile()),
+                // ファンのみ課金プラン表示
+                if (currentUser.isFan) ...[
+                  _buildDrawerItem(Icons.credit_card, '課金プラン', () => _navigateToPlanManagement()),
+                ],
+                _buildDrawerItem(Icons.settings, '設定', null, isActive: true),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDrawerItem(IconData icon, String title, VoidCallback? onTap, {bool isActive = false}) {
+    final themeMode = ref.watch(themeProvider);
+    final isDark = themeMode == AppThemeMode.dark;
+    
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 3),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        color: isActive ? const Color(0xFF4ECDC4).withValues(alpha: 0.15) : null,
+        border: isActive ? Border.all(
+          color: const Color(0xFF4ECDC4).withValues(alpha: 0.3),
+          width: 1,
+        ) : null,
+      ),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        leading: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: isActive 
+              ? const Color(0xFF4ECDC4)
+              : (isDark ? Colors.white10 : Colors.grey.shade100),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(
+            icon,
+            color: isActive 
+              ? Colors.white
+              : (isDark ? Colors.white54 : Colors.grey.shade600),
+            size: 18,
+          ),
+        ),
+        title: Text(
+          title,
+          style: TextStyle(
+            color: isActive 
+              ? const Color(0xFF4ECDC4) 
+              : (isDark ? Colors.white : Colors.grey.shade800),
+            fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
+            fontSize: 15,
+          ),
+        ),
+        trailing: isActive ? const Icon(
+          Icons.arrow_forward_ios,
+          color: Color(0xFF4ECDC4),
+          size: 14,
+        ) : null,
+        onTap: onTap != null ? () {
+          Navigator.of(context).pop();
+          onTap();
+        } : null,
+      ),
+    );
+  }
+
+  void _navigateToHome() {
+    // すべてのルートをクリアしてホーム画面に戻る
+    Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+  }
+
+  void _navigateToSearch() {
+    Navigator.popUntil(context, (route) => route.isFirst);
+  }
+
+  void _navigateToFollow() {
+    Navigator.popUntil(context, (route) => route.isFirst);
+  }
+
+  void _navigateToMylist() {
+    Navigator.popUntil(context, (route) => route.isFirst);
+  }
+
+  void _navigateToDataImport() {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (context) => const DataImportScreen()),
+    );
+  }
+
+  void _navigateToStarDashboard() {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (context) => const StarDashboardScreen()),
+    );
+  }
+
+  void _navigateToPlanManagement() {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (context) => const PlanManagementScreen()),
+    );
+  }
+
+  void _navigateToProfile() {
+    Navigator.popUntil(context, (route) => route.isFirst);
   }
 } 

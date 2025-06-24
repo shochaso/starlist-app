@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../src/app.dart';
+import '../features/app/screens/notification_settings_screen.dart';
+import '../features/profile/screens/profile_edit_screen.dart';
+import '../features/payment/screens/payment_info_screen.dart';
+import '../screens/privacy_screen.dart';
 
 class MypageScreen extends ConsumerWidget {
   final Function? onThemeToggle;
@@ -157,7 +161,12 @@ class MypageScreen extends ConsumerWidget {
                       color: secondaryTextColor,
                     ),
                     onTap: () {
-                      // 通知設定画面へ
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const NotificationSettingsScreen(),
+                        ),
+                      );
                     },
                   ),
                   
@@ -178,7 +187,12 @@ class MypageScreen extends ConsumerWidget {
                       color: secondaryTextColor,
                     ),
                     onTap: () {
-                      // プライバシー設定画面へ
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const PrivacyScreen(),
+                        ),
+                      );
                     },
                   ),
                 ],
@@ -226,7 +240,12 @@ class MypageScreen extends ConsumerWidget {
                       color: secondaryTextColor,
                     ),
                     onTap: () {
-                      // プロフィール編集画面へ
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const ProfileEditScreen(),
+                        ),
+                      );
                     },
                   ),
                   
@@ -247,7 +266,12 @@ class MypageScreen extends ConsumerWidget {
                       color: secondaryTextColor,
                     ),
                     onTap: () {
-                      // お支払い情報画面へ
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const PaymentInfoScreen(),
+                        ),
+                      );
                     },
                   ),
                   

@@ -4,6 +4,8 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../providers/user_provider.dart';
 import '../../../providers/theme_provider.dart';
+import 'profile_edit_screen.dart';
+import '../../app/screens/settings_screen.dart';
 import '../../star/screens/star_dashboard_screen.dart';
 import '../../star/screens/schedule_management_screen.dart';
 
@@ -906,45 +908,71 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     final themeMode = ref.watch(themeProvider);
     final isDark = themeMode == AppThemeMode.dark;
     
+    // プライバシー保護：フォロー情報とプレイリストは非公開
+    final bool isPrivateData = label.contains('フォロー') || label.contains('プレイリスト');
+    
     return Expanded(
-      child: Column(
-        children: [
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: isDark ? Colors.white : Colors.black87,
+      child: GestureDetector(
+        onTap: isPrivateData ? () {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('$labelの詳細は非公開です'),
+              backgroundColor: isDark ? const Color(0xFF4ECDC4) : const Color(0xFF4ECDC4),
             ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 12,
-              color: isDark ? Colors.grey[400] : Colors.black54,
+          );
+        } : null,
+        child: Column(
+          children: [
+            Text(
+              value,
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: isDark ? Colors.white : Colors.black87,
+              ),
             ),
-            textAlign: TextAlign.center,
-          ),
-        ],
+            const SizedBox(height: 4),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: isDark ? Colors.grey[400] : Colors.black54,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                if (isPrivateData) ...[
+                  const SizedBox(width: 4),
+                  Icon(
+                    Icons.lock,
+                    size: 12,
+                    color: isDark ? Colors.grey[400] : Colors.black54,
+                  ),
+                ],
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
 
   void _editProfile() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('プロフィール編集画面を開く'),
-        backgroundColor: Color(0xFF4ECDC4),
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const ProfileEditScreen(),
       ),
     );
   }
 
   void _openSettings() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('設定画面を開く'),
-        backgroundColor: Color(0xFF4ECDC4),
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const SettingsScreen(),
       ),
     );
   }

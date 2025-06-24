@@ -878,7 +878,7 @@ class StarlistWebHomePage extends StatelessWidget {
                 child: _buildMembershipPlanCard(
                   'ライト会員',
                   '気軽にスターを応援',
-                  '¥1,500',
+                  '¥980',
                   [
                     '一般コンテンツの閲覧',
                     'ライト限定コメント機能',
@@ -899,7 +899,7 @@ class StarlistWebHomePage extends StatelessWidget {
                 child: _buildMembershipPlanCard(
                   'スタンダード会員',
                   'より深くスターを知る',
-                  '¥3,000',
+                  '¥1,980',
                   [
                     'ライト会員特典のすべて',
                     'プレミアムコンテンツ閲覧',
@@ -922,7 +922,7 @@ class StarlistWebHomePage extends StatelessWidget {
                 child: _buildMembershipPlanCard(
                   'プレミアム会員',
                   'スターとの特別な関係',
-                  '¥10,000',
+                  '¥2,980',
                   [
                     'スタンダード会員特典のすべて',
                     'VIPルームアクセス',

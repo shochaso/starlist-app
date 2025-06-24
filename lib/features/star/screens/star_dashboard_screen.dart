@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../../src/features/youtube_easy/star_watch_history_widget.dart';
+import '../../../src/widgets/common_app_bar.dart';
 
 class StarDashboardScreen extends StatefulWidget {
   const StarDashboardScreen({super.key});
@@ -50,23 +51,8 @@ class _StarDashboardScreenState extends State<StarDashboardScreen>
               padding: const EdgeInsets.all(20),
               child: Row(
                 children: [
-                  // 戻るボタン
-                  GestureDetector(
-                    onTap: () => Navigator.pop(context),
-                    child: Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF2A2A2A),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Icon(
-                        Icons.arrow_back,
-                        color: Colors.white,
-                        size: 20,
-                      ),
-                    ),
-                  ),
+                  // ホームに戻るボタン
+                  const CommonBackButton(toHome: true),
                   const SizedBox(width: 16),
                   Container(
                     width: 50,

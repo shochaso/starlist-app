@@ -67,6 +67,7 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
     with TickerProviderStateMixin {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   late ScrollController _scrollController;
+  String? _currentPageKey;
 
   // サンプルデータ
   final List<StarData> recommendedStars = [
@@ -481,12 +482,15 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
     final titles = ['ホーム', '検索', 'データ取込み', 'マイリスト', 'マイページ'];
     final isDark = themeMode == AppThemeMode.dark;
     
+    // Override title if showing a special page
+    String title = _currentPageKey == 'follow' ? 'フォロー中' : titles[selectedTab];
+    
     return AppBar(
       backgroundColor: Colors.transparent,
       elevation: 0,
       shadowColor: Colors.transparent,
       title: Text(
-        titles[selectedTab],
+        title,
         style: TextStyle(
           color: isDark ? Colors.white : Colors.black87,
           fontSize: 18,
@@ -532,30 +536,71 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
       backgroundColor: isDark ? const Color(0xFF1A1A1A) : Colors.white,
       child: Column(
         children: [
-          Container(
-            padding: const EdgeInsets.fromLTRB(16, 60, 16, 16),
+          SafeArea(
+            child: Container(
+              margin: const EdgeInsets.only(top: 8),
+              padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF1A1A1A) : Colors.white,
-              border: Border(
-                bottom: BorderSide(color: isDark ? const Color(0xFF333333) : const Color(0xFFE5E7EB)),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  const Color(0xFF4ECDC4),
+                  const Color(0xFF44A08D),
+                ],
+              ),
+              borderRadius: const BorderRadius.only(
+                bottomLeft: Radius.circular(20),
+                bottomRight: Radius.circular(20),
               ),
             ),
             child: Row(
               children: [
-                Text(
-                  'Starlist',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: const Color(0xFF4ECDC4),
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(
+                    Icons.star,
+                    color: Colors.white,
+                    size: 20,
                   ),
                 ),
-                const Spacer(),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text(
+                        'Starlist',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                          letterSpacing: -0.3,
+                        ),
+                      ),
+                      Text(
+                        currentUser.isStar ? 'スター' : 'ファン',
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
                 IconButton(
-                  icon: Icon(Icons.close, color: isDark ? Colors.white54 : Colors.black54),
+                  icon: const Icon(Icons.close, color: Colors.white70, size: 20),
                   onPressed: () => Navigator.of(context).pop(),
+                  constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                  padding: EdgeInsets.zero,
                 ),
               ],
+            ),
             ),
           ),
           Expanded(
@@ -573,6 +618,10 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
                   _buildDrawerItem(Icons.workspace_premium, 'プランを管理', -1, 'plan'),
                 ],
                 _buildDrawerItem(Icons.person, 'マイページ', 4, null),
+                // ファンのみ課金プラン表示
+                if (currentUser.isFan) ...[
+                  _buildDrawerItem(Icons.credit_card, '課金プラン', -1, 'subscription'),
+                ],
                 _buildDrawerItem(Icons.settings, '設定', -1, 'settings'),
               ],
             ),
@@ -589,28 +638,53 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
     final isDark = themeMode == AppThemeMode.dark;
     
     // 選択状態の判定を修正：タブページとナビゲーションページが同時に選択されないように
-    final isTabActive = tabIndex != -1 && selectedTab == tabIndex && selectedPage == null;
-    final isPageActive = pageKey != null && selectedPage == pageKey;
+    final isTabActive = tabIndex != -1 && selectedTab == tabIndex && _currentPageKey == null;
+    final isPageActive = pageKey != null && _currentPageKey == pageKey;
     final isActive = isTabActive || isPageActive;
     
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 3),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        color: isActive ? const Color(0xFF4ECDC4).withValues(alpha: 0.15) : null,
+        border: isActive ? Border.all(
+          color: const Color(0xFF4ECDC4).withValues(alpha: 0.3),
+          width: 1,
+        ) : null,
+      ),
       child: ListTile(
-        leading: Icon(
-          icon,
-          color: isActive ? const Color(0xFF4ECDC4) : (isDark ? Colors.white54 : Colors.black54),
-          size: 20,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        leading: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: isActive 
+              ? const Color(0xFF4ECDC4)
+              : (isDark ? Colors.white10 : Colors.grey.shade100),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(
+            icon,
+            color: isActive 
+              ? Colors.white
+              : (isDark ? Colors.white54 : Colors.grey.shade600),
+            size: 18,
+          ),
         ),
         title: Text(
           title,
           style: TextStyle(
-            color: isActive ? const Color(0xFF4ECDC4) : (isDark ? Colors.white : Colors.black87),
+            color: isActive 
+              ? const Color(0xFF4ECDC4) 
+              : (isDark ? Colors.white : Colors.grey.shade800),
             fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
-            fontSize: 14,
+            fontSize: 15,
           ),
         ),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        tileColor: isActive ? const Color(0xFF4ECDC4).withOpacity(0.1) : null,
+        trailing: isActive ? const Icon(
+          Icons.arrow_forward_ios,
+          color: Color(0xFF4ECDC4),
+          size: 14,
+        ) : null,
         onTap: () {
           Navigator.of(context).pop();
           if (tabIndex != -1) {
@@ -626,16 +700,24 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
   }
 
   void _navigateToPage(String pageKey) {
+    // フォロー画面は既存のタブシステムに統合
+    if (pageKey == 'follow') {
+      setState(() {
+        _currentPageKey = 'follow';
+      });
+      return;
+    }
+    
     Widget page;
     switch (pageKey) {
-      case 'follow':
-        page = const FollowScreen();
-        break;
       case 'dashboard':
         page = const StarDashboardScreen();
         break;
       case 'plan':
         page = const PlanManagementScreen();
+        break;
+      case 'subscription':
+        page = const PlanManagementScreen(); // ファン用も同じ課金プランページ
         break;
       case 'settings':
         page = const SettingsScreen();
@@ -650,6 +732,11 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
   }
 
   Widget _buildBody(int selectedTab) {
+    // Check if we're showing a special page from the drawer
+    if (_currentPageKey == 'follow') {
+      return const FollowScreen();
+    }
+    
     switch (selectedTab) {
       case 0:
         return _buildHomeView();
@@ -1688,6 +1775,9 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
     final themeMode = ref.watch(themeProvider);
     final isDark = themeMode == AppThemeMode.dark;
     
+    // フォローページなど特別なページが表示されている場合、どのタブも選択状態にしない
+    int currentSelectedTab = _currentPageKey != null ? -1 : selectedTab;
+    
     return Container(
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1A1A1A) : Colors.white,
@@ -1696,7 +1786,7 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
         ),
         boxShadow: [
           BoxShadow(
-            color: (isDark ? Colors.black : Colors.black).withOpacity(0.1),
+            color: (isDark ? Colors.black : Colors.black).withValues(alpha: 0.1),
             blurRadius: 10,
             offset: const Offset(0, -2),
           ),
@@ -1709,13 +1799,13 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _buildBottomNavItem(Icons.home, 'ホーム', 0, selectedTab, isDark),
-              _buildBottomNavItem(Icons.search, '検索', 1, selectedTab, isDark),
+              _buildBottomNavItem(Icons.home, 'ホーム', 0, currentSelectedTab, isDark),
+              _buildBottomNavItem(Icons.search, '検索', 1, currentSelectedTab, isDark),
               // スターのみ取込みタブを表示
               if (currentUser.isStar)
-                _buildBottomNavItem(Icons.camera_alt, '取込', 2, selectedTab, isDark),
-              _buildBottomNavItem(Icons.star, 'マイリスト', 3, selectedTab, isDark),
-              _buildBottomNavItem(Icons.person, 'マイページ', 4, selectedTab, isDark),
+                _buildBottomNavItem(Icons.camera_alt, '取込', 2, currentSelectedTab, isDark),
+              _buildBottomNavItem(Icons.star, 'マイリスト', 3, currentSelectedTab, isDark),
+              _buildBottomNavItem(Icons.person, 'マイページ', 4, currentSelectedTab, isDark),
             ],
           ),
         ),
@@ -1731,6 +1821,9 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
       onTap: () {
         ref.read(selectedTabProvider.notifier).state = index;
           ref.read(selectedDrawerPageProvider.notifier).state = null; // ドロワー選択をリセット
+          setState(() {
+            _currentPageKey = null; // 特別なページキーもリセット
+          });
       },
       child: Container(
           padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 2),

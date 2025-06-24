@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../routes/app_routes.dart';
+import '../features/profile/screens/profile_edit_screen.dart';
+import '../features/app/screens/settings_screen.dart';
 
 class StarMyPageScreen extends StatelessWidget {
   const StarMyPageScreen({Key? key}) : super(key: key);
@@ -29,7 +31,12 @@ class StarMyPageScreen extends StatelessWidget {
           IconButton(
             icon: Icon(Icons.settings, color: textColor),
             onPressed: () {
-              // 設定画面へ遷移
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const SettingsScreen(),
+                ),
+              );
             },
           ),
         ],
@@ -94,7 +101,12 @@ class StarMyPageScreen extends StatelessWidget {
                         SizedBox(height: 8),
                         ElevatedButton(
                           onPressed: () {
-                            // プロフィール編集画面へ遷移
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const ProfileEditScreen(),
+                              ),
+                            );
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: accentColor,

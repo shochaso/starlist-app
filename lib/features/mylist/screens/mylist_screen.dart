@@ -471,7 +471,7 @@ class _MylistScreenState extends ConsumerState<MylistScreen>
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF4ECDC4).withOpacity(0.2),
+                  color: const Color(0xFF4ECDC4).withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
@@ -667,9 +667,12 @@ class _MylistScreenState extends ConsumerState<MylistScreen>
   }
 
   void _showSortOptions() {
+    final themeMode = ref.read(themeProvider);
+    final isDark = themeMode == AppThemeMode.dark;
+    
     showModalBottomSheet(
       context: context,
-      backgroundColor: const Color(0xFF2A2A2A),
+      backgroundColor: isDark ? const Color(0xFF2A2A2A) : Colors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -678,28 +681,37 @@ class _MylistScreenState extends ConsumerState<MylistScreen>
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text(
+            Text(
               '並び替え',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
-                color: Colors.white,
+                color: isDark ? Colors.white : Colors.black87,
               ),
             ),
             const SizedBox(height: 20),
             ListTile(
               leading: const Icon(Icons.access_time, color: Color(0xFF4ECDC4)),
-              title: const Text('最近追加順', style: TextStyle(color: Colors.white)),
+              title: Text(
+                '最近追加順',
+                style: TextStyle(color: isDark ? Colors.white : Colors.black87),
+              ),
               onTap: () => Navigator.pop(context),
             ),
             ListTile(
               leading: const Icon(Icons.sort_by_alpha, color: Color(0xFF4ECDC4)),
-              title: const Text('名前順', style: TextStyle(color: Colors.white)),
+              title: Text(
+                '名前順',
+                style: TextStyle(color: isDark ? Colors.white : Colors.black87),
+              ),
               onTap: () => Navigator.pop(context),
             ),
             ListTile(
               leading: const Icon(Icons.category, color: Color(0xFF4ECDC4)),
-              title: const Text('カテゴリー順', style: TextStyle(color: Colors.white)),
+              title: Text(
+                'カテゴリー順',
+                style: TextStyle(color: isDark ? Colors.white : Colors.black87),
+              ),
               onTap: () => Navigator.pop(context),
             ),
           ],
@@ -709,9 +721,12 @@ class _MylistScreenState extends ConsumerState<MylistScreen>
   }
 
   void _showAddOptions() {
+    final themeMode = ref.read(themeProvider);
+    final isDark = themeMode == AppThemeMode.dark;
+    
     showModalBottomSheet(
       context: context,
-      backgroundColor: const Color(0xFF2A2A2A),
+      backgroundColor: isDark ? const Color(0xFF2A2A2A) : Colors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -720,18 +735,21 @@ class _MylistScreenState extends ConsumerState<MylistScreen>
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text(
+            Text(
               '追加',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
-                color: Colors.white,
+                color: isDark ? Colors.white : Colors.black87,
               ),
             ),
             const SizedBox(height: 20),
             ListTile(
               leading: const Icon(Icons.star, color: Color(0xFF4ECDC4)),
-              title: const Text('スターをお気に入りに追加', style: TextStyle(color: Colors.white)),
+              title: Text(
+                'スターをお気に入りに追加',
+                style: TextStyle(color: isDark ? Colors.white : Colors.black87),
+              ),
               onTap: () {
                 Navigator.pop(context);
                 _addStar();
@@ -739,7 +757,10 @@ class _MylistScreenState extends ConsumerState<MylistScreen>
             ),
             ListTile(
               leading: const Icon(Icons.bookmark, color: Color(0xFF4ECDC4)),
-              title: const Text('コンテンツをお気に入りに追加', style: TextStyle(color: Colors.white)),
+              title: Text(
+                'コンテンツをお気に入りに追加',
+                style: TextStyle(color: isDark ? Colors.white : Colors.black87),
+              ),
               onTap: () {
                 Navigator.pop(context);
                 _addContent();
@@ -747,7 +768,10 @@ class _MylistScreenState extends ConsumerState<MylistScreen>
             ),
             ListTile(
               leading: const Icon(Icons.playlist_add, color: Color(0xFF4ECDC4)),
-              title: const Text('新しいプレイリストを作成', style: TextStyle(color: Colors.white)),
+              title: Text(
+                '新しいプレイリストを作成',
+                style: TextStyle(color: isDark ? Colors.white : Colors.black87),
+              ),
               onTap: () {
                 Navigator.pop(context);
                 _createPlaylist();
@@ -826,55 +850,138 @@ class _MylistScreenState extends ConsumerState<MylistScreen>
   }
 
   void _showCreatePlaylistDialog() {
+    final themeMode = ref.read(themeProvider);
+    final isDark = themeMode == AppThemeMode.dark;
+    
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF2A2A2A),
-        title: const Text(
+        backgroundColor: isDark ? const Color(0xFF2A2A2A) : Colors.white,
+        title: Text(
           'プレイリストを作成',
-          style: TextStyle(color: Colors.white),
+          style: TextStyle(
+            color: isDark ? Colors.white : Colors.black87,
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+          ),
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
-              style: const TextStyle(color: Colors.white),
+              style: TextStyle(color: isDark ? Colors.white : Colors.black87),
               decoration: InputDecoration(
                 labelText: 'プレイリストの名前',
-                labelStyle: const TextStyle(color: Colors.white),
+                labelStyle: TextStyle(
+                  color: isDark ? Colors.grey[400] : Colors.black54,
+                ),
+                hintStyle: TextStyle(
+                  color: isDark ? Colors.grey[500] : Colors.black38,
+                ),
+                filled: true,
+                fillColor: isDark ? const Color(0xFF333333) : const Color(0xFFF8FAFC),
                 focusedBorder: OutlineInputBorder(
-                  borderSide: const BorderSide(color: Color(0xFF4ECDC4)),
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Color(0xFF4ECDC4), width: 2),
                 ),
                 enabledBorder: OutlineInputBorder(
-                  borderSide: const BorderSide(color: Color(0xFF333333)),
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                    color: isDark ? const Color(0xFF444444) : const Color(0xFFE5E7EB),
+                  ),
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                    color: isDark ? const Color(0xFF444444) : const Color(0xFFE5E7EB),
+                  ),
                 ),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
             TextField(
-              style: const TextStyle(color: Colors.white),
+              maxLines: 3,
+              style: TextStyle(color: isDark ? Colors.white : Colors.black87),
               decoration: InputDecoration(
-                labelText: 'プレイリストの説明',
-                labelStyle: const TextStyle(color: Colors.white),
+                labelText: 'プレイリストの説明（任意）',
+                alignLabelWithHint: true,
+                labelStyle: TextStyle(
+                  color: isDark ? Colors.grey[400] : Colors.black54,
+                ),
+                hintStyle: TextStyle(
+                  color: isDark ? Colors.grey[500] : Colors.black38,
+                ),
+                filled: true,
+                fillColor: isDark ? const Color(0xFF333333) : const Color(0xFFF8FAFC),
                 focusedBorder: OutlineInputBorder(
-                  borderSide: const BorderSide(color: Color(0xFF4ECDC4)),
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Color(0xFF4ECDC4), width: 2),
                 ),
                 enabledBorder: OutlineInputBorder(
-                  borderSide: const BorderSide(color: Color(0xFF333333)),
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                    color: isDark ? const Color(0xFF444444) : const Color(0xFFE5E7EB),
+                  ),
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                    color: isDark ? const Color(0xFF444444) : const Color(0xFFE5E7EB),
+                  ),
                 ),
               ),
             ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context);
-                _createPlaylist();
-              },
-              child: const Text('プレイリストを作成'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF4ECDC4),
-                foregroundColor: Colors.black,
-              ),
+            const SizedBox(height: 24),
+            Row(
+              children: [
+                Expanded(
+                  child: TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        side: BorderSide(
+                          color: isDark ? Colors.grey[600]! : Colors.black26,
+                        ),
+                      ),
+                    ),
+                    child: Text(
+                      'キャンセル',
+                      style: TextStyle(
+                        color: isDark ? Colors.grey[400] : Colors.black54,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      _createPlaylist();
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF4ECDC4),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      elevation: 0,
+                    ),
+                    child: const Text(
+                      '作成',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
         ),
