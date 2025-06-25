@@ -498,12 +498,12 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
         ),
       ),
       centerTitle: true,
-      leading: selectedTab == 0 ? Builder(
+      leading: Builder(
         builder: (context) => IconButton(
           icon: Icon(Icons.menu, color: isDark ? Colors.white54 : Colors.black54),
           onPressed: () => Scaffold.of(context).openDrawer(),
         ),
-      ) : null,
+      ),
       automaticallyImplyLeading: false, // 戻るボタンを無効化
       actions: [
         IconButton(
@@ -633,7 +633,6 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
 
   Widget _buildDrawerItem(IconData icon, String title, int tabIndex, String? pageKey) {
     final selectedTab = ref.watch(selectedTabProvider);
-    final selectedPage = ref.watch(selectedDrawerPageProvider);
     final themeMode = ref.watch(themeProvider);
     final isDark = themeMode == AppThemeMode.dark;
     
@@ -1762,13 +1761,6 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
     );
   }
 
-  Widget _buildMyListView() {
-    return const MylistScreen();
-  }
-
-  Widget _buildProfileView() {
-    return const ProfileScreen();
-  }
 
   Widget _buildBottomNavigationBar(int selectedTab) {
     final currentUser = ref.watch(currentUserProvider);
