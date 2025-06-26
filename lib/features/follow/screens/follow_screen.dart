@@ -1,16 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../providers/theme_provider.dart';
-import '../../../providers/user_provider.dart';
-import '../../app/screens/settings_screen.dart';
-import '../../star/screens/star_dashboard_screen.dart';
-import '../../data_integration/screens/data_import_screen.dart';
-import '../../subscription/screens/plan_management_screen.dart';
+import '../../../src/providers/theme_provider_enhanced.dart';
 
 class FollowScreen extends ConsumerStatefulWidget {
-  final bool isStandalone;
-  
-  const FollowScreen({super.key, this.isStandalone = false});
+  const FollowScreen({super.key});
 
   @override
   ConsumerState<FollowScreen> createState() => _FollowScreenState();
@@ -95,126 +88,71 @@ class _FollowScreenState extends ConsumerState<FollowScreen>
 
   @override
   Widget build(BuildContext context) {
-    final themeMode = ref.watch(themeProvider);
-    final isDark = themeMode == AppThemeMode.dark;
+    final themeState = ref.watch(themeProviderEnhanced);
+    final isDark = themeState.isDarkMode;
     
-    // If standalone (navigated directly), show with Scaffold and AppBar
-    if (widget.isStandalone) {
-      return Scaffold(
-        backgroundColor: isDark ? const Color(0xFF1A1A1A) : const Color(0xFFF8FAFC),
-        appBar: AppBar(
-          backgroundColor: isDark ? const Color(0xFF1A1A1A) : Colors.white,
-          elevation: 0,
-          leading: Builder(
-            builder: (context) => IconButton(
-              icon: Icon(
-                Icons.menu,
-                color: isDark ? Colors.white : Colors.black87,
-              ),
-              onPressed: () => Scaffold.of(context).openDrawer(),
-            ),
-          ),
-          title: Text(
-            'フォロー中',
-            style: TextStyle(
-              color: isDark ? Colors.white : Colors.black87,
-              fontSize: 20,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          actions: [
-            IconButton(
-              icon: Icon(
-                Icons.search,
-                color: isDark ? Colors.white : Colors.black87,
-              ),
-              onPressed: () => _searchFollowing(),
-            ),
-            IconButton(
-              icon: Icon(
-                Icons.sort,
-                color: isDark ? Colors.white : Colors.black87,
-              ),
-              onPressed: () => _showSortOptions(),
-            ),
-          ],
-          bottom: TabBar(
-            controller: _tabController,
-            indicatorColor: const Color(0xFF4ECDC4),
-            labelColor: const Color(0xFF4ECDC4),
-            unselectedLabelColor: isDark ? const Color(0xFF888888) : Colors.grey.shade600,
-            tabs: const [
-              Tab(text: 'フォロー中'),
-              Tab(text: '最近の活動'),
-            ],
-          ),
-        ),
-        drawer: const _FollowScreenDrawer(),
-        body: TabBarView(
-          controller: _tabController,
+    return Scaffold(
+      backgroundColor: isDark ? const Color(0xFF1A1A1A) : const Color(0xFFF8FAFC),
+      body: SafeArea(
+        child: Column(
           children: [
-            _buildFollowingTab(),
-            _buildActivitiesTab(),
+            // タブバー
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: TabBar(
+                controller: _tabController,
+                indicator: BoxDecoration(
+                  color: const Color(0xFF4ECDC4),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                labelColor: Colors.white,
+                unselectedLabelColor: isDark ? const Color(0xFF888888) : Colors.grey.shade600,
+                labelPadding: EdgeInsets.zero,
+                tabs: const [
+                  Tab(
+                    child: Text(
+                      'フォロー中',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  Tab(
+                    child: Text(
+                      '最近の活動',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // タブビュー
+            Expanded(
+              child: TabBarView(
+                controller: _tabController,
+                children: [
+                  _buildFollowingTab(),
+                  _buildActivitiesTab(),
+                ],
+              ),
+            ),
           ],
         ),
-      );
-    }
-    
-    // If embedded in main screen, return content with tabs
-    return Column(
-      children: [
-        Container(
-          color: isDark ? const Color(0xFF1A1A1A) : Colors.white,
-          child: Column(
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  IconButton(
-                    icon: Icon(
-                      Icons.search,
-                      color: isDark ? Colors.white : Colors.black87,
-                    ),
-                    onPressed: () => _searchFollowing(),
-                  ),
-                  IconButton(
-                    icon: Icon(
-                      Icons.sort,
-                      color: isDark ? Colors.white : Colors.black87,
-                    ),
-                    onPressed: () => _showSortOptions(),
-                  ),
-                ],
-              ),
-              TabBar(
-                controller: _tabController,
-                indicatorColor: const Color(0xFF4ECDC4),
-                labelColor: const Color(0xFF4ECDC4),
-                unselectedLabelColor: isDark ? const Color(0xFF888888) : Colors.grey.shade600,
-                tabs: const [
-                  Tab(text: 'フォロー中'),
-                  Tab(text: '最近の活動'),
-                ],
-              ),
-            ],
-          ),
-        ),
-        Expanded(
-          child: TabBarView(
-            controller: _tabController,
-            children: [
-              _buildFollowingTab(),
-              _buildActivitiesTab(),
-            ],
-          ),
-        ),
-      ],
+      ),
     );
   }
 
   Widget _buildFollowingTab() {
-    final themeMode = ref.watch(themeProvider);
-    final isDark = themeMode == AppThemeMode.dark;
+    final themeState = ref.watch(themeProviderEnhanced);
+    final isDark = themeState.isDarkMode;
     
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
@@ -323,8 +261,8 @@ class _FollowScreenState extends ConsumerState<FollowScreen>
 
 
   Widget _buildStarCard(Map<String, dynamic> star) {
-    final themeMode = ref.watch(themeProvider);
-    final isDark = themeMode == AppThemeMode.dark;
+    final themeState = ref.watch(themeProviderEnhanced);
+    final isDark = themeState.isDarkMode;
     
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -454,8 +392,8 @@ class _FollowScreenState extends ConsumerState<FollowScreen>
   }
 
   Widget _buildActivityCard(Map<String, dynamic> activity) {
-    final themeMode = ref.watch(themeProvider);
-    final isDark = themeMode == AppThemeMode.dark;
+    final themeState = ref.watch(themeProviderEnhanced);
+    final isDark = themeState.isDarkMode;
     
     IconData typeIcon;
     Color typeColor;
@@ -760,206 +698,4 @@ class FollowingSearchDelegate extends SearchDelegate<String> {
   }
 }
 
-class _FollowScreenDrawer extends ConsumerWidget {
-  const _FollowScreenDrawer();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final currentUser = ref.watch(currentUserProvider);
-    final themeMode = ref.watch(themeProvider);
-    final isDark = themeMode == AppThemeMode.dark;
-    
-    return Drawer(
-      backgroundColor: isDark ? const Color(0xFF1A1A1A) : Colors.white,
-      child: Column(
-        children: [
-          SafeArea(
-            child: Container(
-              margin: const EdgeInsets.only(top: 8),
-              padding: const EdgeInsets.all(16),
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    Color(0xFF4ECDC4),
-                    Color(0xFF44A08D),
-                  ],
-                ),
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(20),
-                  bottomRight: Radius.circular(20),
-                ),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Icon(
-                      Icons.star,
-                      color: Colors.white,
-                      size: 20,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Text(
-                          'Starlist',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
-                            letterSpacing: -0.3,
-                          ),
-                        ),
-                        Text(
-                          currentUser.isStar ? 'スター' : 'ファン',
-                          style: const TextStyle(
-                            color: Colors.white70,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.close, color: Colors.white70, size: 20),
-                    onPressed: () => Navigator.of(context).pop(),
-                    constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-                    padding: EdgeInsets.zero,
-                  ),
-                ],
-              ),
-            ),
-          ),
-          Expanded(
-            child: ListView(
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              children: [
-                _buildDrawerItem(context, ref, Icons.home, 'ホーム', () => _navigateToHome(context)),
-                _buildDrawerItem(context, ref, Icons.search, '検索', () => _navigateToSearch(context)),
-                _buildDrawerItem(context, ref, Icons.people, 'フォロー中', null, isActive: true),
-                _buildDrawerItem(context, ref, Icons.star, 'マイリスト', () => _navigateToMylist(context)),
-                // スターのみ表示
-                if (currentUser.isStar) ...[
-                  _buildDrawerItem(context, ref, Icons.camera_alt, 'データ取込み', () => _navigateToDataImport(context)),
-                  _buildDrawerItem(context, ref, Icons.analytics, 'スターダッシュボード', () => _navigateToStarDashboard(context)),
-                  _buildDrawerItem(context, ref, Icons.workspace_premium, 'プランを管理', () => _navigateToPlanManagement(context)),
-                ],
-                _buildDrawerItem(context, ref, Icons.person, 'マイページ', () => _navigateToProfile(context)),
-                // ファンのみ課金プラン表示
-                if (currentUser.isFan) ...[
-                  _buildDrawerItem(context, ref, Icons.credit_card, '課金プラン', () => _navigateToPlanManagement(context)),
-                ],
-                _buildDrawerItem(context, ref, Icons.settings, '設定', () => _navigateToSettings(context)),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDrawerItem(BuildContext context, WidgetRef ref, IconData icon, String title, VoidCallback? onTap, {bool isActive = false}) {
-    final themeMode = ref.watch(themeProvider);
-    final isDark = themeMode == AppThemeMode.dark;
-    
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 3),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        color: isActive ? const Color(0xFF4ECDC4).withValues(alpha: 0.15) : null,
-        border: isActive ? Border.all(
-          color: const Color(0xFF4ECDC4).withValues(alpha: 0.3),
-          width: 1,
-        ) : null,
-      ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-        leading: Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: isActive 
-              ? const Color(0xFF4ECDC4)
-              : (isDark ? Colors.white10 : Colors.grey.shade100),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Icon(
-            icon,
-            color: isActive 
-              ? Colors.white
-              : (isDark ? Colors.white54 : Colors.grey.shade600),
-            size: 18,
-          ),
-        ),
-        title: Text(
-          title,
-          style: TextStyle(
-            color: isActive 
-              ? const Color(0xFF4ECDC4) 
-              : (isDark ? Colors.white : Colors.grey.shade800),
-            fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
-            fontSize: 15,
-          ),
-        ),
-        trailing: isActive ? const Icon(
-          Icons.arrow_forward_ios,
-          color: Color(0xFF4ECDC4),
-          size: 14,
-        ) : null,
-        onTap: onTap != null ? () {
-          Navigator.of(context).pop();
-          onTap();
-        } : null,
-      ),
-    );
-  }
-
-  void _navigateToHome(BuildContext context) {
-    Navigator.popUntil(context, (route) => route.isFirst);
-  }
-
-  void _navigateToSearch(BuildContext context) {
-    Navigator.popUntil(context, (route) => route.isFirst);
-  }
-
-  void _navigateToMylist(BuildContext context) {
-    Navigator.popUntil(context, (route) => route.isFirst);
-  }
-
-  void _navigateToDataImport(BuildContext context) {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (context) => const DataImportScreen()),
-    );
-  }
-
-  void _navigateToStarDashboard(BuildContext context) {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (context) => const StarDashboardScreen()),
-    );
-  }
-
-  void _navigateToPlanManagement(BuildContext context) {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (context) => const PlanManagementScreen()),
-    );
-  }
-
-  void _navigateToProfile(BuildContext context) {
-    Navigator.popUntil(context, (route) => route.isFirst);
-  }
-
-  void _navigateToSettings(BuildContext context) {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (context) => const SettingsScreen()),
-    );
-  }
-} 
+ 

@@ -1,18 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../src/providers/theme_provider_enhanced.dart';
+import '../../../providers/user_provider.dart';
+import '../../subscription/screens/plan_management_screen.dart';
+import '../../app/screens/settings_screen.dart';
+import '../../data_integration/screens/data_import_screen.dart';
 import '../../../src/features/youtube_easy/star_watch_history_widget.dart';
 
-class StarDashboardScreen extends StatefulWidget {
+class StarDashboardScreen extends ConsumerStatefulWidget {
   const StarDashboardScreen({super.key});
 
   @override
-  State<StarDashboardScreen> createState() => _StarDashboardScreenState();
+  ConsumerState<StarDashboardScreen> createState() => _StarDashboardScreenState();
 }
 
-class _StarDashboardScreenState extends State<StarDashboardScreen>
+class _StarDashboardScreenState extends ConsumerState<StarDashboardScreen>
     with TickerProviderStateMixin {
   late TabController _tabController;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   
   // ダミーデータ
   final Map<String, dynamic> _dashboardData = {
@@ -40,66 +47,91 @@ class _StarDashboardScreenState extends State<StarDashboardScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child: SafeArea(
+    final themeState = ref.watch(themeProviderEnhanced);
+    final isDark = themeState.isDarkMode;
+    
+    return Scaffold(
+      key: _scaffoldKey,
+      backgroundColor: isDark ? const Color(0xFF1A1A1A) : const Color(0xFFF8FAFC),
+      appBar: AppBar(
+        backgroundColor: isDark ? const Color(0xFF1A1A1A) : Colors.white,
+        elevation: 0,
+        title: Text(
+          'スターダッシュボード',
+          style: TextStyle(
+            color: isDark ? Colors.white : Colors.black87,
+            fontSize: 20,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        leading: IconButton(
+          icon: Icon(Icons.menu, color: isDark ? Colors.white : Colors.black87),
+          onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+        ),
+      ),
+      drawer: _buildDrawer(),
+      body: SafeArea(
         child: Column(
           children: [
             Expanded(
               child: Column(
                 children: [
-                  Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF2A2A2A),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: TabBar(
-                      controller: _tabController,
-                      indicator: BoxDecoration(
-                        color: const Color(0xFF4ECDC4),
-                        borderRadius: BorderRadius.circular(8),
+                  Material(
+                    color: Colors.transparent,
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF2A2A2A),
+                        borderRadius: BorderRadius.circular(10),
                       ),
-                      labelColor: Colors.white,
-                      unselectedLabelColor: const Color(0xFF888888),
-                      labelPadding: EdgeInsets.zero,
-                      tabs: const [
-                        Tab(
-                          child: Text(
-                            '概要',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
+                      child: TabBar(
+                        controller: _tabController,
+                        indicator: BoxDecoration(
+                          color: const Color(0xFF4ECDC4),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        labelColor: Colors.white,
+                        unselectedLabelColor: const Color(0xFF888888),
+                        labelPadding: EdgeInsets.zero,
+                        tabs: const [
+                          Tab(
+                            child: Text(
+                              '概要',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                           ),
-                        ),
-                        Tab(
-                          child: Text(
-                            '視聴履歴',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
+                          Tab(
+                            child: Text(
+                              '視聴履歴',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                           ),
-                        ),
-                        Tab(
-                          child: Text(
-                            'ファン',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
+                          Tab(
+                            child: Text(
+                              'ファン',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                           ),
-                        ),
-                        Tab(
-                          child: Text(
-                            'コンテンツ',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
+                          Tab(
+                            child: Text(
+                              'コンテンツ',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -107,10 +139,10 @@ class _StarDashboardScreenState extends State<StarDashboardScreen>
                     child: TabBarView(
                       controller: _tabController,
                       children: [
-                        _buildOverviewTab(),
+                        SingleChildScrollView(child: _buildOverviewTab()),
                         _buildWatchHistoryTab(),
-                        _buildFansTab(),
-                        _buildContentTab(),
+                        SingleChildScrollView(child: _buildFansTab()),
+                        SingleChildScrollView(child: _buildContentTab()),
                       ],
                     ),
                   ),
@@ -274,6 +306,8 @@ class _StarDashboardScreenState extends State<StarDashboardScreen>
                     fontSize: 12,
                     color: Color(0xFF888888),
                   ),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
                 ),
               ),
             ],
@@ -286,6 +320,8 @@ class _StarDashboardScreenState extends State<StarDashboardScreen>
               fontWeight: FontWeight.w600,
               color: Colors.white,
             ),
+            overflow: TextOverflow.ellipsis,
+            maxLines: 1,
           ),
         ],
       ),
@@ -473,7 +509,7 @@ class _StarDashboardScreenState extends State<StarDashboardScreen>
         border: Border.all(color: const Color(0xFF333333)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
+            color: Colors.black.withValues(alpha: 0.2),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -485,7 +521,7 @@ class _StarDashboardScreenState extends State<StarDashboardScreen>
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: color.withOpacity(0.2),
+              color: color.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(icon, color: color, size: 20),
@@ -513,6 +549,8 @@ class _StarDashboardScreenState extends State<StarDashboardScreen>
                     fontSize: 11,
                     color: Color(0xFF888888),
                   ),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
                 ),
               ],
             ),
@@ -520,7 +558,7 @@ class _StarDashboardScreenState extends State<StarDashboardScreen>
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.2),
+              color: color.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Text(
@@ -818,6 +856,8 @@ class _StarDashboardScreenState extends State<StarDashboardScreen>
                     fontSize: 11,
                     color: Colors.grey,
                   ),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
                 ),
                 const SizedBox(height: 2),
                 Text(
@@ -826,6 +866,8 @@ class _StarDashboardScreenState extends State<StarDashboardScreen>
                     fontSize: 10,
                     color: Color(0xFF4ECDC4),
                   ),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
                 ),
               ],
             ),
@@ -1200,11 +1242,175 @@ class _StarDashboardScreenState extends State<StarDashboardScreen>
 
   void _navigateToDataImport() {
     // データ取り込み画面への遷移
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('データ取り込み画面に移動します'),
-        backgroundColor: Color(0xFF4ECDC4),
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const DataImportScreen()),
+    );
+  }
+
+  Widget _buildDrawer() {
+    final currentUser = ref.watch(currentUserProvider);
+    final themeState = ref.watch(themeProviderEnhanced);
+    final isDark = themeState.isDarkMode;
+    
+    return Drawer(
+      backgroundColor: isDark ? const Color(0xFF1A1A1A) : Colors.white,
+      child: Column(
+        children: [
+          SafeArea(
+            child: Container(
+              margin: const EdgeInsets.only(top: 8),
+              padding: const EdgeInsets.all(16),
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Color(0xFF4ECDC4),
+                    Color(0xFF44A08D),
+                  ],
+                ),
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(20),
+                  bottomRight: Radius.circular(20),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(
+                      Icons.star,
+                      color: Colors.white,
+                      size: 24,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          currentUser.name ?? 'スター',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        Text(
+                          currentUser.email,
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.8),
+                            fontSize: 12,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const Divider(height: 1),
+          Expanded(
+            child: ListView(
+              padding: EdgeInsets.zero,
+              children: [
+                _buildDrawerItem(
+                  icon: Icons.home,
+                  title: 'ホーム',
+                  onTap: () {
+                    Navigator.of(context).popUntil((route) => route.isFirst);
+                  },
+                ),
+                if (currentUser.isStar) ...[
+                  _buildDrawerItem(
+                    icon: Icons.dashboard,
+                    title: 'ダッシュボード',
+                    isSelected: true,
+                    onTap: () {
+                      Navigator.pop(context);
+                    },
+                  ),
+                  _buildDrawerItem(
+                    icon: Icons.upload,
+                    title: 'データ取り込み',
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const DataImportScreen()),
+                      );
+                    },
+                  ),
+                ],
+                _buildDrawerItem(
+                  icon: Icons.card_membership,
+                  title: 'プラン管理',
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const PlanManagementScreen()),
+                    );
+                  },
+                ),
+                const Divider(),
+                _buildDrawerItem(
+                  icon: Icons.settings,
+                  title: '設定',
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const SettingsScreen()),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
+    );
+  }
+
+  Widget _buildDrawerItem({
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+    bool isSelected = false,
+  }) {
+    final themeState = ref.watch(themeProviderEnhanced);
+    final isDark = themeState.isDarkMode;
+    
+    return ListTile(
+      leading: Icon(
+        icon,
+        color: isSelected
+            ? const Color(0xFF4ECDC4)
+            : (isDark ? Colors.white70 : Colors.black54),
+      ),
+      title: Text(
+        title,
+        style: TextStyle(
+          color: isSelected
+              ? const Color(0xFF4ECDC4)
+              : (isDark ? Colors.white : Colors.black87),
+          fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+        ),
+      ),
+      selected: isSelected,
+      selectedTileColor: const Color(0xFF4ECDC4).withValues(alpha: 0.1),
+      onTap: onTap,
     );
   }
 } 

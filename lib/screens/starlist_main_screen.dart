@@ -10,7 +10,7 @@ import '../features/star/screens/star_dashboard_screen.dart';
 import '../features/subscription/screens/plan_management_screen.dart';
 import '../features/app/screens/settings_screen.dart';
 import '../providers/user_provider.dart';
-import '../providers/theme_provider.dart';
+import '../src/providers/theme_provider_enhanced.dart';
 import '../src/core/components/service_icons.dart';
 import 'fan_home_screen.dart';
 
@@ -463,8 +463,8 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
   @override
   Widget build(BuildContext context) {
     final selectedTab = ref.watch(selectedTabProvider);
-    final themeMode = ref.watch(themeProvider);
-    final isDark = themeMode == AppThemeMode.dark;
+    final themeState = ref.watch(themeProviderEnhanced);
+    final isDark = themeState.isDarkMode;
     
     return Scaffold(
       key: _scaffoldKey,
@@ -479,11 +479,10 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
   PreferredSizeWidget _buildAppBar() {
     final selectedTab = ref.watch(selectedTabProvider);
     final themeMode = ref.watch(themeProvider);
-    final titles = ['ホーム', '検索', 'データ取込み', 'マイリスト', 'マイページ'];
+    final titles = ['ホーム', '検索', 'データ取込み', 'マイリスト', 'マイページ', 'フォロー中'];
     final isDark = themeMode == AppThemeMode.dark;
     
-    // Override title if showing a special page
-    String title = _currentPageKey == 'follow' ? 'フォロー中' : titles[selectedTab];
+    String title = titles[selectedTab];
     
     return AppBar(
       backgroundColor: Colors.transparent,
@@ -516,7 +515,7 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
             color: isDark ? Colors.white54 : Colors.black54,
           ),
           onPressed: () {
-            ref.read(themeProvider.notifier).toggleTheme();
+            ref.read(themeActionProvider).toggle();
           },
         ),
         IconButton(
@@ -529,8 +528,8 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
 
   Widget _buildDrawer() {
     final currentUser = ref.watch(currentUserProvider);
-    final themeMode = ref.watch(themeProvider);
-    final isDark = themeMode == AppThemeMode.dark;
+    final themeState = ref.watch(themeProviderEnhanced);
+    final isDark = themeState.isDarkMode;
     
     return Drawer(
       backgroundColor: isDark ? const Color(0xFF1A1A1A) : Colors.white,
@@ -609,7 +608,7 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
               children: [
                 _buildDrawerItem(Icons.home, 'ホーム', 0, null),
                 _buildDrawerItem(Icons.search, '検索', 1, null),
-                _buildDrawerItem(Icons.people, 'フォロー中', -1, 'follow'),
+                _buildDrawerItem(Icons.people, 'フォロー中', 5, null),
                 _buildDrawerItem(Icons.star, 'マイリスト', 3, null),
                 // スターのみ表示
                 if (currentUser.isStar) ...[
@@ -633,8 +632,8 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
 
   Widget _buildDrawerItem(IconData icon, String title, int tabIndex, String? pageKey) {
     final selectedTab = ref.watch(selectedTabProvider);
-    final themeMode = ref.watch(themeProvider);
-    final isDark = themeMode == AppThemeMode.dark;
+    final themeState = ref.watch(themeProviderEnhanced);
+    final isDark = themeState.isDarkMode;
     
     // 選択状態の判定を修正：タブページとナビゲーションページが同時に選択されないように
     final isTabActive = tabIndex != -1 && selectedTab == tabIndex && _currentPageKey == null;
@@ -699,14 +698,6 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
   }
 
   void _navigateToPage(String pageKey) {
-    // フォロー画面は既存のタブシステムに統合
-    if (pageKey == 'follow') {
-      setState(() {
-        _currentPageKey = 'follow';
-      });
-      return;
-    }
-    
     Widget page;
     switch (pageKey) {
       case 'dashboard':
@@ -731,11 +722,6 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
   }
 
   Widget _buildBody(int selectedTab) {
-    // Check if we're showing a special page from the drawer
-    if (_currentPageKey == 'follow') {
-      return const FollowScreen();
-    }
-    
     switch (selectedTab) {
       case 0:
         return _buildHomeView();
@@ -747,10 +733,13 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
         return const MylistScreen();
       case 4:
         return const ProfileScreen();
+      case 5:
+        return const FollowScreen();
       default:
         return _buildHomeView();
     }
   }
+
 
   Widget _buildHomeView() {
     return SingleChildScrollView(
@@ -835,8 +824,8 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
   }
 
   Widget _buildLatestYouTubeHistorySection() {
-    final themeMode = ref.watch(themeProvider);
-    final isDark = themeMode == AppThemeMode.dark;
+    final themeState = ref.watch(themeProviderEnhanced);
+    final isDark = themeState.isDarkMode;
     
     final youtubeHistory = [
       {
@@ -1166,8 +1155,8 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
   }
 
   Widget _buildNotificationsSection() {
-    final themeMode = ref.watch(themeProvider);
-    final isDark = themeMode == AppThemeMode.dark;
+    final themeState = ref.watch(themeProviderEnhanced);
+    final isDark = themeState.isDarkMode;
     
     final notifications = [
       {
@@ -1549,8 +1538,8 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
   }
 
   Widget _buildStarCard(StarData star, double height) {
-    final themeMode = ref.watch(themeProvider);
-    final isDark = themeMode == AppThemeMode.dark;
+    final themeState = ref.watch(themeProviderEnhanced);
+    final isDark = themeState.isDarkMode;
     
     return Container(
       padding: const EdgeInsets.all(12),
@@ -1654,8 +1643,8 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
   }
 
   Widget _buildTodayPickupSection() {
-    final themeMode = ref.watch(themeProvider);
-    final isDark = themeMode == AppThemeMode.dark;
+    final themeState = ref.watch(themeProviderEnhanced);
+    final isDark = themeState.isDarkMode;
     
     final todayPickup = [
       {
@@ -1764,11 +1753,10 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
 
   Widget _buildBottomNavigationBar(int selectedTab) {
     final currentUser = ref.watch(currentUserProvider);
-    final themeMode = ref.watch(themeProvider);
-    final isDark = themeMode == AppThemeMode.dark;
+    final themeState = ref.watch(themeProviderEnhanced);
+    final isDark = themeState.isDarkMode;
     
-    // フォローページなど特別なページが表示されている場合、どのタブも選択状態にしない
-    int currentSelectedTab = _currentPageKey != null ? -1 : selectedTab;
+    int currentSelectedTab = selectedTab;
     
     return Container(
       decoration: BoxDecoration(
@@ -1798,6 +1786,7 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
                 _buildBottomNavItem(Icons.camera_alt, '取込', 2, currentSelectedTab, isDark),
               _buildBottomNavItem(Icons.star, 'マイリスト', 3, currentSelectedTab, isDark),
               _buildBottomNavItem(Icons.person, 'マイページ', 4, currentSelectedTab, isDark),
+              _buildBottomNavItem(Icons.people, 'フォロー', 5, currentSelectedTab, isDark),
             ],
           ),
         ),
@@ -1848,8 +1837,8 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
   }
 
   Widget _buildSectionTitle(String title) {
-    final themeMode = ref.watch(themeProvider);
-    final isDark = themeMode == AppThemeMode.dark;
+    final themeState = ref.watch(themeProviderEnhanced);
+    final isDark = themeState.isDarkMode;
     
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
