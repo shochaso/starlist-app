@@ -170,7 +170,7 @@ class AuthRepository {
   Future<bool> isUsernameAvailable(String username) async {
     // 実際の実装ではAPIリクエストを送信
     // ここではモックデータを返す
-    await Future.delayed(Duration(milliseconds: 500));
+    await Future.delayed(const Duration(milliseconds: 500));
     
     // 特定のユーザー名は既に使用されているとする
     final unavailableUsernames = ['admin', 'root', 'system', 'test'];
@@ -180,7 +180,7 @@ class AuthRepository {
   /// パスワードを更新
   Future<void> updatePassword(String newPassword) async {
     // 実際の実装ではAPIリクエストを送信
-    await Future.delayed(Duration(milliseconds: 500));
+    await Future.delayed(const Duration(milliseconds: 500));
   }
   
   /// ユーザープロファイルを更新
@@ -193,7 +193,7 @@ class AuthRepository {
   }) async {
     // 実際の実装ではAPIリクエストを送信
     // ここではモックデータを返す
-    await Future.delayed(Duration(milliseconds: 500));
+    await Future.delayed(const Duration(milliseconds: 500));
     
     final currentUser = getCurrentUser();
     if (currentUser == null) {
@@ -216,7 +216,7 @@ class AuthRepository {
   Future<SessionInfo?> getCurrentSession() async {
     // 実際の実装ではAPIリクエストを送信
     // ここではモックデータを返す
-    await Future.delayed(Duration(milliseconds: 500));
+    await Future.delayed(const Duration(milliseconds: 500));
     
     final currentUser = getCurrentUser();
     if (currentUser == null) {
@@ -228,7 +228,7 @@ class AuthRepository {
       userId: currentUser.id,
       deviceInfo: await DeviceInfo.getCurrent(),
       lastAccessedAt: DateTime.now(),
-      createdAt: DateTime.now().subtract(Duration(days: 1)),
+      createdAt: DateTime.now().subtract(const Duration(days: 1)),
       ipAddress: '192.168.1.1',
     );
   }
@@ -237,7 +237,7 @@ class AuthRepository {
   Future<List<SessionInfo>> getAllSessions(String userId) async {
     // 実際の実装ではAPIリクエストを送信
     // ここではモックデータを返す
-    await Future.delayed(Duration(milliseconds: 500));
+    await Future.delayed(const Duration(milliseconds: 500));
     
     final currentSession = await getCurrentSession();
     if (currentSession == null) {
@@ -256,8 +256,8 @@ class AuthRepository {
           osVersion: 'iOS 15.0',
           appVersion: '1.0.0',
         ),
-        lastAccessedAt: DateTime.now().subtract(Duration(hours: 2)),
-        createdAt: DateTime.now().subtract(Duration(days: 5)),
+        lastAccessedAt: DateTime.now().subtract(const Duration(hours: 2)),
+        createdAt: DateTime.now().subtract(const Duration(days: 5)),
         ipAddress: '203.0.113.1',
       ),
       SessionInfo(
@@ -269,8 +269,8 @@ class AuthRepository {
           osVersion: 'macOS 12.0',
           appVersion: '1.0.0',
         ),
-        lastAccessedAt: DateTime.now().subtract(Duration(days: 1)),
-        createdAt: DateTime.now().subtract(Duration(days: 10)),
+        lastAccessedAt: DateTime.now().subtract(const Duration(days: 1)),
+        createdAt: DateTime.now().subtract(const Duration(days: 10)),
         ipAddress: '198.51.100.1',
       ),
     ];
@@ -279,13 +279,13 @@ class AuthRepository {
   /// セッションを終了
   Future<void> terminateSession(String sessionId) async {
     // 実際の実装ではAPIリクエストを送信
-    await Future.delayed(Duration(milliseconds: 500));
+    await Future.delayed(const Duration(milliseconds: 500));
   }
   
   /// 他のセッションを全て終了
   Future<void> terminateOtherSessions(String currentSessionId) async {
     // 実際の実装ではAPIリクエストを送信
-    await Future.delayed(Duration(milliseconds: 500));
+    await Future.delayed(const Duration(milliseconds: 500));
   }
 }
 

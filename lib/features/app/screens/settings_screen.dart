@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../providers/theme_provider.dart';
+import '../../../src/providers/theme_provider_enhanced.dart';
 import '../../../providers/user_provider.dart';
 import '../../subscription/screens/plan_management_screen.dart';
 import '../../star/screens/star_dashboard_screen.dart';
 import '../../data_integration/screens/data_import_screen.dart';
-import '../../follow/screens/follow_screen.dart';
-import '../../../src/widgets/common_app_bar.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -29,8 +26,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final themeMode = ref.watch(themeProvider);
-    final isDark = themeMode == AppThemeMode.dark;
+    final themeState = ref.watch(themeProviderEnhanced);
+    final isDark = themeState.isDarkMode;
     
     return Scaffold(
       backgroundColor: isDark ? const Color(0xFF1A1A1A) : const Color(0xFFF8FAFC),
@@ -94,8 +91,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Widget _buildUserProfile() {
-    final themeMode = ref.watch(themeProvider);
-    final isDark = themeMode == AppThemeMode.dark;
+    final themeState = ref.watch(themeProviderEnhanced);
+    final isDark = themeState.isDarkMode;
     
     return Container(
       width: double.infinity,
@@ -336,8 +333,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Widget _buildDangerZone() {
-    final themeMode = ref.watch(themeProvider);
-    final isDark = themeMode == AppThemeMode.dark;
+    final themeState = ref.watch(themeProviderEnhanced);
+    final isDark = themeState.isDarkMode;
     
     return Container(
       width: double.infinity,
@@ -383,8 +380,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Widget _buildSettingsSection(String title, List<Widget> children) {
-    final themeMode = ref.watch(themeProvider);
-    final isDark = themeMode == AppThemeMode.dark;
+    final themeState = ref.watch(themeProviderEnhanced);
+    final isDark = themeState.isDarkMode;
     
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -679,8 +676,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
 
   void _clearCache() {
-    final themeMode = ref.read(themeProvider);
-    final isDark = themeMode == AppThemeMode.dark;
+    final themeState = ref.read(themeProviderEnhanced);
+    final isDark = themeState.isDarkMode;
     
     showDialog(
       context: context,
@@ -723,8 +720,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   void _showAppInfo() {
-    final themeMode = ref.read(themeProvider);
-    final isDark = themeMode == AppThemeMode.dark;
+    final themeState = ref.read(themeProviderEnhanced);
+    final isDark = themeState.isDarkMode;
     
     showDialog(
       context: context,
@@ -812,8 +809,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   void _logout() {
-    final themeMode = ref.read(themeProvider);
-    final isDark = themeMode == AppThemeMode.dark;
+    final themeState = ref.read(themeProviderEnhanced);
+    final isDark = themeState.isDarkMode;
     
     showDialog(
       context: context,
@@ -856,8 +853,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   void _deleteAccount() {
-    final themeMode = ref.read(themeProvider);
-    final isDark = themeMode == AppThemeMode.dark;
+    final themeState = ref.read(themeProviderEnhanced);
+    final isDark = themeState.isDarkMode;
     
     showDialog(
       context: context,
@@ -901,8 +898,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   Widget _buildDrawer() {
     final currentUser = ref.watch(currentUserProvider);
-    final themeMode = ref.watch(themeProvider);
-    final isDark = themeMode == AppThemeMode.dark;
+    final themeState = ref.watch(themeProviderEnhanced);
+    final isDark = themeState.isDarkMode;
     
     return Drawer(
       backgroundColor: isDark ? const Color(0xFF1A1A1A) : Colors.white,
@@ -981,7 +978,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               children: [
                 _buildDrawerItem(Icons.home, 'ホーム', () => _navigateToHome()),
                 _buildDrawerItem(Icons.search, '検索', () => _navigateToSearch()),
-                _buildDrawerItem(Icons.people, 'フォロー中', () => _navigateToFollow()),
                 _buildDrawerItem(Icons.star, 'マイリスト', () => _navigateToMylist()),
                 // スターのみ表示
                 if (currentUser.isStar) ...[
@@ -1004,8 +1000,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Widget _buildDrawerItem(IconData icon, String title, VoidCallback? onTap, {bool isActive = false}) {
-    final themeMode = ref.watch(themeProvider);
-    final isDark = themeMode == AppThemeMode.dark;
+    final themeState = ref.watch(themeProviderEnhanced);
+    final isDark = themeState.isDarkMode;
     
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 3),
@@ -1067,9 +1063,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     Navigator.popUntil(context, (route) => route.isFirst);
   }
 
-  void _navigateToFollow() {
-    Navigator.popUntil(context, (route) => route.isFirst);
-  }
 
   void _navigateToMylist() {
     Navigator.popUntil(context, (route) => route.isFirst);

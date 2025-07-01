@@ -33,7 +33,7 @@ class ActivityCard extends StatelessWidget {
           children: [
             // アクティビティ画像
             ClipRRect(
-              borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
               child: AspectRatio(
                 aspectRatio: 16 / 9,
                 child: Image.network(
@@ -55,7 +55,7 @@ class ActivityCard extends StatelessWidget {
               ),
             ),
             Padding(
-              padding: EdgeInsets.all(12),
+              padding: const EdgeInsets.all(12),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -69,7 +69,7 @@ class ActivityCard extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  SizedBox(height: 4),
+                  const SizedBox(height: 4),
                   Text(
                     activity.content,
                     style: TextStyle(
@@ -81,7 +81,7 @@ class ActivityCard extends StatelessWidget {
                   ),
                   if (activity.price != null)
                     Padding(
-                      padding: EdgeInsets.only(top: 8),
+                      padding: const EdgeInsets.only(top: 8),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -102,14 +102,14 @@ class ActivityCard extends StatelessWidget {
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(16),
                               ),
-                              minimumSize: Size(80, 32),
+                              minimumSize: const Size(80, 32),
                             ),
-                            child: Text('入手'),
+                            child: const Text('入手'),
                           ),
                         ],
                       ),
                     ),
-                  SizedBox(height: 8),
+                  const SizedBox(height: 8),
                   Row(
                     children: [
                       Icon(
@@ -117,7 +117,7 @@ class ActivityCard extends StatelessWidget {
                         size: 14,
                         color: secondaryTextColor,
                       ),
-                      SizedBox(width: 4),
+                      const SizedBox(width: 4),
                       Text(
                         _getActivityTypeText(activity.type),
                         style: TextStyle(
@@ -125,7 +125,7 @@ class ActivityCard extends StatelessWidget {
                           color: secondaryTextColor,
                         ),
                       ),
-                      Spacer(),
+                      const Spacer(),
                       Text(
                         _formatDate(activity.timestamp),
                         style: TextStyle(

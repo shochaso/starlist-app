@@ -131,7 +131,7 @@ class ImageUploadService {
       // ファイルサイズチェック
       final fileSize = await imageFile.length();
       if (fileSize > _maxImageSize) {
-        throw ImageUploadException('画像サイズが大きすぎます（上限: ${_maxImageSize ~/ (1024 * 1024)}MB）');
+        throw const ImageUploadException('画像サイズが大きすぎます（上限: ${_maxImageSize ~/ (1024 * 1024)}MB）');
       }
 
       // 画像をデコード
@@ -139,7 +139,7 @@ class ImageUploadService {
       final image = img.decodeImage(imageBytes);
       
       if (image == null) {
-        throw ImageUploadException('画像の読み込みに失敗しました');
+        throw const ImageUploadException('画像の読み込みに失敗しました');
       }
 
       // 画像をリサイズ（アスペクト比を保持）
@@ -218,9 +218,9 @@ class ImageUploadService {
         // バケットを作成（パブリックアクセス有効）
         await client.storage.createBucket(
           _bucketName,
-          BucketOptions(
+          const BucketOptions(
             public: true,
-            allowedMimeTypes: const ['image/jpeg', 'image/png', 'image/webp'],
+            allowedMimeTypes: ['image/jpeg', 'image/png', 'image/webp'],
             fileSizeLimit: _maxImageSize,
           ),
         );

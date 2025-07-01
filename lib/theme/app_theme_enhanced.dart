@@ -21,7 +21,7 @@ class AppThemeEnhanced {
       textTheme: textTheme,
       
       // カラースキーム
-      colorScheme: ColorScheme.light(
+      colorScheme: const ColorScheme.light(
         primary: ThemeConstants.primaryPurple,
         onPrimary: Colors.white,
         secondary: ThemeConstants.secondaryPurple,
@@ -32,11 +32,9 @@ class AppThemeEnhanced {
         onError: Colors.white,
         surface: ThemeConstants.lightSurface,
         onSurface: ThemeConstants.lightOnSurface,
-        background: ThemeConstants.lightBackground,
-        onBackground: ThemeConstants.lightOnBackground,
         outline: ThemeConstants.lightBorder,
         outlineVariant: ThemeConstants.lightMuted,
-        surfaceVariant: ThemeConstants.lightMuted,
+        surfaceContainerHighest: ThemeConstants.lightMuted,
         onSurfaceVariant: ThemeConstants.lightMutedForeground,
       ),
       
@@ -50,13 +48,13 @@ class AppThemeEnhanced {
         scrolledUnderElevation: ThemeConstants.elevation1,
         centerTitle: false,
         titleTextStyle: GoogleFonts.mPlusRounded1c(
-          textStyle: TextStyle(
+          textStyle: const TextStyle(
             color: ThemeConstants.lightOnBackground,
             fontWeight: ThemeConstants.fontWeightBold,
             fontSize: 20,
           ),
         ),
-        iconTheme: IconThemeData(
+        iconTheme: const IconThemeData(
           color: ThemeConstants.lightOnBackground,
         ),
       ),
@@ -67,7 +65,7 @@ class AppThemeEnhanced {
         elevation: ThemeConstants.elevation0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
-          side: BorderSide(color: ThemeConstants.lightBorder),
+          side: const BorderSide(color: ThemeConstants.lightBorder),
         ),
         margin: EdgeInsets.zero,
       ),
@@ -97,7 +95,7 @@ class AppThemeEnhanced {
         style: OutlinedButton.styleFrom(
           foregroundColor: ThemeConstants.primaryPurple,
           disabledForegroundColor: ThemeConstants.lightMutedForeground,
-          side: BorderSide(color: ThemeConstants.primaryPurple),
+          side: const BorderSide(color: ThemeConstants.primaryPurple),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
           ),
@@ -138,26 +136,26 @@ class AppThemeEnhanced {
         ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-          borderSide: BorderSide(color: ThemeConstants.lightBorder),
+          borderSide: const BorderSide(color: ThemeConstants.lightBorder),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-          borderSide: BorderSide(color: ThemeConstants.lightBorder),
+          borderSide: const BorderSide(color: ThemeConstants.lightBorder),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-          borderSide: BorderSide(color: ThemeConstants.primaryPurple, width: 2),
+          borderSide: const BorderSide(color: ThemeConstants.primaryPurple, width: 2),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-          borderSide: BorderSide(color: ThemeConstants.errorColor),
+          borderSide: const BorderSide(color: ThemeConstants.errorColor),
         ),
         focusedErrorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-          borderSide: BorderSide(color: ThemeConstants.errorColor, width: 2),
+          borderSide: const BorderSide(color: ThemeConstants.errorColor, width: 2),
         ),
-        labelStyle: TextStyle(color: ThemeConstants.lightMutedForeground),
-        hintStyle: TextStyle(color: ThemeConstants.lightMutedForeground),
+        labelStyle: const TextStyle(color: ThemeConstants.lightMutedForeground),
+        hintStyle: const TextStyle(color: ThemeConstants.lightMutedForeground),
       ),
       
       // Dialog
@@ -212,7 +210,7 @@ class AppThemeEnhanced {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(ThemeConstants.radiusSm),
         ),
-        side: BorderSide(color: ThemeConstants.lightBorder),
+        side: const BorderSide(color: ThemeConstants.lightBorder),
       ),
       
       // Floating Action Button
@@ -241,7 +239,7 @@ class AppThemeEnhanced {
       textTheme: textTheme,
       
       // カラースキーム
-      colorScheme: ColorScheme.dark(
+      colorScheme: const ColorScheme.dark(
         primary: ThemeConstants.primaryPurple,
         onPrimary: Colors.white,
         secondary: ThemeConstants.secondaryPurple,
@@ -252,11 +250,9 @@ class AppThemeEnhanced {
         onError: Colors.white,
         surface: ThemeConstants.darkSurface,
         onSurface: ThemeConstants.darkOnSurface,
-        background: ThemeConstants.darkBackground,
-        onBackground: ThemeConstants.darkOnBackground,
         outline: ThemeConstants.darkBorder,
         outlineVariant: ThemeConstants.darkMuted,
-        surfaceVariant: ThemeConstants.darkMuted,
+        surfaceContainerHighest: ThemeConstants.darkMuted,
         onSurfaceVariant: ThemeConstants.darkMutedForeground,
       ),
       
@@ -270,13 +266,13 @@ class AppThemeEnhanced {
         scrolledUnderElevation: ThemeConstants.elevation1,
         centerTitle: false,
         titleTextStyle: GoogleFonts.mPlusRounded1c(
-          textStyle: TextStyle(
+          textStyle: const TextStyle(
             color: ThemeConstants.darkOnBackground,
             fontWeight: ThemeConstants.fontWeightBold,
             fontSize: 20,
           ),
         ),
-        iconTheme: IconThemeData(
+        iconTheme: const IconThemeData(
           color: ThemeConstants.darkOnBackground,
         ),
       ),
@@ -287,7 +283,7 @@ class AppThemeEnhanced {
         elevation: ThemeConstants.elevation0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(ThemeConstants.radiusLg),
-          side: BorderSide(color: ThemeConstants.darkBorder),
+          side: const BorderSide(color: ThemeConstants.darkBorder),
         ),
         margin: EdgeInsets.zero,
       ),
@@ -317,7 +313,7 @@ class AppThemeEnhanced {
         style: OutlinedButton.styleFrom(
           foregroundColor: ThemeConstants.primaryPurple,
           disabledForegroundColor: ThemeConstants.darkMutedForeground,
-          side: BorderSide(color: ThemeConstants.primaryPurple),
+          side: const BorderSide(color: ThemeConstants.primaryPurple),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
           ),
@@ -358,26 +354,26 @@ class AppThemeEnhanced {
         ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-          borderSide: BorderSide(color: ThemeConstants.darkBorder),
+          borderSide: const BorderSide(color: ThemeConstants.darkBorder),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-          borderSide: BorderSide(color: ThemeConstants.darkBorder),
+          borderSide: const BorderSide(color: ThemeConstants.darkBorder),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-          borderSide: BorderSide(color: ThemeConstants.primaryPurple, width: 2),
+          borderSide: const BorderSide(color: ThemeConstants.primaryPurple, width: 2),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-          borderSide: BorderSide(color: ThemeConstants.errorColor),
+          borderSide: const BorderSide(color: ThemeConstants.errorColor),
         ),
         focusedErrorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(ThemeConstants.radiusMd),
-          borderSide: BorderSide(color: ThemeConstants.errorColor, width: 2),
+          borderSide: const BorderSide(color: ThemeConstants.errorColor, width: 2),
         ),
-        labelStyle: TextStyle(color: ThemeConstants.darkMutedForeground),
-        hintStyle: TextStyle(color: ThemeConstants.darkMutedForeground),
+        labelStyle: const TextStyle(color: ThemeConstants.darkMutedForeground),
+        hintStyle: const TextStyle(color: ThemeConstants.darkMutedForeground),
       ),
       
       // Dialog
@@ -432,7 +428,7 @@ class AppThemeEnhanced {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(ThemeConstants.radiusSm),
         ),
-        side: BorderSide(color: ThemeConstants.darkBorder),
+        side: const BorderSide(color: ThemeConstants.darkBorder),
       ),
       
       // Floating Action Button

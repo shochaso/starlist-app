@@ -3,7 +3,6 @@ import 'widgets/star_dashboard.dart';
 import 'widgets/star_content_management.dart';
 import 'widgets/star_fan_analytics.dart';
 import 'widgets/fan_star_recommendations.dart';
-import 'widgets/fan_following_stars.dart';
 import 'widgets/fan_membership_plans.dart';
 
 void main() {
@@ -56,7 +55,6 @@ class WidgetShowcase extends StatelessWidget {
             SingleChildScrollView(child: StarContentManagement()),
             SingleChildScrollView(child: StarFanAnalytics()),
             SingleChildScrollView(child: FanStarRecommendations()),
-            SingleChildScrollView(child: FanFollowingStars()),
             SingleChildScrollView(child: FanMembershipPlans()),
           ],
         ),
@@ -78,22 +76,21 @@ class _UserTypeScreenState extends State<UserTypeScreen> {
 
   final List<Widget> _widgetOptions = <Widget>[
     // スター向けウィジェット
-    SingleChildScrollView(
+    const SingleChildScrollView(
       child: Column(
         children: [
-          const StarDashboard(),
-          const StarContentManagement(),
-          const StarFanAnalytics(),
+          StarDashboard(),
+          StarContentManagement(),
+          StarFanAnalytics(),
         ],
       ),
     ),
     // ファン向けウィジェット
-    SingleChildScrollView(
+    const SingleChildScrollView(
       child: Column(
         children: [
-          const FanStarRecommendations(),
-          const FanFollowingStars(),
-          const FanMembershipPlans(),
+          FanStarRecommendations(),
+          FanMembershipPlans(),
         ],
       ),
     ),

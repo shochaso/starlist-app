@@ -110,7 +110,7 @@ class AppRouter {
             overrides: [
               contentRepositoryProvider.overrideWithValue(contentRepository),
             ],
-            child: ContentCreateScreen(
+            child: const ContentCreateScreen(
               isEditing: true,
             ),
           );
@@ -121,7 +121,7 @@ class AppRouter {
       GoRoute(
         path: '/category/:name',
         builder: (context, state) {
-          final categoryName = state.params['name'] ?? '';
+          final categoryName = state.pathParameters['name'] ?? '';
           return CategoryScreen(category: categoryName);
         },
       ),

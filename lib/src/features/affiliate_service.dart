@@ -140,7 +140,7 @@ class AffiliateService {
       }
     } catch (e) {
       // モックデータを返す
-      final totalRevenue = 100000.0; // 仮の総収益
+      const totalRevenue = 100000.0; // 仮の総収益
       return {
         'totalRevenue': totalRevenue,
         'starShare': totalRevenue * 0.7, // スターの取り分（70%）

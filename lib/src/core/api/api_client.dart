@@ -1,6 +1,5 @@
 import "dart:convert";
 import "package:http/http.dart" as http;
-import "package:starlist/src/core/config/firebase_config.dart";
 
 class ApiClient {
   final String baseUrl;

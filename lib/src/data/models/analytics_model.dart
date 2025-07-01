@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 
 /// 統計期間を表すenum
 enum AnalyticsPeriod {

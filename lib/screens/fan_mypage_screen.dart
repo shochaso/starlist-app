@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../routes/app_routes.dart';
 import '../features/profile/screens/profile_edit_screen.dart';
 import '../features/app/screens/settings_screen.dart';
 
@@ -47,7 +46,7 @@ class FanMyPageScreen extends StatelessWidget {
           children: [
             // プロフィールセクション
             Container(
-              padding: EdgeInsets.all(16),
+              padding: const EdgeInsets.all(16),
               child: Row(
                 children: [
                   CircleAvatar(
@@ -59,7 +58,7 @@ class FanMyPageScreen extends StatelessWidget {
                       color: secondaryTextColor,
                     ),
                   ),
-                  SizedBox(width: 16),
+                  const SizedBox(width: 16),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -72,7 +71,7 @@ class FanMyPageScreen extends StatelessWidget {
                             color: textColor,
                           ),
                         ),
-                        SizedBox(height: 4),
+                        const SizedBox(height: 4),
                         Text(
                           'fan@example.com',
                           style: TextStyle(
@@ -80,7 +79,7 @@ class FanMyPageScreen extends StatelessWidget {
                             color: secondaryTextColor,
                           ),
                         ),
-                        SizedBox(height: 8),
+                        const SizedBox(height: 8),
                         ElevatedButton(
                           onPressed: () {
                             Navigator.push(
@@ -97,7 +96,7 @@ class FanMyPageScreen extends StatelessWidget {
                               borderRadius: BorderRadius.circular(20),
                             ),
                           ),
-                          child: Text('プロフィールを編集'),
+                          child: const Text('プロフィールを編集'),
                         ),
                       ],
                     ),
@@ -110,7 +109,7 @@ class FanMyPageScreen extends StatelessWidget {
             
             // フォロー中のスター
             Padding(
-              padding: EdgeInsets.all(16),
+              padding: const EdgeInsets.all(16),
               child: Text(
                 'フォロー中のスター',
                 style: TextStyle(
@@ -121,16 +120,16 @@ class FanMyPageScreen extends StatelessWidget {
               ),
             ),
             
-            Container(
+            SizedBox(
               height: 130,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
-                padding: EdgeInsets.only(left: 16),
+                padding: const EdgeInsets.only(left: 16),
                 itemCount: 5, // モック用。実際のデータを使用
                 itemBuilder: (context, index) {
                   return Container(
                     width: 100,
-                    margin: EdgeInsets.only(right: 12),
+                    margin: const EdgeInsets.only(right: 12),
                     child: Column(
                       children: [
                         CircleAvatar(
@@ -142,7 +141,7 @@ class FanMyPageScreen extends StatelessWidget {
                             color: secondaryTextColor,
                           ),
                         ),
-                        SizedBox(height: 8),
+                        const SizedBox(height: 8),
                         Text(
                           'スター${index + 1}',
                           style: TextStyle(
@@ -164,7 +163,7 @@ class FanMyPageScreen extends StatelessWidget {
             
             // アクティビティ履歴
             Padding(
-              padding: EdgeInsets.all(16),
+              padding: const EdgeInsets.all(16),
               child: Text(
                 'アクティビティ履歴',
                 style: TextStyle(
@@ -177,7 +176,7 @@ class FanMyPageScreen extends StatelessWidget {
             
             ListView.builder(
               shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
+              physics: const NeverScrollableScrollPhysics(),
               itemCount: 5, // モック用。実際のデータを使用
               itemBuilder: (context, index) {
                 return ListTile(
@@ -210,7 +209,7 @@ class FanMyPageScreen extends StatelessWidget {
               },
             ),
             
-            SizedBox(height: 80),
+            const SizedBox(height: 80),
           ],
         ),
       ),

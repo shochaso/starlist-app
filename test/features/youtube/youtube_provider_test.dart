@@ -38,7 +38,7 @@ void main() {
         viewCount: 1000,
         likeCount: 100,
         commentCount: 50,
-        duration: Duration(minutes: 5),
+        duration: const Duration(minutes: 5),
       ),
       YouTubeVideo(
         id: "video-2",
@@ -51,7 +51,7 @@ void main() {
         viewCount: 2000,
         likeCount: 200,
         commentCount: 100,
-        duration: Duration(minutes: 10),
+        duration: const Duration(minutes: 10),
       ),
     ];
 
@@ -76,7 +76,7 @@ void main() {
       viewCount: 1000,
       likeCount: 100,
       commentCount: 50,
-      duration: Duration(minutes: 5),
+      duration: const Duration(minutes: 5),
     );
 
     when(mockService.getVideoDetails("video-1")).thenAnswer((_) async => video);
@@ -101,7 +101,7 @@ void main() {
         viewCount: 1000,
         likeCount: 100,
         commentCount: 50,
-        duration: Duration(minutes: 5),
+        duration: const Duration(minutes: 5),
       ),
       YouTubeVideo(
         id: "video-2",
@@ -114,7 +114,7 @@ void main() {
         viewCount: 2000,
         likeCount: 200,
         commentCount: 100,
-        duration: Duration(minutes: 10),
+        duration: const Duration(minutes: 10),
       ),
     ];
 
@@ -140,7 +140,7 @@ void main() {
         viewCount: 2000,
         likeCount: 200,
         commentCount: 100,
-        duration: Duration(minutes: 10),
+        duration: const Duration(minutes: 10),
       ),
       YouTubeVideo(
         id: "video-3",
@@ -153,7 +153,7 @@ void main() {
         viewCount: 3000,
         likeCount: 300,
         commentCount: 150,
-        duration: Duration(minutes: 15),
+        duration: const Duration(minutes: 15),
       ),
     ];
 
@@ -179,7 +179,7 @@ void main() {
         viewCount: 1000,
         likeCount: 100,
         commentCount: 50,
-        duration: Duration(minutes: 5),
+        duration: const Duration(minutes: 5),
       ),
       YouTubeVideo(
         id: "video-2",
@@ -192,7 +192,7 @@ void main() {
         viewCount: 2000,
         likeCount: 200,
         commentCount: 100,
-        duration: Duration(minutes: 10),
+        duration: const Duration(minutes: 10),
       ),
     ];
 

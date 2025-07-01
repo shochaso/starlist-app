@@ -273,12 +273,12 @@ class FollowingScreen extends StatelessWidget {
                   children: [
                     Row(
                       children: [
-                        Icon(
+                        const Icon(
                           Icons.star,
                           color: Colors.amber,
                           size: 24,
                         ),
-                        SizedBox(width: 8),
+                        const SizedBox(width: 8),
                         Text(
                           'ファン登録中',
                           style: TextStyle(
@@ -290,12 +290,12 @@ class FollowingScreen extends StatelessWidget {
                       ],
                     ),
                     Container(
-                      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
                         color: Colors.amber.withOpacity(0.2),
                         borderRadius: BorderRadius.circular(20),
                       ),
-                      child: Row(
+                      child: const Row(
                         children: [
                           Icon(
                             Icons.workspace_premium,
@@ -402,7 +402,7 @@ class FollowingScreen extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.all(16),
               child: Container(
-                padding: EdgeInsets.all(16),
+                padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   color: cardColor,
                   borderRadius: BorderRadius.circular(16),
@@ -417,7 +417,7 @@ class FollowingScreen extends StatelessWidget {
                           color: accentColor,
                           size: 24,
                         ),
-                        SizedBox(width: 8),
+                        const SizedBox(width: 8),
                         Text(
                           'SNSアカウント連携',
                           style: TextStyle(
@@ -428,7 +428,7 @@ class FollowingScreen extends StatelessWidget {
                         ),
                       ],
                     ),
-                    SizedBox(height: 12),
+                    const SizedBox(height: 12),
                     Text(
                       'SNSアカウントを連携すると、あなたが既にフォローしているスターを自動的に見つけることができます。また、お好みに合わせたおすすめのスターも表示されます。',
                       style: TextStyle(
@@ -436,7 +436,7 @@ class FollowingScreen extends StatelessWidget {
                         fontSize: 14,
                       ),
                     ),
-                    SizedBox(height: 16),
+                    const SizedBox(height: 16),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
@@ -544,12 +544,12 @@ class FollowingScreen extends StatelessWidget {
                   right: 0,
                   bottom: 0,
                   child: Container(
-                    padding: EdgeInsets.all(4),
-                    decoration: BoxDecoration(
+                    padding: const EdgeInsets.all(4),
+                    decoration: const BoxDecoration(
                       color: Colors.amber,
                       shape: BoxShape.circle,
                     ),
-                    child: Icon(
+                    child: const Icon(
                       Icons.workspace_premium,
                       color: Colors.white,
                       size: 12,
@@ -568,9 +568,9 @@ class FollowingScreen extends StatelessWidget {
                   fontSize: 16,
                 ),
               ),
-              SizedBox(width: 4),
+              const SizedBox(width: 4),
               if (star.isVerified)
-                Icon(
+                const Icon(
                   Icons.verified,
                   color: Colors.blue,
                   size: 16,
@@ -678,13 +678,13 @@ class FollowingScreen extends StatelessWidget {
                   bottom: 0,
                   right: 0,
                   child: Container(
-                    padding: EdgeInsets.all(2),
+                    padding: const EdgeInsets.all(2),
                     decoration: BoxDecoration(
                       color: Colors.green,
                       shape: BoxShape.circle,
                       border: Border.all(color: Colors.white, width: 1.5),
                     ),
-                    child: Icon(
+                    child: const Icon(
                       Icons.check,
                       color: Colors.white,
                       size: 10,
@@ -694,10 +694,10 @@ class FollowingScreen extends StatelessWidget {
             ],
           ),
         ),
-        SizedBox(height: 4),
+        const SizedBox(height: 4),
         Text(
           platform,
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w500,
           ),

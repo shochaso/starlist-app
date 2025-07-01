@@ -284,9 +284,9 @@ class _AmazonHomeScreenState extends ConsumerState<AmazonHomeScreen> with Single
           children: [
             const Icon(Icons.error_outline, size: 64, color: Colors.red),
             const SizedBox(height: 16),
-            Text(
+            const Text(
               'エラーが発生しました',
-              style: const TextStyle(color: Colors.white, fontSize: 18),
+              style: TextStyle(color: Colors.white, fontSize: 18),
             ),
             const SizedBox(height: 8),
             Text(
@@ -496,7 +496,7 @@ class _AmazonHomeScreenState extends ConsumerState<AmazonHomeScreen> with Single
                           purchaseDate: DateTime.now(),
                           isReturned: false,
                           isRefunded: false,
-                          metadata: {},
+                          metadata: const {},
                           createdAt: DateTime.now(),
                           updatedAt: DateTime.now(),
                         ).categoryDisplayName,

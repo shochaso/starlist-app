@@ -158,8 +158,8 @@ class MembershipServiceImpl implements MembershipService {
     // 会員期間を設定
     final now = DateTime.now();
     final endDate = isYearlySubscription
-        ? now.add(Duration(days: 365))
-        : now.add(Duration(days: 30));
+        ? now.add(const Duration(days: 365))
+        : now.add(const Duration(days: 30));
     
     // 会員情報を作成
     final membership = Membership(
@@ -360,8 +360,8 @@ class MembershipServiceImpl implements MembershipService {
     // 会員期間を更新
     final now = DateTime.now();
     final newEndDate = isYearlySubscription
-        ? now.add(Duration(days: 365))
-        : now.add(Duration(days: 30));
+        ? now.add(const Duration(days: 365))
+        : now.add(const Duration(days: 30));
     
     // シルバーチケット数を更新
     int newSilverTicketCount = plan.silverTicketCount;
@@ -512,8 +512,8 @@ class MembershipServiceImpl implements MembershipService {
     if (updatedIsYearly != membership.isYearlySubscription) {
       final now = DateTime.now();
       newEndDate = updatedIsYearly
-          ? now.add(Duration(days: 365))
-          : now.add(Duration(days: 30));
+          ? now.add(const Duration(days: 365))
+          : now.add(const Duration(days: 30));
     }
     
     // 会員情報を更新

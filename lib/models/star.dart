@@ -141,7 +141,7 @@ class SocialAccount {
     required this.url,
     this.isVerified = false,
     DateTime? verifiedAt,
-  }) : this.verifiedAt = verifiedAt ?? DateTime.now();
+  }) : verifiedAt = verifiedAt ?? DateTime.now();
   
   factory SocialAccount.fromJson(Map<String, dynamic> json) {
     return SocialAccount(

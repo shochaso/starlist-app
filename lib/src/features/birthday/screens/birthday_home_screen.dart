@@ -121,11 +121,11 @@ class _BirthdayHomeScreenState extends ConsumerState<BirthdayHomeScreen>
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
+                      const Row(
                         children: [
-                          const Icon(Icons.favorite, color: Color(0xFF4ECDC4), size: 20),
-                          const SizedBox(width: 8),
-                          const Text(
+                          Icon(Icons.favorite, color: Color(0xFF4ECDC4), size: 20),
+                          SizedBox(width: 8),
+                          Text(
                             'フォロー中のスターの誕生日',
                             style: TextStyle(
                               fontSize: 18,
@@ -364,7 +364,7 @@ class _BirthdayHomeScreenState extends ConsumerState<BirthdayHomeScreen>
             ),
           ),
           Text(
-            'あと${daysUntil}日',
+            'あと$daysUntil日',
             style: const TextStyle(
               color: Color(0xFF4ECDC4),
               fontSize: 14,

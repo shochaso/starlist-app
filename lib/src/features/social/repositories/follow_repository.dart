@@ -83,7 +83,7 @@ class FollowRepository {
     try {
       final response = await _client
           .from(_table)
-          .select('*', FetchOptions(count: CountOption.exact))
+          .select('*', const FetchOptions(count: CountOption.exact))
           .eq('followed_id', userId)
           .execute();
       
@@ -99,7 +99,7 @@ class FollowRepository {
     try {
       final response = await _client
           .from(_table)
-          .select('*', FetchOptions(count: CountOption.exact))
+          .select('*', const FetchOptions(count: CountOption.exact))
           .eq('follower_id', userId)
           .execute();
       

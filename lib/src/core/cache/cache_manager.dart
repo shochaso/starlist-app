@@ -18,7 +18,7 @@ class CacheManager {
   }
 
   Future<UserModel?> getCachedUser(String userId) async {
-    final data = await _cache.get<Map<String, dynamic>>("user_$userId");
+    final data = _cache.get<Map<String, dynamic>>("user_$userId");
     if (data == null) return null;
     return UserModel.fromJson(data);
   }
@@ -32,7 +32,7 @@ class CacheManager {
   }
 
   Future<List<PaymentModel>?> getCachedPayments(String userId) async {
-    final data = await _cache.get<List<dynamic>>("payments_$userId");
+    final data = _cache.get<List<dynamic>>("payments_$userId");
     if (data == null) return null;
     return data.map((json) => PaymentModel.fromJson(json)).toList();
   }
@@ -43,7 +43,7 @@ class CacheManager {
   }
 
   Future<PrivacySettings?> getCachedPrivacySettings(String userId) async {
-    final data = await _cache.get<Map<String, dynamic>>("privacy_$userId");
+    final data = _cache.get<Map<String, dynamic>>("privacy_$userId");
     if (data == null) return null;
     return PrivacySettings.fromJson(data);
   }
@@ -57,7 +57,7 @@ class CacheManager {
   }
 
   Future<List<RankingEntry>?> getCachedRankings(RankingType type) async {
-    final data = await _cache.get<List<dynamic>>("rankings_${type.toString().split(".").last}");
+    final data = _cache.get<List<dynamic>>("rankings_${type.toString().split(".").last}");
     if (data == null) return null;
     return data.map((json) => RankingEntry.fromJson(json)).toList();
   }
@@ -68,7 +68,7 @@ class CacheManager {
   }
 
   Future<List<SubscriptionPlan>?> getCachedSubscriptionPlans() async {
-    final data = await _cache.get<List<dynamic>>("subscription_plans");
+    final data = _cache.get<List<dynamic>>("subscription_plans");
     if (data == null) return null;
     return data.map((json) => SubscriptionPlan.fromJson(json)).toList();
   }
@@ -78,7 +78,7 @@ class CacheManager {
   }
 
   Future<SubscriptionStatusModel?> getCachedSubscriptionStatus(String userId) async {
-    final data = await _cache.get<Map<String, dynamic>>("subscription_status_$userId");
+    final data = _cache.get<Map<String, dynamic>>("subscription_status_$userId");
     if (data == null) return null;
     return SubscriptionStatusModel.fromJson(data);
   }
@@ -89,7 +89,7 @@ class CacheManager {
   }
 
   Future<YouTubeVideo?> getCachedVideo(String videoId) async {
-    final data = await _cache.get<Map<String, dynamic>>("video_$videoId");
+    final data = _cache.get<Map<String, dynamic>>("video_$videoId");
     if (data == null) return null;
     return YouTubeVideo.fromJson(data);
   }
@@ -102,7 +102,7 @@ class CacheManager {
   }
 
   Future<List<YouTubeVideo>?> getCachedSearchResults(String query) async {
-    final data = await _cache.get<List<dynamic>>("search_$query");
+    final data = _cache.get<List<dynamic>>("search_$query");
     if (data == null) return null;
     return data.map((json) => YouTubeVideo.fromJson(json)).toList();
   }

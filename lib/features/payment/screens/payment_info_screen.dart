@@ -187,10 +187,10 @@ class _PaymentInfoScreenState extends ConsumerState<PaymentInfoScreen> {
               ),
               borderRadius: BorderRadius.circular(16),
             ),
-            child: Column(
+            child: const Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   '現在のプラン',
                   style: TextStyle(
                     fontSize: 14,
@@ -198,8 +198,8 @@ class _PaymentInfoScreenState extends ConsumerState<PaymentInfoScreen> {
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-                const SizedBox(height: 8),
-                const Text(
+                SizedBox(height: 8),
+                Text(
                   'スタンダードプラン',
                   style: TextStyle(
                     fontSize: 24,
@@ -207,8 +207,8 @@ class _PaymentInfoScreenState extends ConsumerState<PaymentInfoScreen> {
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-                const SizedBox(height: 4),
-                const Text(
+                SizedBox(height: 4),
+                Text(
                   '¥1,980/月',
                   style: TextStyle(
                     fontSize: 18,
@@ -216,12 +216,12 @@ class _PaymentInfoScreenState extends ConsumerState<PaymentInfoScreen> {
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: 16),
                 Row(
                   children: [
-                    const Icon(Icons.calendar_today, color: Colors.white, size: 16),
-                    const SizedBox(width: 8),
-                    const Text(
+                    Icon(Icons.calendar_today, color: Colors.white, size: 16),
+                    SizedBox(width: 8),
+                    Text(
                       '次回請求日: 2024-02-20',
                       style: TextStyle(
                         fontSize: 14,
@@ -410,13 +410,13 @@ class _PaymentInfoScreenState extends ConsumerState<PaymentInfoScreen> {
                       ],
                     ),
                   ),
-                  PopupMenuItem(
+                  const PopupMenuItem(
                     value: 'delete',
                     child: Row(
                       children: [
-                        const Icon(Icons.delete, color: Colors.red, size: 20),
-                        const SizedBox(width: 8),
-                        const Text('削除', style: TextStyle(color: Colors.red)),
+                        Icon(Icons.delete, color: Colors.red, size: 20),
+                        SizedBox(width: 8),
+                        Text('削除', style: TextStyle(color: Colors.red)),
                       ],
                     ),
                   ),

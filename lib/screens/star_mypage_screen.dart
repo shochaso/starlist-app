@@ -47,19 +47,19 @@ class StarMyPageScreen extends StatelessWidget {
           children: [
             // プロフィールセクション
             Container(
-              padding: EdgeInsets.all(16),
+              padding: const EdgeInsets.all(16),
               child: Row(
                 children: [
                   CircleAvatar(
                     radius: 40,
                     backgroundColor: isDarkMode ? Colors.grey.shade800 : Colors.grey.shade300,
-                    child: Icon(
+                    child: const Icon(
                       Icons.star,
                       size: 40,
                       color: Colors.amber,
                     ),
                   ),
-                  SizedBox(width: 16),
+                  const SizedBox(width: 16),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -74,15 +74,15 @@ class StarMyPageScreen extends StatelessWidget {
                                 color: textColor,
                               ),
                             ),
-                            SizedBox(width: 8),
-                            Icon(
+                            const SizedBox(width: 8),
+                            const Icon(
                               Icons.verified,
                               color: Colors.blue,
                               size: 20,
                             ),
                           ],
                         ),
-                        SizedBox(height: 4),
+                        const SizedBox(height: 4),
                         Text(
                           'ミュージシャン',
                           style: TextStyle(
@@ -90,7 +90,7 @@ class StarMyPageScreen extends StatelessWidget {
                             color: secondaryTextColor,
                           ),
                         ),
-                        SizedBox(height: 4),
+                        const SizedBox(height: 4),
                         Text(
                           'フォロワー: 12,345',
                           style: TextStyle(
@@ -98,7 +98,7 @@ class StarMyPageScreen extends StatelessWidget {
                             color: secondaryTextColor,
                           ),
                         ),
-                        SizedBox(height: 8),
+                        const SizedBox(height: 8),
                         ElevatedButton(
                           onPressed: () {
                             Navigator.push(
@@ -115,7 +115,7 @@ class StarMyPageScreen extends StatelessWidget {
                               borderRadius: BorderRadius.circular(20),
                             ),
                           ),
-                          child: Text('プロフィールを編集'),
+                          child: const Text('プロフィールを編集'),
                         ),
                       ],
                     ),
@@ -128,7 +128,7 @@ class StarMyPageScreen extends StatelessWidget {
             
             // SNS認証セクション
             Padding(
-              padding: EdgeInsets.all(16),
+              padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -140,7 +140,7 @@ class StarMyPageScreen extends StatelessWidget {
                       color: textColor,
                     ),
                   ),
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
                   Text(
                     '以下のSNSアカウントと連携して本人確認を行います。\n認証済みの場合はバッジが表示されます。',
                     style: TextStyle(
@@ -148,7 +148,7 @@ class StarMyPageScreen extends StatelessWidget {
                       color: secondaryTextColor,
                     ),
                   ),
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
                   _buildSocialAuthItem(
                     context: context,
                     icon: Icons.alternate_email,
@@ -159,7 +159,7 @@ class StarMyPageScreen extends StatelessWidget {
                     textColor: textColor,
                     cardColor: cardColor,
                   ),
-                  SizedBox(height: 12),
+                  const SizedBox(height: 12),
                   _buildSocialAuthItem(
                     context: context,
                     icon: Icons.photo_camera,
@@ -170,7 +170,7 @@ class StarMyPageScreen extends StatelessWidget {
                     textColor: textColor,
                     cardColor: cardColor,
                   ),
-                  SizedBox(height: 12),
+                  const SizedBox(height: 12),
                   _buildSocialAuthItem(
                     context: context,
                     icon: Icons.music_note,
@@ -189,7 +189,7 @@ class StarMyPageScreen extends StatelessWidget {
             
             // アクティビティセクション
             Padding(
-              padding: EdgeInsets.all(16),
+              padding: const EdgeInsets.all(16),
               child: Text(
                 'アクティビティ',
                 style: TextStyle(
@@ -215,7 +215,7 @@ class StarMyPageScreen extends StatelessWidget {
                       iconColor: Colors.blue,
                     ),
                   ),
-                  SizedBox(width: 12),
+                  const SizedBox(width: 12),
                   Expanded(
                     child: _buildStatsCard(
                       context: context,
@@ -227,7 +227,7 @@ class StarMyPageScreen extends StatelessWidget {
                       iconColor: Colors.green,
                     ),
                   ),
-                  SizedBox(width: 12),
+                  const SizedBox(width: 12),
                   Expanded(
                     child: _buildStatsCard(
                       context: context,
@@ -247,7 +247,7 @@ class StarMyPageScreen extends StatelessWidget {
             
             // コンテンツ管理
             Padding(
-              padding: EdgeInsets.all(16),
+              padding: const EdgeInsets.all(16),
               child: Text(
                 'コンテンツ管理',
                 style: TextStyle(
@@ -298,7 +298,7 @@ class StarMyPageScreen extends StatelessWidget {
               ),
             ),
             
-            SizedBox(height: 80),
+            const SizedBox(height: 80),
           ],
         ),
       ),
@@ -316,7 +316,7 @@ class StarMyPageScreen extends StatelessWidget {
     required Color cardColor,
   }) {
     return Container(
-      padding: EdgeInsets.all(12),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: cardColor,
         borderRadius: BorderRadius.circular(12),
@@ -332,7 +332,7 @@ class StarMyPageScreen extends StatelessWidget {
             ),
             child: Icon(icon, color: textColor),
           ),
-          SizedBox(width: 12),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -344,7 +344,7 @@ class StarMyPageScreen extends StatelessWidget {
                     color: textColor,
                   ),
                 ),
-                SizedBox(height: 2),
+                const SizedBox(height: 2),
                 Text(
                   username,
                   style: TextStyle(
@@ -356,7 +356,7 @@ class StarMyPageScreen extends StatelessWidget {
             ),
           ),
           isVerified
-              ? Icon(Icons.verified, color: Colors.blue)
+              ? const Icon(Icons.verified, color: Colors.blue)
               : ElevatedButton(
                   onPressed: () {
                     // 連携処理
@@ -368,7 +368,7 @@ class StarMyPageScreen extends StatelessWidget {
                       borderRadius: BorderRadius.circular(20),
                     ),
                   ),
-                  child: Text('連携する'),
+                  child: const Text('連携する'),
                 ),
         ],
       ),
@@ -385,7 +385,7 @@ class StarMyPageScreen extends StatelessWidget {
     required Color iconColor,
   }) {
     return Container(
-      padding: EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: cardColor,
         borderRadius: BorderRadius.circular(12),
@@ -393,7 +393,7 @@ class StarMyPageScreen extends StatelessWidget {
       child: Column(
         children: [
           Icon(icon, color: iconColor, size: 32),
-          SizedBox(height: 8),
+          const SizedBox(height: 8),
           Text(
             value,
             style: TextStyle(
@@ -402,7 +402,7 @@ class StarMyPageScreen extends StatelessWidget {
               color: textColor,
             ),
           ),
-          SizedBox(height: 4),
+          const SizedBox(height: 4),
           Text(
             title,
             style: TextStyle(

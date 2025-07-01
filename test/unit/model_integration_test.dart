@@ -302,7 +302,7 @@ void main() {
           termsAccepted: false,
         );
         
-        final termsVersion = '1.0';
+        const termsVersion = '1.0';
         final consentDate = DateTime.now();
         
         // 利用規約同意情報を適用

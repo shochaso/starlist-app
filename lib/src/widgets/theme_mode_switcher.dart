@@ -239,7 +239,7 @@ class ThemeSettingsCard extends ConsumerWidget {
             // ヘッダー
             Row(
               children: [
-                Icon(
+                const Icon(
                   Icons.palette,
                   color: ThemeConstants.primaryPurple,
                   size: 20,
@@ -280,7 +280,7 @@ class ThemeSettingsCard extends ConsumerWidget {
                   ),
                   child: Text(
                     themeState.themeMode.displayName,
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: ThemeConstants.primaryPurple,
                       fontSize: 12,
                       fontWeight: ThemeConstants.fontWeightMedium,
@@ -293,7 +293,7 @@ class ThemeSettingsCard extends ConsumerWidget {
             const SizedBox(height: ThemeConstants.spaceMd),
             
             // テーマ切り替えオプション
-            ThemeModeSwitcher(
+            const ThemeModeSwitcher(
               showLabels: true,
               direction: Axis.horizontal,
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,

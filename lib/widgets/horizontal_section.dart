@@ -35,7 +35,7 @@ class HorizontalSection extends StatelessWidget {
       children: [
         // ヘッダー
         Padding(
-          padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -50,7 +50,7 @@ class HorizontalSection extends StatelessWidget {
                     ),
                   ),
                   if (trailing != null) ...[
-                    SizedBox(width: 8),
+                    const SizedBox(width: 8),
                     trailing!,
                   ],
                 ],
@@ -76,7 +76,7 @@ class HorizontalSection extends StatelessWidget {
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             physics: const BouncingScrollPhysics(),
-            padding: EdgeInsets.symmetric(horizontal: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 16),
             itemCount: children.length,
             itemBuilder: (context, index) {
               return Container(

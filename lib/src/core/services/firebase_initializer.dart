@@ -4,7 +4,7 @@ import "package:starlist/src/core/config/firebase_config.dart";
 class FirebaseInitializer {
   static Future<void> initialize() async {
     await Firebase.initializeApp(
-      options: FirebaseOptions(
+      options: const FirebaseOptions(
         apiKey: FirebaseConfig.apiKey,
         authDomain: FirebaseConfig.authDomain,
         projectId: FirebaseConfig.projectId,

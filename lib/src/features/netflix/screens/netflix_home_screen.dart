@@ -932,9 +932,9 @@ class _NetflixHomeScreenState extends ConsumerState<NetflixHomeScreen> with Sing
     final minutes = duration.inMinutes % 60;
     
     if (hours > 0) {
-      return '${hours}時間${minutes}分';
+      return '$hours時間$minutes分';
     } else {
-      return '${minutes}分';
+      return '$minutes分';
     }
   }
 

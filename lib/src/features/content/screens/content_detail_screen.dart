@@ -425,7 +425,6 @@ class _ContentDetailScreenState extends State<ContentDetailScreen> {
               onPressed: () => Navigator.of(context).pop(),
             ),
             TextButton(
-              child: const Text('削除'),
               style: TextButton.styleFrom(
                 foregroundColor: Colors.red,
               ),
@@ -433,6 +432,7 @@ class _ContentDetailScreenState extends State<ContentDetailScreen> {
                 Navigator.of(context).pop();
                 context.read<ContentBloc>().add(DeleteContentEvent(content.id));
               },
+              child: const Text('削除'),
             ),
           ],
         );

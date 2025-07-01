@@ -123,8 +123,8 @@ class TestHelper {
       planId: planId ?? "test_plan_id",
       status: status ?? SubscriptionStatus.active,
       startDate: startDate ?? DateTime.now(),
-      endDate: endDate ?? DateTime.now().add(Duration(days: 30)),
-      nextBillingDate: nextBillingDate ?? DateTime.now().add(Duration(days: 30)),
+      endDate: endDate ?? DateTime.now().add(const Duration(days: 30)),
+      nextBillingDate: nextBillingDate ?? DateTime.now().add(const Duration(days: 30)),
       paymentMethodId: paymentMethodId ?? "test_payment_method_id",
     );
   }
@@ -153,7 +153,7 @@ class TestHelper {
       viewCount: viewCount ?? 1000,
       likeCount: likeCount ?? 100,
       commentCount: commentCount ?? 50,
-      duration: duration ?? Duration(minutes: 5),
+      duration: duration ?? const Duration(minutes: 5),
     );
   }
 

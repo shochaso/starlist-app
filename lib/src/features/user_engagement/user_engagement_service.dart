@@ -1,5 +1,4 @@
 import 'dart:math';
-import 'package:flutter/foundation.dart';
 
 /// ユーザーエンゲージメントを向上させるサービス
 class UserEngagementService {

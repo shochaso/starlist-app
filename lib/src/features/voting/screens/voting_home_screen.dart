@@ -87,8 +87,8 @@ class _VotingHomeScreenState extends ConsumerState<VotingHomeScreen> with Single
           ),
           floatingActionButton: user.isStar ? FloatingActionButton(
             onPressed: () => _navigateToCreatePost(),
-            child: const Icon(Icons.add),
             tooltip: '投票投稿を作成',
+            child: const Icon(Icons.add),
           ) : null,
         );
       },
@@ -169,7 +169,7 @@ class _VotingHomeScreenState extends ConsumerState<VotingHomeScreen> with Single
                 color: Colors.red,
               ),
               const SizedBox(height: 16),
-              Text(
+              const Text(
                 'データの読み込みに失敗しました',
                 style: TextStyle(
                   fontSize: 16,

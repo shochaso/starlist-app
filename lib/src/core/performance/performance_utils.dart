@@ -21,9 +21,9 @@ class PerformanceUtils {
   }
 
   static void debounce(VoidCallback callback, {Duration duration = const Duration(milliseconds: 300)}) {
-    Timer? _debounceTimer;
-    if (_debounceTimer?.isActive ?? false) _debounceTimer!.cancel();
-    _debounceTimer = Timer(duration, callback);
+    Timer? debounceTimer;
+    if (debounceTimer?.isActive ?? false) debounceTimer!.cancel();
+    debounceTimer = Timer(duration, callback);
   }
 
   static Future<T> throttle<T>({

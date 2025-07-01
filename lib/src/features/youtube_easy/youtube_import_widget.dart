@@ -62,23 +62,23 @@ class _YouTubeImportWidgetState extends State<YouTubeImportWidget> {
   Widget _buildExplanationSection() {
     return Card(
       color: Colors.blue.shade50,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
+      child: const Padding(
+        padding: EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                const Icon(Icons.info, color: Colors.blue),
-                const SizedBox(width: 8),
-                const Text(
+                Icon(Icons.info, color: Colors.blue),
+                SizedBox(width: 8),
+                Text(
                   '📚 YouTube履歴インポートとは？',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
               ],
             ),
-            const SizedBox(height: 12),
-            const Text(
+            SizedBox(height: 12),
+            Text(
               'YouTuberの動画履歴をStarlistの「毎日ピック」機能に簡単にインポートできます。\n\n'
               '✅ 動画のタイトル・サムネイル・再生回数\n'
               '✅ 公開日・いいね数・チャンネル情報\n'
@@ -286,11 +286,11 @@ class _YouTubeImportWidgetState extends State<YouTubeImportWidget> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
+            const Row(
               children: [
-                const Icon(Icons.batch_prediction, color: Colors.blue),
-                const SizedBox(width: 8),
-                const Text(
+                Icon(Icons.batch_prediction, color: Colors.blue),
+                SizedBox(width: 8),
+                Text(
                   '🎉 一括インポート完了',
                   style: TextStyle(
                     fontSize: 18,
@@ -388,8 +388,8 @@ class _YouTubeImportWidgetState extends State<YouTubeImportWidget> {
           ),
           const SizedBox(height: 8),
           Text('🎬 ${items.length}本の動画をインポート'),
-          Text('📅 最新動画から順番に取得'),
-          Text('🏷️ 自動タグ付けで整理'),
+          const Text('📅 最新動画から順番に取得'),
+          const Text('🏷️ 自動タグ付けで整理'),
         ],
       ),
     );

@@ -130,7 +130,7 @@ class AnalyticsService {
         return DateTime(referenceDate.year, 1, 1);
       case AnalyticsPeriod.custom:
         // カスタム期間の場合はデフォルトで30日前
-        return referenceDate.subtract(Duration(days: 30));
+        return referenceDate.subtract(const Duration(days: 30));
       default:
         return DateTime(referenceDate.year, referenceDate.month, referenceDate.day);
     }
@@ -151,7 +151,7 @@ class AnalyticsService {
         final nextMonth = referenceDate.month == 12 
             ? DateTime(referenceDate.year + 1, 1, 1)
             : DateTime(referenceDate.year, referenceDate.month + 1, 1);
-        return nextMonth.subtract(Duration(seconds: 1));
+        return nextMonth.subtract(const Duration(seconds: 1));
       case AnalyticsPeriod.quarterly:
         // 四半期の開始月を計算
         final quarterStartMonth = ((referenceDate.month - 1) ~/ 3) * 3 + 1;
@@ -159,7 +159,7 @@ class AnalyticsService {
         final nextQuarter = quarterStartMonth + 3 > 12
             ? DateTime(referenceDate.year + 1, (quarterStartMonth + 3) % 12, 1)
             : DateTime(referenceDate.year, quarterStartMonth + 3, 1);
-        return nextQuarter.subtract(Duration(seconds: 1));
+        return nextQuarter.subtract(const Duration(seconds: 1));
       case AnalyticsPeriod.yearly:
         return DateTime(referenceDate.year, 12, 31, 23, 59, 59);
       case AnalyticsPeriod.custom:

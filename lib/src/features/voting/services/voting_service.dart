@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../data/repositories/voting_repository.dart';
 import '../../../data/models/voting_models.dart';
 

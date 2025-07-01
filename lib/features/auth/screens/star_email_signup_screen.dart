@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class StarEmailSignupScreen extends StatefulWidget {
   const StarEmailSignupScreen({super.key});
@@ -525,7 +524,7 @@ class _StarEmailSignupScreenState extends State<StarEmailSignupScreen>
   }
 
   Widget _buildSignupButton() {
-    return Container(
+    return SizedBox(
       width: double.infinity,
       height: 56,
       child: Material(
@@ -716,7 +715,7 @@ class _StarEmailSignupScreenState extends State<StarEmailSignupScreen>
               ),
             ),
             const SizedBox(height: 20),
-            Container(
+            SizedBox(
               width: double.infinity,
               height: 48,
               child: ElevatedButton(
@@ -776,7 +775,7 @@ class _StarEmailSignupScreenState extends State<StarEmailSignupScreen>
               ),
             ),
             const SizedBox(height: 20),
-            Container(
+            SizedBox(
               width: double.infinity,
               height: 48,
               child: ElevatedButton(

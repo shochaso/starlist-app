@@ -652,9 +652,9 @@ class _NetflixViewingDetailScreenState extends ConsumerState<NetflixViewingDetai
                 size: 16,
               ),
               const SizedBox(width: 8),
-              Text(
+              const Text(
                 '視聴状態',
-                style: const TextStyle(
+                style: TextStyle(
                   color: Colors.grey,
                   fontSize: 14,
                 ),

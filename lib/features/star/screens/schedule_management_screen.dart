@@ -395,9 +395,9 @@ class _ScheduleManagementScreenState extends ConsumerState<ScheduleManagementScr
           const SizedBox(height: 12),
           Row(
             children: [
-              Icon(
+              const Icon(
                 Icons.access_time,
-                color: const Color(0xFF4ECDC4),
+                color: Color(0xFF4ECDC4),
                 size: 16,
               ),
               const SizedBox(width: 4),

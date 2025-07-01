@@ -294,9 +294,9 @@ class ItemListSection<T> extends StatelessWidget {
           
           // アイテムリスト
           if (isLoading) ...[
-            SizedBox(
+            const SizedBox(
               height: 120,
-              child: const Center(
+              child: Center(
                 child: CircularProgressIndicator(),
               ),
             ),

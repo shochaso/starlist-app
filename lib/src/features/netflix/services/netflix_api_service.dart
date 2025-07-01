@@ -182,7 +182,7 @@ class NetflixApiService {
         director: director,
         cast: cast ?? [],
         genres: genres ?? [],
-        metadata: {
+        metadata: const {
           'source': 'manual_input',
           'created_by': 'user',
           'input_method': 'form',
@@ -288,7 +288,7 @@ class NetflixApiService {
         progressPercentage: 100.0,
         watchDuration: const Duration(minutes: 45),
         totalDuration: const Duration(minutes: 45),
-        cast: [],
+        cast: const [],
         metadata: {
           'source': 'dummy_data',
           'generated_at': DateTime.now().toIso8601String(),

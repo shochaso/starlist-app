@@ -44,7 +44,7 @@ class _LoginScreenState extends State<LoginScreen> {
         title: const Text('ログイン'),
       ),
       body: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           color: AppTheme.backgroundColor,
           gradient: RadialGradient(
             colors: [Color(0x33D10FEE), AppTheme.backgroundColor],
@@ -61,13 +61,13 @@ class _LoginScreenState extends State<LoginScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Icon(
+                  const Icon(
                     Icons.star,
                     color: AppTheme.primaryColor,
                     size: 64,
                   ),
                   const SizedBox(height: 16),
-                  Text(
+                  const Text(
                     'Starlist',
                     style: TextStyle(
                       fontSize: 32,
@@ -78,7 +78,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: 40),
                   TextField(
                     controller: _emailController,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       labelText: 'メールアドレス',
                       border: OutlineInputBorder(),
                       prefixIcon: Icon(Icons.email),
@@ -88,7 +88,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: 16),
                   TextField(
                     controller: _passwordController,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       labelText: 'パスワード',
                       border: OutlineInputBorder(),
                       prefixIcon: Icon(Icons.lock),
@@ -102,21 +102,21 @@ class _LoginScreenState extends State<LoginScreen> {
                       onPressed: () {
                         // パスワードリセット処理
                       },
-                      child: Text('パスワードをお忘れですか？'),
+                      child: const Text('パスワードをお忘れですか？'),
                     ),
                   ),
                   const SizedBox(height: 24),
                   ElevatedButton(
                     onPressed: _isLoading ? null : _login,
                     style: ElevatedButton.styleFrom(
-                      padding: EdgeInsets.symmetric(vertical: 16),
+                      padding: const EdgeInsets.symmetric(vertical: 16),
                     ),
                     child: _isLoading
-                        ? CircularProgressIndicator(color: Colors.white)
-                        : Text('ログイン', style: TextStyle(fontSize: 16)),
+                        ? const CircularProgressIndicator(color: Colors.white)
+                        : const Text('ログイン', style: TextStyle(fontSize: 16)),
                   ),
                   const SizedBox(height: 16),
-                  Row(
+                  const Row(
                     children: [
                       Expanded(child: Divider()),
                       Padding(
@@ -131,10 +131,10 @@ class _LoginScreenState extends State<LoginScreen> {
                     onPressed: () {
                       // Googleログイン処理
                     },
-                    icon: Icon(Icons.account_circle),
-                    label: Text('Googleでログイン'),
+                    icon: const Icon(Icons.account_circle),
+                    label: const Text('Googleでログイン'),
                     style: OutlinedButton.styleFrom(
-                      padding: EdgeInsets.symmetric(vertical: 16),
+                      padding: const EdgeInsets.symmetric(vertical: 16),
                     ),
                   ),
                 ],

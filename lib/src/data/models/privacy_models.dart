@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 
 /// フィルタリングレベルの列挙型
 enum FilteringLevel {

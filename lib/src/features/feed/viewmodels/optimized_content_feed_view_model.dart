@@ -126,7 +126,7 @@ class OptimizedContentFeedViewModel extends ChangeNotifier {
       }
       
       // キャッシュキー
-      final cacheKey = 'content_feed_${userId}_${_currentPage}';
+      final cacheKey = 'content_feed_${userId}_$_currentPage';
       
       // キャッシュからデータを取得
       final cachedData = await _cacheManager.get<List<ContentConsumptionModel>>(cacheKey);
@@ -144,7 +144,7 @@ class OptimizedContentFeedViewModel extends ChangeNotifier {
         );
         
         // データをキャッシュに保存
-        await _cacheManager.set(cacheKey, contents, expiry: Duration(minutes: 5));
+        await _cacheManager.set(cacheKey, contents, expiry: const Duration(minutes: 5));
       }
       
       if (refresh) {
@@ -245,7 +245,7 @@ class OptimizedContentFeedViewModel extends ChangeNotifier {
       }
       
       // キャッシュキー
-      final cacheKey = 'category_content_${contentType.toString()}_${_currentPage}';
+      final cacheKey = 'category_content_${contentType.toString()}_$_currentPage';
       
       // キャッシュからデータを取得
       final cachedData = await _cacheManager.get<List<ContentConsumptionModel>>(cacheKey);
@@ -263,7 +263,7 @@ class OptimizedContentFeedViewModel extends ChangeNotifier {
         );
         
         // データをキャッシュに保存
-        await _cacheManager.set(cacheKey, contents, expiry: Duration(minutes: 5));
+        await _cacheManager.set(cacheKey, contents, expiry: const Duration(minutes: 5));
       }
       
       if (refresh) {
@@ -332,7 +332,7 @@ class OptimizedContentFeedViewModel extends ChangeNotifier {
       }
       
       // キャッシュキー
-      final cacheKey = 'trending_content_${contentType?.toString() ?? 'all'}_${_currentPage}';
+      final cacheKey = 'trending_content_${contentType?.toString() ?? 'all'}_$_currentPage';
       
       // キャッシュからデータを取得
       final cachedData = await _cacheManager.get<List<ContentConsumptionModel>>(cacheKey);
@@ -350,7 +350,7 @@ class OptimizedContentFeedViewModel extends ChangeNotifier {
         );
         
         // データをキャッシュに保存（トレンドは短い有効期限）
-        await _cacheManager.set(cacheKey, contents, expiry: Duration(minutes: 2));
+        await _cacheManager.set(cacheKey, contents, expiry: const Duration(minutes: 2));
       }
       
       if (refresh) {
@@ -428,7 +428,7 @@ class OptimizedContentFeedViewModel extends ChangeNotifier {
       }
       
       // キャッシュキー
-      final cacheKey = 'search_content_${query}_${contentType?.toString() ?? 'all'}_${_currentPage}';
+      final cacheKey = 'search_content_${query}_${contentType?.toString() ?? 'all'}_$_currentPage';
       
       // キャッシュからデータを取得
       final cachedData = await _cacheManager.get<List<ContentConsumptionModel>>(cacheKey);
@@ -447,7 +447,7 @@ class OptimizedContentFeedViewModel extends ChangeNotifier {
         );
         
         // データをキャッシュに保存
-        await _cacheManager.set(cacheKey, contents, expiry: Duration(minutes: 5));
+        await _cacheManager.set(cacheKey, contents, expiry: const Duration(minutes: 5));
       }
       
       if (refresh) {

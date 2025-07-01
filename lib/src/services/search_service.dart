@@ -42,11 +42,11 @@ class SearchService {
       
       // カテゴリフィルタが指定されている場合は追加
       if (category != null) {
-        searchQuery = searchQuery.eq('category', category.name) as PostgrestFilterBuilder;
+        searchQuery = searchQuery.eq('category', category.name);
       }
       
       // 公開設定が「公開」のもののみ取得
-      searchQuery = searchQuery.eq('privacy_level', PrivacyLevel.public.name) as PostgrestFilterBuilder;
+      searchQuery = searchQuery.eq('privacy_level', PrivacyLevel.public.name);
       
       // ソートと制限を適用
       final data = await searchQuery

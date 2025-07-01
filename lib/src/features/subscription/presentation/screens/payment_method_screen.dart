@@ -41,7 +41,7 @@ class _PaymentMethodScreenState extends ConsumerState<PaymentMethodScreen> {
     await Future.delayed(const Duration(seconds: 2));
     
     // サブスクリプション登録（仮）
-    final userId = 'user123'; // 実際は認証済みユーザーIDを使用
+    const userId = 'user123'; // 実際は認証済みユーザーIDを使用
     final paymentMethodId = 'pm_${DateTime.now().millisecondsSinceEpoch}'; // 仮のID
     
     try {

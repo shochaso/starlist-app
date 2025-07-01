@@ -206,11 +206,11 @@ class _NetflixAddManualScreenState extends ConsumerState<NetflixAddManualScreen>
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
+                      const Row(
                         children: [
-                          const Icon(Icons.access_time, color: Color(0xFFE50914), size: 20),
-                          const SizedBox(width: 8),
-                          const Text(
+                          Icon(Icons.access_time, color: Color(0xFFE50914), size: 20),
+                          SizedBox(width: 8),
+                          Text(
                             '総時間',
                             style: TextStyle(color: Colors.grey, fontSize: 14),
                           ),
@@ -245,11 +245,11 @@ class _NetflixAddManualScreenState extends ConsumerState<NetflixAddManualScreen>
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
+                      const Row(
                         children: [
-                          const Icon(Icons.play_arrow, color: Color(0xFFE50914), size: 20),
-                          const SizedBox(width: 8),
-                          const Text(
+                          Icon(Icons.play_arrow, color: Color(0xFFE50914), size: 20),
+                          SizedBox(width: 8),
+                          Text(
                             '視聴時間',
                             style: TextStyle(color: Colors.grey, fontSize: 14),
                           ),
@@ -703,9 +703,9 @@ class _NetflixAddManualScreenState extends ConsumerState<NetflixAddManualScreen>
     final minutes = duration.inMinutes % 60;
     
     if (hours > 0) {
-      return '${hours}時間${minutes}分';
+      return '$hours時間$minutes分';
     } else {
-      return '${minutes}分';
+      return '$minutes分';
     }
   }
 

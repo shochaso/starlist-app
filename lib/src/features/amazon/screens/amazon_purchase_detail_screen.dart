@@ -328,7 +328,7 @@ class AmazonPurchaseDetailScreen extends ConsumerWidget {
                     }),
                     const SizedBox(width: 4),
                     Text(
-                      '${purchase.rating!.toStringAsFixed(1)}',
+                      purchase.rating!.toStringAsFixed(1),
                       style: const TextStyle(
                         color: Color(0xFFFF9900),
                         fontSize: 16,

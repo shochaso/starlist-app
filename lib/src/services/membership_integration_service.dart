@@ -111,7 +111,7 @@ class MembershipIntegrationService {
       final currentBalance = await _externalService.getExternalPointBalance(userId);
       
       if (currentBalance <= 0) {
-        return PointSyncResult(
+        return const PointSyncResult(
           success: true,
           convertedPoints: 0,
           message: '変換可能なポイントがありません',
@@ -200,7 +200,7 @@ class MembershipIntegrationService {
       return MigrationResult(
         success: false,
         migratedBenefits: migratedBenefits,
-        failedBenefits: ['全体的な移行エラー'],
+        failedBenefits: const ['全体的な移行エラー'],
       );
     }
   }
@@ -311,7 +311,7 @@ class DemoExternalMembershipService implements ExistingMembershipService {
       isActive: true,
       additionalData: {
         'vip_until': DateTime.now().add(const Duration(days: 30)).toIso8601String(),
-        'special_badges': ['early_adopter', 'loyalty'],
+        'special_badges': const ['early_adopter', 'loyalty'],
         'exclusive_content_access': true,
       },
     );

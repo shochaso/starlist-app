@@ -80,7 +80,7 @@ class _CategoryListScreenState extends State<CategoryListScreen> with SingleTick
           controller: _tabController,
           indicatorColor: accentColor,
           labelColor: textColor,
-          tabs: [
+          tabs: const [
             Tab(text: 'プラットフォーム'),
             Tab(text: 'ジャンル'),
           ],
@@ -126,7 +126,7 @@ class _CategoryListScreenState extends State<CategoryListScreen> with SingleTick
           children: [
             // 検索バー
             Container(
-              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               decoration: BoxDecoration(
                 color: isDarkMode ? Colors.grey.shade800 : Colors.grey.shade200,
                 borderRadius: BorderRadius.circular(12),
@@ -137,7 +137,7 @@ class _CategoryListScreenState extends State<CategoryListScreen> with SingleTick
                     Icons.search,
                     color: secondaryTextColor,
                   ),
-                  SizedBox(width: 8),
+                  const SizedBox(width: 8),
                   Text(
                     'カテゴリーを検索',
                     style: TextStyle(
@@ -149,13 +149,13 @@ class _CategoryListScreenState extends State<CategoryListScreen> with SingleTick
               ),
             ),
             
-            SizedBox(height: 24),
+            const SizedBox(height: 24),
             
             // カテゴリーグリッド
             GridView.builder(
               shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
                 childAspectRatio: 1.1,
                 crossAxisSpacing: 16,
@@ -180,7 +180,7 @@ class _CategoryListScreenState extends State<CategoryListScreen> with SingleTick
                           color: Colors.grey.withOpacity(0.2),
                           spreadRadius: 1,
                           blurRadius: 3,
-                          offset: Offset(0, 2),
+                          offset: const Offset(0, 2),
                         ),
                       ],
                     ),
@@ -209,7 +209,7 @@ class _CategoryListScreenState extends State<CategoryListScreen> with SingleTick
                                   fontSize: 16,
                                 ),
                               ),
-                              SizedBox(height: 4),
+                              const SizedBox(height: 4),
                               Text(
                                 '${categories[index]['count']}人のスター',
                                 style: TextStyle(

@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../providers/user_provider.dart';
-import '../../../providers/theme_provider.dart';
+import '../../../src/providers/theme_provider_enhanced.dart';
 import 'profile_edit_screen.dart';
 import '../../app/screens/settings_screen.dart';
 import '../../star/screens/star_dashboard_screen.dart';
@@ -20,6 +20,138 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     with TickerProviderStateMixin {
   late TabController _tabController;
   int _selectedTabIndex = 0;
+  
+  // コンテンツカテゴリ
+  final List<Map<String, dynamic>> _contentCategories = [
+    {
+      'id': 'following',
+      'title': 'フォロー中',
+      'icon': Icons.person_add_outlined,
+      'color': Color(0xFF4ECDC4),
+      'count': 15,
+    },
+    {
+      'id': 'favorites',
+      'title': 'お気に入り',
+      'icon': Icons.favorite_outline,
+      'color': Color(0xFFFF6B6B),
+      'count': 42,
+    },
+    {
+      'id': 'playlists',
+      'title': 'プレイリスト',
+      'icon': Icons.playlist_play_outlined,
+      'color': Color(0xFF8B5CF6),
+      'count': 6,
+    },
+    {
+      'id': 'saved',
+      'title': '保存済み',
+      'icon': Icons.bookmark_outline,
+      'color': Color(0xFFFFE66D),
+      'count': 28,
+    },
+  ];
+  
+  // サンプルデータ
+  final Map<String, List<Map<String, dynamic>>> _contentData = {
+    'following': [
+      {
+        'id': '1',
+        'name': 'テックレビューアー田中',
+        'category': 'テクノロジー',
+        'followers': '24.5K',
+        'avatar': null,
+        'isVerified': true,
+        'followedDate': '2024/01/15',
+      },
+      {
+        'id': '2',
+        'name': '料理研究家佐藤',
+        'category': '料理・グルメ',
+        'followers': '18.3K',
+        'avatar': null,
+        'isVerified': false,
+        'followedDate': '2024/01/10',
+      },
+      {
+        'id': '3',
+        'name': 'フィットネス山田',
+        'category': 'フィットネス',
+        'followers': '12.1K',
+        'avatar': null,
+        'isVerified': true,
+        'followedDate': '2024/01/08',
+      },
+    ],
+    'favorites': [
+      {
+        'id': '1',
+        'title': 'iPhone 15 Pro Max 詳細レビュー',
+        'star': 'テックレビューアー田中',
+        'duration': '25:30',
+        'addedDate': '2024/01/15',
+        'thumbnail': null,
+        'category': 'テクノロジー',
+      },
+      {
+        'id': '2',
+        'title': '簡単チキンカレーの作り方',
+        'star': '料理研究家佐藤',
+        'duration': '12:45',
+        'addedDate': '2024/01/14',
+        'thumbnail': null,
+        'category': '料理・グルメ',
+      },
+      {
+        'id': '3',
+        'title': '朝の10分ストレッチルーティン',
+        'star': 'フィットネス山田',
+        'duration': '10:15',
+        'addedDate': '2024/01/13',
+        'thumbnail': null,
+        'category': 'フィットネス',
+      },
+    ],
+    'playlists': [
+      {
+        'id': '1',
+        'name': 'プログラミング学習',
+        'description': 'Flutter開発に関する動画',
+        'itemCount': 12,
+        'createdDate': '2024/01/10',
+        'thumbnail': null,
+        'isPublic': false,
+      },
+      {
+        'id': '2',
+        'name': 'お気に入りガジェット',
+        'description': '2024年のおすすめガジェット',
+        'itemCount': 8,
+        'createdDate': '2024/01/05',
+        'thumbnail': null,
+        'isPublic': true,
+      },
+    ],
+    'saved': [
+      {
+        'id': '1',
+        'title': 'Dartの非同期処理完全ガイド',
+        'star': 'プログラミング講師伊藤',
+        'savedDate': '2024/01/12',
+        'category': 'プログラミング',
+        'readingTime': '15分',
+      },
+      {
+        'id': '2',
+        'title': '効率的なワークフローの作り方',
+        'star': '生産性コンサルタント',
+        'savedDate': '2024/01/11',
+        'category': 'ビジネス',
+        'readingTime': '8分',
+      },
+    ],
+  };
 
   // ユーザー情報
   final Map<String, dynamic> _userProfile = {
@@ -102,7 +234,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 5, vsync: this);
     _tabController.addListener(() {
       setState(() {
         _selectedTabIndex = _tabController.index;
@@ -119,8 +251,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   @override
   Widget build(BuildContext context) {
     final currentUser = ref.watch(currentUserProvider);
-    final themeMode = ref.watch(themeProvider);
-    final isDark = themeMode == AppThemeMode.dark;
+    final themeState = ref.watch(themeProviderEnhanced);
+    final isDark = themeState.isDarkMode;
     
     return Scaffold(
       backgroundColor: isDark ? const Color(0xFF1A1A1A) : const Color(0xFFF8FAFC),
@@ -365,8 +497,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                 child: Row(
                   children: [
                     _buildTabItem('概要', 0, _selectedTabIndex),
-                    _buildTabItem('活動', 1, _selectedTabIndex),
-                    _buildTabItem('バッジ', 2, _selectedTabIndex),
+                    _buildTabItem('フォロー', 1, _selectedTabIndex),
+                    _buildTabItem('コンテンツ', 2, _selectedTabIndex),
+                    _buildTabItem('活動', 3, _selectedTabIndex),
+                    _buildTabItem('バッジ', 4, _selectedTabIndex),
                   ],
                 ),
               ),
@@ -382,8 +516,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   }
 
   Widget _buildTabItem(String label, int index, int selectedIndex) {
-    final themeMode = ref.watch(themeProvider);
-    final isDark = themeMode == AppThemeMode.dark;
+    final themeState = ref.watch(themeProviderEnhanced);
+    final isDark = themeState.isDarkMode;
     
     return Expanded(
       child: GestureDetector(
@@ -407,6 +541,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
               color: index == _selectedTabIndex ? Colors.white : (isDark ? Colors.white70 : Colors.black54),
             ),
             textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
         ),
       ),
@@ -418,12 +554,266 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
       case 0:
         return _buildOverviewTabContent();
       case 1:
-        return _buildActivityTabContent();
+        return _buildFollowTabContent();
       case 2:
+        return _buildContentTabContent();
+      case 3:
+        return _buildActivityTabContent();
+      case 4:
         return _buildBadgesTabContent();
       default:
         return Container();
     }
+  }
+
+  Widget _buildFollowTabContent() {
+    final themeState = ref.watch(themeProviderEnhanced);
+    final isDark = themeState.isDarkMode;
+    
+    // フォロー中のユーザーデータ
+    final followingData = _contentData['following'] ?? [];
+    
+    return Padding(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // ヘッダー
+          Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF4ECDC4).withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(
+                  Icons.people,
+                  color: Color(0xFF4ECDC4),
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'フォロー中',
+                      style: TextStyle(
+                        color: isDark ? Colors.white : Colors.black87,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    Text(
+                      '${followingData.length}人をフォロー中',
+                      style: TextStyle(
+                        color: isDark ? Colors.grey[400] : Colors.black54,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // フォロー管理ボタン
+              ElevatedButton.icon(
+                onPressed: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('フォロー管理機能（実装予定）'),
+                      backgroundColor: Color(0xFF4ECDC4),
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.manage_accounts, size: 16),
+                label: const Text('管理'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF4ECDC4),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  elevation: 0,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          
+          // フォロー中のユーザーリスト
+          ...followingData.map((user) => _buildFollowUserCard(user, isDark)).toList(),
+          
+          const SizedBox(height: 100), // ボトムナビゲーション用の余白
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFollowUserCard(Map<String, dynamic> user, bool isDark) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isDark ? const Color(0xFF333333) : const Color(0xFFE5E7EB),
+        ),
+      ),
+      child: Row(
+        children: [
+          // アバター
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF4ECDC4), Color(0xFF44A08D)],
+              ),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Center(
+              child: Text(
+                user['name']?.substring(0, 1) ?? 'U',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          
+          // ユーザー情報
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        user['name'] ?? 'Unknown User',
+                        style: TextStyle(
+                          color: isDark ? Colors.white : Colors.black87,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    if (user['isVerified'] == true)
+                      const Padding(
+                        padding: EdgeInsets.only(left: 4),
+                        child: Icon(
+                          Icons.verified,
+                          color: Color(0xFF4ECDC4),
+                          size: 16,
+                        ),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  user['category'] ?? 'カテゴリ不明',
+                  style: TextStyle(
+                    color: isDark ? Colors.grey[400] : Colors.black54,
+                    fontSize: 12,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Row(
+                  children: [
+                    Icon(
+                      Icons.people,
+                      color: isDark ? Colors.grey[500] : Colors.black38,
+                      size: 12,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      '${user['followers']} フォロワー',
+                      style: TextStyle(
+                        color: isDark ? Colors.grey[500] : Colors.black38,
+                        fontSize: 11,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Icon(
+                      Icons.calendar_today,
+                      color: isDark ? Colors.grey[500] : Colors.black38,
+                      size: 12,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      'フォロー日: ${user['followedDate']}',
+                      style: TextStyle(
+                        color: isDark ? Colors.grey[500] : Colors.black38,
+                        fontSize: 11,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          
+          // アクションボタン
+          Column(
+            children: [
+              ElevatedButton(
+                onPressed: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('${user['name']}のプロフィールを表示'),
+                      backgroundColor: const Color(0xFF4ECDC4),
+                    ),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF4ECDC4),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  elevation: 0,
+                  minimumSize: const Size(60, 28),
+                ),
+                child: const Text(
+                  'プロフィール',
+                  style: TextStyle(fontSize: 10),
+                ),
+              ),
+              const SizedBox(height: 4),
+              TextButton(
+                onPressed: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('${user['name']}のフォローを解除しました'),
+                      backgroundColor: Colors.orange,
+                    ),
+                  );
+                },
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.red,
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  minimumSize: const Size(60, 24),
+                ),
+                child: const Text(
+                  'フォロー解除',
+                  style: TextStyle(fontSize: 9),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildOverviewTabContent() {
@@ -905,8 +1295,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   }
 
   Widget _buildStatItem(String value, String label) {
-    final themeMode = ref.watch(themeProvider);
-    final isDark = themeMode == AppThemeMode.dark;
+    final themeState = ref.watch(themeProviderEnhanced);
+    final isDark = themeState.isDarkMode;
     
     // プライバシー保護：フォロー情報とプレイリストは非公開
     final bool isPrivateData = label.contains('フォロー') || label.contains('プレイリスト');
@@ -990,6 +1380,738 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('ヘルプセンターを開く'),
+        backgroundColor: Color(0xFF4ECDC4),
+      ),
+    );
+  }
+  
+  Widget _buildContentTabContent() {
+    final themeState = ref.watch(themeProviderEnhanced);
+    final isDark = themeState.isDarkMode;
+    
+    return Padding(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        children: [
+          // カテゴリグリッド
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              crossAxisSpacing: 16,
+              mainAxisSpacing: 16,
+              childAspectRatio: 1.2,
+            ),
+            itemCount: _contentCategories.length,
+            itemBuilder: (context, index) {
+              final category = _contentCategories[index];
+              return _buildContentCategoryCard(category, isDark);
+            },
+          ),
+          const SizedBox(height: 24),
+          
+          // 最近のコンテンツ
+          _buildRecentContentSection(isDark),
+          
+          const SizedBox(height: 100), // ボトムナビゲーション用の余白
+        ],
+      ),
+    );
+  }
+  
+  Widget _buildContentCategoryCard(Map<String, dynamic> category, bool isDark) {
+    return GestureDetector(
+      onTap: () => _showCategoryDetail(category),
+      child: Container(
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isDark ? const Color(0xFF333333) : const Color(0xFFE5E7EB),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: (isDark ? Colors.black : Colors.black).withOpacity(0.06),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: (category['color'] as Color).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  category['icon'] as IconData,
+                  color: category['color'] as Color,
+                  size: 24,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                category['title'],
+                style: TextStyle(
+                  color: isDark ? Colors.white : Colors.black87,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                '${category['count']}件',
+                style: TextStyle(
+                  color: category['color'] as Color,
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+  
+  Widget _buildRecentContentSection(bool isDark) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              '最近の活動',
+              style: TextStyle(
+                color: isDark ? Colors.white : Colors.black87,
+                fontSize: 17,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            TextButton(
+              onPressed: () => _showAllRecentContent(),
+              child: const Text(
+                'すべて見る',
+                style: TextStyle(
+                  color: Color(0xFF4ECDC4),
+                  fontSize: 13,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        
+        // 最近のフォロー
+        _buildRecentContentCard(
+          'フォロー開始',
+          '料理研究家佐藤',
+          '1日前',
+          Icons.person_add,
+          const Color(0xFF4ECDC4),
+          isDark,
+        ),
+        const SizedBox(height: 12),
+        
+        // 最近のお気に入り
+        _buildRecentContentCard(
+          'お気に入りに追加',
+          'iPhone 15 Pro Max 詳細レビュー',
+          '2時間前',
+          Icons.favorite,
+          const Color(0xFFFF6B6B),
+          isDark,
+        ),
+        const SizedBox(height: 12),
+        
+        // 最近のプレイリスト
+        _buildRecentContentCard(
+          'プレイリスト作成',
+          'プログラミング学習',
+          '3日前',
+          Icons.playlist_add,
+          const Color(0xFF8B5CF6),
+          isDark,
+        ),
+      ],
+    );
+  }
+  
+  Widget _buildRecentContentCard(
+    String action,
+    String title,
+    String time,
+    IconData icon,
+    Color color,
+    bool isDark,
+  ) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isDark ? const Color(0xFF333333) : const Color(0xFFE5E7EB),
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(icon, color: color, size: 20),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  action,
+                  style: TextStyle(
+                    color: isDark ? Colors.white : Colors.black87,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  title,
+                  style: TextStyle(
+                    color: color,
+                    fontSize: 12,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+          Text(
+            time,
+            style: TextStyle(
+              color: isDark ? Colors.grey[500] : Colors.black38,
+              fontSize: 11,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  void _showCategoryDetail(Map<String, dynamic> category) {
+    final themeState = ref.read(themeProviderEnhanced);
+    final isDark = themeState.isDarkMode;
+    
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        height: MediaQuery.of(context).size.height * 0.8,
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF1A1A1A) : Colors.white,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: Column(
+          children: [
+            // ハンドル
+            Container(
+              margin: const EdgeInsets.only(top: 12, bottom: 20),
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: isDark ? Colors.grey[600] : Colors.grey[300],
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            
+            // ヘッダー
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Row(
+                children: [
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: (category['color'] as Color).withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Icon(
+                      category['icon'] as IconData,
+                      color: category['color'] as Color,
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          category['title'],
+                          style: TextStyle(
+                            color: isDark ? Colors.white : Colors.black87,
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          '${category['count']}件のアイテム',
+                          style: TextStyle(
+                            color: isDark ? Colors.grey[400] : Colors.black54,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: Icon(
+                      Icons.close,
+                      color: isDark ? Colors.white : Colors.black87,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            
+            const SizedBox(height: 20),
+            
+            // コンテンツリスト
+            Expanded(
+              child: _buildCategoryContentList(category['id'], isDark),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+  
+  Widget _buildCategoryContentList(String categoryId, bool isDark) {
+    final items = _contentData[categoryId] ?? [];
+    
+    return ListView.separated(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      itemCount: items.length,
+      separatorBuilder: (context, index) => const SizedBox(height: 12),
+      itemBuilder: (context, index) {
+        final item = items[index];
+        return _buildContentListItem(categoryId, item, isDark);
+      },
+    );
+  }
+  
+  Widget _buildContentListItem(String categoryId, Map<String, dynamic> item, bool isDark) {
+    switch (categoryId) {
+      case 'following':
+        return _buildFollowingItem(item, isDark);
+      case 'favorites':
+        return _buildFavoriteItem(item, isDark);
+      case 'playlists':
+        return _buildPlaylistItem(item, isDark);
+      case 'saved':
+        return _buildSavedItem(item, isDark);
+      default:
+        return Container();
+    }
+  }
+  
+  Widget _buildFollowingItem(Map<String, dynamic> item, bool isDark) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isDark ? const Color(0xFF333333) : const Color(0xFFE5E7EB),
+        ),
+      ),
+      child: Row(
+        children: [
+          // アバター
+          Container(
+            width: 50,
+            height: 50,
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF4ECDC4), Color(0xFF44A08D)],
+              ),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Center(
+              child: Text(
+                item['name'][0],
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 16),
+          
+          // 情報
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        item['name'],
+                        style: TextStyle(
+                          color: isDark ? Colors.white : Colors.black87,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    if (item['isVerified'])
+                      const Icon(
+                        Icons.verified,
+                        color: Color(0xFF4ECDC4),
+                        size: 16,
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  item['category'],
+                  style: TextStyle(
+                    color: isDark ? Colors.grey[400] : Colors.black54,
+                    fontSize: 14,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    Text(
+                      '${item['followers']} フォロワー',
+                      style: TextStyle(
+                        color: const Color(0xFF4ECDC4),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const Spacer(),
+                    Text(
+                      'フォロー開始: ${item['followedDate']}',
+                      style: TextStyle(
+                        color: isDark ? Colors.grey[500] : Colors.black38,
+                        fontSize: 10,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  Widget _buildFavoriteItem(Map<String, dynamic> item, bool isDark) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isDark ? const Color(0xFF333333) : const Color(0xFFE5E7EB),
+        ),
+      ),
+      child: Row(
+        children: [
+          // サムネイル
+          Container(
+            width: 80,
+            height: 60,
+            decoration: BoxDecoration(
+              color: const Color(0xFFFF6B6B).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: isDark ? const Color(0xFF333333) : const Color(0xFFE5E7EB),
+              ),
+            ),
+            child: const Icon(
+              Icons.play_arrow,
+              color: Color(0xFFFF6B6B),
+              size: 24,
+            ),
+          ),
+          const SizedBox(width: 16),
+          
+          // 情報
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  item['title'],
+                  style: TextStyle(
+                    color: isDark ? Colors.white : Colors.black87,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  item['star'],
+                  style: TextStyle(
+                    color: const Color(0xFF4ECDC4),
+                    fontSize: 12,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    Text(
+                      item['duration'],
+                      style: TextStyle(
+                        color: isDark ? Colors.grey[400] : Colors.black54,
+                        fontSize: 12,
+                      ),
+                    ),
+                    const Spacer(),
+                    Text(
+                      '追加: ${item['addedDate']}',
+                      style: TextStyle(
+                        color: isDark ? Colors.grey[500] : Colors.black38,
+                        fontSize: 10,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  Widget _buildPlaylistItem(Map<String, dynamic> item, bool isDark) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isDark ? const Color(0xFF333333) : const Color(0xFFE5E7EB),
+        ),
+      ),
+      child: Row(
+        children: [
+          // プレイリストアイコン
+          Container(
+            width: 50,
+            height: 50,
+            decoration: BoxDecoration(
+              color: const Color(0xFF8B5CF6).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Icon(
+              Icons.playlist_play,
+              color: Color(0xFF8B5CF6),
+              size: 24,
+            ),
+          ),
+          const SizedBox(width: 16),
+          
+          // 情報
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        item['name'],
+                        style: TextStyle(
+                          color: isDark ? Colors.white : Colors.black87,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    if (item['isPublic'])
+                      Icon(
+                        Icons.public,
+                        color: isDark ? Colors.grey[400] : Colors.black54,
+                        size: 16,
+                      )
+                    else
+                      Icon(
+                        Icons.lock,
+                        color: isDark ? Colors.grey[400] : Colors.black54,
+                        size: 16,
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  item['description'],
+                  style: TextStyle(
+                    color: isDark ? Colors.grey[400] : Colors.black54,
+                    fontSize: 12,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    Text(
+                      '${item['itemCount']}件のアイテム',
+                      style: TextStyle(
+                        color: const Color(0xFF8B5CF6),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const Spacer(),
+                    Text(
+                      '作成: ${item['createdDate']}',
+                      style: TextStyle(
+                        color: isDark ? Colors.grey[500] : Colors.black38,
+                        fontSize: 10,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  Widget _buildSavedItem(Map<String, dynamic> item, bool isDark) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isDark ? const Color(0xFF333333) : const Color(0xFFE5E7EB),
+        ),
+      ),
+      child: Row(
+        children: [
+          // ブックマークアイコン
+          Container(
+            width: 50,
+            height: 50,
+            decoration: BoxDecoration(
+              color: const Color(0xFFFFE66D).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Icon(
+              Icons.bookmark,
+              color: Color(0xFFFFE66D),
+              size: 24,
+            ),
+          ),
+          const SizedBox(width: 16),
+          
+          // 情報
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  item['title'],
+                  style: TextStyle(
+                    color: isDark ? Colors.white : Colors.black87,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  item['star'],
+                  style: TextStyle(
+                    color: const Color(0xFF4ECDC4),
+                    fontSize: 12,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFE66D).withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        item['category'],
+                        style: const TextStyle(
+                          color: Color(0xFFFFE66D),
+                          fontSize: 10,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      '読了時間: ${item['readingTime']}',
+                      style: TextStyle(
+                        color: isDark ? Colors.grey[400] : Colors.black54,
+                        fontSize: 10,
+                      ),
+                    ),
+                    const Spacer(),
+                    Text(
+                      '保存: ${item['savedDate']}',
+                      style: TextStyle(
+                        color: isDark ? Colors.grey[500] : Colors.black38,
+                        fontSize: 10,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  void _showAllRecentContent() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('すべての最近の活動を表示'),
         backgroundColor: Color(0xFF4ECDC4),
       ),
     );

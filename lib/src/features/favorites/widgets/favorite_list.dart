@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../models/favorite_item_model.dart';
 import '../providers/favorite_provider.dart';
 import 'favorite_item_card.dart';
 

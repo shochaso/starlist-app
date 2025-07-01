@@ -278,7 +278,7 @@ class SubscriptionServiceImpl implements SubscriptionService {
     final now = DateTime.now();
     final nextBilling = DateTime.parse(currentSub.nextBillingDate);
     final daysRemaining = nextBilling.difference(now).inDays;
-    final totalDaysInCycle = 30; // 月額の場合
+    const totalDaysInCycle = 30; // 月額の場合
 
     final currentPlanDailyRate = currentSub.plan.price / totalDaysInCycle;
     final newPlanDailyRate = newPlan.price / totalDaysInCycle;

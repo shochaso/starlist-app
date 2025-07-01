@@ -83,11 +83,11 @@ class SubscriptionPlanCard extends ConsumerWidget {
               ),
               child: Row(
                 children: [
-                  Expanded(
+                  const Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           'ライト',
                           style: TextStyle(
                             color: Colors.white,
@@ -95,8 +95,8 @@ class SubscriptionPlanCard extends ConsumerWidget {
                             fontWeight: FontWeight.w600,
                           ),
                         ),
-                        const SizedBox(height: 2),
-                        const Text(
+                        SizedBox(height: 2),
+                        Text(
                           '¥980',
                           style: TextStyle(
                             color: Colors.white,
@@ -104,7 +104,7 @@ class SubscriptionPlanCard extends ConsumerWidget {
                             fontWeight: FontWeight.w700,
                           ),
                         ),
-                        const Text(
+                        Text(
                           '/月',
                           style: TextStyle(
                             color: Colors.white70,

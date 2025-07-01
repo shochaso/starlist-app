@@ -29,7 +29,7 @@ class StarDetailScreen extends StatelessWidget {
         type: 'youtube',
         title: '新曲「祝福」MV公開',
         content: 'YOASOBIの新曲「祝福」ミュージックビデオがYouTubeで公開されました。',
-        timestamp: DateTime.now().subtract(Duration(days: 1)),
+        timestamp: DateTime.now().subtract(const Duration(days: 1)),
         imageUrl: 'https://example.com/yoasobi_mv.jpg',
       ),
       Activity(
@@ -38,7 +38,7 @@ class StarDetailScreen extends StatelessWidget {
         type: 'music',
         title: 'デジタルシングル「祝福」配信開始',
         content: 'デジタルシングル「祝福」の配信が各音楽ストリーミングサービスで開始されました。',
-        timestamp: DateTime.now().subtract(Duration(days: 2)),
+        timestamp: DateTime.now().subtract(const Duration(days: 2)),
         imageUrl: 'https://example.com/yoasobi_digital.jpg',
       ),
       Activity(
@@ -47,7 +47,7 @@ class StarDetailScreen extends StatelessWidget {
         type: 'purchase',
         title: '1stアルバム「THE BOOK」発売',
         content: 'YOASOBIの1stアルバム「THE BOOK」が発売されました。',
-        timestamp: DateTime.now().subtract(Duration(days: 30)),
+        timestamp: DateTime.now().subtract(const Duration(days: 30)),
         imageUrl: 'https://example.com/yoasobi_album.jpg',
         price: 3300,
       ),
@@ -93,7 +93,7 @@ class StarDetailScreen extends StatelessWidget {
                             Colors.transparent,
                             Colors.black.withOpacity(0.7),
                           ],
-                          stops: [0.6, 1.0],
+                          stops: const [0.6, 1.0],
                         ),
                       ),
                     ),
@@ -107,22 +107,22 @@ class StarDetailScreen extends StatelessWidget {
                             children: [
                               Text(
                                 star.name,
-                                style: TextStyle(
+                                style: const TextStyle(
                                   color: Colors.white,
                                   fontSize: 28,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
-                              SizedBox(width: 8),
+                              const SizedBox(width: 8),
                               if (star.isVerified)
-                                Icon(
+                                const Icon(
                                   Icons.verified,
                                   color: Colors.blue,
                                   size: 24,
                                 ),
                             ],
                           ),
-                          SizedBox(height: 4),
+                          const SizedBox(height: 4),
                           Text(
                             'フォロワー: ${_formatNumber(star.followers)}',
                             style: TextStyle(
@@ -156,7 +156,7 @@ class StarDetailScreen extends StatelessWidget {
           // スター情報
           SliverToBoxAdapter(
             child: Padding(
-              padding: EdgeInsets.all(16),
+              padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -169,7 +169,7 @@ class StarDetailScreen extends StatelessWidget {
                       color: textColor,
                     ),
                   ),
-                  SizedBox(height: 8),
+                  const SizedBox(height: 8),
                   Wrap(
                     spacing: 8,
                     runSpacing: 8,
@@ -178,7 +178,7 @@ class StarDetailScreen extends StatelessWidget {
                         backgroundColor: _getPlatformColor(platform),
                         label: Text(
                           platform,
-                          style: TextStyle(
+                          style: const TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.w500,
                           ),
@@ -187,7 +187,7 @@ class StarDetailScreen extends StatelessWidget {
                     }).toList(),
                   ),
                   
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
                   
                   // ジャンル
                   Text(
@@ -198,7 +198,7 @@ class StarDetailScreen extends StatelessWidget {
                       color: textColor,
                     ),
                   ),
-                  SizedBox(height: 8),
+                  const SizedBox(height: 8),
                   Wrap(
                     spacing: 8,
                     runSpacing: 8,
@@ -213,22 +213,22 @@ class StarDetailScreen extends StatelessWidget {
                           children: [
                             Text(
                               genre,
-                              style: TextStyle(
+                              style: const TextStyle(
                                 color: Colors.white,
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
                             if (level > 0) ...[
-                              SizedBox(width: 4),
+                              const SizedBox(width: 4),
                               Container(
-                                padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                                 decoration: BoxDecoration(
                                   color: Colors.white.withOpacity(0.3),
                                   borderRadius: BorderRadius.circular(4),
                                 ),
                                 child: Text(
                                   'Lv.$level',
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                     color: Colors.white,
                                     fontSize: 12,
                                     fontWeight: FontWeight.bold,
@@ -242,7 +242,7 @@ class StarDetailScreen extends StatelessWidget {
                     }).toList(),
                   ),
                   
-                  SizedBox(height: 24),
+                  const SizedBox(height: 24),
                   
                   // 認証状況
                   _buildVerificationSection(
@@ -254,7 +254,7 @@ class StarDetailScreen extends StatelessWidget {
                     secondaryTextColor: secondaryTextColor,
                   ),
                   
-                  SizedBox(height: 24),
+                  const SizedBox(height: 24),
                   
                   // SNSアカウント
                   if (star.socialAccounts.isNotEmpty) ...[
@@ -266,7 +266,7 @@ class StarDetailScreen extends StatelessWidget {
                         color: textColor,
                       ),
                     ),
-                    SizedBox(height: 12),
+                    const SizedBox(height: 12),
                     ...star.socialAccounts.map((account) => 
                       _buildSocialAccountItem(
                         context: context,
@@ -278,7 +278,7 @@ class StarDetailScreen extends StatelessWidget {
                     ).toList(),
                   ],
                   
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
                   
                   // フォローボタン
                   SizedBox(
@@ -290,12 +290,12 @@ class StarDetailScreen extends StatelessWidget {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: accentColor,
                         foregroundColor: Colors.white,
-                        padding: EdgeInsets.symmetric(vertical: 15),
+                        padding: const EdgeInsets.symmetric(vertical: 15),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
                       ),
-                      child: Text(
+                      child: const Text(
                         'フォローする',
                         style: TextStyle(
                           fontSize: 16,
@@ -322,7 +322,7 @@ class StarDetailScreen extends StatelessWidget {
     required Color secondaryTextColor,
   }) {
     return Container(
-      padding: EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: cardColor,
         borderRadius: BorderRadius.circular(16),
@@ -337,7 +337,7 @@ class StarDetailScreen extends StatelessWidget {
                 color: star.isVerified ? Colors.blue : Colors.amber,
                 size: 24,
               ),
-              SizedBox(width: 8),
+              const SizedBox(width: 8),
               Text(
                 '認証状況',
                 style: TextStyle(
@@ -348,7 +348,7 @@ class StarDetailScreen extends StatelessWidget {
               ),
             ],
           ),
-          SizedBox(height: 12),
+          const SizedBox(height: 12),
           Text(
             star.isVerified
                 ? 'このスターアカウントは公式に認証されています。SNSアカウントとの連携が確認され、本人であることが確認されています。'
@@ -359,7 +359,7 @@ class StarDetailScreen extends StatelessWidget {
             ),
           ),
           if (!star.isVerified) ...[
-            SizedBox(height: 12),
+            const SizedBox(height: 12),
             Text(
               '認証を受けるには、公式SNSアカウントを連携してください。',
               style: TextStyle(
@@ -407,8 +407,8 @@ class StarDetailScreen extends StatelessWidget {
     }
     
     return Container(
-      margin: EdgeInsets.only(bottom: 8),
-      padding: EdgeInsets.all(12),
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: cardColor,
         borderRadius: BorderRadius.circular(12),
@@ -424,7 +424,7 @@ class StarDetailScreen extends StatelessWidget {
             ),
             child: Icon(iconData, color: iconColor),
           ),
-          SizedBox(width: 12),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -436,7 +436,7 @@ class StarDetailScreen extends StatelessWidget {
                     color: textColor,
                   ),
                 ),
-                SizedBox(height: 2),
+                const SizedBox(height: 2),
                 Text(
                   account.username,
                   style: TextStyle(
@@ -448,7 +448,7 @@ class StarDetailScreen extends StatelessWidget {
             ),
           ),
           if (account.isVerified)
-            Icon(Icons.verified, color: Colors.blue)
+            const Icon(Icons.verified, color: Colors.blue)
         ],
       ),
     );

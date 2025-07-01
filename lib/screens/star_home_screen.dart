@@ -34,12 +34,12 @@ class StarHomeScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: SingleChildScrollView(
+      body: const SingleChildScrollView(
         child: Column(
           children: [
-            const StarDashboard(),
-            const StarContentManagement(),
-            const StarFanAnalytics(),
+            StarDashboard(),
+            StarContentManagement(),
+            StarFanAnalytics(),
           ],
         ),
       ),

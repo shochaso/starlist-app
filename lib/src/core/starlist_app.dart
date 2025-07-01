@@ -33,11 +33,10 @@ class StarlistApp extends ConsumerWidget {
       ),
       darkTheme: ThemeData.dark().copyWith(
         primaryColor: Colors.blue,
-        colorScheme: ColorScheme.dark(
+        colorScheme: const ColorScheme.dark(
           primary: Colors.blue,
           secondary: Colors.blueAccent,
         ),
-        useMaterial3: true,
       ),
       themeMode: ThemeMode.system,
       home: const StarlistHomePage(),

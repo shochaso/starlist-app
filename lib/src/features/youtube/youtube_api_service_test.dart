@@ -3,7 +3,6 @@ import 'package:mockito/mockito.dart';
 import 'package:mockito/annotations.dart';
 import 'package:dio/dio.dart';
 import 'package:starlist/src/features/data_integration/services/youtube_api_service.dart';
-import 'package:starlist/src/features/data_integration/models/youtube_video.dart';
 
 import 'youtube_api_service_test.mocks.dart';
 

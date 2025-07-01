@@ -64,7 +64,7 @@ class SharingService {
       await file.writeAsBytes(response.bodyBytes);
       
       // 画像を共有
-      await this.shareFiles(
+      await shareFiles(
         files: [filePath],
         text: text,
         subject: subject,
@@ -73,9 +73,9 @@ class SharingService {
       debugPrint('画像の共有に失敗しました: $e');
       // 画像の共有に失敗した場合はURLだけを共有
       if (text != null) {
-        await this.shareText(text: '$text\n$imageUrl', subject: subject);
+        await shareText(text: '$text\n$imageUrl', subject: subject);
       } else {
-        await this.shareUrl(url: imageUrl, subject: subject);
+        await shareUrl(url: imageUrl, subject: subject);
       }
     }
   }
@@ -97,7 +97,7 @@ class SharingService {
       debugPrint('ファイルの共有に失敗しました: $e');
       // ファイルの共有に失敗した場合はテキストだけを共有
       if (text != null) {
-        await this.shareText(text: text, subject: subject);
+        await shareText(text: text, subject: subject);
       }
     }
   }
@@ -120,8 +120,8 @@ class SharingService {
     // カテゴリによって共有内容を変更
     switch (content.category) {
       case ContentCategory.youtube:
-        final videoId = content.contentData?['video_id'] as String?;
-        final thumbnailUrl = content.contentData?['thumbnail_url'] as String?;
+        final videoId = content.contentData['video_id'] as String?;
+        final thumbnailUrl = content.contentData['thumbnail_url'] as String?;
         
         if (videoId != null) {
           final youtubeUrl = 'https://www.youtube.com/watch?v=$videoId';
@@ -140,8 +140,8 @@ class SharingService {
         break;
         
       case ContentCategory.book:
-        final author = content.contentData?['author'] as String?;
-        final isbn = content.contentData?['isbn'] as String?;
+        final author = content.contentData['author'] as String?;
+        final isbn = content.contentData['isbn'] as String?;
         
         if (author != null) {
           shareText += '著者: $author\n';
@@ -153,8 +153,8 @@ class SharingService {
         break;
         
       case ContentCategory.purchase:
-        final store = content.contentData?['store'] as String?;
-        final productUrl = content.contentData?['product_url'] as String?;
+        final store = content.contentData['store'] as String?;
+        final productUrl = content.contentData['product_url'] as String?;
         
         if (store != null) {
           shareText += '購入店: $store\n';
@@ -170,8 +170,8 @@ class SharingService {
         break;
         
       case ContentCategory.food:
-        final restaurant = content.contentData?['restaurant'] as String?;
-        final menu = content.contentData?['menu'] as String?;
+        final restaurant = content.contentData['restaurant'] as String?;
+        final menu = content.contentData['menu'] as String?;
         
         if (restaurant != null) {
           shareText += 'お店: $restaurant\n';

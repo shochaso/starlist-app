@@ -1,4 +1,3 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart' hide Provider;
 import 'package:flutter_riverpod/flutter_riverpod.dart' as riverpod;
 
 import '../repositories/user_repository.dart';

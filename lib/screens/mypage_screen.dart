@@ -279,11 +279,11 @@ class MypageScreen extends ConsumerWidget {
                   
                   // ログアウト
                   ListTile(
-                    leading: Icon(
+                    leading: const Icon(
                       Icons.logout_outlined,
                       color: Colors.red,
                     ),
-                    title: Text(
+                    title: const Text(
                       'ログアウト',
                       style: TextStyle(color: Colors.red),
                     ),
@@ -318,7 +318,7 @@ class MypageScreen extends ConsumerWidget {
                                 // ログアウト処理
                                 Navigator.pop(context);
                               },
-                              child: Text(
+                              child: const Text(
                                 'ログアウト',
                                 style: TextStyle(color: Colors.red),
                               ),

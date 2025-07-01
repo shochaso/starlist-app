@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../providers/user_provider.dart';
 import '../widgets/fan_star_recommendations.dart';
-import '../widgets/fan_following_stars.dart';
 import '../widgets/fan_membership_plans.dart';
 
 class FanHomeScreen extends StatelessWidget {
@@ -34,12 +31,11 @@ class FanHomeScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: SingleChildScrollView(
+      body: const SingleChildScrollView(
         child: Column(
           children: [
-            const FanStarRecommendations(),
-            const FanFollowingStars(),
-            const FanMembershipPlans(),
+            FanStarRecommendations(),
+            FanMembershipPlans(),
           ],
         ),
       ),

@@ -53,9 +53,9 @@ void main() {
       
       test('updateUserStatus - ユーザーステータス更新と通知送信', () async {
         // モックの設定
-        final userId = 'user123';
-        final adminId = 'admin123';
-        final reason = 'ガイドライン違反';
+        const userId = 'user123';
+        const adminId = 'admin123';
+        const reason = 'ガイドライン違反';
         final status = UserAdminStatus.suspended;
         
         final user = User(
@@ -133,9 +133,9 @@ void main() {
       
       test('approveReport - 報告承認と通知送信', () async {
         // モックの設定
-        final reportId = 'report123';
-        final moderatorId = 'admin123';
-        final note = 'コミュニティガイドライン違反';
+        const reportId = 'report123';
+        const moderatorId = 'admin123';
+        const note = 'コミュニティガイドライン違反';
         
         final report = ContentReport(
           id: reportId,
@@ -245,8 +245,8 @@ void main() {
       
       test('createTermsVersion - 新しい利用規約バージョンの作成', () async {
         // モックの設定
-        final version = '1.0';
-        final content = '利用規約の内容...';
+        const version = '1.0';
+        const content = '利用規約の内容...';
         final effectiveDate = DateTime(2025, 4, 1);
         
         final termsVersion = TermsVersion(
@@ -288,7 +288,7 @@ void main() {
       
       test('createSelfDeclarationVerification - 自己申告による年齢確認', () async {
         // モックの設定
-        final userId = 'user123';
+        const userId = 'user123';
         final birthDate = DateTime(2000, 1, 1); // 25歳
         
         final verification = AgeVerification(
@@ -297,7 +297,7 @@ void main() {
           method: AgeVerificationMethod.selfDeclaration,
           status: AgeVerificationStatus.verified,
           verificationDate: DateTime.now(),
-          expirationDate: DateTime.now().add(Duration(days: 365)),
+          expirationDate: DateTime.now().add(const Duration(days: 365)),
           verificationData: '{"birthDate": "${birthDate.toIso8601String()}", "age": 25}',
         );
         
@@ -320,7 +320,7 @@ void main() {
       
       test('canAccessContent - コンテンツアクセス確認', () async {
         // モックの設定
-        final userId = 'user123';
+        const userId = 'user123';
         
         final verification = AgeVerification(
           id: 'age123',
@@ -328,7 +328,7 @@ void main() {
           method: AgeVerificationMethod.selfDeclaration,
           status: AgeVerificationStatus.verified,
           verificationDate: DateTime.now(),
-          expirationDate: DateTime.now().add(Duration(days: 365)),
+          expirationDate: DateTime.now().add(const Duration(days: 365)),
         );
         
         // モックの振る舞いを設定
@@ -361,8 +361,8 @@ void main() {
       
       test('createStandardCopyrightProtection - 標準著作権保護の作成', () async {
         // モックの設定
-        final contentId = 'content123';
-        final ownerId = 'user123';
+        const contentId = 'content123';
+        const ownerId = 'user123';
         
         final protection = CopyrightProtection(
           id: 'copyright123',

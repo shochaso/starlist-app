@@ -38,7 +38,7 @@ class StarRepository {
           .select();
       
       if (category != null) {
-        query = query.eq('category', category.toString().split('.').last) as PostgrestFilterBuilder;
+        query = query.eq('category', category.toString().split('.').last);
       }
       
       final data = await query

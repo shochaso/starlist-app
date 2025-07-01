@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../providers/theme_provider.dart';
+import '../../../src/providers/theme_provider_enhanced.dart';
 import '../../../providers/user_provider.dart';
 import '../../app/screens/settings_screen.dart';
 import '../../star/screens/star_dashboard_screen.dart';
@@ -31,10 +31,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
   bool _isSearching = false;
   
   // フィルターオプション
-  String _sortBy = 'relevance'; // relevance, followers, latest
-  bool _verifiedOnly = false;
+  String _sortBy = 'relevance'; // relevance, latest
   String? _selectedCategory;
-  RangeValues _followerRange = const RangeValues(0, 500000);
 
   // 人気スターデータを大幅に追加
   final List<Map<String, dynamic>> _popularStars = [
@@ -331,8 +329,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
 
   @override
   Widget build(BuildContext context) {
-    final themeMode = ref.watch(themeProvider);
-    final isDark = themeMode == AppThemeMode.dark;
+    final themeState = ref.watch(themeProviderEnhanced);
+    final isDark = themeState.isDarkMode;
     
     // If standalone (navigated directly), show with Scaffold and AppBar
     if (widget.isStandalone) {
@@ -503,7 +501,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
                       Icons.filter_list,
                       color: isDark ? Colors.white : Colors.black87,
                     ),
-                    if (_verifiedOnly || _selectedCategory != null)
+                    if (_selectedCategory != null)
                       Positioned(
                         right: 0,
                         top: 0,
@@ -758,14 +756,6 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '${category['starCount']}',
-                      style: TextStyle(
-                        color: isDark ? Colors.white54 : Colors.black38,
-                        fontSize: 10,
-                      ),
-                    ),
                   ],
                 ),
               ),
@@ -829,8 +819,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
   }
 
   Widget _buildSearchResults() {
-    final themeMode = ref.watch(themeProvider);
-    final isDark = themeMode == AppThemeMode.dark;
+    final themeState = ref.watch(themeProviderEnhanced);
+    final isDark = themeState.isDarkMode;
     
     return ListView.builder(
       padding: const EdgeInsets.all(16),
@@ -1072,8 +1062,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
   }
 
   Widget _buildTrendingSection() {
-    final themeMode = ref.watch(themeProvider);
-    final isDark = themeMode == AppThemeMode.dark;
+    final themeState = ref.watch(themeProviderEnhanced);
+    final isDark = themeState.isDarkMode;
     
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
@@ -1177,8 +1167,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
   }
 
   Widget _buildPopularStars() {
-    final themeMode = ref.watch(themeProvider);
-    final isDark = themeMode == AppThemeMode.dark;
+    final themeState = ref.watch(themeProviderEnhanced);
+    final isDark = themeState.isDarkMode;
     
     return ListView.builder(
       padding: const EdgeInsets.all(16),
@@ -1313,8 +1303,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
   }
 
   Widget _buildCategories() {
-    final themeMode = ref.watch(themeProvider);
-    final isDark = themeMode == AppThemeMode.dark;
+    final themeState = ref.watch(themeProviderEnhanced);
+    final isDark = themeState.isDarkMode;
     
     return GridView.builder(
       padding: const EdgeInsets.all(16),
@@ -1456,8 +1446,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
   }
 
   Widget _buildFilterChip(String label, String value) {
-    final themeMode = ref.watch(themeProvider);
-    final isDark = themeMode == AppThemeMode.dark;
+    final themeState = ref.watch(themeProviderEnhanced);
+    final isDark = themeState.isDarkMode;
     final isSelected = _selectedFilter == value;
     
     return GestureDetector(
@@ -1488,8 +1478,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
   }
 
   Widget _buildTabItem(String label, int index) {
-    final themeMode = ref.watch(themeProvider);
-    final isDark = themeMode == AppThemeMode.dark;
+    final themeState = ref.watch(themeProviderEnhanced);
+    final isDark = themeState.isDarkMode;
     final isSelected = _tabController.index == index;
     
     return Expanded(
@@ -1540,8 +1530,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
   
   
   void _showFilterDialog() {
-    final themeMode = ref.read(themeProvider);
-    final isDark = themeMode == AppThemeMode.dark;
+    final themeState = ref.read(themeProviderEnhanced);
+    final isDark = themeState.isDarkMode;
     
     showModalBottomSheet(
       context: context,
@@ -1582,9 +1572,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
                       onPressed: () {
                         setModalState(() {
                           _sortBy = 'relevance';
-                          _verifiedOnly = false;
                           _selectedCategory = null;
-                          _followerRange = const RangeValues(0, 500000);
                         });
                       },
                       child: const Text(
@@ -1613,7 +1601,6 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
                       const SizedBox(height: 12),
                       ...[
                         {'value': 'relevance', 'label': '関連性'},
-                        {'value': 'followers', 'label': 'フォロワー数'},
                         {'value': 'latest', 'label': '最新'},
                       ].map((option) {
                         return RadioListTile<String>(
@@ -1635,68 +1622,6 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
                         );
                       }).toList(),
                       
-                      const SizedBox(height: 24),
-                      
-                      // 認証済みのみ
-                      SwitchListTile(
-                        value: _verifiedOnly,
-                        onChanged: (value) {
-                          setModalState(() {
-                            _verifiedOnly = value;
-                          });
-                        },
-                        title: Text(
-                          '認証済みスターのみ',
-                          style: TextStyle(
-                            color: isDark ? Colors.white : Colors.black87,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        subtitle: Text(
-                          '認証マークのあるスターのみ表示',
-                          style: TextStyle(
-                            color: isDark ? Colors.white54 : Colors.black54,
-                            fontSize: 12,
-                          ),
-                        ),
-                        activeColor: const Color(0xFF4ECDC4),
-                        contentPadding: EdgeInsets.zero,
-                      ),
-                      
-                      const SizedBox(height: 24),
-                      
-                      // フォロワー数範囲
-                      Text(
-                        'フォロワー数',
-                        style: TextStyle(
-                          color: isDark ? Colors.white : Colors.black87,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        '${(_followerRange.start / 1000).toStringAsFixed(0)}k - ${(_followerRange.end / 1000).toStringAsFixed(0)}k',
-                        style: TextStyle(
-                          color: const Color(0xFF4ECDC4),
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      RangeSlider(
-                        values: _followerRange,
-                        min: 0,
-                        max: 500000,
-                        divisions: 50,
-                        activeColor: const Color(0xFF4ECDC4),
-                        inactiveColor: isDark ? Colors.white24 : Colors.black12,
-                        onChanged: (values) {
-                          setModalState(() {
-                            _followerRange = values;
-                          });
-                        },
-                      ),
                     ],
                   ),
                 ),
@@ -1740,8 +1665,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
 
   void _handleFollowAction(Map<String, dynamic> star) {
     final currentUser = ref.read(currentUserProvider);
-    final themeMode = ref.read(themeProvider);
-    final isDark = themeMode == AppThemeMode.dark;
+    final themeState = ref.read(themeProviderEnhanced);
+    final isDark = themeState.isDarkMode;
     
     // フォロー機能の制限チェック
     if (currentUser.isStar) {
@@ -1768,8 +1693,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
 
   Widget _buildDrawer() {
     final currentUser = ref.watch(currentUserProvider);
-    final themeMode = ref.watch(themeProvider);
-    final isDark = themeMode == AppThemeMode.dark;
+    final themeState = ref.watch(themeProviderEnhanced);
+    final isDark = themeState.isDarkMode;
     
     return Drawer(
       backgroundColor: isDark ? const Color(0xFF1A1A1A) : Colors.white,
@@ -1848,7 +1773,6 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
               children: [
                 _buildDrawerItem(Icons.home, 'ホーム', () => _navigateToHome()),
                 _buildDrawerItem(Icons.search, '検索', null, isActive: true),
-                _buildDrawerItem(Icons.people, 'フォロー中', () => _navigateToFollow()),
                 _buildDrawerItem(Icons.star, 'マイリスト', () => _navigateToMylist()),
                 // スターのみ表示
                 if (currentUser.isStar) ...[
@@ -1871,8 +1795,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
   }
 
   Widget _buildDrawerItem(IconData icon, String title, VoidCallback? onTap, {bool isActive = false}) {
-    final themeMode = ref.watch(themeProvider);
-    final isDark = themeMode == AppThemeMode.dark;
+    final themeState = ref.watch(themeProviderEnhanced);
+    final isDark = themeState.isDarkMode;
     
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 3),
@@ -1929,9 +1853,6 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
     Navigator.popUntil(context, (route) => route.isFirst);
   }
 
-  void _navigateToFollow() {
-    Navigator.popUntil(context, (route) => route.isFirst);
-  }
 
   void _navigateToMylist() {
     Navigator.popUntil(context, (route) => route.isFirst);

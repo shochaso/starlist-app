@@ -25,7 +25,7 @@ Data: $data" : ""}";
   }
 }
 
-abstract class Logger {
+class Logger {
   void log(LogLevel level, String message, {dynamic data});
   void debug(String message, {dynamic data}) => log(LogLevel.debug, message, data: data);
   void info(String message, {dynamic data}) => log(LogLevel.info, message, data: data);

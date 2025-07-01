@@ -31,7 +31,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     // パスワード一致確認
     if (_passwordController.text != _confirmPasswordController.text) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('パスワードが一致しません')),
+        const SnackBar(content: Text('パスワードが一致しません')),
       );
       return;
     }
@@ -39,7 +39,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     // 利用規約の同意確認
     if (!_acceptTerms) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('利用規約に同意してください')),
+        const SnackBar(content: Text('利用規約に同意してください')),
       );
       return;
     }
@@ -67,7 +67,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         title: Text(widget.isStar ? 'スターとして登録' : 'ファンとして登録'),
       ),
       body: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           color: AppTheme.backgroundColor,
           gradient: RadialGradient(
             colors: [Color(0x33D10FEE), AppTheme.backgroundColor],
@@ -92,7 +92,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   const SizedBox(height: 16),
                   Text(
                     widget.isStar ? 'スターとして登録' : 'ファンとして登録',
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
                     ),
@@ -101,7 +101,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   const SizedBox(height: 40),
                   TextField(
                     controller: _nameController,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       labelText: 'ユーザー名',
                       border: OutlineInputBorder(),
                       prefixIcon: Icon(Icons.person),
@@ -110,7 +110,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   const SizedBox(height: 16),
                   TextField(
                     controller: _emailController,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       labelText: 'メールアドレス',
                       border: OutlineInputBorder(),
                       prefixIcon: Icon(Icons.email),
@@ -120,7 +120,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   const SizedBox(height: 16),
                   TextField(
                     controller: _passwordController,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       labelText: 'パスワード',
                       border: OutlineInputBorder(),
                       prefixIcon: Icon(Icons.lock),
@@ -130,7 +130,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   const SizedBox(height: 16),
                   TextField(
                     controller: _confirmPasswordController,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       labelText: 'パスワード（確認）',
                       border: OutlineInputBorder(),
                       prefixIcon: Icon(Icons.lock_outline),
@@ -139,7 +139,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                   const SizedBox(height: 16),
                   CheckboxListTile(
-                    title: Text('利用規約に同意します'),
+                    title: const Text('利用規約に同意します'),
                     value: _acceptTerms,
                     onChanged: (value) {
                       setState(() {
@@ -153,22 +153,22 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ElevatedButton(
                     onPressed: _isLoading ? null : _register,
                     style: ElevatedButton.styleFrom(
-                      padding: EdgeInsets.symmetric(vertical: 16),
+                      padding: const EdgeInsets.symmetric(vertical: 16),
                     ),
                     child: _isLoading
-                        ? CircularProgressIndicator(color: Colors.white)
-                        : Text('登録する', style: TextStyle(fontSize: 16)),
+                        ? const CircularProgressIndicator(color: Colors.white)
+                        : const Text('登録する', style: TextStyle(fontSize: 16)),
                   ),
                   const SizedBox(height: 16),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text('すでにアカウントをお持ちですか？'),
+                      const Text('すでにアカウントをお持ちですか？'),
                       TextButton(
                         onPressed: () {
                           Navigator.pushReplacementNamed(context, '/login');
                         },
-                        child: Text('ログイン'),
+                        child: const Text('ログイン'),
                       ),
                     ],
                   ),

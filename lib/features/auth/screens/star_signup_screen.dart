@@ -54,7 +54,7 @@ class _StarSignupScreenState extends State<StarSignupScreen>
     return Scaffold(
       backgroundColor: const Color(0xFF1A1A1A),
       body: SafeArea(
-        child: Container(
+        child: SizedBox(
           width: double.infinity,
           height: double.infinity,
           child: SingleChildScrollView(
@@ -240,7 +240,7 @@ class _StarSignupScreenState extends State<StarSignupScreen>
     Color? borderColor,
     required VoidCallback onTap,
   }) {
-    return Container(
+    return SizedBox(
       width: double.infinity,
       height: 56,
       child: Material(
@@ -299,8 +299,8 @@ class _StarSignupScreenState extends State<StarSignupScreen>
         padding: const EdgeInsets.symmetric(horizontal: 10),
         child: RichText(
           textAlign: TextAlign.center,
-          text: TextSpan(
-            style: const TextStyle(
+          text: const TextSpan(
+            style: TextStyle(
               fontSize: 12,
               color: Color(0xFF888888),
               height: 1.5,
@@ -308,22 +308,22 @@ class _StarSignupScreenState extends State<StarSignupScreen>
             children: [
               TextSpan(
                 text: '利用規約',
-                style: const TextStyle(
+                style: TextStyle(
                   color: Color(0xFF4ECDC4),
                   decoration: TextDecoration.underline,
                 ),
                 // recognizer: TapGestureRecognizer()..onTap = _showTerms,
               ),
-              const TextSpan(text: '及び'),
+              TextSpan(text: '及び'),
               TextSpan(
                 text: 'プライバシーポリシー',
-                style: const TextStyle(
+                style: TextStyle(
                   color: Color(0xFF4ECDC4),
                   decoration: TextDecoration.underline,
                 ),
                 // recognizer: TapGestureRecognizer()..onTap = _showPrivacy,
               ),
-              const TextSpan(text: 'に同意の上、登録又はログインへお進みください。'),
+              TextSpan(text: 'に同意の上、登録又はログインへお進みください。'),
             ],
           ),
         ),
@@ -362,7 +362,7 @@ class _StarSignupScreenState extends State<StarSignupScreen>
               ),
             ),
             const SizedBox(height: 20),
-            Container(
+            SizedBox(
               width: double.infinity,
               height: 56,
               child: Material(

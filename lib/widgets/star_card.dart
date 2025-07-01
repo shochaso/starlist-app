@@ -32,7 +32,7 @@ class StarCard extends StatelessWidget {
             // スター画像
             Expanded(
               child: ClipRRect(
-                borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
@@ -79,14 +79,14 @@ class StarCard extends StatelessWidget {
                       top: 8,
                       right: 8,
                       child: Container(
-                        padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
                           color: _getRankColor(star.rank),
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Text(
                           star.rank,
-                          style: TextStyle(
+                          style: const TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
                             fontSize: 12,
@@ -100,7 +100,7 @@ class StarCard extends StatelessWidget {
             ),
             // スター情報
             Padding(
-              padding: EdgeInsets.all(12),
+              padding: const EdgeInsets.all(12),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -114,7 +114,7 @@ class StarCard extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  SizedBox(height: 4),
+                  const SizedBox(height: 4),
                   Text(
                     star.platforms.isNotEmpty ? star.platforms.first : '',
                     style: TextStyle(
@@ -124,7 +124,7 @@ class StarCard extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  SizedBox(height: 4),
+                  const SizedBox(height: 4),
                   Row(
                     children: [
                       Icon(
@@ -132,7 +132,7 @@ class StarCard extends StatelessWidget {
                         size: 14,
                         color: secondaryTextColor,
                       ),
-                      SizedBox(width: 4),
+                      const SizedBox(width: 4),
                       Text(
                         _formatFollowers(star.followers),
                         style: TextStyle(

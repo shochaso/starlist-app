@@ -159,7 +159,7 @@ class NotificationService {
       
       // ローカル通知の初期化
       const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
-      final iOSSettings = DarwinInitializationSettings(
+      const iOSSettings = DarwinInitializationSettings(
         requestAlertPermission: true,
         requestBadgePermission: true,
         requestSoundPermission: true,
@@ -191,7 +191,7 @@ class NotificationService {
       // ローカル通知だけでも設定を試みる
       try {
         const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
-        final iOSSettings = DarwinInitializationSettings(
+        const iOSSettings = DarwinInitializationSettings(
           requestAlertPermission: true,
           requestBadgePermission: true,
           requestSoundPermission: true,

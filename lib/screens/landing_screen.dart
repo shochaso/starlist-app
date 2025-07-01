@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:starlist/theme/app_theme.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'login_screen.dart';
-import 'register_screen.dart';
 import 'star_registration_screen.dart';
 import 'package:google_fonts/google_fonts.dart';
 

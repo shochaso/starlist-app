@@ -182,7 +182,7 @@ class YouTubeVideoList extends StatelessWidget {
     } else if (count >= 1000) {
       return '${(count / 1000).toStringAsFixed(1)}K回';
     } else {
-      return '${count}回';
+      return '$count回';
     }
   }
 

@@ -725,22 +725,22 @@ class DataIntegrationConfig {
   
   // プラットフォーム別のタイムアウト設定
   final Map<String, Duration> platformTimeouts = {
-    'youtube': Duration(seconds: 45),
-    'spotify': Duration(seconds: 30),
-    'netflix': Duration(seconds: 60),
-    'linkedin': Duration(seconds: 20),
-    'twitter': Duration(seconds: 15),
-    'instagram': Duration(seconds: 25),
+    'youtube': const Duration(seconds: 45),
+    'spotify': const Duration(seconds: 30),
+    'netflix': const Duration(seconds: 60),
+    'linkedin': const Duration(seconds: 20),
+    'twitter': const Duration(seconds: 15),
+    'instagram': const Duration(seconds: 25),
   };
   
   // プラットフォーム別のキャッシュ期間設定
   final Map<String, Duration> platformCacheExpiry = {
-    'youtube': Duration(minutes: 30),
-    'spotify': Duration(minutes: 30),
-    'netflix': Duration(hours: 1),
-    'linkedin': Duration(days: 1),
-    'twitter': Duration(minutes: 15),
-    'instagram': Duration(hours: 2),
+    'youtube': const Duration(minutes: 30),
+    'spotify': const Duration(minutes: 30),
+    'netflix': const Duration(hours: 1),
+    'linkedin': const Duration(days: 1),
+    'twitter': const Duration(minutes: 15),
+    'instagram': const Duration(hours: 2),
   };
   
   // プラットフォームのタイムアウトを取得
@@ -750,7 +750,7 @@ class DataIntegrationConfig {
   
   // プラットフォームのキャッシュ期間を取得
   Duration getCacheExpiryForPlatform(String platform) {
-    return platformCacheExpiry[platform.toLowerCase()] ?? Duration(hours: 1);
+    return platformCacheExpiry[platform.toLowerCase()] ?? const Duration(hours: 1);
   }
 }
 

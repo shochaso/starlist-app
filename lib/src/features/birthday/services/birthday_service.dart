@@ -296,7 +296,7 @@ class BirthdayService {
     
     if (isMilestone) {
       rewards['s_points'] = age * 10; // マイルストーンの場合、年齢×10のSポイント
-      rewards['special_badge'] = 'milestone_${age}';
+      rewards['special_badge'] = 'milestone_$age';
       rewards['exclusive_content'] = true;
     } else {
       rewards['s_points'] = 50; // 通常の誕生日は50Sポイント

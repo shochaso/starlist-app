@@ -4,9 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart' hide Provider;
 
 import '../screens/home_screen.dart';
 import '../routes/app_routes.dart';
-
-// テーマモード設定のプロバイダー
-final themeProvider = StateProvider<ThemeMode>((ref) => ThemeMode.light);
+import 'providers/theme_provider_enhanced.dart';
 
 class StarlistApp extends ConsumerWidget {
   final SupabaseClient supabaseClient;
@@ -18,7 +16,8 @@ class StarlistApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final themeMode = ref.watch(themeProvider);
+    final themeState = ref.watch(themeProviderEnhanced);
+    final themeMode = themeState.isDarkMode ? ThemeMode.dark : ThemeMode.light;
     
     return MaterialApp(
       title: 'Starlist',
@@ -30,13 +29,11 @@ class StarlistApp extends ConsumerWidget {
           primary: Colors.black,
           secondary: Colors.grey.shade900,
           surface: Colors.white,
-          background: Colors.white,
           onPrimary: Colors.white,
           onSecondary: Colors.white,
           onSurface: Colors.black,
-          onBackground: Colors.black,
         ),
-        appBarTheme: AppBarTheme(
+        appBarTheme: const AppBarTheme(
           backgroundColor: Colors.white,
           foregroundColor: Colors.black,
           centerTitle: true,
@@ -75,7 +72,7 @@ class StarlistApp extends ConsumerWidget {
           unselectedItemColor: Colors.grey.shade600,
           type: BottomNavigationBarType.fixed,
         ),
-        textTheme: TextTheme(
+        textTheme: const TextTheme(
           displayLarge: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
           displayMedium: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
           displaySmall: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
@@ -96,11 +93,9 @@ class StarlistApp extends ConsumerWidget {
           primary: Colors.blue,
           secondary: Colors.blueAccent,
           surface: Colors.grey.shade900,
-          background: Colors.black,
           onPrimary: Colors.white,
           onSecondary: Colors.white,
           onSurface: Colors.white,
-          onBackground: Colors.white,
         ),
         appBarTheme: const AppBarTheme(
           backgroundColor: Colors.black,
@@ -141,15 +136,15 @@ class StarlistApp extends ConsumerWidget {
           type: BottomNavigationBarType.fixed,
         ),
         textTheme: TextTheme(
-          displayLarge: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-          displayMedium: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-          displaySmall: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-          headlineMedium: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-          headlineSmall: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-          titleLarge: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-          titleMedium: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-          titleSmall: TextStyle(color: Colors.white),
-          bodyLarge: TextStyle(color: Colors.white),
+          displayLarge: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          displayMedium: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          displaySmall: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          headlineMedium: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          headlineSmall: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          titleLarge: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          titleMedium: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          titleSmall: const TextStyle(color: Colors.white),
+          bodyLarge: const TextStyle(color: Colors.white),
           bodyMedium: TextStyle(color: Colors.grey.shade200),
           bodySmall: TextStyle(color: Colors.grey.shade400),
         ),
@@ -159,8 +154,7 @@ class StarlistApp extends ConsumerWidget {
       onGenerateRoute: AppRoutes.generateRoute,
       home: HomeScreen(
         onThemeToggle: () {
-          ref.read(themeProvider.notifier).state = 
-            themeMode == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
+          ref.read(themeProviderEnhanced.notifier).toggleLightDark();
         },
       ),
     );

@@ -343,9 +343,9 @@ class NetflixViewingHistory {
     final minutes = (watchDuration!.inMinutes % 60);
     
     if (hours > 0) {
-      return '${hours}時間${minutes}分';
+      return '$hours時間$minutes分';
     } else {
-      return '${minutes}分';
+      return '$minutes分';
     }
   }
 
@@ -449,11 +449,11 @@ class NetflixViewingStats {
     if (hours > 24) {
       final days = hours ~/ 24;
       final remainingHours = hours % 24;
-      return '${days}日${remainingHours}時間${minutes}分';
+      return '$days日$remainingHours時間$minutes分';
     } else if (hours > 0) {
-      return '${hours}時間${minutes}分';
+      return '$hours時間$minutes分';
     } else {
-      return '${minutes}分';
+      return '$minutes分';
     }
   }
 }

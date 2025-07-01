@@ -1,14 +1,9 @@
-import "package:flutter/foundation.dart";
-import "../models/content_model.dart";
-import "../services/content_service.dart";
 import 'package:flutter_riverpod/flutter_riverpod.dart' hide Provider;
 import 'package:flutter_riverpod/flutter_riverpod.dart' as riverpod;
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../config/providers.dart';
 import '../models/content_consumption_model.dart';
 import '../repositories/content_repository.dart';
-import '../../auth/providers/user_provider.dart';
 
 /// コンテンツリポジトリプロバイダ
 final contentRepositoryProvider = riverpod.Provider<ContentRepository>((ref) {

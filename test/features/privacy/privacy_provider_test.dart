@@ -78,7 +78,9 @@ void main() {
       blockedUsers: [],
     );
 
-    when(mockService.blockUser("user-id", "blocked-user-id")).thenAnswer((_) async {});
+    when(mockService.blockUser("user-id", "blocked-user-id")).thenAnswer((_) async {
+      return null;
+    });
 
     provider._settings = settings;
     await provider.blockUser("user-id", "blocked-user-id");
@@ -101,7 +103,9 @@ void main() {
       blockedUsers: ["blocked-user-id"],
     );
 
-    when(mockService.unblockUser("user-id", "blocked-user-id")).thenAnswer((_) async {});
+    when(mockService.unblockUser("user-id", "blocked-user-id")).thenAnswer((_) async {
+      return null;
+    });
 
     provider._settings = settings;
     await provider.unblockUser("user-id", "blocked-user-id");

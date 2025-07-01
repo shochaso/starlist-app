@@ -232,41 +232,41 @@ void main() {
         id: 'sub1',
         userId: 'user1',
         planType: SubscriptionPlanType.premium,
-        startDate: now.subtract(Duration(days: 30)),
-        endDate: now.add(Duration(days: 30)),
+        startDate: now.subtract(const Duration(days: 30)),
+        endDate: now.add(const Duration(days: 30)),
         isAutoRenew: true,
         price: 2980,
         status: SubscriptionStatus.active,
-        createdAt: now.subtract(Duration(days: 30)),
-        updatedAt: now.subtract(Duration(days: 30)),
+        createdAt: now.subtract(const Duration(days: 30)),
+        updatedAt: now.subtract(const Duration(days: 30)),
       );
 
       final expiredSubscription = Subscription(
         id: 'sub2',
         userId: 'user2',
         planType: SubscriptionPlanType.standard,
-        startDate: now.subtract(Duration(days: 60)),
-        endDate: now.subtract(Duration(days: 30)),
+        startDate: now.subtract(const Duration(days: 60)),
+        endDate: now.subtract(const Duration(days: 30)),
         isAutoRenew: false,
         price: 1980,
         status: SubscriptionStatus.expired,
-        createdAt: now.subtract(Duration(days: 60)),
-        updatedAt: now.subtract(Duration(days: 30)),
+        createdAt: now.subtract(const Duration(days: 60)),
+        updatedAt: now.subtract(const Duration(days: 30)),
       );
 
       final discountedSubscription = Subscription(
         id: 'sub3',
         userId: 'user3',
         planType: SubscriptionPlanType.premium,
-        startDate: now.subtract(Duration(days: 30)),
-        endDate: now.add(Duration(days: 335)),
+        startDate: now.subtract(const Duration(days: 30)),
+        endDate: now.add(const Duration(days: 335)),
         isAutoRenew: true,
         price: 2980,
         status: SubscriptionStatus.active,
         discountRate: 0.2,
         discountReason: '年間契約割引',
-        createdAt: now.subtract(Duration(days: 30)),
-        updatedAt: now.subtract(Duration(days: 30)),
+        createdAt: now.subtract(const Duration(days: 30)),
+        updatedAt: now.subtract(const Duration(days: 30)),
       );
 
       expect(activeSubscription.isActive(), isTrue);
@@ -498,7 +498,7 @@ void main() {
         userId: user.id, // ユーザーIDで関連付け
         planType: SubscriptionPlanType.premium,
         startDate: DateTime.now(),
-        endDate: DateTime.now().add(Duration(days: 30)),
+        endDate: DateTime.now().add(const Duration(days: 30)),
         isAutoRenew: true,
         price: 2980,
         status: SubscriptionStatus.active,

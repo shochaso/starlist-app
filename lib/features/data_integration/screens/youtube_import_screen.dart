@@ -3,9 +3,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
-import 'dart:typed_data';
 import '../../../src/core/components/service_icons.dart';
-import '../../../providers/theme_provider.dart';
+import '../../../src/providers/theme_provider_enhanced.dart';
+import '../../../src/services/youtube_ocr_parser_v6.dart';
+import '../../../providers/youtube_history_provider.dart';
 
 class YouTubeImportScreen extends ConsumerStatefulWidget {
   const YouTubeImportScreen({super.key});
@@ -23,7 +24,7 @@ class _YouTubeImportScreenState extends ConsumerState<YouTubeImportScreen>
   late Animation<double> _fadeAnimation;
   bool isProcessing = false;
   List<Map<String, dynamic>> processedVideos = [];
-  List<Map<String, dynamic>> extractedVideos = [];
+  final List<Map<String, dynamic>> extractedVideos = [];
   File? selectedImage;
   final ImagePicker _imagePicker = ImagePicker();
   bool showConfirmation = false;
@@ -91,8 +92,8 @@ class _YouTubeImportScreenState extends ConsumerState<YouTubeImportScreen>
 
   @override
   Widget build(BuildContext context) {
-    final themeMode = ref.watch(themeProvider);
-    final isDark = themeMode == AppThemeMode.dark;
+    final themeState = ref.watch(themeProviderEnhanced);
+    final isDark = themeState.isDarkMode;
 
     return Scaffold(
       backgroundColor: isDark ? const Color(0xFF1A1A1A) : const Color(0xFFF8FAFC),
@@ -166,8 +167,8 @@ class _YouTubeImportScreenState extends ConsumerState<YouTubeImportScreen>
   }
 
   Widget _buildImportTypeSelection() {
-    final themeMode = ref.watch(themeProvider);
-    final isDark = themeMode == AppThemeMode.dark;
+    final themeState = ref.watch(themeProviderEnhanced);
+    final isDark = themeState.isDarkMode;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -272,8 +273,8 @@ class _YouTubeImportScreenState extends ConsumerState<YouTubeImportScreen>
   }
 
   Widget _buildInputForm() {
-    final themeMode = ref.watch(themeProvider);
-    final isDark = themeMode == AppThemeMode.dark;
+    final themeState = ref.watch(themeProviderEnhanced);
+    final isDark = themeState.isDarkMode;
     final selectedType = importTypes.firstWhere((type) => type['id'] == selectedImportType);
 
     return Container(
@@ -568,8 +569,8 @@ class _YouTubeImportScreenState extends ConsumerState<YouTubeImportScreen>
   }
 
   Widget _buildProcessingResults() {
-    final themeMode = ref.watch(themeProvider);
-    final isDark = themeMode == AppThemeMode.dark;
+    final themeState = ref.watch(themeProviderEnhanced);
+    final isDark = themeState.isDarkMode;
 
     return Container(
       decoration: BoxDecoration(
@@ -630,6 +631,52 @@ class _YouTubeImportScreenState extends ConsumerState<YouTubeImportScreen>
                   ),
                 ),
               ],
+            ),
+            const SizedBox(height: 20),
+            
+            // データ確認の注意書き
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.blue.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.blue.withOpacity(0.3)),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Icon(
+                    Icons.info_outline,
+                    color: Colors.blue,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'データの確認をお願いします',
+                          style: TextStyle(
+                            color: isDark ? Colors.white : Colors.black87,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'OCRで読み取ったデータに誤りがないか、投稿前に必ずご確認ください。必要に応じて修正・削除を行ってください。',
+                          style: TextStyle(
+                            color: isDark ? Colors.grey[300] : Colors.black54,
+                            fontSize: 12,
+                            height: 1.3,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
             const SizedBox(height: 20),
             
@@ -797,15 +844,17 @@ class _YouTubeImportScreenState extends ConsumerState<YouTubeImportScreen>
     switch (selectedImportType) {
       case 'history':
         return '''例：
-動画タイトル: iPhone 15 Pro Max 詳細レビュー
-チャンネル: テックレビューアー田中
-視聴日: 2024/01/15
-視聴時間: 25:30
+題名：【暴飲暴食】ダイエット終わったからさすがに爆食チート DAY しても良いよね
+投稿者：午前0時のプリンセス【ぜろぷり】
 
-動画タイトル: Flutter 3.0 新機能解説
-チャンネル: プログラミング講師伊藤
-視聴日: 2024/01/14
-視聴時間: 32:15
+題名：【爆食】食欲の秋に高カロリーコンビニスイーツ大食いして血糖値爆上げさせたら
+投稿者；午前0時のプリンセス【ぜろぷり】
+
+加藤純一のマインクラフトダイジェスト 2025ハードコアソロ
+投稿者；加藤純ーロードショー
+
+題名：[2025/03/30] ZATUDANN
+投稿者：加藤純ーロードショー
 
 またはYouTubeの視聴履歴画面をOCRで読み取ったテキストをペーストしてください''';
       case 'channel':
@@ -856,15 +905,17 @@ class _YouTubeImportScreenState extends ConsumerState<YouTubeImportScreen>
       return;
     }
 
+    // OCR処理前の重要な注意事項を表示
+    final shouldProceed = await _showOCRWarningDialog();
+    if (!shouldProceed) return;
+
     setState(() {
       isProcessing = true;
     });
 
-    // シミュレートされた処理
-    await Future.delayed(const Duration(seconds: 2));
-
-    // 入力されたテキストを解析
-    final videos = _parseExtractedText(_textController.text);
+    try {
+      // 入力されたテキストを解析
+      final videos = await _parseExtractedText(_textController.text);
     
     if (videos.isEmpty) {
       setState(() {
@@ -881,11 +932,12 @@ class _YouTubeImportScreenState extends ConsumerState<YouTubeImportScreen>
 
     setState(() {
       isProcessing = false;
-      extractedVideos = videos.map((video) => {
+      extractedVideos.clear();
+      extractedVideos.addAll(videos.map((video) => {
         ...video,
         'isSelected': true, // デフォルトで選択状態
         'isPublic': false,  // デフォルトで非公開
-      }).toList();
+      }).toList());
       showConfirmation = true;
     });
 
@@ -896,6 +948,17 @@ class _YouTubeImportScreenState extends ConsumerState<YouTubeImportScreen>
         duration: const Duration(seconds: 4),
       ),
     );
+    } catch (e) {
+      setState(() {
+        isProcessing = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('データの解析に失敗しました: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   List<Map<String, dynamic>> _generateSampleData() {
@@ -975,52 +1038,92 @@ class _YouTubeImportScreenState extends ConsumerState<YouTubeImportScreen>
   Future<void> _processImageOCR() async {
     if (selectedImage == null) return;
 
+    // OCR処理前の重要な注意事項を表示
+    final shouldProceed = await _showOCRWarningDialog();
+    if (!shouldProceed) return;
+
     setState(() {
       isProcessing = true;
     });
 
     try {
-      // シミュレートされたOCR処理
-      await Future.delayed(const Duration(seconds: 3));
+      // 画像OCR処理は現在未実装のため、サンプルデータを使用
+      // TODO: Google Vision API またはその他のOCRサービスを統合
+      
+      // 実際の実装では画像からテキストを抽出してYouTubeOCRParser.parseOCRTextに渡す
+      // final imageBytes = await selectedImage!.readAsBytes();
+      // final extractedText = await someOCRService.extractText(imageBytes);
+      // final parsedVideos = YouTubeOCRParser.parseOCRText(extractedText);
+      
+      // 暫定的にサンプルテキストを使用
+      const sampleOCRText = '''
+①
+題名：【暴飲暴食】ダイエット終わったからさすがに爆食チート DAY しても良いよね
+投稿者；午前0時のプリンセス【ぜろぷり】
 
-      // 実際のYouTube履歴画面から抽出されるようなテキストをシミュレート
-      final extractedText = _textController.text.isNotEmpty 
-          ? _textController.text 
-          : '''【Flutter入門】初心者向け完全ガイド
-プログラミング講師 山田太郎
-3日前 • 45:30
+②
+題名【爆食】食欲の秋に高カロリーコンビニスイーツ大食いして血糖値爆上げさせたら
+投稿者：午前0時のプリンセス【ぜろぷり】
 
-iPhone 15 Pro Max 実機レビュー！カメラ性能が凄すぎる
-ガジェットレビューチャンネル
-1週間前 • 25:15
+③
+題名：加藤純一のマインクラフトダイジェスト 2025ハードコアソロ(2025/05/20)
+投稿者；加藤純ーロードショー
 
-【料理】10分で作る簡単パスタレシピ
-クッキングママ 田中花子  
-2日前 • 12:45
+④
+題名：加藤純一雑談ダイジェスト[2025/03/30) 
+投稿者：ZATUDANNI
 
-【音楽】作業用BGM - Lo-Fi Hip Hop Mix
-ChillMusic Official
-5日前 • 2:15:30
+⑤
+題名：加藤純ーロードショー
+投稿者；加藤純一雑談ダイジェスト[2025/05/21]
 
-プログラミング学習のコツ教えます
-コーディング先生 佐藤
-1日前 • 18:22''';
+⑥
+題名：加藤純ーロードショー
+投稿者；自律神経を整える習慣
 
-      // テキストエリアに抽出されたテキストを設定
-      _textController.text = extractedText;
+⑦
+題名：【528Hz+396Hz】心も体も楽になる
+投稿者；Relax TV・191万回視聴
 
-      // 抽出されたデータを解析してビデオ情報を生成
-      final videos = _parseExtractedText(extractedText);
+⑧
+題名：【クラロワ】勝率100%で天界に行ける新環境最強デッキ達を特別に教えます！
+投稿者；むぎ・4.7万回視聴
+''';
+      
+      // デバッグ用：サンプルテキストをコンソールに出力
+      print('Sample OCR Text:');
+      print(sampleOCRText);
+      print('---END OF SAMPLE TEXT---');
+      
+      final parsedVideos = YouTubeOCRParserV6.parseOCRText(sampleOCRText);
+      
+      // 抽出されたテキストをテキストエリアに設定（デバッグ用）
+      _textController.text = sampleOCRText;
+
+      // 抽出されたデータを既存の形式に変換
+      final videos = parsedVideos.map((video) => {
+        'title': video.title,
+        'channel': video.channel,
+        'duration': video.duration,
+        'watchDate': video.viewedAt,
+        'thumbnail': _generateThumbnailUrl(video.title),
+        'videoUrl': _generateVideoUrl(video.title),
+        'confidence': video.confidence,
+      }).toList();
       
       setState(() {
         isProcessing = false;
-        extractedVideos = videos.map((video) => {
+        extractedVideos.clear();
+        extractedVideos.addAll(videos.map((video) => {
           ...video,
           'isSelected': true, // デフォルトで選択状態
           'isPublic': false,  // デフォルトで非公開
-        }).toList();
+        }).toList());
         showConfirmation = true;
       });
+      
+      // YouTube履歴プロバイダーを更新
+      _updateYouTubeHistoryProviderFromVideoData(parsedVideos);
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -1043,7 +1146,161 @@ ChillMusic Official
     }
   }
 
-  List<Map<String, dynamic>> _parseExtractedText(String text) {
+  Future<List<Map<String, dynamic>>> _parseExtractedText(String text) async {
+    try {
+      final parsedVideos = YouTubeOCRParserV6.parseOCRText(text);
+      
+      // 抽出されたデータを既存の形式に変換
+      return parsedVideos.map((video) => {
+        'title': video.title,
+        'channel': video.channel ?? 'Unknown',
+        'duration': video.duration ?? '',
+        'watchDate': video.viewedAt ?? '',
+        'viewCount': video.viewCount ?? '',
+        'thumbnail': _generateThumbnailUrl(video.title),
+        'videoUrl': _generateVideoUrl(video.title),
+        'confidence': video.confidence,
+      }).toList();
+    } catch (e) {
+      return [];
+    }
+  }
+
+  List<Map<String, dynamic>> _parseExtractedTextFallback(String text) {
+    print('=== FALLBACK PARSER START ===');
+    print('Input text length: ${text.length}');
+    
+    final videos = <Map<String, dynamic>>[];
+    final lines = text.split('\n').map((line) => line.trim()).where((line) => line.isNotEmpty).toList();
+    
+    print('Processing ${lines.length} lines');
+    
+    // シンプルで確実な解析：実際のログパターンに基づく
+    for (int i = 0; i < lines.length; i++) {
+      final line = lines[i];
+      
+      // パターン1: 視聴回数行（「・」で区切られたチャンネル・視聴回数）
+      if (line.contains('・') && (line.contains('万回視聴') || line.contains('万 回視聴'))) {
+        print('Found channel-viewcount line: $line');
+        
+        final parts = line.split('・');
+        if (parts.length >= 2) {
+          final channel = parts[0].trim();
+          final viewCount = parts[1].trim();
+          
+          // タイトルを前の行から取得
+          String? title;
+          if (i > 0) {
+            title = lines[i - 1];
+            // タイトルが複数行に分かれている場合を考慮
+            if (i > 1 && !_isSystemText(lines[i - 2]) && lines[i - 2].length > 10) {
+              title = '${lines[i - 2]}$title';
+            }
+          }
+          
+          if (title != null && title.length > 5) {
+            videos.add({
+              'title': title,
+              'channel': channel,
+              'viewCount': viewCount,
+              'duration': '',
+              'watchDate': '',
+              'thumbnail': _generateThumbnailUrl(title),
+              'videoUrl': _generateVideoUrl(title),
+              'confidence': 0.95,
+            });
+            print('✓ Added video: "$title" by "$channel" ($viewCount)');
+          }
+        }
+      }
+      
+      // パターン2: 単独の視聴回数行（前の行がチャンネル名）
+      else if ((line.contains('万回視聴') || line.contains('万 回視聴') || line.endsWith('回視聴')) && !line.contains('・')) {
+        print('Found standalone viewcount line: $line');
+        
+        if (i > 0) {
+          final channel = lines[i - 1];
+          String? title;
+          
+          // タイトルを前々行から取得
+          if (i > 1) {
+            title = lines[i - 2];
+            // タイトルが複数行の場合
+            if (i > 2 && !_isSystemText(lines[i - 3]) && lines[i - 3].length > 10) {
+              title = '${lines[i - 3]}$title';
+            }
+          }
+          
+          if (title != null && title.length > 5 && !_isSystemText(channel)) {
+            videos.add({
+              'title': title,
+              'channel': channel,
+              'viewCount': line,
+              'duration': '',
+              'watchDate': '',
+              'thumbnail': _generateThumbnailUrl(title),
+              'videoUrl': _generateVideoUrl(title),
+              'confidence': 0.9,
+            });
+            print('✓ Added video: "$title" by "$channel" ($line)');
+          }
+        }
+      }
+    }
+    
+    print('=== FALLBACK PARSER END ===');
+    print('Extracted ${videos.length} videos');
+    
+    return videos;
+  }
+  
+  String _mergeTitleLines(String title1, String title2) {
+    // タイトル行を適切に結合
+    if (title1.endsWith('】') || title1.endsWith('！') || title1.endsWith('？')) {
+      return title1; // 完結している場合はそのまま
+    }
+    return '$title1$title2'; // 続きとして結合
+  }
+  
+  bool _isNumberedLine(String line) {
+    return line.startsWith('①') || line.startsWith('②') || line.startsWith('③') || 
+           line.startsWith('④') || line.startsWith('⑤') || line.startsWith('⑥') || 
+           line.startsWith('⑦') || line.startsWith('⑧') || line.startsWith('⑨') || 
+           line.startsWith('⑩');
+  }
+  
+  String? _extractTitleFromLine(String line) {
+    if (line.contains('題名：')) {
+      return line.split('題名：')[1].trim();
+    } else if (line.contains('題名【')) {
+      return line.split('題名')[1].trim();
+    }
+    return null;
+  }
+  
+  String? _extractChannelFromLine(String line) {
+    String channel = '';
+    if (line.contains('投稿者：')) {
+      channel = line.split('投稿者：')[1].trim();
+    } else if (line.contains('投稿者；')) {
+      channel = line.split('投稿者；')[1].trim();
+    }
+    
+    // 視聴回数部分を除去
+    if (channel.contains('・')) {
+      channel = channel.split('・')[0].trim();
+    }
+    
+    return channel.isNotEmpty ? channel : null;
+  }
+  
+  String? _extractViewCountFromLine(String line) {
+    final regex = RegExp(r'(\d+(?:\.\d+)?万回視聴|\d+回視聴)');
+    final match = regex.firstMatch(line);
+    return match?.group(1);
+  }
+
+  List<Map<String, dynamic>> _parseExtractedTextLegacy(String text) {
     final videos = <Map<String, dynamic>>[];
     final lines = text.split('\n');
     
@@ -1051,14 +1308,50 @@ ChillMusic Official
     String? currentChannel;
     String? currentDuration;
     String? currentWatchDate;
+    String? currentViews;
     
     for (int i = 0; i < lines.length; i++) {
       final line = lines[i].trim();
       if (line.isEmpty) continue;
       
-      // YouTube履歴の一般的なパターンを解析
-      // パターン1: 動画タイトル行
-      if (!line.contains('•') && !line.contains('前') && !line.contains('時間') && !line.contains(':')) {
+      // パターン1: 「万回視聴」「万 回視聴」を含む行は視聴回数
+      if (line.contains('万回視聴') || line.contains('万 回視聴')) {
+        currentViews = line;
+        
+        // 視聴回数の前の行がチャンネル名
+        if (i > 0 && currentTitle != null) {
+          currentChannel = lines[i - 1].trim();
+          
+          // ビデオ情報が揃ったら追加
+          if (currentChannel.isNotEmpty && !_isSystemText(currentChannel)) {
+            videos.add({
+              'title': currentTitle,
+              'channel': _cleanChannelName(currentChannel),
+              'viewCount': currentViews,
+              'duration': currentDuration ?? '',
+              'watchDate': currentWatchDate ?? '',
+              'thumbnail': _generateThumbnailUrl(currentTitle),
+              'videoUrl': _generateVideoUrl(currentTitle),
+              'confidence': 0.8,
+            });
+          }
+        }
+        
+        // リセット
+        currentTitle = null;
+        currentChannel = null;
+        currentViews = null;
+      }
+      // パターン2: 特殊文字を除外してタイトル候補を判定
+      else if (!_isSystemText(line) && 
+               line.length > 5 && 
+               currentTitle == null &&
+               !line.contains('•')) {
+        currentTitle = line;
+      }
+      // YouTube履歴の一般的なパターンを解析（フォールバック）
+      // パターン3: 動画タイトル行
+      else if (!line.contains('•') && !line.contains('前') && !line.contains('時間') && !line.contains(':') && currentViews == null) {
         // 前のビデオを保存
         if (currentTitle != null && currentChannel != null) {
           videos.add({
@@ -1068,6 +1361,7 @@ ChillMusic Official
             'watchDate': currentWatchDate ?? '',
             'thumbnail': _generateThumbnailUrl(currentTitle),
             'videoUrl': _generateVideoUrl(currentTitle),
+            'confidence': 0.7,
           });
         }
         
@@ -1076,11 +1370,11 @@ ChillMusic Official
         currentDuration = null;
         currentWatchDate = null;
       }
-      // パターン2: チャンネル名行
-      else if (currentTitle != null && currentChannel == null && !line.contains('•')) {
+      // パターン4: チャンネル名行
+      else if (currentTitle != null && currentChannel == null && !line.contains('•') && currentViews == null) {
         currentChannel = line;
       }
-      // パターン3: 時間情報行（"3日前 • 45:30"のような形式）
+      // パターン5: 時間情報行（"3日前 • 45:30"のような形式）
       else if (line.contains('•')) {
         final parts = line.split('•');
         if (parts.length >= 2) {
@@ -1088,7 +1382,7 @@ ChillMusic Official
           currentDuration = parts[1].trim();
         }
       }
-      // パターン4: 旧形式のサポート（動画タイトル:, チャンネル:）
+      // パターン6: 旧形式のサポート（動画タイトル:, チャンネル:）
       else if (line.startsWith('動画タイトル:')) {
         if (currentTitle != null && currentChannel != null) {
           videos.add({
@@ -1098,6 +1392,7 @@ ChillMusic Official
             'watchDate': currentWatchDate ?? '',
             'thumbnail': _generateThumbnailUrl(currentTitle),
             'videoUrl': _generateVideoUrl(currentTitle),
+            'confidence': 0.7,
           });
         }
         currentTitle = line.substring('動画タイトル:'.length).trim();
@@ -1122,10 +1417,22 @@ ChillMusic Official
         'watchDate': currentWatchDate ?? '',
         'thumbnail': _generateThumbnailUrl(currentTitle),
         'videoUrl': _generateVideoUrl(currentTitle),
+        'confidence': 0.7,
       });
     }
     
     return videos;
+  }
+  
+  String _cleanChannelName(String channel) {
+    // チャンネル名から余分な記号を除去
+    return channel
+        .replaceAll('・', '')
+        .replaceAll('「', '')
+        .replaceAll('」', '')
+        .replaceAll('【', '')
+        .replaceAll('】', '')
+        .trim();
   }
 
   String _generateThumbnailUrl(String title) {
@@ -1141,8 +1448,8 @@ ChillMusic Official
   }
 
   void _showVideoDetails(Map<String, dynamic> video) {
-    final themeMode = ref.read(themeProvider);
-    final isDark = themeMode == AppThemeMode.dark;
+    final themeState = ref.read(themeProviderEnhanced);
+    final isDark = themeState.isDarkMode;
 
     showDialog(
       context: context,
@@ -1303,8 +1610,8 @@ ChillMusic Official
   }
 
   Widget _buildConfirmationScreen() {
-    final themeMode = ref.watch(themeProvider);
-    final isDark = themeMode == AppThemeMode.dark;
+    final themeState = ref.watch(themeProviderEnhanced);
+    final isDark = themeState.isDarkMode;
 
     return Container(
       decoration: BoxDecoration(
@@ -1541,14 +1848,36 @@ ChillMusic Official
                                 ),
                                 if (video['watchDate'] != null && video['watchDate'].isNotEmpty) ...[
                                   const SizedBox(height: 2),
-                                  Text(
-                                    video['watchDate'],
-                                    style: TextStyle(
-                                      color: isSelected 
-                                          ? (isDark ? Colors.grey[500] : Colors.black38)
-                                          : (isDark ? Colors.grey[600] : Colors.black26),
-                                      fontSize: 10,
-                                    ),
+                                  Row(
+                                    children: [
+                                      Text(
+                                        video['watchDate'],
+                                        style: TextStyle(
+                                          color: isSelected 
+                                              ? (isDark ? Colors.grey[500] : Colors.black38)
+                                              : (isDark ? Colors.grey[600] : Colors.black26),
+                                          fontSize: 10,
+                                        ),
+                                      ),
+                                      if (video['confidence'] != null) ...[
+                                        const SizedBox(width: 8),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                                          decoration: BoxDecoration(
+                                            color: _getConfidenceColor(video['confidence']),
+                                            borderRadius: BorderRadius.circular(6),
+                                          ),
+                                          child: Text(
+                                            '${(video['confidence'] * 100).toInt()}%',
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 8,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ],
                                   ),
                                 ],
                               ],
@@ -1673,6 +2002,9 @@ ChillMusic Official
       showConfirmation = false;
       extractedVideos.clear();
     });
+    
+    // YouTube履歴プロバイダーを更新
+    _updateYouTubeHistoryProvider(selectedVideos);
 
     final publicCount = selectedVideos.where((v) => v['isPublic'] == true).length;
     final privateCount = selectedVideos.length - publicCount;
@@ -1684,5 +2016,182 @@ ChillMusic Official
         duration: const Duration(seconds: 4),
       ),
     );
+  }
+
+  Color _getConfidenceColor(double confidence) {
+    if (confidence >= 0.8) return Colors.green;
+    if (confidence >= 0.6) return Colors.orange;
+    return Colors.red;
+  }
+  
+  bool _isSystemText(String text) {
+    // システムテキストや不要な行を除外
+    final systemPatterns = [
+      '登録チャンネル',
+      'マイページ',
+      '：',
+      '+',
+      '？',
+    ];
+    
+    return systemPatterns.any((pattern) => text == pattern);
+  }
+  
+  // YouTube履歴プロバイダーを更新（Map形式から）
+  void _updateYouTubeHistoryProvider(List<Map<String, dynamic>> videos) {
+    final historyItems = videos.map((video) => YouTubeHistoryItem(
+      title: video['title'] ?? '',
+      channel: video['channel'] ?? '',
+      duration: video['duration'],
+      uploadTime: video['watchDate'],
+      viewCount: video['viewCount'],
+      addedAt: DateTime.now(),
+    )).toList();
+    
+    ref.read(youtubeHistoryProvider.notifier).addHistory(historyItems);
+  }
+  
+  // YouTube履歴プロバイダーを更新（VideoData形式から）
+  void _updateYouTubeHistoryProviderFromVideoData(List<VideoData> videos) {
+    final historyItems = videos.map((video) => YouTubeHistoryItem(
+      title: video.title,
+      channel: video.channel ?? '',
+      duration: video.duration,
+      uploadTime: video.viewedAt,
+      viewCount: video.viewCount,
+      addedAt: DateTime.now(),
+    )).toList();
+    
+    ref.read(youtubeHistoryProvider.notifier).addHistory(historyItems);
+  }
+  
+  // OCR処理前の重要な注意事項を表示
+  Future<bool> _showOCRWarningDialog() async {
+    final themeState = ref.read(themeProviderEnhanced);
+    final isDark = themeState.isDarkMode;
+    
+    return await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: isDark ? const Color(0xFF2A2A2A) : Colors.white,
+          title: Row(
+            children: [
+              const Icon(
+                Icons.warning_amber,
+                color: Colors.orange,
+                size: 24,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                '重要な注意事項',
+                style: TextStyle(
+                  color: isDark ? Colors.white : Colors.black87,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.orange.withOpacity(0.3)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'OCR機能について',
+                        style: TextStyle(
+                          color: isDark ? Colors.white : Colors.black87,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'OCR（光学文字認識）は技術の性質上、読み取りエラーが発生する可能性があります。',
+                        style: TextStyle(
+                          color: isDark ? Colors.grey[300] : Colors.black54,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.red.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.red.withOpacity(0.3)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        '免責事項',
+                        style: TextStyle(
+                          color: Colors.red,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        '• 取り込んだデータは必ずご自身で内容を確認してください。\n• データの修正・削除は投稿前に行ってください。\n• 誤った選択により動画が公開された場合、当サービスでは責任を負いかねます。',
+                        style: TextStyle(
+                          color: isDark ? Colors.grey[300] : Colors.black54,
+                          fontSize: 14,
+                          height: 1.4,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  '上記の内容を理解し、データの確認を行うことに同意いただける場合のみ、続行してください。',
+                  style: TextStyle(
+                    color: isDark ? Colors.grey[400] : Colors.black54,
+                    fontSize: 13,
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text(
+                'キャンセル',
+                style: TextStyle(
+                  color: isDark ? Colors.grey[400] : Colors.black54,
+                ),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.orange,
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('理解して続行'),
+            ),
+          ],
+        );
+      },
+    ) ?? false;
   }
 } 

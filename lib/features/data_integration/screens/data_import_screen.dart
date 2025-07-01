@@ -1,13 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../src/core/components/service_icons.dart';
-import '../../../providers/theme_provider.dart';
+import '../../../src/providers/theme_provider_enhanced.dart';
+import '../../../providers/user_provider.dart';
+import '../../star/screens/star_dashboard_screen.dart';
+import '../../subscription/screens/plan_management_screen.dart';
+import '../../app/screens/settings_screen.dart';
 import 'youtube_import_screen.dart';
+import 'music_import_screen.dart';
+import 'shopping_import_screen.dart';
+import 'receipt_import_screen.dart';
+import 'app_usage_import_screen.dart';
 
 class DataImportScreen extends ConsumerStatefulWidget {
-  const DataImportScreen({super.key});
+  final bool showAppBar;
+  
+  const DataImportScreen({super.key, this.showAppBar = true});
 
   @override
   ConsumerState<DataImportScreen> createState() => _DataImportScreenState();
@@ -15,12 +24,12 @@ class DataImportScreen extends ConsumerStatefulWidget {
 
 class _DataImportScreenState extends ConsumerState<DataImportScreen>
     with TickerProviderStateMixin {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   String? selectedCategory;
   final TextEditingController _textController = TextEditingController();
   late AnimationController _animationController;
   late AnimationController _floatingAnimationController;
   late Animation<double> _fadeAnimation;
-  late Animation<double> _floatingAnimation;
   bool isProcessing = false;
   bool showProcessingResults = false;
   List<Map<String, dynamic>> processedVideos = [];
@@ -125,6 +134,30 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
       'placeholder': '例：\n店舗名: スターバックス\nメニュー: ドリップコーヒー\n価格: 350円\n日付: 2024/01/15\n\nまたはメニューや注文履歴をOCRで読み取ったテキストをペーストしてください',
     },
     {
+      'id': 'other_sns',
+      'title': 'その他SNS',
+      'subtitle': 'X・Instagram等',
+      'icon': Icons.share,
+      'description': 'X(Twitter)、Instagram、TikTok等のSNSデータを記録',
+      'placeholder': '例：\n投稿内容: 今日のランチ\nプラットフォーム: Instagram\nいいね数: 25\n投稿日: 2024/01/15\n\nまたはSNSの投稿履歴をOCRで読み取ったテキストをペーストしてください',
+    },
+    {
+      'id': 'other_video',
+      'title': 'その他動画',
+      'subtitle': 'Twitch・Vimeo等',
+      'icon': Icons.play_circle,
+      'description': 'Twitch、Vimeo、ニコニコ動画等の視聴履歴を記録',
+      'placeholder': '例：\n動画タイトル: ゲーム実況配信\nプラットフォーム: Twitch\n配信者: StreamerABC\n視聴時間: 2時間\n視聴日: 2024/01/15\n\nまたは動画プラットフォームの視聴履歴をOCRで読み取ったテキストをペーストしてください',
+    },
+    {
+      'id': 'other_shopping',
+      'title': 'その他Shopping',
+      'subtitle': '楽天・Yahoo等',
+      'icon': Icons.shopping_cart,
+      'description': '楽天、Yahoo!ショッピング、メルカリ等での購入履歴を記録',
+      'placeholder': '例：\n商品名: ワイヤレスイヤホン\nショップ: 楽天市場\n価格: 8,980円\n購入日: 2024/01/15\n\nまたはショッピングサイトの購入履歴をOCRで読み取ったテキストをペーストしてください',
+    },
+    {
       'id': 'other',
       'title': 'その他',
       'subtitle': '自由入力',
@@ -154,13 +187,6 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
       curve: Curves.easeInOut,
     ));
     
-    _floatingAnimation = Tween<double>(
-      begin: -5.0,
-      end: 5.0,
-    ).animate(CurvedAnimation(
-      parent: _floatingAnimationController,
-      curve: Curves.easeInOut,
-    ));
   }
 
   @override
@@ -171,12 +197,6 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
     super.dispose();
   }
 
-  void _selectCategory(String categoryId) {
-    setState(() {
-      selectedCategory = categoryId;
-    });
-    _animationController.forward();
-  }
 
   void _clearSelection() {
     _animationController.reverse().then((_) {
@@ -191,21 +211,59 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
 
   @override
   Widget build(BuildContext context) {
-    final themeMode = ref.watch(themeProvider);
-    final isDark = themeMode == AppThemeMode.dark;
+    final themeState = ref.watch(themeProviderEnhanced);
+    final isDark = themeState.isDarkMode;
     
-    return Scaffold(
-      backgroundColor: isDark 
-          ? const Color(0xFF0A0A0B) 
-          : const Color(0xFFFBFBFD),
-      body: SafeArea(
-        child: selectedCategory == null
-            ? _buildMainDashboard()
-            : showProcessingResults
-                ? _buildProcessingResults()
-                : _buildCategoryInputScreen(),
-      ),
-    );
+    if (widget.showAppBar) {
+      // Standalone mode with AppBar (when navigated to directly)
+      return Scaffold(
+        key: _scaffoldKey,
+        backgroundColor: isDark 
+            ? const Color(0xFF0A0A0B) 
+            : const Color(0xFFFBFBFD),
+        appBar: AppBar(
+          backgroundColor: isDark ? const Color(0xFF0A0A0B) : const Color(0xFFFBFBFD),
+          elevation: 0,
+          leading: IconButton(
+            icon: Icon(
+              Icons.menu,
+              color: isDark ? Colors.white : Colors.black87,
+            ),
+            onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+          ),
+          title: Text(
+            'データ取り込み',
+            style: TextStyle(
+              color: isDark ? Colors.white : Colors.black87,
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+        drawer: _buildDrawer(),
+        body: SafeArea(
+          child: selectedCategory == null
+              ? _buildMainDashboard()
+              : showProcessingResults
+                  ? _buildProcessingResults()
+                  : _buildCategoryInputScreen(),
+        ),
+      );
+    } else {
+      // Tab mode without AppBar (when used in StarlistMainScreen)
+      return Container(
+        color: isDark 
+            ? const Color(0xFF0A0A0B) 
+            : const Color(0xFFFBFBFD),
+        child: SafeArea(
+          child: selectedCategory == null
+              ? _buildMainDashboard()
+              : showProcessingResults
+                  ? _buildProcessingResults()
+                  : _buildCategoryInputScreen(),
+        ),
+      );
+    }
   }
 
   Widget _buildMainDashboard() {
@@ -234,8 +292,8 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
   }
 
   Widget _buildOCRMainSection() {
-    final themeMode = ref.watch(themeProvider);
-    final isDark = themeMode == AppThemeMode.dark;
+    final themeState = ref.watch(themeProviderEnhanced);
+    final isDark = themeState.isDarkMode;
     
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -470,17 +528,24 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
   }
 
   Widget _buildMainServicesSection() {
-    final themeMode = ref.watch(themeProvider);
-    final isDark = themeMode == AppThemeMode.dark;
+    final themeState = ref.watch(themeProviderEnhanced);
+    final isDark = themeState.isDarkMode;
     
     // メインサービス6種類
     final mainServices = [
       {'id': 'youtube', 'name': 'YouTube', 'description': '動画・チャンネル情報'},
       {'id': 'spotify', 'name': 'Spotify', 'description': '音楽・プレイリスト'},
       {'id': 'netflix', 'name': 'Netflix', 'description': '映画・ドラマ'},
+      {'id': 'receipt', 'name': 'レシート', 'description': '食事・購入記録'},
+      {'id': 'app_usage', 'name': 'アプリ', 'description': 'スクリーンタイム'},
       {'id': 'amazon', 'name': 'Amazon', 'description': '商品・購入履歴'},
-      {'id': 'instagram', 'name': 'Instagram', 'description': '投稿・ストーリー'},
-      {'id': 'tiktok', 'name': 'TikTok', 'description': '動画・トレンド'},
+    ];
+    
+    // その他カテゴリー3種類
+    final otherServices = [
+      {'id': 'other_sns', 'name': 'その他SNS', 'description': 'X・Instagram等'},
+      {'id': 'other_video', 'name': 'その他動画', 'description': 'Twitch・Vimeo等'},
+      {'id': 'other_shopping', 'name': 'その他Shopping', 'description': '楽天・Yahoo等'},
     ];
     
     return Column(
@@ -524,13 +589,182 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
             return _buildServiceCard(service);
           },
         ),
+        
+        const SizedBox(height: 24),
+        
+        // その他カテゴリーセクション
+        Text(
+          'その他のサービス',
+          style: TextStyle(
+            color: isDark ? Colors.white70 : Colors.black54,
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 12),
+        
+        // その他サービス - 横並び特別レイアウト
+        SizedBox(
+          height: 80,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: otherServices.length,
+            itemBuilder: (context, index) {
+              final service = otherServices[index];
+              return Container(
+                width: 120,
+                margin: EdgeInsets.only(right: index < otherServices.length - 1 ? 12 : 0),
+                child: _buildOtherServiceCard(service),
+              );
+            },
+          ),
+        ),
       ],
     );
   }
 
+  Widget _buildOtherServiceCard(Map<String, dynamic> service) {
+    final themeState = ref.watch(themeProviderEnhanced);
+    final isDark = themeState.isDarkMode;
+    
+    return GestureDetector(
+      onTap: () => _selectServiceForOCR(service['id']),
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: isDark 
+                ? [
+                    const Color(0xFF2A2A2A),
+                    const Color(0xFF1F1F1F),
+                  ]
+                : [
+                    Colors.white,
+                    const Color(0xFFF8F9FA),
+                  ],
+          ),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isDark 
+                ? const Color(0xFF404040) 
+                : const Color(0xFFE1E5E9),
+            width: 1,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: isDark 
+                  ? Colors.black.withValues(alpha: 0.3) 
+                  : const Color(0xFF64748B).withValues(alpha: 0.1),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  gradient: _getOtherServiceGradient(service['id']),
+                  borderRadius: BorderRadius.circular(8),
+                  boxShadow: [
+                    BoxShadow(
+                      color: _getOtherServiceColor(service['id']).withValues(alpha: 0.3),
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Icon(
+                  _getOtherServiceIcon(service['id']),
+                  color: Colors.white,
+                  size: 16,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                service['name'],
+                style: TextStyle(
+                  color: isDark ? Colors.white : Colors.black87,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
+                ),
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              Text(
+                service['description'],
+                style: TextStyle(
+                  color: isDark ? Colors.grey[400] : Colors.black54,
+                  fontSize: 8,
+                ),
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  LinearGradient _getOtherServiceGradient(String serviceId) {
+    switch (serviceId) {
+      case 'other_sns':
+        return const LinearGradient(
+          colors: [Color(0xFF8B5CF6), Color(0xFFA855F7)],
+        );
+      case 'other_video':
+        return const LinearGradient(
+          colors: [Color(0xFFEF4444), Color(0xFFF87171)],
+        );
+      case 'other_shopping':
+        return const LinearGradient(
+          colors: [Color(0xFF059669), Color(0xFF10B981)],
+        );
+      default:
+        return const LinearGradient(
+          colors: [Color(0xFF6B7280), Color(0xFF9CA3AF)],
+        );
+    }
+  }
+
+  Color _getOtherServiceColor(String serviceId) {
+    switch (serviceId) {
+      case 'other_sns':
+        return const Color(0xFF8B5CF6);
+      case 'other_video':
+        return const Color(0xFFEF4444);
+      case 'other_shopping':
+        return const Color(0xFF059669);
+      default:
+        return const Color(0xFF6B7280);
+    }
+  }
+
+  IconData _getOtherServiceIcon(String serviceId) {
+    switch (serviceId) {
+      case 'other_sns':
+        return Icons.share;
+      case 'other_video':
+        return Icons.play_circle;
+      case 'other_shopping':
+        return Icons.shopping_cart;
+      default:
+        return Icons.category;
+    }
+  }
+
   Widget _buildServiceCard(Map<String, dynamic> service) {
-    final themeMode = ref.watch(themeProvider);
-    final isDark = themeMode == AppThemeMode.dark;
+    final themeState = ref.watch(themeProviderEnhanced);
+    final isDark = themeState.isDarkMode;
     
     return GestureDetector(
       onTap: () => _selectServiceForOCR(service['id']),
@@ -578,7 +812,7 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: [
                     BoxShadow(
-                      color: ServiceIcons.getService(service['id']!)?.color.withOpacity(0.2) ?? const Color(0xFF4ECDC4).withOpacity(0.2),
+                      color: ServiceIcons.getService(service['id']!)?.color.withValues(alpha: 0.2) ?? const Color(0xFF4ECDC4).withValues(alpha: 0.2),
                       blurRadius: 6,
                       offset: const Offset(0, 2),
                     ),
@@ -641,7 +875,7 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: const Color(0xFF4ECDC4).withOpacity(0.2),
+                color: const Color(0xFF4ECDC4).withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
@@ -789,19 +1023,69 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
   }
 
   void _selectServiceForOCR(String serviceId) {
-    if (serviceId == 'youtube') {
-      // YouTube専用画面に遷移
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => const YouTubeImportScreen(),
-        ),
-      );
-    } else {
-      setState(() {
-        selectedCategory = serviceId;
-        showProcessingResults = false;
-      });
+    // 各サービス専用画面に遷移
+    switch (serviceId) {
+      case 'youtube':
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const YouTubeImportScreen(),
+          ),
+        );
+        break;
+      case 'spotify':
+      case 'netflix':
+        // 音楽・動画系は音楽取り込み画面へ
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const MusicImportScreen(),
+          ),
+        );
+        break;
+      case 'amazon':
+      case 'rakuten':
+      case 'yahoo':
+        // ショッピング系はショッピング取り込み画面へ
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const ShoppingImportScreen(),
+          ),
+        );
+        break;
+      case 'receipt':
+        // レシート取り込み画面へ
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const ReceiptImportScreen(),
+          ),
+        );
+        break;
+      case 'app_usage':
+        // アプリ使用履歴取り込み画面へ
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const AppUsageImportScreen(),
+          ),
+        );
+        break;
+      case 'instagram':
+      case 'tiktok':
+      case 'other_sns':
+      case 'other_video':
+      case 'other_shopping':
+      case 'other':
+      default:
+        // その他のカテゴリは汎用入力画面を表示
+        setState(() {
+          selectedCategory = serviceId;
+          showProcessingResults = false;
+        });
+        _animationController.forward();
+        break;
     }
   }
 
@@ -855,8 +1139,8 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
   }
 
   Widget _buildDataSourcesSection() {
-    final themeMode = ref.watch(themeProvider);
-    final isDark = themeMode == AppThemeMode.dark;
+    final themeState = ref.watch(themeProviderEnhanced);
+    final isDark = themeState.isDarkMode;
     
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -908,8 +1192,8 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
   }
 
   Widget _buildImportHistorySection() {
-    final themeMode = ref.watch(themeProvider);
-    final isDark = themeMode == AppThemeMode.dark;
+    final themeState = ref.watch(themeProviderEnhanced);
+    final isDark = themeState.isDarkMode;
     
     final history = [
       {
@@ -917,18 +1201,21 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
         'count': 5,
         'time': '2時間前',
         'status': 'success',
+        'isPublic': true,
       },
       {
         'type': 'Spotify',
         'count': 12,
         'time': '5時間前',
         'status': 'success',
+        'isPublic': false,
       },
       {
         'type': 'レシート',
         'count': 1,
         'time': '1日前',
         'status': 'processing',
+        'isPublic': false,
       },
     ];
 
@@ -958,7 +1245,7 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: _getStatusColor(item['status'] as String).withOpacity(0.2),
+                  color: _getStatusColor(item['status'] as String).withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Icon(
@@ -990,21 +1277,7 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
                   ],
                 ),
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: _getStatusColor(item['status'] as String).withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  _getStatusText(item['status'] as String),
-                  style: TextStyle(
-                    color: _getStatusColor(item['status'] as String),
-                    fontSize: 10,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
+              _buildPublicationToggle(item),
             ],
           ),
         )).toList(),
@@ -1050,6 +1323,78 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
         return '不明';
     }
   }
+  
+  Widget _buildPublicationToggle(Map<String, dynamic> item) {
+    final themeState = ref.watch(themeProviderEnhanced);
+    final isDark = themeState.isDarkMode;
+    final isPublic = item['isPublic'] as bool;
+    
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          item['isPublic'] = !isPublic;
+        });
+        
+        // フィードバック
+        HapticFeedback.lightImpact();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              '${item['type']}データが${!isPublic ? "公開" : "非公開"}に設定されました',
+            ),
+            backgroundColor: const Color(0xFF4ECDC4),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: isPublic 
+              ? const Color(0xFF10B981).withOpacity(0.2)
+              : isDark 
+                  ? const Color(0xFF374151).withOpacity(0.3)
+                  : const Color(0xFF9CA3AF).withOpacity(0.2),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isPublic 
+                ? const Color(0xFF10B981)
+                : isDark 
+                    ? const Color(0xFF6B7280)
+                    : const Color(0xFF9CA3AF),
+            width: 1,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              isPublic ? Icons.public : Icons.lock,
+              color: isPublic 
+                  ? const Color(0xFF10B981)
+                  : isDark 
+                      ? const Color(0xFF9CA3AF)
+                      : const Color(0xFF6B7280),
+              size: 14,
+            ),
+            const SizedBox(width: 4),
+            Text(
+              isPublic ? '公開中' : '非公開',
+              style: TextStyle(
+                color: isPublic 
+                    ? const Color(0xFF10B981)
+                    : isDark 
+                        ? const Color(0xFF9CA3AF)
+                        : const Color(0xFF6B7280),
+                fontSize: 10,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
   void _connectService(String serviceId) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -1071,8 +1416,8 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
   }
 
   Widget _buildCategoryInputScreen() {
-    final themeMode = ref.watch(themeProvider);
-    final isDark = themeMode == AppThemeMode.dark;
+    final themeState = ref.watch(themeProviderEnhanced);
+    final isDark = themeState.isDarkMode;
     
     final category = dataCategories.firstWhere(
       (cat) => cat['id'] == selectedCategory,
@@ -1098,7 +1443,7 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
                       borderRadius: BorderRadius.circular(14),
                       boxShadow: [
                         BoxShadow(
-                          color: (isDark ? Colors.black : Colors.black).withOpacity(0.2),
+                          color: (isDark ? Colors.black : Colors.black).withValues(alpha: 0.2),
                           blurRadius: 8,
                           offset: const Offset(0, 4),
                         ),
@@ -1120,7 +1465,7 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFF4ECDC4).withOpacity(0.4),
+                        color: const Color(0xFF4ECDC4).withValues(alpha: 0.4),
                         blurRadius: 15,
                         offset: const Offset(0, 8),
                       ),
@@ -1173,17 +1518,17 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    const Color(0xFF4ECDC4).withOpacity(0.15),
-                    const Color(0xFF44A08D).withOpacity(0.15),
+                    const Color(0xFF4ECDC4).withValues(alpha: 0.15),
+                    const Color(0xFF44A08D).withValues(alpha: 0.15),
                   ],
                 ),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: const Color(0xFF4ECDC4).withOpacity(0.3),
+                  color: const Color(0xFF4ECDC4).withValues(alpha: 0.3),
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF4ECDC4).withOpacity(0.1),
+                    color: const Color(0xFF4ECDC4).withValues(alpha: 0.1),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
                   ),
@@ -1194,7 +1539,7 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF4ECDC4).withOpacity(0.2),
+                      color: const Color(0xFF4ECDC4).withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: const Icon(
@@ -1244,7 +1589,7 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: (isDark ? Colors.black : Colors.black).withOpacity(0.2),
+                    color: (isDark ? Colors.black : Colors.black).withValues(alpha: 0.2),
                     blurRadius: 15,
                     offset: const Offset(0, 8),
                   ),
@@ -1282,7 +1627,7 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
-                          color: (isDark ? Colors.grey[700]! : Colors.grey[300]!).withOpacity(0.3),
+                          color: (isDark ? Colors.grey[700]! : Colors.grey[300]!).withValues(alpha: 0.3),
                           blurRadius: 10,
                           offset: const Offset(0, 4),
                         ),
@@ -1332,7 +1677,7 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF4ECDC4).withOpacity(0.4),
+                          color: const Color(0xFF4ECDC4).withValues(alpha: 0.4),
                           blurRadius: 15,
                           offset: const Offset(0, 8),
                         ),
@@ -1411,18 +1756,200 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
     });
 
     // 成功メッセージ
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('データが正常に取り込まれました！'),
-        backgroundColor: Colors.green,
-        action: SnackBarAction(
-          label: '確認',
-          textColor: Colors.white,
-          onPressed: () {},
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('データが正常に取り込まれました！'),
+          backgroundColor: Colors.green,
+          action: SnackBarAction(
+            label: '確認',
+            textColor: Colors.white,
+            onPressed: () {},
+          ),
         ),
-      ),
-    );
+      );
+    }
 
     _clearSelection();
   }
+
+  Widget _buildDrawer() {
+    final currentUser = ref.watch(currentUserProvider);
+    final themeState = ref.watch(themeProviderEnhanced);
+    final isDark = themeState.isDarkMode;
+    
+    return Drawer(
+      backgroundColor: isDark ? const Color(0xFF1A1A1A) : Colors.white,
+      child: Column(
+        children: [
+          SafeArea(
+            child: Container(
+              margin: const EdgeInsets.only(top: 8),
+              padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  const Color(0xFF4ECDC4),
+                  const Color(0xFF44A08D),
+                ],
+              ),
+              borderRadius: const BorderRadius.only(
+                bottomLeft: Radius.circular(20),
+                bottomRight: Radius.circular(20),
+              ),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(
+                    Icons.star,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text(
+                        'Starlist',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                          letterSpacing: -0.3,
+                        ),
+                      ),
+                      Text(
+                        currentUser.isStar ? 'スター' : 'ファン',
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.close, color: Colors.white70, size: 20),
+                  onPressed: () => Navigator.of(context).pop(),
+                  constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                  padding: EdgeInsets.zero,
+                ),
+              ],
+            ),
+            ),
+          ),
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              children: [
+                _buildDrawerItem(Icons.home, 'ホーム', false, () {
+                  Navigator.of(context).popUntil((route) => route.isFirst);
+                }),
+                _buildDrawerItem(Icons.search, '検索', false, () {
+                  Navigator.of(context).popUntil((route) => route.isFirst);
+                }),
+                _buildDrawerItem(Icons.star, 'マイリスト', false, () {
+                  Navigator.of(context).popUntil((route) => route.isFirst);
+                }),
+                // スターのみ表示
+                if (currentUser.isStar) ...[
+                  _buildDrawerItem(Icons.camera_alt, 'データ取込み', true, () {
+                    Navigator.pop(context);
+                  }),
+                  _buildDrawerItem(Icons.analytics, 'スターダッシュボード', false, () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const StarDashboardScreen()),
+                    );
+                  }),
+                  _buildDrawerItem(Icons.workspace_premium, 'プランを管理', false, () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const PlanManagementScreen()),
+                    );
+                  }),
+                ],
+                _buildDrawerItem(Icons.person, 'マイページ', false, () {
+                  Navigator.of(context).popUntil((route) => route.isFirst);
+                }),
+                _buildDrawerItem(Icons.settings, '設定', false, () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const SettingsScreen()),
+                  );
+                }),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDrawerItem(IconData icon, String title, bool isActive, VoidCallback onTap) {
+    final themeState = ref.watch(themeProviderEnhanced);
+    final isDark = themeState.isDarkMode;
+    
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 3),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        color: isActive ? const Color(0xFF4ECDC4).withValues(alpha: 0.15) : null,
+        border: isActive ? Border.all(
+          color: const Color(0xFF4ECDC4).withValues(alpha: 0.3),
+          width: 1,
+        ) : null,
+      ),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        leading: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: isActive 
+              ? const Color(0xFF4ECDC4)
+              : (isDark ? Colors.white10 : Colors.grey.shade100),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(
+            icon,
+            color: isActive 
+              ? Colors.white
+              : (isDark ? Colors.white54 : Colors.grey.shade600),
+            size: 18,
+          ),
+        ),
+        title: Text(
+          title,
+          style: TextStyle(
+            color: isActive 
+              ? const Color(0xFF4ECDC4) 
+              : (isDark ? Colors.white : Colors.grey.shade800),
+            fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
+            fontSize: 15,
+          ),
+        ),
+        trailing: isActive ? const Icon(
+          Icons.arrow_forward_ios,
+          color: Color(0xFF4ECDC4),
+          size: 14,
+        ) : null,
+        onTap: onTap,
+      ),
+    );
+  }
+
 } 

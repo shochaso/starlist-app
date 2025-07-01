@@ -105,7 +105,7 @@ class NetflixViewingCard extends StatelessWidget {
                       // 視聴日と視聴状態
                       Row(
                         children: [
-                          Icon(
+                          const Icon(
                             Icons.calendar_today,
                             size: 14,
                             color: Colors.grey,
@@ -140,7 +140,7 @@ class NetflixViewingCard extends StatelessWidget {
                       if (viewingHistory.watchDuration != null) ...[
                         Row(
                           children: [
-                            Icon(
+                            const Icon(
                               Icons.access_time,
                               size: 14,
                               color: Colors.grey,

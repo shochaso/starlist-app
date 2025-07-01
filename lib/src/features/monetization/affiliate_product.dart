@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 
 /// アフィリエイト商品を表すモデルクラス
 class AffiliateProduct {

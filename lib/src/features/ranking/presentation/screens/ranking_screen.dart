@@ -286,11 +286,11 @@ class _RankingScreenState extends ConsumerState<RankingScreen> with SingleTicker
       );
     } else {
       // 変動なし
-      return Row(
+      return const Row(
         children: [
-          const Icon(Icons.remove, color: Colors.grey, size: 16),
-          const SizedBox(width: 4),
-          const Text(
+          Icon(Icons.remove, color: Colors.grey, size: 16),
+          SizedBox(width: 4),
+          Text(
             '変動なし',
             style: TextStyle(color: Colors.grey),
           ),

@@ -219,10 +219,10 @@ class _CreateVotingPostScreenState extends ConsumerState<CreateVotingPostScreen>
             const SizedBox(height: 8),
             TextFormField(
               controller: imageController,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 hintText: '画像URL（任意）',
-                border: const OutlineInputBorder(),
-                prefixIcon: const Icon(Icons.image),
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.image),
               ),
               validator: (value) {
                 if (value != null && value.isNotEmpty) {
@@ -433,7 +433,7 @@ class _CreateVotingPostScreenState extends ConsumerState<CreateVotingPostScreen>
       loading: () => const ElevatedButton(
         onPressed: null,
         style: ButtonStyle(
-          minimumSize: MaterialStatePropertyAll(Size(double.infinity, 48)),
+          minimumSize: WidgetStatePropertyAll(Size(double.infinity, 48)),
         ),
         child: Text('作成中...'),
       ),

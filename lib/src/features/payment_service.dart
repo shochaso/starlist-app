@@ -412,7 +412,7 @@ class PaymentServiceImpl implements PaymentService {
   ) async {
     // 実際のアプリケーションでは外部決済サービス（Stripe、PayPalなど）を呼び出す
     // 仮の実装（モック）
-    await Future.delayed(Duration(milliseconds: 500)); // 支払い処理の遅延をシミュレート
+    await Future.delayed(const Duration(milliseconds: 500)); // 支払い処理の遅延をシミュレート
     
     // 成功シナリオ
     return {
@@ -435,7 +435,7 @@ class PaymentServiceImpl implements PaymentService {
   ) async {
     // 実際のアプリケーションでは外部決済サービスを呼び出す
     // 仮の実装（モック）
-    await Future.delayed(Duration(milliseconds: 500)); // 返金処理の遅延をシミュレート
+    await Future.delayed(const Duration(milliseconds: 500)); // 返金処理の遅延をシミュレート
     
     // 成功シナリオ
     return {
@@ -459,7 +459,7 @@ class PaymentServiceImpl implements PaymentService {
   ) async {
     // 実際のアプリケーションでは外部決済サービスを呼び出す
     // 仮の実装（モック）
-    await Future.delayed(Duration(milliseconds: 500)); // 支払い処理の遅延をシミュレート
+    await Future.delayed(const Duration(milliseconds: 500)); // 支払い処理の遅延をシミュレート
     
     // 成功シナリオ
     return {

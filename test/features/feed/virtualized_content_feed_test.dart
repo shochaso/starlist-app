@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
 import 'package:mockito/annotations.dart';
-import '../../../lib/src/features/feed/widgets/virtualized_content_feed.dart';
+import 'package:starlist/src/features/feed/widgets/virtualized_content_feed.dart';
 
 // モックの生成
 @GenerateMocks([ScrollController])
@@ -61,7 +61,7 @@ void main() {
         MaterialApp(
           home: Scaffold(
             body: VirtualizedContentFeed(
-              contents: [],
+              contents: const [],
               onLoadMore: () async {},
               itemBuilder: (context, item, index) {
                 return ListTile(
@@ -88,7 +88,7 @@ void main() {
         MaterialApp(
           home: Scaffold(
             body: VirtualizedContentFeed(
-              contents: [],
+              contents: const [],
               onLoadMore: () async {},
               itemBuilder: (context, item, index) {
                 return ListTile(

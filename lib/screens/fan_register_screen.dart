@@ -142,7 +142,7 @@ class _FanRegisterScreenState extends State<FanRegisterScreen> {
                       ),
                     ),
                     Text(
-                      'ステップ ${_currentStep + 1}/${_totalSteps}',
+                      'ステップ ${_currentStep + 1}/$_totalSteps',
                       style: GoogleFonts.mPlusRounded1c(
                         fontSize: 16,
                         color: Colors.grey.shade600,
@@ -692,7 +692,7 @@ class _FanRegisterScreenState extends State<FanRegisterScreen> {
               borderRadius: BorderRadius.circular(16),
             ),
             child: Text(
-              '${_selectedServicesCount}個選択中',
+              '$_selectedServicesCount個選択中',
               style: GoogleFonts.mPlusRounded1c(
                 color: AppTheme.primaryColor,
                 fontWeight: FontWeight.bold,

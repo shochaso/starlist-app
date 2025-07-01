@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import '../models/user_model.dart';
 
 /// ユーザーの管理ステータスを表すenum

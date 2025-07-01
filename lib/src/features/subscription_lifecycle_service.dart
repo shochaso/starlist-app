@@ -105,7 +105,7 @@ class SubscriptionLifecycleService {
       // 開始日と終了日を設定
       final now = DateTime.now();
       final startDate = now;
-      final endDate = now.add(Duration(days: 30)); // 30日間のサブスクリプション
+      final endDate = now.add(const Duration(days: 30)); // 30日間のサブスクリプション
       
       // 割引を適用
       final price = discountRate != null 
@@ -192,7 +192,7 @@ class SubscriptionLifecycleService {
       }
       
       // 新しい終了日を計算
-      final newEndDate = subscription.endDate.add(Duration(days: 30));
+      final newEndDate = subscription.endDate.add(const Duration(days: 30));
       
       // 支払い処理を実行
       await _paymentService.processPayment(
@@ -382,7 +382,7 @@ class SubscriptionLifecycleService {
     try {
       // 3日以内に期限切れになるサブスクリプションを取得
       final now = DateTime.now();
-      final threeDaysLater = now.add(Duration(days: 3));
+      final threeDaysLater = now.add(const Duration(days: 3));
       final subscriptions = await _subscriptionRepository.getSubscriptionsExpiringBefore(threeDaysLater);
       
       for (final subscription in subscriptions) {

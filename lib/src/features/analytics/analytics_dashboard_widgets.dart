@@ -19,8 +19,8 @@ class FanAnalyticsDashboardScreen extends ConsumerStatefulWidget {
 
 class _FanAnalyticsDashboardScreenState extends ConsumerState<FanAnalyticsDashboardScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  DateTime _startDate = DateTime.now().subtract(const Duration(days: 30));
-  DateTime _endDate = DateTime.now();
+  final DateTime _startDate = DateTime.now().subtract(const Duration(days: 30));
+  final DateTime _endDate = DateTime.now();
 
   @override
   void initState() {

@@ -26,11 +26,11 @@ class ContentRepository {
           .eq('is_published', true);
       
       if (authorId != null) {
-        query = query.eq('author_id', authorId) as PostgrestFilterBuilder;
+        query = query.eq('author_id', authorId);
       }
       
       if (type != null) {
-        query = query.eq('type', type.toString().split('.').last) as PostgrestFilterBuilder;
+        query = query.eq('type', type.toString().split('.').last);
       }
       
       final data = await query
@@ -197,10 +197,10 @@ class ContentRepository {
           .select();
       
       // フィルタを適用
-      query = query.eq('user_id', userId) as PostgrestFilterBuilder;
+      query = query.eq('user_id', userId);
       
       if (contentType != null) {
-        query = query.eq('content_type', contentType.toString().split('.').last) as PostgrestFilterBuilder;
+        query = query.eq('content_type', contentType.toString().split('.').last);
       }
       
       // ソートと制限を適用

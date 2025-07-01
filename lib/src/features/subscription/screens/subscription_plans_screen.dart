@@ -293,9 +293,9 @@ class _SubscriptionPlansScreenState extends ConsumerState<SubscriptionPlansScree
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
-              child: Text(
+              child: const Text(
                 '支払い方法を選択',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
                 ),

@@ -71,16 +71,16 @@ class _SimpleYouTubeWidgetState extends State<SimpleYouTubeWidget> {
   Widget _buildStarExplanation() {
     return Card(
       color: Colors.purple.shade50,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
+      child: const Padding(
+        padding: EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                const Icon(Icons.star, color: Colors.purple),
-                const SizedBox(width: 8),
-                const Text(
+                Icon(Icons.star, color: Colors.purple),
+                SizedBox(width: 8),
+                Text(
                   '⭐ スター専用：視聴履歴共有',
                   style: TextStyle(
                     fontSize: 18,
@@ -90,8 +90,8 @@ class _SimpleYouTubeWidgetState extends State<SimpleYouTubeWidget> {
                 ),
               ],
             ),
-            const SizedBox(height: 12),
-            const Text(
+            SizedBox(height: 12),
+            Text(
               'あなたのYouTube視聴履歴をファンと共有できます。\n\n'
               '✅ ファンがあなたと同じ動画を発見\n'
               '✅ 興味のあるコンテンツをシェア\n'

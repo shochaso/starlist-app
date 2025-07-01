@@ -458,7 +458,7 @@ class _ContentEditScreenState extends ConsumerState<ContentEditScreen> {
                                   onTap: () => _removeExistingImage(index),
                                   child: Container(
                                     padding: const EdgeInsets.all(4),
-                                    decoration: BoxDecoration(
+                                    decoration: const BoxDecoration(
                                       color: Colors.red,
                                       shape: BoxShape.circle,
                                     ),
@@ -505,7 +505,7 @@ class _ContentEditScreenState extends ConsumerState<ContentEditScreen> {
                                   onTap: () => _removeImage(index),
                                   child: Container(
                                     padding: const EdgeInsets.all(4),
-                                    decoration: BoxDecoration(
+                                    decoration: const BoxDecoration(
                                       color: Colors.red,
                                       shape: BoxShape.circle,
                                     ),

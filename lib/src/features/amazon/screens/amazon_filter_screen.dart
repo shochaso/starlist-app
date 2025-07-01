@@ -459,7 +459,7 @@ class _AmazonFilterScreenState extends ConsumerState<AmazonFilterScreen> {
       purchaseDate: DateTime.now(),
       isReturned: false,
       isRefunded: false,
-      metadata: {},
+      metadata: const {},
       createdAt: DateTime.now(),
       updatedAt: DateTime.now(),
     ).categoryDisplayName;

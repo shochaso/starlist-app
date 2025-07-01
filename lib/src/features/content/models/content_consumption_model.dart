@@ -1,4 +1,3 @@
-import '../../auth/models/user_model.dart';
 
 /// コンテンツカテゴリ
 enum ContentCategory {

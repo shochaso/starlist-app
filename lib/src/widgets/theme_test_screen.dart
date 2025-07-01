@@ -88,7 +88,7 @@ class ThemeTestScreen extends ConsumerWidget {
                       ],
                     ),
                     const SizedBox(height: 16),
-                    Center(
+                    const Center(
                       child: ThemeToggleButton(size: 32),
                     ),
                   ],
@@ -128,7 +128,7 @@ class ThemeTestScreen extends ConsumerWidget {
                         ),
                         _ColorChip(
                           label: 'Background',
-                          color: Theme.of(context).colorScheme.background,
+                          color: Theme.of(context).colorScheme.surface,
                         ),
                       ],
                     ),

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../data_integration/models/youtube_video.dart';
 import 'youtube_provider.dart';
 
 /// YouTube検索画面

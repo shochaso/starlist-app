@@ -258,7 +258,7 @@ class _StarWatchHistoryWidgetState extends ConsumerState<StarWatchHistoryWidget>
                 Center(
                   child: TextButton(
                     onPressed: _showSharedHistory,
-                    child: Text('共有中の履歴をすべて表示'),
+                    child: const Text('共有中の履歴をすべて表示'),
                   ),
                 ),
               ],

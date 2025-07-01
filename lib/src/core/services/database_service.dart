@@ -108,7 +108,7 @@ class DatabaseService {
     final snapshot = await _firestore
         .collection("youtube_videos")
         .where("title", isGreaterThanOrEqualTo: query)
-        .where("title", isLessThanOrEqualTo: query + "")
+        .where("title", isLessThanOrEqualTo: "$query")
         .limit(10)
         .get();
     return snapshot.docs

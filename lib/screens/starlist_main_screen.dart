@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 // 新しく作成した画面をインポート
 import '../features/search/screens/search_screen.dart';
-import '../features/follow/screens/follow_screen.dart';
+import '../providers/youtube_history_provider.dart';
 import '../features/mylist/screens/mylist_screen.dart';
 import '../features/profile/screens/profile_screen.dart';
 import '../features/data_integration/screens/data_import_screen.dart';
@@ -298,48 +298,6 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
   ];
 
   // 追加のテストデータ
-  final List<Map<String, dynamic>> trendingTopics = [
-    {
-      'title': 'iPhone 15',
-      'posts': '1,234',
-      'color': const Color(0xFF4ECDC4),
-    },
-    {
-      'title': 'Flutter 3.0',
-      'posts': '892',
-      'color': const Color(0xFF00B894),
-    },
-    {
-      'title': '秋のファッション',
-      'posts': '2,156',
-      'color': const Color(0xFFE17055),
-    },
-    {
-      'title': 'Apex Legends',
-      'posts': '3,421',
-      'color': const Color(0xFF667EEA),
-    },
-    {
-      'title': 'ChatGPT',
-      'posts': '4,567',
-      'color': const Color(0xFF6C5CE7),
-    },
-    {
-      'title': '鬼滅の刃',
-      'posts': '1,890',
-      'color': const Color(0xFFFF7675),
-    },
-    {
-      'title': 'DIY',
-      'posts': '987',
-      'color': const Color(0xFF00B894),
-    },
-    {
-      'title': '投資',
-      'posts': '2,345',
-      'color': const Color(0xFFFFD93D),
-    },
-  ];
 
   final List<Map<String, dynamic>> notifications = [
     {
@@ -479,7 +437,7 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
   PreferredSizeWidget _buildAppBar() {
     final selectedTab = ref.watch(selectedTabProvider);
     final themeMode = ref.watch(themeProvider);
-    final titles = ['ホーム', '検索', 'データ取込み', 'マイリスト', 'マイページ', 'フォロー中'];
+    final titles = ['ホーム', '検索', 'データ取込み', 'マイリスト', 'マイページ'];
     final isDark = themeMode == AppThemeMode.dark;
     
     String title = titles[selectedTab];
@@ -608,7 +566,6 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
               children: [
                 _buildDrawerItem(Icons.home, 'ホーム', 0, null),
                 _buildDrawerItem(Icons.search, '検索', 1, null),
-                _buildDrawerItem(Icons.people, 'フォロー中', 5, null),
                 _buildDrawerItem(Icons.star, 'マイリスト', 3, null),
                 // スターのみ表示
                 if (currentUser.isStar) ...[
@@ -728,13 +685,13 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
       case 1:
         return const SearchScreen();
       case 2:
-        return const DataImportScreen();
+        return const DataImportScreen(showAppBar: false);
       case 3:
         return const MylistScreen();
       case 4:
         return const ProfileScreen();
       case 5:
-        return const FollowScreen();
+        return _buildHomeView();
       default:
         return _buildHomeView();
     }
@@ -795,9 +752,6 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
           _buildNativeAd1(),
           const SizedBox(height: 24),
           
-          // トレンドトピックセクション
-          _buildTrendingTopicsSection(),
-          const SizedBox(height: 24),
           
           // プレイリストセクション
           _buildFeaturedPlaylistsSection(),
@@ -826,41 +780,66 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
   Widget _buildLatestYouTubeHistorySection() {
     final themeState = ref.watch(themeProviderEnhanced);
     final isDark = themeState.isDarkMode;
+    final youtubeHistoryGroups = ref.watch(groupedYoutubeHistoryProvider);
     
-    final youtubeHistory = [
-      {
-        'title': 'iPhone 15 Pro Max 詳細レビュー - カメラ性能が凄すぎる！',
-        'channel': 'テックレビューアー田中',
-        'duration': '25:30',
-        'uploadTime': '2時間前',
-        'views': '12.5万回視聴',
-        'thumbnail': const Color(0xFFFF0000),
-      },
-      {
-        'title': 'MacBook Pro M3 開封レビュー',
-        'channel': 'テックレビューアー田中',
-        'duration': '18:45',
-        'uploadTime': '5時間前',
-        'views': '8.9万回視聴',
-        'thumbnail': const Color(0xFFFF0000),
-      },
-      {
-        'title': 'Flutter 3.0 新機能解説 - 完全ガイド',
-        'channel': 'プログラミング講師伊藤',
-        'duration': '32:15',
-        'uploadTime': '1日前',
-        'views': '5.2万回視聴',
-        'thumbnail': const Color(0xFF00B894),
-      },
-      {
-        'title': '簡単チキンカレーの作り方 - 30分で完成',
-        'channel': '料理研究家佐藤',
-        'duration': '12:45',
-        'uploadTime': '1日前',
-        'views': '15.3万回視聴',
-        'thumbnail': const Color(0xFFFF6B6B),
-      },
-    ];
+    // デバッグ出力
+    print('=== ホーム画面YouTube履歴表示 ===');
+    print('YouTube履歴グループ数: ${youtubeHistoryGroups.length}');
+    if (youtubeHistoryGroups.isNotEmpty) {
+      youtubeHistoryGroups.forEach((group) {
+        print('グループ${group.sessionId}: ${group.itemCount}件 - ${group.items.map((e) => e.title).join(', ')}');
+      });
+    }
+    
+    // プロバイダーからのデータが空の場合は、デフォルトデータを表示
+    if (youtubeHistoryGroups.isEmpty) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildSectionTitle('最新YouTube履歴'),
+          const SizedBox(height: 16),
+          Container(
+            height: 140,
+            margin: const EdgeInsets.symmetric(horizontal: 16),
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF1F2937) : Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: isDark ? const Color(0xFF374151) : const Color(0xFFE5E7EB)),
+              boxShadow: [
+                BoxShadow(
+                  color: (isDark ? Colors.black : Colors.black).withOpacity(0.05),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.play_circle_outline,
+                    size: 48,
+                    color: isDark ? const Color(0xFF6B7280) : const Color(0xFF9CA3AF),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'YouTube履歴データが取り込まれるとここに表示されます',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280),
+                      fontWeight: FontWeight.w500,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      );
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -868,100 +847,218 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
         _buildSectionTitle('最新YouTube履歴'),
         const SizedBox(height: 16),
         SizedBox(
-          height: 120,
+          height: 140,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             physics: const BouncingScrollPhysics(),
             padding: const EdgeInsets.only(left: 16, right: 16),
-            itemCount: youtubeHistory.length,
+            itemCount: youtubeHistoryGroups.length,
             itemBuilder: (context, index) {
-              final video = youtubeHistory[index];
-    return Container(
-                width: MediaQuery.of(context).size.width * 0.85,
-                margin: const EdgeInsets.only(right: 16),
-                padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: (isDark ? Colors.black : Colors.black).withOpacity(0.08),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
+              final group = youtubeHistoryGroups[index];
+              return GestureDetector(
+                onTap: () {
+                  // グループの詳細を表示するダイアログ
+                  showDialog(
+                    context: context,
+                    builder: (context) => _buildGroupDetailDialog(context, group, isDark),
+                  );
+                },
+                child: Container(
+                  width: MediaQuery.of(context).size.width * 0.8,
+                  margin: const EdgeInsets.only(right: 20),
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFF1F2937) : Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: (isDark ? Colors.black : const Color(0xFF000000)).withOpacity(0.04),
+                        blurRadius: 16,
+                        offset: const Offset(0, 6),
+                      ),
+                      BoxShadow(
+                        color: (isDark ? Colors.black : const Color(0xFF000000)).withOpacity(0.02),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                    border: Border.all(
+                      color: isDark ? const Color(0xFF374151) : const Color(0xFFE5E7EB),
+                      width: 1,
                     ),
-                  ],
-                  border: Border.all(color: isDark ? const Color(0xFF333333) : const Color(0xFFF3F4F6)),
-                ),
-                child: Row(
-            children: [
-              Container(
-                      width: 60,
-                      height: 45,
-                decoration: BoxDecoration(
-                        color: const Color(0xFFFF0000).withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(8),
-                ),
-                      child: ServiceIcons.buildIcon(
-                        serviceId: 'youtube',
-                        size: 24,
-                        isDark: false,
-                ),
-              ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                            video['title'] as String,
-                    style: TextStyle(
-                              fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                              color: isDark ? Colors.white : Colors.black87,
-                    ),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
                   ),
-                          const SizedBox(height: 4),
-                  Text(
-                            video['channel'] as String,
-                    style: TextStyle(
-                              fontSize: 12,
-                              color: isDark ? Colors.white70 : Colors.black54,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          const SizedBox(height: 2),
-                          Row(
-                            children: [
-                              Text(
-                                video['duration'] as String,
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  color: isDark ? Colors.white54 : Colors.black38,
+                  child: Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              width: 52,
+                              height: 52,
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [
+                                    const Color(0xFFFF0000).withOpacity(0.12),
+                                    const Color(0xFFFF0000).withOpacity(0.20),
+                                  ],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                ),
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                  color: const Color(0xFFFF0000).withOpacity(0.25),
+                                  width: 1.5,
                                 ),
                               ),
-                              const SizedBox(width: 8),
-                              Text(
-                                video['uploadTime'] as String,
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  color: isDark ? Colors.white54 : Colors.black38,
+                              child: Stack(
+                                alignment: Alignment.center,
+                                children: [
+                                  ServiceIcons.buildIcon(
+                                    serviceId: 'youtube',
+                                    size: 28,
+                                    isDark: false,
+                                  ),
+                                  Positioned(
+                                    top: -4,
+                                    right: -4,
+                                    child: Container(
+                                      width: 22,
+                                      height: 22,
+                                      decoration: BoxDecoration(
+                                        gradient: const LinearGradient(
+                                          colors: [Color(0xFF4ECDC4), Color(0xFF44A08D)],
+                                          begin: Alignment.topLeft,
+                                          end: Alignment.bottomRight,
+                                        ),
+                                        borderRadius: BorderRadius.circular(11),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: const Color(0xFF4ECDC4).withOpacity(0.4),
+                                            blurRadius: 4,
+                                            offset: const Offset(0, 2),
+                                          ),
+                                        ],
+                                        border: Border.all(
+                                          color: Colors.white,
+                                          width: 2,
+                                        ),
+                                      ),
+                                      child: Center(
+                                        child: Text(
+                                          '${group.itemCount}',
+                                          style: const TextStyle(
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w700,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    group.items.first.starName ?? group.items.first.channel,
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w700,
+                                      color: isDark ? const Color(0xFFF9FAFB) : const Color(0xFF111827),
+                                      letterSpacing: -0.2,
+                                      height: 1.2,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    '${group.itemCount}件の新着動画',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w500,
+                                      color: isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280),
+                                      height: 1.3,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        Row(
+                          children: [
+                            if (group.items.first.starGenre != null) ...[
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      _getStarGenreColor(group.items.first.starGenre!).withOpacity(0.12),
+                                      _getStarGenreColor(group.items.first.starGenre!).withOpacity(0.20),
+                                    ],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                  ),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: _getStarGenreColor(group.items.first.starGenre!).withOpacity(0.3),
+                                    width: 1,
+                                  ),
+                                ),
+                                child: Text(
+                                  group.items.first.starGenre!,
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                    color: _getStarGenreColor(group.items.first.starGenre!),
+                                  ),
+                                ),
+                              ),
+                              const Spacer(),
+                            ],
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                              decoration: BoxDecoration(
+                                color: (isDark ? Colors.white : Colors.black).withOpacity(0.04),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.access_time_rounded,
+                                    size: 13,
+                                    color: isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280),
+                                  ),
+                                  const SizedBox(width: 5),
+                                  Text(
+                                    _formatImportTime(group.importedAt),
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w500,
+                                      color: isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                   ),
-                ],
-              ),
-            ],
-          ),
-                    ),
-                  ],
                 ),
               );
             },
-            ),
           ),
+        ),
       ],
     );
   }
@@ -1341,75 +1438,6 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
     );
   }
 
-  Widget _buildTrendingTopicsSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildSectionTitle('トレンドトピック'),
-        const SizedBox(height: 16),
-        SizedBox(
-          height: 100,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            physics: const BouncingScrollPhysics(),
-            padding: const EdgeInsets.only(left: 16, right: 16),
-            itemCount: trendingTopics.length,
-            itemBuilder: (context, index) {
-              final topic = trendingTopics[index];
-    return Container(
-                width: 160,
-                margin: const EdgeInsets.only(right: 16),
-                padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-                  gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-                    colors: [
-                      topic['color'],
-                      topic['color'].withOpacity(0.7),
-                    ],
-        ),
-        borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: topic['color'].withOpacity(0.3),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-                    Text(
-                      topic['title'],
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-              ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '${topic['posts']} 投稿',
-                      style: const TextStyle(
-                  fontSize: 12,
-                        color: Colors.white,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
-          ),
-              );
-            },
-            ),
-          ),
-        ],
-    );
-  }
 
   Widget _buildFeaturedPlaylistsSection() {
     return Column(
@@ -1786,7 +1814,6 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
                 _buildBottomNavItem(Icons.camera_alt, '取込', 2, currentSelectedTab, isDark),
               _buildBottomNavItem(Icons.star, 'マイリスト', 3, currentSelectedTab, isDark),
               _buildBottomNavItem(Icons.person, 'マイページ', 4, currentSelectedTab, isDark),
-              _buildBottomNavItem(Icons.people, 'フォロー', 5, currentSelectedTab, isDark),
             ],
           ),
         ),
@@ -1866,5 +1893,206 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
         ],
       ),
     );
+  }
+
+  String _formatImportTime(DateTime time) {
+    final now = DateTime.now();
+    final difference = now.difference(time);
+    
+    if (difference.inMinutes < 60) {
+      return '${difference.inMinutes}分前';
+    } else if (difference.inHours < 24) {
+      return '${difference.inHours}時間前';
+    } else {
+      return '${time.month}/${time.day} ${time.hour}:${time.minute.toString().padLeft(2, '0')}';
+    }
+  }
+
+  Widget _buildGroupDetailDialog(BuildContext context, YouTubeHistoryGroup group, bool isDark) {
+    return Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      child: Container(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.7,
+          maxWidth: MediaQuery.of(context).size.width * 0.9,
+        ),
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0xFF4ECDC4).withOpacity(0.1),
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(20),
+                  topRight: Radius.circular(20),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      '${group.items.first.starName ?? group.items.first.channel}の動画',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: isDark ? Colors.white : Colors.black87,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    icon: Icon(
+                      Icons.close,
+                      color: isDark ? Colors.white70 : Colors.black54,
+                    ),
+                    onPressed: () => Navigator.of(context).pop(),
+                  ),
+                ],
+              ),
+            ),
+            Flexible(
+              child: ListView.builder(
+                shrinkWrap: true,
+                padding: const EdgeInsets.all(16),
+                itemCount: group.items.length,
+                itemBuilder: (context, index) {
+                  final item = group.items[index];
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF333333) : const Color(0xFFF3F4F6),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 48,
+                          height: 36,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFF0000).withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: ServiceIcons.buildIcon(
+                            serviceId: 'youtube',
+                            size: 20,
+                            isDark: false,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                item.title,
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: isDark ? Colors.white : Colors.black87,
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 4),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      item.starName ?? item.channel,
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: isDark ? Colors.white70 : Colors.black54,
+                                      ),
+                                    ),
+                                  ),
+                                  if (item.starGenre != null) ...[
+                                    const SizedBox(width: 8),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                      decoration: BoxDecoration(
+                                        color: _getStarGenreColor(item.starGenre!).withOpacity(0.2),
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                      child: Text(
+                                        item.starGenre!,
+                                        style: TextStyle(
+                                          fontSize: 9,
+                                          fontWeight: FontWeight.w500,
+                                          color: _getStarGenreColor(item.starGenre!),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                              if (item.duration != null || item.viewCount != null) ...[
+                                const SizedBox(height: 2),
+                                Row(
+                                  children: [
+                                    if (item.duration != null) ...[
+                                      Text(
+                                        item.duration!,
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          color: isDark ? Colors.white54 : Colors.black38,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                    ],
+                                    if (item.viewCount != null)
+                                      Text(
+                                        '${item.viewCount}回視聴',
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          color: isDark ? Colors.white54 : Colors.black38,
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ジャンルに応じた色を取得
+  Color _getStarGenreColor(String genre) {
+    switch (genre) {
+      case 'YouTuber':
+        return const Color(0xFFFF0000);
+      case 'ストリーマー':
+        return const Color(0xFF667EEA);
+      case 'アイドル':
+        return const Color(0xFFE84393);
+      case 'ミュージシャン':
+        return const Color(0xFF74B9FF);
+      case 'ゲーマー':
+        return const Color(0xFF00B894);
+      case 'アーティスト':
+        return const Color(0xFFFF7675);
+      case 'インフルエンサー':
+        return const Color(0xFFE17055);
+      case 'タレント':
+        return const Color(0xFF6C5CE7);
+      case 'アニメーター':
+        return const Color(0xFF10B981);
+      default:
+        return const Color(0xFFFFD93D);
+    }
   }
 } 

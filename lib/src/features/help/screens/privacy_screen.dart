@@ -22,7 +22,7 @@ class _PrivacyScreenState extends ConsumerState<PrivacyScreen> {
   Future<void> _loadPrivacySettings() async {
     try {
       final privacyService = ref.read(privacyServiceProvider);
-      final userId = 'current_user_id'; // 実際のユーザーIDに置き換え
+      const userId = 'current_user_id'; // 実際のユーザーIDに置き換え
       
       final settings = await privacyService.getPrivacySettings(userId);
       setState(() {
@@ -42,7 +42,7 @@ class _PrivacyScreenState extends ConsumerState<PrivacyScreen> {
   Future<void> _updatePrivacySetting(String key, dynamic value) async {
     try {
       final privacyService = ref.read(privacyServiceProvider);
-      final userId = 'current_user_id'; // 実際のユーザーIDに置き換え
+      const userId = 'current_user_id'; // 実際のユーザーIDに置き換え
       
       final updatedSettings = Map<String, dynamic>.from(privacySettings);
       updatedSettings[key] = value;
@@ -397,7 +397,7 @@ class _PrivacyScreenState extends ConsumerState<PrivacyScreen> {
   Future<void> _exportUserData() async {
     try {
       final privacyService = ref.read(privacyServiceProvider);
-      final userId = 'current_user_id'; // 実際のユーザーIDに置き換え
+      const userId = 'current_user_id'; // 実際のユーザーIDに置き換え
       
       showDialog(
         context: context,
@@ -485,7 +485,7 @@ class _PrivacyScreenState extends ConsumerState<PrivacyScreen> {
   Future<void> _deleteAccount() async {
     try {
       final privacyService = ref.read(privacyServiceProvider);
-      final userId = 'current_user_id'; // 実際のユーザーIDに置き換え
+      const userId = 'current_user_id'; // 実際のユーザーIDに置き換え
       
       await privacyService.requestDataDeletion(userId, 'ユーザーからの削除要求');
       

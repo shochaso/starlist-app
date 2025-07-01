@@ -225,7 +225,7 @@ class AmazonStatsCard extends StatelessWidget {
       purchaseDate: DateTime.now(),
       isReturned: false,
       isRefunded: false,
-      metadata: {},
+      metadata: const {},
       createdAt: DateTime.now(),
       updatedAt: DateTime.now(),
     ).categoryDisplayName;

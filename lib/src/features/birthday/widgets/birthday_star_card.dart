@@ -140,15 +140,15 @@ class BirthdayStarCard extends ConsumerWidget {
                       
                       if (isMilestone) ...[
                         const SizedBox(height: 4),
-                        Row(
+                        const Row(
                           children: [
-                            const Icon(
+                            Icon(
                               Icons.stars,
                               color: Colors.white,
                               size: 16,
                             ),
-                            const SizedBox(width: 4),
-                            const Text(
+                            SizedBox(width: 4),
+                            Text(
                               'マイルストーン',
                               style: TextStyle(
                                 color: Colors.white,
@@ -172,16 +172,16 @@ class BirthdayStarCard extends ConsumerWidget {
                       color: Colors.white.withOpacity(0.2),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: Row(
+                    child: const Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.card_giftcard,
                           color: Colors.white,
                           size: 16,
                         ),
-                        const SizedBox(width: 4),
-                        const Text(
+                        SizedBox(width: 4),
+                        Text(
                           'お祝い',
                           style: TextStyle(
                             color: Colors.white,

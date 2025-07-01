@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/star.dart';
 import '../routes/app_routes.dart';
-import '../widgets/star_card.dart';
 
 class CategoryScreen extends StatelessWidget {
   final String category;
@@ -113,9 +112,9 @@ class CategoryScreen extends StatelessWidget {
         children: [
           // 検索バー
           Padding(
-            padding: EdgeInsets.all(16),
+            padding: const EdgeInsets.all(16),
             child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               decoration: BoxDecoration(
                 color: searchBarColor,
                 borderRadius: BorderRadius.circular(12),
@@ -126,7 +125,7 @@ class CategoryScreen extends StatelessWidget {
                     Icons.search,
                     color: secondaryTextColor,
                   ),
-                  SizedBox(width: 8),
+                  const SizedBox(width: 8),
                   Text(
                     '$categoryで検索',
                     style: TextStyle(
@@ -134,7 +133,7 @@ class CategoryScreen extends StatelessWidget {
                       fontSize: 16,
                     ),
                   ),
-                  Spacer(),
+                  const Spacer(),
                   Icon(
                     Icons.mic,
                     color: secondaryTextColor,
@@ -146,7 +145,7 @@ class CategoryScreen extends StatelessWidget {
 
           // カテゴリータイトル
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: Text(
               isGenre 
                   ? '$categoryジャンルの人気スター'
@@ -162,11 +161,11 @@ class CategoryScreen extends StatelessWidget {
           // スターリスト
           Expanded(
             child: ListView.builder(
-              padding: EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               itemCount: filteredStars.length,
               itemBuilder: (context, index) {
                 return Container(
-                  margin: EdgeInsets.only(bottom: 12),
+                  margin: const EdgeInsets.only(bottom: 12),
                   decoration: BoxDecoration(
                     color: cardColor,
                     borderRadius: BorderRadius.circular(12),
@@ -175,12 +174,12 @@ class CategoryScreen extends StatelessWidget {
                         color: Colors.grey.withOpacity(0.1),
                         spreadRadius: 1,
                         blurRadius: 2,
-                        offset: Offset(0, 1),
+                        offset: const Offset(0, 1),
                       ),
                     ],
                   ),
                   child: ListTile(
-                    contentPadding: EdgeInsets.all(8),
+                    contentPadding: const EdgeInsets.all(8),
                     leading: ClipRRect(
                       borderRadius: BorderRadius.circular(8),
                       child: Container(
@@ -215,8 +214,8 @@ class CategoryScreen extends StatelessWidget {
                           ),
                         ),
                         if (filteredStars[index].isVerified)
-                          Padding(
-                            padding: const EdgeInsets.only(left: 4),
+                          const Padding(
+                            padding: EdgeInsets.only(left: 4),
                             child: Icon(
                               Icons.verified,
                               color: Colors.blue,
@@ -233,9 +232,9 @@ class CategoryScreen extends StatelessWidget {
                             color: secondaryTextColor,
                           ),
                         ),
-                        SizedBox(width: 8),
+                        const SizedBox(width: 8),
                         Container(
-                          padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                           decoration: BoxDecoration(
                             color: isDarkMode ? Colors.grey.shade700 : Colors.grey.shade300,
                             borderRadius: BorderRadius.circular(4),
@@ -265,7 +264,7 @@ class CategoryScreen extends StatelessWidget {
                           borderRadius: BorderRadius.circular(16),
                         ),
                       ),
-                      child: Text('入手'),
+                      child: const Text('入手'),
                     ),
                     onTap: () {
                       Navigator.pushNamed(

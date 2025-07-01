@@ -16,7 +16,7 @@ class BadgeService {
         type: BadgeType.bronze,
         iconPath: 'assets/badges/bronze_supporter.png',
         color: Colors.brown[300]!,
-        criteria: {
+        criteria: const {
           'minMonths': 3,
           'minPoints': 1000,
         },
@@ -28,7 +28,7 @@ class BadgeService {
         type: BadgeType.silver,
         iconPath: 'assets/badges/silver_supporter.png',
         color: Colors.grey[400]!,
-        criteria: {
+        criteria: const {
           'minMonths': 6,
           'minPoints': 5000,
         },
@@ -40,7 +40,7 @@ class BadgeService {
         type: BadgeType.gold,
         iconPath: 'assets/badges/gold_supporter.png',
         color: Colors.amber[300]!,
-        criteria: {
+        criteria: const {
           'minMonths': 12,
           'minPoints': 10000,
         },
@@ -52,7 +52,7 @@ class BadgeService {
         type: BadgeType.loyal,
         iconPath: 'assets/badges/loyal_fan.png',
         color: Colors.purple[300]!,
-        criteria: {
+        criteria: const {
           'isTopFan': true,
           'minMonths': 24,
           'minPoints': 20000,

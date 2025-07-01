@@ -24,7 +24,6 @@ import 'features/subscription/screens/plan_management_screen.dart';
 import 'features/app/screens/settings_screen.dart';
 import 'features/data_integration/screens/data_import_screen.dart';
 import 'features/search/screens/search_screen.dart';
-import 'features/follow/screens/follow_screen.dart';
 import 'features/mylist/screens/mylist_screen.dart';
 import 'features/profile/screens/profile_screen.dart';
 import 'features/star/screens/schedule_management_screen.dart';
@@ -252,18 +251,6 @@ class SimpleHomeScreen extends StatelessWidget {
                 );
               },
               child: const Text('検索画面'),
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                // フォロー中画面に移動
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => const FollowScreen(),
-                  ),
-                );
-              },
-              child: const Text('フォロー中画面'),
             ),
             const SizedBox(height: 20),
             ElevatedButton(

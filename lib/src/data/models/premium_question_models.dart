@@ -568,7 +568,7 @@ class PremiumQuestionStatistics {
   /// 統計を計算
   factory PremiumQuestionStatistics.calculate(List<PremiumQuestion> questions) {
     if (questions.isEmpty) {
-      return PremiumQuestionStatistics(
+      return const PremiumQuestionStatistics(
         starId: '',
         totalQuestions: 0,
         answeredQuestions: 0,

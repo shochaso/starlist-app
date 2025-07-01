@@ -206,7 +206,7 @@ class NetflixOcrService {
           episodeNumber: episodeNumber,
           watchedAt: watchedAt ?? DateTime.now().subtract(Duration(days: itemIndex)),
           watchStatus: NetflixWatchStatus.completed,
-          cast: [],
+          cast: const [],
           genres: _inferGenresFromTitle(title),
           metadata: {
             'source': 'history_ocr',
@@ -256,7 +256,7 @@ class NetflixOcrService {
             contentType: _inferContentTypeFromTitle(title),
             watchedAt: DateTime.now(),
             watchStatus: NetflixWatchStatus.watchlist,
-            cast: [],
+            cast: const [],
             genres: _inferGenresFromTitle(title),
             metadata: {
               'source': 'email_ocr',
@@ -303,7 +303,7 @@ class NetflixOcrService {
           contentType: _inferContentTypeFromTitle(cleanLine),
           watchedAt: DateTime.now(),
           watchStatus: NetflixWatchStatus.completed,
-          cast: [],
+          cast: const [],
           genres: _inferGenresFromTitle(cleanLine),
           metadata: {
             'source': 'generic_ocr',

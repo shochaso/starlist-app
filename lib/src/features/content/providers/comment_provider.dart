@@ -1,13 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart' hide Provider;
 import 'package:flutter_riverpod/flutter_riverpod.dart' as riverpod;
-import 'package:supabase_flutter/supabase_flutter.dart' hide Provider;
 
 import '../models/comment_model.dart';
 import '../repositories/comment_repository.dart';
-import '../../auth/repositories/user_repository.dart';
 import '../../auth/providers/user_repository_provider.dart';
 import '../../auth/supabase_provider.dart' as auth;
-import '../../../config/providers.dart';
 
 /// コメントリポジトリのプロバイダー
 final commentRepositoryProvider = riverpod.Provider<CommentRepository>((ref) {

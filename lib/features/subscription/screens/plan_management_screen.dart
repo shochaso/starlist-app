@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../src/providers/theme_provider_enhanced.dart';
 import '../../../providers/user_provider.dart';
 import '../../app/screens/settings_screen.dart';
 import '../../star/screens/star_dashboard_screen.dart';
 import '../../data_integration/screens/data_import_screen.dart';
-import '../../../src/widgets/common_app_bar.dart';
 
 class PlanManagementScreen extends ConsumerStatefulWidget {
   const PlanManagementScreen({super.key});
@@ -16,9 +13,7 @@ class PlanManagementScreen extends ConsumerStatefulWidget {
   ConsumerState<PlanManagementScreen> createState() => _PlanManagementScreenState();
 }
 
-class _PlanManagementScreenState extends ConsumerState<PlanManagementScreen>
-    with TickerProviderStateMixin {
-  late TabController _tabController;
+class _PlanManagementScreenState extends ConsumerState<PlanManagementScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   
   // プランデータ
@@ -55,17 +50,6 @@ class _PlanManagementScreenState extends ConsumerState<PlanManagementScreen>
     },
   ];
 
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 1, vsync: this);
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
-  }
 
   void _navigateToHome(BuildContext context) {
     // すべてのルートをクリアしてホーム画面に戻る
@@ -98,23 +82,9 @@ class _PlanManagementScreenState extends ConsumerState<PlanManagementScreen>
             fontWeight: FontWeight.w700,
           ),
         ),
-        bottom: TabBar(
-          controller: _tabController,
-          indicatorColor: const Color(0xFF4ECDC4),
-          labelColor: const Color(0xFF4ECDC4),
-          unselectedLabelColor: const Color(0xFF888888),
-          tabs: const [
-            Tab(text: 'プラン一覧'),
-          ],
-        ),
       ),
       drawer: _buildDrawer(),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          _buildPlansTab(),
-        ],
-      ),
+      body: _buildPlansTab(),
       bottomNavigationBar: _buildBottomNavigationBar(),
     );
   }
@@ -127,15 +97,6 @@ class _PlanManagementScreenState extends ConsumerState<PlanManagementScreen>
         children: [
           _buildPlanOverview(),
           const SizedBox(height: 20),
-          const Text(
-            'プラン一覧',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
-            ),
-          ),
-          const SizedBox(height: 12),
           ..._plans.map((plan) => _buildPlanCard(plan)).toList(),
         ],
       ),
@@ -417,10 +378,10 @@ class _PlanManagementScreenState extends ConsumerState<PlanManagementScreen>
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: const Color(0xFF333333)),
       ),
-      child: Column(
+      child: const Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             '収益推移',
             style: TextStyle(
               fontSize: 18,
@@ -428,8 +389,8 @@ class _PlanManagementScreenState extends ConsumerState<PlanManagementScreen>
               color: Colors.white,
             ),
           ),
-          const SizedBox(height: 20),
-          const Expanded(
+          SizedBox(height: 20),
+          Expanded(
             child: Center(
               child: Text(
                 '収益チャート\n（実装予定）',
@@ -456,10 +417,10 @@ class _PlanManagementScreenState extends ConsumerState<PlanManagementScreen>
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: const Color(0xFF333333)),
       ),
-      child: Column(
+      child: const Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             '会員数推移',
             style: TextStyle(
               fontSize: 18,
@@ -467,8 +428,8 @@ class _PlanManagementScreenState extends ConsumerState<PlanManagementScreen>
               color: Colors.white,
             ),
           ),
-          const SizedBox(height: 20),
-          const Expanded(
+          SizedBox(height: 20),
+          Expanded(
             child: Center(
               child: Text(
                 '会員数チャート\n（実装予定）',
@@ -1023,120 +984,116 @@ class _PlanManagementScreenState extends ConsumerState<PlanManagementScreen>
             child: Container(
               margin: const EdgeInsets.only(top: 8),
               padding: const EdgeInsets.all(16),
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    Color(0xFF4ECDC4),
-                    Color(0xFF44A08D),
-                  ],
-                ),
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(20),
-                  bottomRight: Radius.circular(20),
-                ),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Icon(
-                      currentUser.isStar ? Icons.star : Icons.person,
-                      color: Colors.white,
-                      size: 24,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          currentUser.name ?? (currentUser.isStar ? 'スター' : 'ファン'),
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        Text(
-                          currentUser.email,
-                          style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.8),
-                            fontSize: 12,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    ),
-                  ),
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color(0xFF4ECDC4),
+                  Color(0xFF44A08D),
                 ],
+              ),
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(20),
+                bottomRight: Radius.circular(20),
               ),
             ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(
+                    Icons.star,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text(
+                        'Starlist',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                          letterSpacing: -0.3,
+                        ),
+                      ),
+                      Text(
+                        currentUser.isStar ? 'スター' : 'ファン',
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.close, color: Colors.white70, size: 20),
+                  onPressed: () => Navigator.of(context).pop(),
+                  constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                  padding: EdgeInsets.zero,
+                ),
+              ],
+            ),
+            ),
           ),
-          const Divider(height: 1),
           Expanded(
             child: ListView(
-              padding: EdgeInsets.zero,
+              padding: const EdgeInsets.symmetric(vertical: 16),
               children: [
-                _buildDrawerItem(
-                  icon: Icons.home,
-                  title: 'ホーム',
-                  onTap: () {
-                    Navigator.of(context).popUntil((route) => route.isFirst);
-                  },
-                ),
+                _buildDrawerItem(Icons.home, 'ホーム', false, () {
+                  Navigator.pop(context);
+                  Navigator.of(context).popUntil((route) => route.isFirst);
+                }),
+                _buildDrawerItem(Icons.search, '検索', false, () {
+                  Navigator.pop(context);
+                  Navigator.of(context).popUntil((route) => route.isFirst);
+                }),
+                _buildDrawerItem(Icons.star, 'マイリスト', false, () {
+                  Navigator.pop(context);
+                  Navigator.of(context).popUntil((route) => route.isFirst);
+                }),
+                // スターのみ表示
                 if (currentUser.isStar) ...[
-                  _buildDrawerItem(
-                    icon: Icons.dashboard,
-                    title: 'ダッシュボード',
-                    onTap: () {
-                      Navigator.pop(context);
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const StarDashboardScreen()),
-                      );
-                    },
-                  ),
-                  _buildDrawerItem(
-                    icon: Icons.upload,
-                    title: 'データ取り込み',
-                    onTap: () {
-                      Navigator.pop(context);
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const DataImportScreen()),
-                      );
-                    },
-                  ),
-                ],
-                _buildDrawerItem(
-                  icon: Icons.card_membership,
-                  title: 'プラン管理',
-                  isSelected: true,
-                  onTap: () {
-                    Navigator.pop(context);
-                  },
-                ),
-                const Divider(),
-                _buildDrawerItem(
-                  icon: Icons.settings,
-                  title: '設定',
-                  onTap: () {
+                  _buildDrawerItem(Icons.camera_alt, 'データ取込み', false, () {
                     Navigator.pop(context);
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const SettingsScreen()),
+                      MaterialPageRoute(builder: (context) => const DataImportScreen()),
                     );
-                  },
-                ),
+                  }),
+                  _buildDrawerItem(Icons.analytics, 'スターダッシュボード', false, () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const StarDashboardScreen()),
+                    );
+                  }),
+                  _buildDrawerItem(Icons.workspace_premium, 'プランを管理', true, () {
+                    Navigator.pop(context);
+                  }),
+                ],
+                _buildDrawerItem(Icons.person, 'マイページ', false, () {
+                  Navigator.pop(context);
+                  Navigator.of(context).popUntil((route) => route.isFirst);
+                }),
+                _buildDrawerItem(Icons.settings, '設定', false, () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const SettingsScreen()),
+                  );
+                }),
               ],
             ),
           ),
@@ -1145,34 +1102,55 @@ class _PlanManagementScreenState extends ConsumerState<PlanManagementScreen>
     );
   }
 
-  Widget _buildDrawerItem({
-    required IconData icon,
-    required String title,
-    required VoidCallback onTap,
-    bool isSelected = false,
-  }) {
+  Widget _buildDrawerItem(IconData icon, String title, bool isActive, VoidCallback onTap) {
     final themeState = ref.watch(themeProviderEnhanced);
     final isDark = themeState.isDarkMode;
     
-    return ListTile(
-      leading: Icon(
-        icon,
-        color: isSelected
-            ? const Color(0xFF4ECDC4)
-            : (isDark ? Colors.white70 : Colors.black54),
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 3),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        color: isActive ? const Color(0xFF4ECDC4).withValues(alpha: 0.15) : null,
+        border: isActive ? Border.all(
+          color: const Color(0xFF4ECDC4).withValues(alpha: 0.3),
+          width: 1,
+        ) : null,
       ),
-      title: Text(
-        title,
-        style: TextStyle(
-          color: isSelected
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        leading: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: isActive 
               ? const Color(0xFF4ECDC4)
-              : (isDark ? Colors.white : Colors.black87),
-          fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+              : (isDark ? Colors.white10 : Colors.grey.shade100),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(
+            icon,
+            color: isActive 
+              ? Colors.white
+              : (isDark ? Colors.white54 : Colors.grey.shade600),
+            size: 18,
+          ),
         ),
+        title: Text(
+          title,
+          style: TextStyle(
+            color: isActive 
+              ? const Color(0xFF4ECDC4) 
+              : (isDark ? Colors.white : Colors.grey.shade800),
+            fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
+            fontSize: 15,
+          ),
+        ),
+        trailing: isActive ? const Icon(
+          Icons.arrow_forward_ios,
+          color: Color(0xFF4ECDC4),
+          size: 14,
+        ) : null,
+        onTap: onTap,
       ),
-      selected: isSelected,
-      selectedTileColor: const Color(0xFF4ECDC4).withValues(alpha: 0.1),
-      onTap: onTap,
     );
   }
 } 

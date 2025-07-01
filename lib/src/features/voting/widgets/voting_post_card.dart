@@ -374,14 +374,14 @@ class _VotingPostCardState extends ConsumerState<VotingPostCard> with SingleTick
         color: Colors.grey.withOpacity(0.1),
         borderRadius: BorderRadius.circular(12),
       ),
-      child: Column(
+      child: const Column(
         children: [
           Icon(
             Icons.access_time,
             color: Colors.grey,
             size: 48,
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
           Text(
             '投票期間が終了しました',
             style: TextStyle(
@@ -457,7 +457,7 @@ class _VotingPostCardState extends ConsumerState<VotingPostCard> with SingleTick
   Widget _buildErrorVoteSection() {
     return Container(
       padding: const EdgeInsets.all(16),
-      child: Center(
+      child: const Center(
         child: Text(
           '投票情報の読み込みに失敗しました',
           style: TextStyle(color: Colors.red),
@@ -479,10 +479,10 @@ class _VotingPostCardState extends ConsumerState<VotingPostCard> with SingleTick
   }
 
   Widget _buildErrorCard() {
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+    return const Card(
+      margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(16),
         child: Center(
           child: Text(
             'エラーが発生しました',

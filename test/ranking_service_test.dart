@@ -1,10 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
 import 'package:mockito/annotations.dart';
-import '../lib/src/features/ranking/models/ranking_model.dart';
-import '../lib/src/features/ranking/repositories/ranking_repository.dart';
-import '../lib/src/features/ranking/services/ranking_service.dart';
-import '../lib/src/core/errors/app_exceptions.dart';
+import 'package:starlist/src/features/ranking/models/ranking_model.dart';
+import 'package:starlist/src/features/ranking/repositories/ranking_repository.dart';
+import 'package:starlist/src/features/ranking/services/ranking_service.dart';
+import 'package:starlist/src/core/errors/app_exceptions.dart';
 
 @GenerateMocks([RankingRepository])
 import 'ranking_service_test.mocks.dart';
@@ -25,14 +25,14 @@ void main() {
     period: RankingPeriod.week,
     title: 'トレンドコンテンツ',
     items: [
-      RankingItemModel(
+      const RankingItemModel(
         id: 'item-1',
         rank: 1,
         type: 'video',
         title: 'テスト動画1',
         score: 100.0,
       ),
-      RankingItemModel(
+      const RankingItemModel(
         id: 'item-2',
         rank: 2,
         type: 'video',

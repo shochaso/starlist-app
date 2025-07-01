@@ -76,7 +76,7 @@ class SubscriptionPlanCard extends StatelessWidget {
             
             // メインコンテンツ
             Padding(
-              padding: EdgeInsets.all(20).copyWith(
+              padding: const EdgeInsets.all(20).copyWith(
                 top: plan.isPopular ? 44 : 20,
               ),
               child: Column(
@@ -304,7 +304,7 @@ class SubscriptionPlanCard extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(
+              const Icon(
                 Icons.check_circle,
                 color: Colors.green,
                 size: 16,

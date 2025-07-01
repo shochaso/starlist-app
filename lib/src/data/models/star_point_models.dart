@@ -523,7 +523,7 @@ class VotingResult {
 
   /// 残高不足エラーのファクトリー
   factory VotingResult.insufficientBalance() {
-    return VotingResult(
+    return const VotingResult(
       success: false,
       message: 'スターP残高が不足しています',
     );

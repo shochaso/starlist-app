@@ -10,7 +10,7 @@ class YouTubeApiService {
   YouTubeApiService({
     required this.apiKey,
     Dio? dio,
-  }) : this.dio = dio ?? Dio();
+  }) : dio = dio ?? Dio();
 
   /// キーワードに基づいて動画を検索
   Future<List<YouTubeVideo>> searchVideos(String query) async {

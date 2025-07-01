@@ -63,7 +63,7 @@ class AgeVerificationService {
         status: AgeVerificationStatus.verified,
         verificationDate: DateTime.now(),
         // 自己申告は1年後に期限切れ
-        expirationDate: DateTime.now().add(Duration(days: 365)),
+        expirationDate: DateTime.now().add(const Duration(days: 365)),
         verificationData: '{"birthDate": "${birthDate.toIso8601String()}", "age": $age}',
       );
       

@@ -42,7 +42,7 @@ class AppRoutes {
         
       case categoryList:
         return MaterialPageRoute(
-          builder: (context) => CategoryListScreen(),
+          builder: (context) => const CategoryListScreen(),
         );
 
       case starDetail:
@@ -55,17 +55,17 @@ class AppRoutes {
 
       case following:
         return MaterialPageRoute(
-          builder: (context) => FollowingScreen(),
+          builder: (context) => const FollowingScreen(),
         );
 
       case fanMypage:
         return MaterialPageRoute(
-          builder: (context) => FanMyPageScreen(),
+          builder: (context) => const FanMyPageScreen(),
         );
         
       case starMypage:
         return MaterialPageRoute(
-          builder: (context) => StarMyPageScreen(),
+          builder: (context) => const StarMyPageScreen(),
         );
 
       default:

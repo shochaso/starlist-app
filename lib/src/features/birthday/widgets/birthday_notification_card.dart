@@ -100,7 +100,7 @@ class BirthdayNotificationCard extends ConsumerWidget {
                       const SizedBox(height: 8),
                       Row(
                         children: [
-                          Icon(
+                          const Icon(
                             Icons.access_time,
                             color: Colors.grey,
                             size: 14,
@@ -114,7 +114,7 @@ class BirthdayNotificationCard extends ConsumerWidget {
                             ),
                           ),
                           const SizedBox(width: 16),
-                          Icon(
+                          const Icon(
                             Icons.cake,
                             color: Colors.grey,
                             size: 14,

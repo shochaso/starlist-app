@@ -55,7 +55,7 @@ class HomeScreen extends StatelessWidget {
           '音楽': GenreRating(
             level: 9,
             points: 950,
-            lastUpdated: DateTime.now().subtract(Duration(days: 7)),
+            lastUpdated: DateTime.now().subtract(const Duration(days: 7)),
           ),
         },
       ),
@@ -96,7 +96,7 @@ class HomeScreen extends StatelessWidget {
         type: 'youtube',
         title: '新曲「祝福」MV公開',
         content: 'YOASOBIの新曲「祝福」ミュージックビデオがYouTubeで公開されました。',
-        timestamp: DateTime.now().subtract(Duration(days: 1)),
+        timestamp: DateTime.now().subtract(const Duration(days: 1)),
         imageUrl: 'https://example.com/yoasobi_mv.jpg',
       ),
       Activity(
@@ -105,7 +105,7 @@ class HomeScreen extends StatelessWidget {
         type: 'purchase',
         title: 'ニューアルバム「L&」発売',
         content: 'King & Princeのニューアルバム「L&」が発売されました。',
-        timestamp: DateTime.now().subtract(Duration(days: 3)),
+        timestamp: DateTime.now().subtract(const Duration(days: 3)),
         imageUrl: 'https://example.com/kingandprince_album.jpg',
         price: 3300,
       ),
@@ -196,7 +196,7 @@ class HomeScreen extends StatelessWidget {
             // AppBarに相当する部分
             SliverToBoxAdapter(
               child: Padding(
-                padding: EdgeInsets.all(16),
+                padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -221,7 +221,7 @@ class HomeScreen extends StatelessWidget {
                               ),
                               onPressed: onThemeToggle,
                             ),
-                            SizedBox(width: 8),
+                            const SizedBox(width: 8),
                             CircleAvatar(
                               backgroundColor: isDarkMode ? Colors.grey.shade800 : Colors.grey.shade300,
                               child: Icon(
@@ -233,10 +233,10 @@ class HomeScreen extends StatelessWidget {
                         ),
                       ],
                     ),
-                    SizedBox(height: 16),
+                    const SizedBox(height: 16),
                     // 検索バー
                     Container(
-                      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                       decoration: BoxDecoration(
                         color: searchBarColor,
                         borderRadius: BorderRadius.circular(12),
@@ -247,7 +247,7 @@ class HomeScreen extends StatelessWidget {
                             Icons.search,
                             color: secondaryTextColor,
                           ),
-                          SizedBox(width: 8),
+                          const SizedBox(width: 8),
                           Text(
                             'スターや作品を検索',
                             style: TextStyle(
@@ -259,7 +259,7 @@ class HomeScreen extends StatelessWidget {
                     ),
                     
                     // スタータイムラインサンプルボタン（デモ用）を追加
-                    SizedBox(height: 16),
+                    const SizedBox(height: 16),
                     ElevatedButton.icon(
                       onPressed: () {
                         Navigator.of(context).push(
@@ -268,12 +268,12 @@ class HomeScreen extends StatelessWidget {
                           ),
                         );
                       },
-                      icon: Icon(Icons.timeline),
-                      label: Text('スタータイムラインのサンプルを表示'),
+                      icon: const Icon(Icons.timeline),
+                      label: const Text('スタータイムラインのサンプルを表示'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Theme.of(context).primaryColor,
                         foregroundColor: Colors.white,
-                        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -287,7 +287,7 @@ class HomeScreen extends StatelessWidget {
             // カテゴリーのタイトル
             SliverToBoxAdapter(
               child: Padding(
-                padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -318,12 +318,12 @@ class HomeScreen extends StatelessWidget {
 
             // カテゴリーグリッド
             SliverToBoxAdapter(
-              child: Container(
+              child: SizedBox(
                 height: 250,
                 child: GridView.builder(
-                  padding: EdgeInsets.symmetric(horizontal: 16),
-                  physics: NeverScrollableScrollPhysics(),
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  physics: const NeverScrollableScrollPhysics(),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
                     childAspectRatio: 1.5,
                     crossAxisSpacing: 12,
@@ -348,7 +348,7 @@ class HomeScreen extends StatelessWidget {
                               color: Colors.grey.withOpacity(0.2),
                               spreadRadius: 1,
                               blurRadius: 3,
-                              offset: Offset(0, 2),
+                              offset: const Offset(0, 2),
                             ),
                           ],
                         ),
@@ -387,7 +387,7 @@ class HomeScreen extends StatelessWidget {
             // おすすめのスターのタイトル
             SliverToBoxAdapter(
               child: Padding(
-                padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -421,7 +421,7 @@ class HomeScreen extends StatelessWidget {
               delegate: SliverChildBuilderDelegate(
                 (context, index) {
                   return Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     child: Container(
                       decoration: BoxDecoration(
                         color: cardColor,
@@ -431,12 +431,12 @@ class HomeScreen extends StatelessWidget {
                             color: Colors.grey.withOpacity(0.1),
                             spreadRadius: 1,
                             blurRadius: 2,
-                            offset: Offset(0, 1),
+                            offset: const Offset(0, 1),
                           ),
                         ],
                       ),
                       child: ListTile(
-                        contentPadding: EdgeInsets.all(8),
+                        contentPadding: const EdgeInsets.all(8),
                         leading: ClipRRect(
                           borderRadius: BorderRadius.circular(8),
                           child: Container(
@@ -489,7 +489,7 @@ class HomeScreen extends StatelessWidget {
                               borderRadius: BorderRadius.circular(16),
                             ),
                           ),
-                          child: Text('入手'),
+                          child: const Text('入手'),
                         ),
                         onTap: () {
                           Navigator.pushNamed(
@@ -534,12 +534,12 @@ class HomeScreen extends StatelessWidget {
               title: 'SNSでフォロー中',
               seeMoreText: 'もっと見る',
               trailing: Container(
-                padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: Colors.blue.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Row(
+                child: const Row(
                   children: [
                     Icon(
                       Icons.link,
@@ -580,7 +580,7 @@ class HomeScreen extends StatelessWidget {
             // 今日のアクティビティのタイトル
             SliverToBoxAdapter(
               child: Padding(
-                padding: EdgeInsets.fromLTRB(16, 24, 16, 8),
+                padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -611,7 +611,7 @@ class HomeScreen extends StatelessWidget {
 
             // アクティビティリスト
             SliverPadding(
-              padding: EdgeInsets.all(16),
+              padding: const EdgeInsets.all(16),
               sliver: SliverToBoxAdapter(
                 child: SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
@@ -619,7 +619,7 @@ class HomeScreen extends StatelessWidget {
                     children: activities.map((activity) {
                       return Container(
                         width: 280,
-                        margin: EdgeInsets.only(right: 16),
+                        margin: const EdgeInsets.only(right: 16),
                         child: isDarkMode
                             ? ActivityCard(
                                 activity: activity,
@@ -637,7 +637,7 @@ class HomeScreen extends StatelessWidget {
                                   children: [
                                     // アクティビティ画像
                                     ClipRRect(
-                                      borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+                                      borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
                                       child: AspectRatio(
                                         aspectRatio: 16 / 9,
                                         child: Image.network(
@@ -659,7 +659,7 @@ class HomeScreen extends StatelessWidget {
                                       ),
                                     ),
                                     Padding(
-                                      padding: EdgeInsets.all(12),
+                                      padding: const EdgeInsets.all(12),
                                       child: Column(
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
@@ -673,7 +673,7 @@ class HomeScreen extends StatelessWidget {
                                             maxLines: 1,
                                             overflow: TextOverflow.ellipsis,
                                           ),
-                                          SizedBox(height: 4),
+                                          const SizedBox(height: 4),
                                           Text(
                                             activity.content,
                                             style: TextStyle(
@@ -685,7 +685,7 @@ class HomeScreen extends StatelessWidget {
                                           ),
                                           if (activity.price != null)
                                             Padding(
-                                              padding: EdgeInsets.only(top: 8),
+                                              padding: const EdgeInsets.only(top: 8),
                                               child: Text(
                                                 '¥${activity.price}',
                                                 style: TextStyle(
@@ -708,7 +708,7 @@ class HomeScreen extends StatelessWidget {
             ),
 
             // 余白
-            SliverToBoxAdapter(
+            const SliverToBoxAdapter(
               child: SizedBox(height: 80),
             ),
           ],
@@ -719,7 +719,7 @@ class HomeScreen extends StatelessWidget {
         selectedItemColor: accentColor,
         unselectedItemColor: secondaryTextColor,
         type: BottomNavigationBarType.fixed,
-        items: [
+        items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home_outlined),
             activeIcon: Icon(Icons.home),

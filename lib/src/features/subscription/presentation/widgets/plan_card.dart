@@ -69,7 +69,7 @@ class PlanCard extends StatelessWidget {
                           color: isPremium && plan.isPopular ? Colors.white : null,
                         ),
                       ),
-                      SizedBox(height: 4),
+                      const SizedBox(height: 4),
                       Text(
                         plan.description,
                         style: TextStyle(
