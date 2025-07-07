@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import '../../../src/providers/theme_provider_enhanced.dart';
+import '../../../src/services/spotify_playlist_parser.dart';
+import '../../../src/services/spotify_history_parser.dart';
 
 class MusicImportScreen extends ConsumerStatefulWidget {
   const MusicImportScreen({super.key});
@@ -21,10 +23,12 @@ class _MusicImportScreenState extends ConsumerState<MusicImportScreen>
   late Animation<double> _fadeAnimation;
   bool isProcessing = false;
   List<Map<String, dynamic>> processedTracks = [];
-  final List<Map<String, dynamic>> extractedTracks = [];
+  List<SpotifyTrack> extractedTracks = [];
   File? selectedImage;
   final ImagePicker _imagePicker = ImagePicker();
   bool showConfirmation = false;
+  bool showPreview = false;
+  List<bool> selectedTracks = [];
 
   // 音楽取り込みタイプ
   final List<Map<String, dynamic>> importTypes = [
@@ -128,6 +132,7 @@ class _MusicImportScreenState extends ConsumerState<MusicImportScreen>
               const SizedBox(height: 24),
               _buildDataInputSection(isDark),
               const SizedBox(height: 24),
+              if (showPreview) _buildPreviewSection(isDark),
               if (showConfirmation) _buildConfirmationSection(isDark),
               if (isProcessing) _buildProcessingSection(isDark),
               const SizedBox(height: 100), // ボトムナビゲーション用のスペース
@@ -439,7 +444,7 @@ class _MusicImportScreenState extends ConsumerState<MusicImportScreen>
   String _getPlaceholderText() {
     switch (selectedImportType) {
       case 'listening_history':
-        return '例：\n楽曲: 夜に駆ける\nアーティスト: YOASOBI\n再生日時: 2024/01/15 14:30\nアルバム: THE BOOK\n\nまたはSpotifyの再生履歴をOCRで読み取ったテキストをペーストしてください';
+        return '例：\nBE:FIRST\nアーティスト・2曲を再生済み\n\nBoom Boom Back\nBE:FIRST\n\nGRIT\nBE:FIRST\n\nHANA Mix\n2曲を再生済み・プレイリスト・Spotify\n\n夢中\nBE:FIRST\n\nまたはSpotifyの再生履歴画面をOCRで読み取ったテキストをペーストしてください';
       case 'playlist':
         return '例：\nプレイリスト名: お気に入りJ-POP\n楽曲1: 紅蓮華 - LiSA\n楽曲2: 炎 - LiSA\n楽曲3: Pretender - Official髭男dism\n\nまたはプレイリストのURLを入力してください';
       case 'artist':
@@ -484,6 +489,251 @@ class _MusicImportScreenState extends ConsumerState<MusicImportScreen>
         ),
       ),
     );
+  }
+
+  Widget _buildPreviewSection(bool isDark) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: const Color(0xFF1DB954),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(
+                Icons.music_note,
+                color: Color(0xFF1DB954),
+                size: 20,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                '検出された楽曲 (${extractedTracks.length}曲)',
+                style: TextStyle(
+                  color: isDark ? Colors.white : Colors.black87,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const Spacer(),
+              IconButton(
+                onPressed: () {
+                  setState(() {
+                    final allSelected = selectedTracks.every((s) => s);
+                    selectedTracks = List.filled(selectedTracks.length, !allSelected);
+                  });
+                },
+                icon: Icon(
+                  selectedTracks.every((s) => s) 
+                      ? Icons.check_box 
+                      : Icons.check_box_outline_blank,
+                  color: const Color(0xFF1DB954),
+                  size: 20,
+                ),
+                tooltip: '全選択/全解除',
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            '取り込む楽曲を選択してください',
+            style: TextStyle(
+              color: isDark ? Colors.white70 : Colors.black54,
+              fontSize: 14,
+            ),
+          ),
+          const SizedBox(height: 16),
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxHeight: 400),
+            child: ListView.builder(
+              shrinkWrap: true,
+              itemCount: extractedTracks.length,
+              itemBuilder: (context, index) {
+                final track = extractedTracks[index];
+                final isSelected = selectedTracks[index];
+                
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: isSelected 
+                        ? (isDark ? const Color(0xFF1A1A1A) : const Color(0xFFF8FAFC))
+                        : (isDark ? const Color(0xFF404040).withValues(alpha: 0.3) : const Color(0xFFF1F5F9)),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: isSelected 
+                          ? const Color(0xFF1DB954)
+                          : (isDark ? const Color(0xFF525252) : const Color(0xFFE2E8F0)),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Checkbox(
+                        value: isSelected,
+                        onChanged: (value) {
+                          setState(() {
+                            selectedTracks[index] = value ?? false;
+                          });
+                        },
+                        activeColor: const Color(0xFF1DB954),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                if (track.trackNumber != null) ...[
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF1DB954).withValues(alpha: 0.2),
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: Text(
+                                      '#${track.trackNumber}',
+                                      style: const TextStyle(
+                                        color: Color(0xFF1DB954),
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                ],
+                                Expanded(
+                                  child: Text(
+                                    track.title,
+                                    style: TextStyle(
+                                      color: isDark ? Colors.white : Colors.black87,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 4),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    track.artist,
+                                    style: TextStyle(
+                                      color: isDark ? Colors.white70 : Colors.black54,
+                                      fontSize: 12,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                if (track.duration != null) ...[
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    track.duration!,
+                                    style: TextStyle(
+                                      color: isDark ? Colors.white60 : Colors.black45,
+                                      fontSize: 11,
+                                    ),
+                                  ),
+                                ],
+                                const SizedBox(width: 8),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: _getConfidenceColor(track.confidence).withValues(alpha: 0.1),
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: Text(
+                                    '${(track.confidence * 100).toInt()}%',
+                                    style: TextStyle(
+                                      color: _getConfidenceColor(track.confidence),
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            if (track.album != null && track.album!.isNotEmpty) ...[
+                              const SizedBox(height: 2),
+                              Text(
+                                'アルバム: ${track.album}',
+                                style: TextStyle(
+                                  color: isDark ? Colors.white54 : Colors.black45,
+                                  fontSize: 11,
+                                  fontStyle: FontStyle.italic,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () {
+                    setState(() {
+                      showPreview = false;
+                      extractedTracks.clear();
+                      selectedTracks.clear();
+                    });
+                  },
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: isDark ? Colors.white54 : Colors.black54,
+                    side: BorderSide(color: isDark ? Colors.white54 : Colors.black54),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: const Text('キャンセル'),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: selectedTracks.any((selected) => selected) ? _confirmImport : null,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF1DB954),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: Text('${selectedTracks.where((s) => s).length}曲を取り込む'),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Color _getConfidenceColor(double confidence) {
+    if (confidence >= 0.8) return Colors.green;
+    if (confidence >= 0.6) return Colors.orange;
+    return Colors.red;
   }
 
   Widget _buildConfirmationSection(bool isDark) {
@@ -533,8 +783,11 @@ class _MusicImportScreenState extends ConsumerState<MusicImportScreen>
                   onPressed: () {
                     setState(() {
                       showConfirmation = false;
+                      showPreview = false;
                       _textController.clear();
                       processedTracks.clear();
+                      extractedTracks.clear();
+                      selectedTracks.clear();
                     });
                   },
                   style: ElevatedButton.styleFrom(
@@ -659,30 +912,71 @@ class _MusicImportScreenState extends ConsumerState<MusicImportScreen>
       isProcessing = true;
     });
 
-    // TODO: 実際のデータ処理ロジックを実装
-    await Future.delayed(const Duration(seconds: 2));
+    await Future.delayed(const Duration(milliseconds: 500));
 
-    // サンプルデータ
-    final sampleTracks = [
-      {
-        'title': '夜に駆ける',
-        'artist': 'YOASOBI',
-        'album': 'THE BOOK',
-        'duration': '3:24',
-        'playedAt': '2024/01/15 14:30',
-      },
-      {
-        'title': '炎',
-        'artist': 'LiSA',
-        'album': '炎/白銀',
-        'duration': '4:17',
-        'playedAt': '2024/01/15 14:27',
-      },
-    ];
+    try {
+      List<SpotifyTrack> parsedTracks = [];
+      
+      // 選択されたインポートタイプに応じて適切なパーサーを使用
+      switch (selectedImportType) {
+        case 'listening_history':
+          final historyItems = SpotifyHistoryParser.parseHistoryText(_textController.text);
+          parsedTracks = historyItems.cast<SpotifyTrack>();
+          break;
+        case 'playlist':
+          parsedTracks = SpotifyPlaylistParser.parsePlaylistText(_textController.text);
+          break;
+        case 'artist':
+        case 'concert':
+        default:
+          // 汎用パーサーを使用
+          parsedTracks = SpotifyPlaylistParser.parsePlaylistText(_textController.text);
+          break;
+      }
+      
+      setState(() {
+        extractedTracks = parsedTracks;
+        selectedTracks = List.filled(parsedTracks.length, true); // デフォルトで全選択
+        isProcessing = false;
+        showPreview = parsedTracks.isNotEmpty;
+      });
+
+      if (parsedTracks.isEmpty) {
+        _showErrorSnackBar('楽曲データを検出できませんでした。\nフォーマットを確認してください。');
+      } else {
+        debugPrint('検出された楽曲数: ${parsedTracks.length} ($selectedImportType)');
+      }
+    } catch (e) {
+      setState(() {
+        isProcessing = false;
+      });
+      _showErrorSnackBar('データ解析中にエラーが発生しました: $e');
+    }
+  }
+
+  void _showErrorSnackBar(String message) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message),
+          backgroundColor: Colors.red[600],
+          duration: const Duration(seconds: 4),
+        ),
+      );
+    }
+  }
+
+  void _confirmImport() {
+    final selectedMusicTracks = extractedTracks
+        .asMap()
+        .entries
+        .where((entry) => selectedTracks[entry.key])
+        .map((entry) => entry.value.toMap())
+        .toList();
 
     setState(() {
-      isProcessing = false;
-      processedTracks = sampleTracks;
+      processedTracks = selectedMusicTracks;
+      showPreview = false;
       showConfirmation = true;
     });
   }

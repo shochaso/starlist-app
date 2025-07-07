@@ -95,7 +95,7 @@ class MyApp extends ConsumerWidget {
         '/search': (context) => const SearchScreen(),
         '/mylist': (context) => const MylistScreen(),
         '/profile': (context) => const ProfileScreen(),
-        '/': (context) => const StarlistMainScreen(),
+        '/home': (context) => const StarlistMainScreen(),
       },
       debugShowCheckedModeBanner: false,
     );

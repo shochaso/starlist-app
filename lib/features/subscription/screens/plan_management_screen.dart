@@ -1053,28 +1053,28 @@ class _PlanManagementScreenState extends ConsumerState<PlanManagementScreen> {
               children: [
                 _buildDrawerItem(Icons.home, 'ホーム', false, () {
                   Navigator.pop(context);
-                  Navigator.of(context).popUntil((route) => route.isFirst);
+                  Navigator.pushReplacementNamed(context, '/');
                 }),
                 _buildDrawerItem(Icons.search, '検索', false, () {
                   Navigator.pop(context);
-                  Navigator.of(context).popUntil((route) => route.isFirst);
+                  Navigator.pushReplacementNamed(context, '/search');
                 }),
                 _buildDrawerItem(Icons.star, 'マイリスト', false, () {
                   Navigator.pop(context);
-                  Navigator.of(context).popUntil((route) => route.isFirst);
+                  Navigator.pushReplacementNamed(context, '/mylist');
                 }),
                 // スターのみ表示
                 if (currentUser.isStar) ...[
                   _buildDrawerItem(Icons.camera_alt, 'データ取込み', false, () {
                     Navigator.pop(context);
-                    Navigator.push(
+                    Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(builder: (context) => const DataImportScreen()),
                     );
                   }),
                   _buildDrawerItem(Icons.analytics, 'スターダッシュボード', false, () {
                     Navigator.pop(context);
-                    Navigator.push(
+                    Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(builder: (context) => const StarDashboardScreen()),
                     );
@@ -1085,11 +1085,11 @@ class _PlanManagementScreenState extends ConsumerState<PlanManagementScreen> {
                 ],
                 _buildDrawerItem(Icons.person, 'マイページ', false, () {
                   Navigator.pop(context);
-                  Navigator.of(context).popUntil((route) => route.isFirst);
+                  Navigator.pushReplacementNamed(context, '/profile');
                 }),
                 _buildDrawerItem(Icons.settings, '設定', false, () {
                   Navigator.pop(context);
-                  Navigator.push(
+                  Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(builder: (context) => const SettingsScreen()),
                   );

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import '../../../src/providers/theme_provider_enhanced.dart';
+import '../../../src/services/app_usage_parser.dart';
 
 class AppUsageImportScreen extends ConsumerStatefulWidget {
   const AppUsageImportScreen({super.key});
@@ -21,7 +22,9 @@ class _AppUsageImportScreenState extends ConsumerState<AppUsageImportScreen>
   late Animation<double> _fadeAnimation;
   bool isProcessing = false;
   List<Map<String, dynamic>> processedApps = [];
-  final List<Map<String, dynamic>> extractedApps = [];
+  List<AppUsageItem> extractedApps = [];
+  bool showPreview = false;
+  List<bool> selectedApps = [];
   File? selectedImage;
   final ImagePicker _imagePicker = ImagePicker();
   bool showConfirmation = false;
@@ -737,32 +740,55 @@ class _AppUsageImportScreenState extends ConsumerState<AppUsageImportScreen>
       isProcessing = true;
     });
 
-    // TODO: 実際のデータ処理ロジックを実装
-    await Future.delayed(const Duration(seconds: 2));
+    await Future.delayed(const Duration(milliseconds: 500));
 
-    // サンプルデータ
-    final sampleApps = [
-      {
-        'appName': 'Instagram',
-        'usageTime': '2時間 30分',
-        'launchCount': 15,
-        'category': 'ソーシャル',
-        'date': '2024/01/15',
-        'type': selectedImportType,
-      },
-      {
-        'appName': 'Spotify',
-        'usageTime': '1時間 45分',
-        'launchCount': 8,
-        'category': 'ミュージック',
-        'date': '2024/01/15',
-        'type': selectedImportType,
-      },
-    ];
+    try {
+      // アプリ使用履歴データを解析
+      final parsedApps = AppUsageParser.parseUsageText(_textController.text);
+      
+      setState(() {
+        extractedApps = parsedApps;
+        selectedApps = List.filled(parsedApps.length, true); // デフォルトで全選択
+        isProcessing = false;
+        showPreview = parsedApps.isNotEmpty;
+      });
+
+      if (parsedApps.isEmpty) {
+        _showErrorSnackBar('アプリ使用データを検出できませんでした。\nフォーマットを確認してください。');
+      } else {
+        debugPrint('検出されたアプリ数: ${parsedApps.length} ($selectedImportType)');
+      }
+    } catch (e) {
+      setState(() {
+        isProcessing = false;
+      });
+      _showErrorSnackBar('データ解析中にエラーが発生しました: $e');
+    }
+  }
+
+  void _showErrorSnackBar(String message) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message),
+          backgroundColor: Colors.red[600],
+          duration: const Duration(seconds: 4),
+        ),
+      );
+    }
+  }
+
+  void _confirmImport() {
+    final selectedUsageApps = extractedApps
+        .asMap()
+        .entries
+        .where((entry) => selectedApps[entry.key])
+        .map((entry) => entry.value.toMap())
+        .toList();
 
     setState(() {
-      isProcessing = false;
-      processedApps = sampleApps;
+      processedApps = selectedUsageApps;
+      showPreview = false;
       showConfirmation = true;
     });
   }

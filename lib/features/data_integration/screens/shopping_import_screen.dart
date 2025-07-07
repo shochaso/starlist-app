@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import '../../../src/providers/theme_provider_enhanced.dart';
+import '../../../src/services/amazon_purchase_parser.dart';
 
 class ShoppingImportScreen extends ConsumerStatefulWidget {
   const ShoppingImportScreen({super.key});
@@ -21,10 +22,12 @@ class _ShoppingImportScreenState extends ConsumerState<ShoppingImportScreen>
   late Animation<double> _fadeAnimation;
   bool isProcessing = false;
   List<Map<String, dynamic>> processedPurchases = [];
-  final List<Map<String, dynamic>> extractedPurchases = [];
+  List<AmazonPurchaseItem> extractedPurchases = [];
   File? selectedImage;
   final ImagePicker _imagePicker = ImagePicker();
   bool showConfirmation = false;
+  bool showPreview = false;
+  List<bool> selectedItems = [];
 
   // ショッピング取り込みタイプ
   final List<Map<String, dynamic>> importTypes = [
@@ -136,6 +139,7 @@ class _ShoppingImportScreenState extends ConsumerState<ShoppingImportScreen>
               const SizedBox(height: 24),
               _buildDataInputSection(isDark),
               const SizedBox(height: 24),
+              if (showPreview) _buildPreviewSection(isDark),
               if (showConfirmation) _buildConfirmationSection(isDark),
               if (isProcessing) _buildProcessingSection(isDark),
               const SizedBox(height: 100), // ボトムナビゲーション用のスペース
@@ -496,6 +500,199 @@ class _ShoppingImportScreenState extends ConsumerState<ShoppingImportScreen>
     );
   }
 
+  Widget _buildPreviewSection(bool isDark) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: const Color(0xFFFF9900),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(
+                Icons.shopping_cart,
+                color: Color(0xFFFF9900),
+                size: 20,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                '検出された商品 (${extractedPurchases.length}件)',
+                style: TextStyle(
+                  color: isDark ? Colors.white : Colors.black87,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const Spacer(),
+              Text(
+                '検出率: ${((extractedPurchases.length / _estimateOriginalItemCount()) * 100).toStringAsFixed(1)}%',
+                style: TextStyle(
+                  color: extractedPurchases.length >= (_estimateOriginalItemCount() * 0.9) 
+                      ? Colors.green 
+                      : Colors.orange,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            '取り込む商品を選択してください',
+            style: TextStyle(
+              color: isDark ? Colors.white70 : Colors.black54,
+              fontSize: 14,
+            ),
+          ),
+          const SizedBox(height: 16),
+          ...extractedPurchases.asMap().entries.map((entry) {
+            final index = entry.key;
+            final item = entry.value;
+            final isSelected = selectedItems[index];
+            
+            return Container(
+              margin: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: isSelected 
+                    ? (isDark ? const Color(0xFF1A1A1A) : const Color(0xFFF8FAFC))
+                    : (isDark ? const Color(0xFF404040) : const Color(0xFFF1F5F9)),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: isSelected 
+                      ? const Color(0xFFFF9900)
+                      : (isDark ? const Color(0xFF525252) : const Color(0xFFE2E8F0)),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Checkbox(
+                    value: isSelected,
+                    onChanged: (value) {
+                      setState(() {
+                        selectedItems[index] = value ?? false;
+                      });
+                    },
+                    activeColor: const Color(0xFFFF9900),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          item.productName,
+                          style: TextStyle(
+                            color: isDark ? Colors.white : Colors.black87,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            Text(
+                              item.price,
+                              style: const TextStyle(
+                                color: Color(0xFFFF9900),
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            if (item.orderDate != 'N/A') ...[
+                              Text(
+                                item.orderDate,
+                                style: TextStyle(
+                                  color: isDark ? Colors.white60 : Colors.black54,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
+                            const Spacer(),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: _getConfidenceColor(item.confidence).withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                '${(item.confidence * 100).toInt()}%',
+                                style: TextStyle(
+                                  color: _getConfidenceColor(item.confidence),
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }).toList(),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () {
+                    setState(() {
+                      showPreview = false;
+                      extractedPurchases.clear();
+                      selectedItems.clear();
+                    });
+                  },
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: isDark ? Colors.white54 : Colors.black54,
+                    side: BorderSide(color: isDark ? Colors.white54 : Colors.black54),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: const Text('キャンセル'),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: selectedItems.any((selected) => selected) ? _confirmImport : null,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFFF9900),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: Text('${selectedItems.where((s) => s).length}件を取り込む'),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Color _getConfidenceColor(double confidence) {
+    if (confidence >= 0.8) return Colors.green;
+    if (confidence >= 0.6) return Colors.orange;
+    return Colors.red;
+  }
+
   Widget _buildConfirmationSection(bool isDark) {
     return Container(
       padding: const EdgeInsets.all(20),
@@ -543,8 +740,11 @@ class _ShoppingImportScreenState extends ConsumerState<ShoppingImportScreen>
                   onPressed: () {
                     setState(() {
                       showConfirmation = false;
+                      showPreview = false;
                       _textController.clear();
                       processedPurchases.clear();
+                      extractedPurchases.clear();
+                      selectedItems.clear();
                     });
                   },
                   style: ElevatedButton.styleFrom(
@@ -669,30 +869,64 @@ class _ShoppingImportScreenState extends ConsumerState<ShoppingImportScreen>
       isProcessing = true;
     });
 
-    // TODO: 実際のデータ処理ロジックを実装
-    await Future.delayed(const Duration(seconds: 2));
+    // 実際のデータ解析処理
+    await Future.delayed(const Duration(seconds: 1));
 
-    // サンプルデータ
-    final samplePurchases = [
-      {
-        'product': 'iPhone 15 Pro Max 256GB',
-        'price': '¥159,800',
-        'site': 'Amazon',
-        'orderNumber': '123-4567890-1234567',
-        'orderDate': '2024/01/15',
-      },
-      {
-        'product': 'Nintendo Switch 本体',
-        'price': '¥32,978',
-        'site': '楽天市場',
-        'orderNumber': '202401150001',
-        'orderDate': '2024/01/15',
-      },
-    ];
+    try {
+      // Amazon購入データをパース
+      final parsedItems = AmazonPurchaseParser.parseText(_textController.text);
+      
+      setState(() {
+        extractedPurchases = parsedItems;
+        selectedItems = List.filled(parsedItems.length, true); // デフォルトで全選択
+        isProcessing = false;
+        showPreview = parsedItems.isNotEmpty;
+      });
+
+      if (parsedItems.isEmpty) {
+        _showErrorSnackBar('商品データを検出できませんでした。\n形式を確認してください。');
+      } else {
+        final detectionRate = (parsedItems.length / _estimateOriginalItemCount()) * 100;
+        debugPrint('検出率: ${detectionRate.toStringAsFixed(1)}%');
+      }
+    } catch (e) {
+      setState(() {
+        isProcessing = false;
+      });
+      _showErrorSnackBar('データ解析中にエラーが発生しました: $e');
+    }
+  }
+
+  int _estimateOriginalItemCount() {
+    // 行数や「お届け済み」の出現回数から推定
+    final lines = _textController.text.split('\n').where((line) => line.trim().isNotEmpty).length;
+    final deliveryCount = RegExp(r'お?届け済み|受取済み').allMatches(_textController.text).length;
+    return deliveryCount > 0 ? deliveryCount : (lines / 3).ceil();
+  }
+
+  void _showErrorSnackBar(String message) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message),
+          backgroundColor: Colors.red[600],
+          duration: const Duration(seconds: 4),
+        ),
+      );
+    }
+  }
+
+  void _confirmImport() {
+    final selectedPurchases = extractedPurchases
+        .asMap()
+        .entries
+        .where((entry) => selectedItems[entry.key])
+        .map((entry) => entry.value.toMap())
+        .toList();
 
     setState(() {
-      isProcessing = false;
-      processedPurchases = samplePurchases;
+      processedPurchases = selectedPurchases;
+      showPreview = false;
       showConfirmation = true;
     });
   }

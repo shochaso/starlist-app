@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import '../../../src/providers/theme_provider_enhanced.dart';
+import '../../../src/services/receipt_parser.dart';
 
 class ReceiptImportScreen extends ConsumerStatefulWidget {
   const ReceiptImportScreen({super.key});

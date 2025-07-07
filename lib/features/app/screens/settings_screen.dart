@@ -6,6 +6,7 @@ import '../../../providers/user_provider.dart';
 import '../../subscription/screens/plan_management_screen.dart';
 import '../../star/screens/star_dashboard_screen.dart';
 import '../../data_integration/screens/data_import_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -18,11 +19,41 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   // 設定状態
   bool _pushNotifications = true;
   bool _emailNotifications = true;
-  bool _darkMode = true;
   bool _analytics = true;
   String _language = 'ja';
 
+  @override
+  void initState() {
+    super.initState();
+    _loadSettings();
+  }
 
+  Future<void> _loadSettings() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      setState(() {
+        _pushNotifications = prefs.getBool('push_notifications') ?? true;
+        _emailNotifications = prefs.getBool('email_notifications') ?? true;
+        _analytics = prefs.getBool('analytics') ?? true;
+        _language = prefs.getString('language') ?? 'ja';
+      });
+    } catch (e) {
+      debugPrint('設定の読み込みに失敗しました: $e');
+    }
+  }
+
+  Future<void> _saveSetting(String key, dynamic value) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      if (value is bool) {
+        await prefs.setBool(key, value);
+      } else if (value is String) {
+        await prefs.setString(key, value);
+      }
+    } catch (e) {
+      debugPrint('設定の保存に失敗しました: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -213,7 +244,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           'データ分析',
           'アプリの改善のためのデータ収集',
           _analytics,
-          (value) => setState(() => _analytics = value),
+          (value) {
+            setState(() => _analytics = value);
+            _saveSetting('analytics', value);
+            HapticFeedback.lightImpact();
+          },
         ),
         _buildSettingsItem(
           Icons.shield_outlined,
@@ -240,14 +275,22 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           'プッシュ通知',
           'アプリからの通知を受け取る',
           _pushNotifications,
-          (value) => setState(() => _pushNotifications = value),
+          (value) {
+            setState(() => _pushNotifications = value);
+            _saveSetting('push_notifications', value);
+            HapticFeedback.lightImpact();
+          },
         ),
         _buildSwitchItem(
           Icons.email_outlined,
           'メール通知',
           '重要な更新をメールで受け取る',
           _emailNotifications,
-          (value) => setState(() => _emailNotifications = value),
+          (value) {
+            setState(() => _emailNotifications = value);
+            _saveSetting('email_notifications', value);
+            HapticFeedback.lightImpact();
+          },
         ),
         _buildSettingsItem(
           Icons.tune,
@@ -259,8 +302,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
-
   Widget _buildAppSettings() {
+    final themeState = ref.watch(themeProviderEnhanced);
+    final themeActions = ref.read(themeActionProvider);
+    
     return _buildSettingsSection(
       'アプリ',
       [
@@ -268,8 +313,21 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           Icons.dark_mode_outlined,
           'ダークモード',
           'ダークテーマを使用',
-          _darkMode,
-          (value) => setState(() => _darkMode = value),
+          themeState.themeMode == AppThemeMode.dark,
+          (value) async {
+            HapticFeedback.lightImpact();
+            if (value) {
+              await themeActions.setDark();
+            } else {
+              await themeActions.setLight();
+            }
+          },
+        ),
+        _buildCustomItem(
+          Icons.brightness_6,
+          'テーマ設定',
+          '現在: ${themeState.themeMode.displayName}',
+          () => _showThemeDialog(),
         ),
         _buildDropdownItem(
           Icons.language,
@@ -282,7 +340,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             'ko': '한국어',
             'zh': '中文',
           },
-          (value) => setState(() => _language = value!),
+          (value) {
+            setState(() => _language = value!);
+            _saveSetting('language', value!);
+          },
         ),
         _buildSettingsItem(
           Icons.storage_outlined,
@@ -408,6 +469,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Widget _buildSettingsItem(IconData icon, String title, String subtitle, VoidCallback onTap) {
+    final themeState = ref.watch(themeProviderEnhanced);
+    final isDark = themeState.isDarkMode;
+    
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -428,10 +492,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   children: [
                     Text(
                       title,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
-                        color: Colors.white,
+                        color: isDark ? Colors.white : Colors.black87,
                       ),
                     ),
                     const SizedBox(height: 2),
@@ -454,6 +518,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Widget _buildSwitchItem(IconData icon, String title, String subtitle, bool value, Function(bool) onChanged) {
+    final themeState = ref.watch(themeProviderEnhanced);
+    final isDark = themeState.isDarkMode;
+    
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Row(
@@ -466,10 +533,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
-                    color: Colors.white,
+                    color: isDark ? Colors.white : Colors.black87,
                   ),
                 ),
                 const SizedBox(height: 2),
@@ -501,6 +568,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     Map<String, String> options,
     Function(String?) onChanged,
   ) {
+    final themeState = ref.watch(themeProviderEnhanced);
+    final isDark = themeState.isDarkMode;
+    
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Row(
@@ -513,10 +583,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
-                    color: Colors.white,
+                    color: isDark ? Colors.white : Colors.black87,
                   ),
                 ),
                 const SizedBox(height: 2),
@@ -533,8 +603,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           DropdownButton<String>(
             value: value,
             onChanged: onChanged,
-            dropdownColor: const Color(0xFF2A2A2A),
-            style: const TextStyle(color: Colors.white),
+            dropdownColor: isDark ? const Color(0xFF2A2A2A) : Colors.white,
+            style: TextStyle(color: isDark ? Colors.white : Colors.black87),
             underline: Container(),
             items: options.entries.map((entry) {
               return DropdownMenuItem<String>(
@@ -593,29 +663,108 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
-  // アクションメソッド
-  void _editProfile() {
+  Widget _buildCustomItem(IconData icon, String title, String subtitle, VoidCallback onTap) {
+    final themeState = ref.watch(themeProviderEnhanced);
+    final isDark = themeState.isDarkMode;
+    
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          HapticFeedback.lightImpact();
+          onTap();
+        },
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              Icon(icon, color: const Color(0xFF4ECDC4), size: 24),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: isDark ? Colors.white : Colors.black87,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Color(0xFF888888),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(Icons.chevron_right, color: Color(0xFF888888)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showThemeDialog() {
+    final themeState = ref.read(themeProviderEnhanced);
+    final themeActions = ref.read(themeActionProvider);
+    final isDark = themeState.isDarkMode;
+    
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF2A2A2A),
-        title: const Text(
-          'プロフィール編集',
-          style: TextStyle(color: Colors.white),
+        backgroundColor: isDark ? const Color(0xFF2A2A2A) : Colors.white,
+        title: Text(
+          'テーマ設定',
+          style: TextStyle(color: isDark ? Colors.white : Colors.black87),
         ),
-        content: const Text(
-          'プロフィール編集機能は実装予定です。',
-          style: TextStyle(color: Color(0xFF888888)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: AppThemeMode.values.map((mode) {
+            final isSelected = themeState.themeMode == mode;
+            return RadioListTile<AppThemeMode>(
+              title: Text(
+                mode.displayName,
+                style: TextStyle(color: isDark ? Colors.white : Colors.black87),
+              ),
+              value: mode,
+              groupValue: themeState.themeMode,
+              activeColor: const Color(0xFF4ECDC4),
+              onChanged: (value) async {
+                if (value != null) {
+                  await themeActions.setThemeMode(value);
+                  Navigator.pop(context);
+                }
+              },
+            );
+          }).toList(),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: const Text(
-              'OK',
+              'キャンセル',
               style: TextStyle(color: Color(0xFF4ECDC4)),
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  // アクションメソッド
+  void _editProfile() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('プロフィール編集画面に移動します'),
+        backgroundColor: Color(0xFF4ECDC4),
       ),
     );
   }
@@ -666,14 +815,61 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   void _configureNotifications() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('通知設定詳細画面に移動します'),
-        backgroundColor: Color(0xFF4ECDC4),
+    final themeState = ref.read(themeProviderEnhanced);
+    final isDark = themeState.isDarkMode;
+    
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: isDark ? const Color(0xFF2A2A2A) : Colors.white,
+        title: Text(
+          '通知設定',
+          style: TextStyle(color: isDark ? Colors.white : Colors.black87),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CheckboxListTile(
+              title: Text(
+                'スターの新着投稿',
+                style: TextStyle(color: isDark ? Colors.white : Colors.black87),
+              ),
+              value: true,
+              onChanged: (value) {},
+              activeColor: const Color(0xFF4ECDC4),
+            ),
+            CheckboxListTile(
+              title: Text(
+                'ランキング更新',
+                style: TextStyle(color: isDark ? Colors.white : Colors.black87),
+              ),
+              value: false,
+              onChanged: (value) {},
+              activeColor: const Color(0xFF4ECDC4),
+            ),
+            CheckboxListTile(
+              title: Text(
+                '新機能のお知らせ',
+                style: TextStyle(color: isDark ? Colors.white : Colors.black87),
+              ),
+              value: true,
+              onChanged: (value) {},
+              activeColor: const Color(0xFF4ECDC4),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text(
+              '保存',
+              style: TextStyle(color: Color(0xFF4ECDC4)),
+            ),
+          ),
+        ],
       ),
     );
   }
-
 
   void _clearCache() {
     final themeState = ref.read(themeProviderEnhanced);
@@ -1062,7 +1258,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   void _navigateToSearch() {
     Navigator.popUntil(context, (route) => route.isFirst);
   }
-
 
   void _navigateToMylist() {
     Navigator.popUntil(context, (route) => route.isFirst);
