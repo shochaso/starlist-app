@@ -8,6 +8,10 @@ import '../../subscription/screens/plan_management_screen.dart';
 import '../../app/screens/settings_screen.dart';
 import '../../data_integration/screens/data_import_screen.dart';
 import '../../../src/features/youtube_easy/star_watch_history_widget.dart';
+import '../../../screens/starlist_main_screen.dart';
+import '../../search/screens/search_screen.dart';
+import '../../mylist/screens/mylist_screen.dart';
+import '../../profile/screens/profile_screen.dart';
 
 class StarDashboardScreen extends ConsumerStatefulWidget {
   const StarDashboardScreen({super.key});
@@ -1330,19 +1334,32 @@ class _StarDashboardScreenState extends ConsumerState<StarDashboardScreen>
               padding: const EdgeInsets.symmetric(vertical: 16),
               children: [
                 _buildDrawerItem(Icons.home, 'ホーム', false, () {
-                  Navigator.of(context).popUntil((route) => route.isFirst);
+                  Navigator.pop(context);
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(builder: (context) => const StarlistMainScreen()),
+                    (route) => false,
+                  );
                 }),
                 _buildDrawerItem(Icons.search, '検索', false, () {
-                  Navigator.of(context).popUntil((route) => route.isFirst);
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const SearchScreen()),
+                  );
                 }),
                 _buildDrawerItem(Icons.star, 'マイリスト', false, () {
-                  Navigator.of(context).popUntil((route) => route.isFirst);
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const MylistScreen()),
+                  );
                 }),
                 // スターのみ表示
                 if (currentUser.isStar) ...[
                   _buildDrawerItem(Icons.camera_alt, 'データ取込み', false, () {
                     Navigator.pop(context);
-                    Navigator.push(
+                    Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(builder: (context) => const DataImportScreen()),
                     );
@@ -1352,18 +1369,22 @@ class _StarDashboardScreenState extends ConsumerState<StarDashboardScreen>
                   }),
                   _buildDrawerItem(Icons.workspace_premium, 'プランを管理', false, () {
                     Navigator.pop(context);
-                    Navigator.push(
+                    Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(builder: (context) => const PlanManagementScreen()),
                     );
                   }),
                 ],
                 _buildDrawerItem(Icons.person, 'マイページ', false, () {
-                  Navigator.of(context).popUntil((route) => route.isFirst);
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const ProfileScreen()),
+                  );
                 }),
                 _buildDrawerItem(Icons.settings, '設定', false, () {
                   Navigator.pop(context);
-                  Navigator.push(
+                  Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(builder: (context) => const SettingsScreen()),
                   );
