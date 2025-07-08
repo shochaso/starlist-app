@@ -1,7 +1,6 @@
-import 'package:flutter/material.dart';
+import 'dart:async';
 
-/// 遅延ローディング管理クラス
-/// UI/UXを損なわずに重い機能を段階的に読み込み
+/// 軽量化のための遅延ローディング管理クラス
 class LazyLoadingManager {
   static final LazyLoadingManager _instance = LazyLoadingManager._internal();
   factory LazyLoadingManager() => _instance;
@@ -9,109 +8,127 @@ class LazyLoadingManager {
 
   final Map<String, bool> _loadedModules = {};
   final Map<String, Future<dynamic>> _loadingModules = {};
+  final Map<String, DateTime> _loadTimestamps = {};
+  
+  /// 軽量化優先度設定
+  static const Map<String, int> _modulePriority = {
+    'core': 1,        // 最高優先度
+    'auth': 2,        // 認証機能
+    'data_import': 3, // データ取り込み
+    'youtube': 4,     // YouTube機能（軽量化対象）
+    'maps': 5,        // 地図機能（軽量化対象）
+    'analytics': 6,   // 分析機能（最低優先度）
+  };
 
   /// モジュールが読み込み済みかチェック
-  bool isLoaded(String moduleId) => _loadedModules[moduleId] ?? false;
-
-  /// 重い機能の遅延ロード
-  Future<T> loadModule<T>(
-    String moduleId,
-    Future<T> Function() loader, {
-    Widget Function()? placeholder,
-  }) async {
-    // 既に読み込み済み
-    if (_loadedModules[moduleId] == true) {
-      return await _loadingModules[moduleId] as T;
-    }
-
-    // 読み込み中でない場合は開始
-    if (!_loadingModules.containsKey(moduleId)) {
-      _loadingModules[moduleId] = _loadModuleInternal(moduleId, loader);
-    }
-
-    return await _loadingModules[moduleId] as T;
+  bool isModuleLoaded(String moduleName) {
+    return _loadedModules[moduleName] ?? false;
   }
 
-  Future<T> _loadModuleInternal<T>(
-    String moduleId,
-    Future<T> Function() loader,
-  ) async {
+  /// 軽量化を考慮したモジュール読み込み
+  Future<T> loadModule<T>(
+    String moduleName,
+    Future<T> Function() loader, {
+    bool forceReload = false,
+    Duration? cacheExpiry,
+  }) async {
+    // キャッシュ期限チェック（軽量化のため）
+    if (cacheExpiry != null && _loadTimestamps.containsKey(moduleName)) {
+      final loadTime = _loadTimestamps[moduleName]!;
+      if (DateTime.now().difference(loadTime) > cacheExpiry) {
+        _loadedModules.remove(moduleName);
+        _loadingModules.remove(moduleName);
+        _loadTimestamps.remove(moduleName);
+      }
+    }
+
+    if (_loadedModules[moduleName] == true && !forceReload) {
+      return _loadingModules[moduleName] as Future<T>;
+    }
+
+    if (_loadingModules.containsKey(moduleName)) {
+      return _loadingModules[moduleName] as Future<T>;
+    }
+
+    // 優先度チェック（軽量化のため低優先度は遅延）
+    final priority = _modulePriority[moduleName] ?? 999;
+    if (priority > 4) {
+      // 低優先度モジュールは少し遅延させる
+      await Future.delayed(Duration(milliseconds: 100 * (priority - 4)));
+    }
+
+    final future = _loadModuleWithErrorHandling(moduleName, loader);
+    _loadingModules[moduleName] = future;
+
     try {
-      final result = await loader();
-      _loadedModules[moduleId] = true;
+      final result = await future;
+      _loadedModules[moduleName] = true;
+      _loadTimestamps[moduleName] = DateTime.now();
       return result;
     } catch (e) {
-      _loadingModules.remove(moduleId);
+      _loadedModules[moduleName] = false;
+      _loadingModules.remove(moduleName);
       rethrow;
     }
   }
 
-  /// メモリクリア（低メモリ時）
-  void clearModule(String moduleId) {
-    _loadedModules.remove(moduleId);
-    _loadingModules.remove(moduleId);
-  }
-}
-
-/// 遅延ローディング対応Widget
-class LazyWidget extends StatefulWidget {
-  final String moduleId;
-  final Future<Widget> Function() builder;
-  final Widget placeholder;
-
-  const LazyWidget({
-    super.key,
-    required this.moduleId,
-    required this.builder,
-    required this.placeholder,
-  });
-
-  @override
-  State<LazyWidget> createState() => _LazyWidgetState();
-}
-
-class _LazyWidgetState extends State<LazyWidget> {
-  Widget? _loadedWidget;
-  bool _isLoading = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadWidget();
-  }
-
-  Future<void> _loadWidget() async {
-    if (LazyLoadingManager().isLoaded(widget.moduleId)) {
-      return;
-    }
-
-    setState(() => _isLoading = true);
-
+  /// エラーハンドリング付きモジュール読み込み
+  Future<T> _loadModuleWithErrorHandling<T>(
+    String moduleName,
+    Future<T> Function() loader,
+  ) async {
     try {
-      final widget = await LazyLoadingManager().loadModule(
-        this.widget.moduleId,
-        this.widget.builder,
-      );
-      
-      if (mounted) {
-        setState(() {
-          _loadedWidget = widget;
-          _isLoading = false;
-        });
-      }
+      return await loader();
     } catch (e) {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
+      print('軽量化エラー: モジュール $moduleName の読み込みに失敗: $e');
+      rethrow;
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    if (_loadedWidget != null) {
-      return _loadedWidget!;
+  /// 軽量化のためのメモリクリーンアップ
+  void cleanupMemory() {
+    final now = DateTime.now();
+    final expiredModules = <String>[];
+    
+    _loadTimestamps.forEach((module, timestamp) {
+      // 30分以上使用されていないモジュールをクリーンアップ
+      if (now.difference(timestamp) > Duration(minutes: 30)) {
+        expiredModules.add(module);
+      }
+    });
+    
+    for (final module in expiredModules) {
+      unloadModule(module);
     }
+  }
 
-    return widget.placeholder;
+  /// モジュールのアンロード（軽量化のため）
+  void unloadModule(String moduleName) {
+    _loadedModules.remove(moduleName);
+    _loadingModules.remove(moduleName);
+    _loadTimestamps.remove(moduleName);
+  }
+
+  /// 軽量化統計情報
+  Map<String, dynamic> getLoadingStats() {
+    return {
+      'loaded_modules': _loadedModules.length,
+      'loading_modules': _loadingModules.length,
+      'memory_usage': _calculateMemoryUsage(),
+      'cleanup_candidates': _getCleanupCandidates(),
+    };
+  }
+
+  int _calculateMemoryUsage() {
+    // 簡易メモリ使用量計算
+    return _loadedModules.length * 100; // KB単位の概算
+  }
+
+  List<String> _getCleanupCandidates() {
+    final now = DateTime.now();
+    return _loadTimestamps.entries
+        .where((entry) => now.difference(entry.value) > Duration(minutes: 15))
+        .map((entry) => entry.key)
+        .toList();
   }
 } 

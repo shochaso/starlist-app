@@ -184,15 +184,13 @@ class SharingService {
         if (content.location != null) {
           shareText += '場所: ${content.location?.placeName ?? ''}\n';
           
-          if (content.location?.address != null) {
-            shareText += '住所: ${content.location?.address}\n';
-          }
-          
-          // 地図URLを追加
+          // 住所情報は共有しない（プライバシー保護）
+          // 一般的な地図URLのみ提供（詳細な位置は表示されない）
           final lat = content.location?.latitude;
           final lng = content.location?.longitude;
           if (lat != null && lng != null) {
-            final mapUrl = 'https://www.google.com/maps?q=$lat,$lng';
+            // 大まかなエリアのみ表示する地図URL（ズームレベルを下げる）
+            final mapUrl = 'https://www.google.com/maps?q=$lat,$lng&z=12';
             shareText += '地図: $mapUrl\n\n';
           }
         }

@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../src/providers/theme_provider_enhanced.dart';
+import '../../../providers/user_provider.dart';
 
 // プロバイダー
 final selectedTabProvider = StateProvider<int>((ref) => 0);
 
 class MylistScreen extends ConsumerStatefulWidget {
-  const MylistScreen({super.key});
+  final bool showAppBar;
+  
+  const MylistScreen({super.key, this.showAppBar = true});
 
   @override
   ConsumerState<MylistScreen> createState() => _MylistScreenState();
@@ -18,6 +20,7 @@ class _MylistScreenState extends ConsumerState<MylistScreen>
     with TickerProviderStateMixin {
   late TabController _tabController;
   int _selectedTabIndex = 0;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   // ダミーデータ - フォロー中のスター
   final List<Map<String, dynamic>> _followingStars = [
@@ -164,22 +167,61 @@ class _MylistScreenState extends ConsumerState<MylistScreen>
 
   String _sortBy = 'recent';
 
+  // プレミアムタブウィジェット - アイコン重視版
+  Widget _buildPremiumTab(String label, IconData icon) {
+    return Tab(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 4),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: 18,
+            ),
+            const SizedBox(height: 1),
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 9,
+                fontWeight: FontWeight.w600,
+                letterSpacing: -0.2,
+              ),
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 5, vsync: this);
-    _tabController.addListener(() {
-      if (_selectedTabIndex != _tabController.index) {
-        setState(() {
-          _selectedTabIndex = _tabController.index;
-        });
-      }
-    });
+    try {
+      _tabController = TabController(length: 4, vsync: this);
+      _tabController.addListener(() {
+        if (mounted && _selectedTabIndex != _tabController.index) {
+          setState(() {
+            _selectedTabIndex = _tabController.index;
+          });
+        }
+      });
+    } catch (e) {
+      debugPrint('MylistScreen初期化エラー: $e');
+    }
   }
 
   @override
   void dispose() {
-    _tabController.dispose();
+    try {
+      _tabController.dispose();
+    } catch (e) {
+      debugPrint('MylistScreen dispose エラー: $e');
+    }
     super.dispose();
   }
 
@@ -188,109 +230,186 @@ class _MylistScreenState extends ConsumerState<MylistScreen>
     final themeState = ref.watch(themeProviderEnhanced);
     final isDark = themeState.isDarkMode;
     
+    // 安全チェック
+    if (!mounted) return const SizedBox.shrink();
+    
+    // showAppBarがfalseの場合、AppBarとDrawerなしでコンテンツのみ表示
+    if (!widget.showAppBar) {
+      return Container(
+        color: isDark ? const Color(0xFF1A1A1A) : const Color(0xFFF8FAFC),
+        child: _buildContent(isDark),
+      );
+    }
+    
     return Scaffold(
+      key: _scaffoldKey,
       backgroundColor: isDark ? const Color(0xFF1A1A1A) : const Color(0xFFF8FAFC),
-      body: SafeArea(
-        child: Column(
-          children: [
-            // タブバー
-            Container(
-              margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-              decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: TabBar(
-                controller: _tabController,
-                indicator: BoxDecoration(
-                  color: const Color(0xFF4ECDC4),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                labelColor: Colors.white,
-                unselectedLabelColor: isDark ? Colors.white70 : Colors.black54,
-                labelPadding: const EdgeInsets.symmetric(horizontal: 4),
-                isScrollable: false,
-                tabs: const [
-                  Tab(
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 8),
-                      child: Text(
-                        'フォロー中',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ),
-                  Tab(
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 8),
-                      child: Text(
-                        'お気に入り',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ),
-                  Tab(
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 8),
-                      child: Text(
-                        'コンテンツ',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ),
-                  Tab(
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 8),
-                      child: Text(
-                        'プレイリスト',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ),
-                  Tab(
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 8),
-                      child: Text(
-                        '最近の活動',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-            
-            // タブコンテンツ
-            Expanded(
-              child: TabBarView(
-                controller: _tabController,
-                children: [
-                  _buildFollowingTab(),
-                  _buildStarsTab(),
-                  _buildContentsTab(),
-                  _buildPlaylistsTab(),
-                  _buildActivitiesTab(),
-                ],
-              ),
-            ),
-          ],
+      appBar: AppBar(
+        backgroundColor: isDark ? const Color(0xFF1A1A1A) : Colors.white,
+        elevation: 0,
+        title: Text(
+          'マイリスト',
+          style: TextStyle(
+            color: isDark ? Colors.white : Colors.black87,
+            fontSize: 20,
+            fontWeight: FontWeight.w700,
+          ),
         ),
+        leading: IconButton(
+          icon: Icon(Icons.menu, color: isDark ? Colors.white : Colors.black87),
+          onPressed: () {
+            HapticFeedback.lightImpact();
+            _scaffoldKey.currentState?.openDrawer();
+          },
+        ),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.search, color: isDark ? Colors.white : Colors.black87),
+            onPressed: () => _searchMylist(),
+          ),
+          PopupMenuButton<String>(
+            icon: Icon(Icons.more_vert, color: isDark ? Colors.white : Colors.black87),
+            color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
+            onSelected: (value) => _handleMenuAction(value),
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                value: 'sort',
+                child: Row(
+                  children: [
+                    Icon(Icons.sort, color: isDark ? Colors.white : Colors.black87, size: 20),
+                    const SizedBox(width: 8),
+                    Text('並び替え', style: TextStyle(color: isDark ? Colors.white : Colors.black87)),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
+                value: 'export',
+                child: Row(
+                  children: [
+                    Icon(Icons.download, color: isDark ? Colors.white : Colors.black87, size: 20),
+                    const SizedBox(width: 8),
+                    Text('エクスポート', style: TextStyle(color: isDark ? Colors.white : Colors.black87)),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
+                value: 'settings',
+                child: Row(
+                  children: [
+                    Icon(Icons.settings, color: isDark ? Colors.white : Colors.black87, size: 20),
+                    const SizedBox(width: 8),
+                    Text('設定', style: TextStyle(color: isDark ? Colors.white : Colors.black87)),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+      drawer: _buildDrawer(),
+      body: _buildContent(isDark),
+    );
+  }
+
+  Widget _buildContent(bool isDark) {
+    return SafeArea(
+      child: Column(
+        children: [
+          // 洗練されたタブバー
+          Container(
+            margin: const EdgeInsets.fromLTRB(20, 24, 20, 8),
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: isDark 
+                  ? [const Color(0xFF2A2A2A), const Color(0xFF1F1F1F)]
+                  : [Colors.white, const Color(0xFFF8FAFC)],
+              ),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: isDark 
+                  ? const Color(0xFF404040).withValues(alpha: 0.5)
+                  : const Color(0xFFE2E8F0).withValues(alpha: 0.8),
+                width: 1,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: isDark 
+                    ? Colors.black.withValues(alpha: 0.3)
+                    : Colors.black.withValues(alpha: 0.08),
+                  blurRadius: 20,
+                  offset: const Offset(0, 8),
+                  spreadRadius: 0,
+                ),
+                BoxShadow(
+                  color: isDark 
+                    ? Colors.black.withValues(alpha: 0.2)
+                    : Colors.white.withValues(alpha: 0.9),
+                  blurRadius: 0,
+                  offset: const Offset(0, 1),
+                  spreadRadius: 0,
+                ),
+              ],
+            ),
+            child: TabBar(
+              controller: _tabController,
+              indicator: BoxDecoration(
+                gradient: const LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [Color(0xFF4ECDC4), Color(0xFF44A08D)],
+                ),
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF4ECDC4).withValues(alpha: 0.4),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              indicatorSize: TabBarIndicatorSize.tab,
+              dividerColor: Colors.transparent,
+              labelColor: Colors.white,
+              unselectedLabelColor: isDark 
+                ? Colors.white.withValues(alpha: 0.6)
+                : const Color(0xFF64748B),
+              labelStyle: const TextStyle(
+                fontSize: 9,
+                fontWeight: FontWeight.w700,
+                letterSpacing: -0.2,
+              ),
+              unselectedLabelStyle: const TextStyle(
+                fontSize: 9,
+                fontWeight: FontWeight.w500,
+                letterSpacing: -0.2,
+              ),
+              labelPadding: const EdgeInsets.symmetric(horizontal: 2),
+              tabs: [
+                _buildPremiumTab('フォロー', Icons.people_rounded),
+                _buildPremiumTab('お気に入り', Icons.favorite_rounded),
+                _buildPremiumTab('リスト', Icons.playlist_play_rounded),
+                _buildPremiumTab('活動', Icons.timeline_rounded),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          
+          // タブコンテンツ
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                _buildFollowingTab(),
+                _buildStarsTab(), // お気に入りコンテンツも統合
+                _buildPlaylistsTab(),
+                _buildActivitiesTab(),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -306,6 +425,7 @@ class _MylistScreenState extends ConsumerState<MylistScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // お気に入りのスターセクション
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -328,20 +448,10 @@ class _MylistScreenState extends ConsumerState<MylistScreen>
           ),
           const SizedBox(height: 16),
           ..._favoriteStars.map((star) => _buildStarCard(star)).toList(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildContentsTab() {
-    final themeState = ref.watch(themeProviderEnhanced);
-    final isDark = themeState.isDarkMode;
-    
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+          
+          const SizedBox(height: 32),
+          
+          // お気に入りコンテンツセクション
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -377,6 +487,7 @@ class _MylistScreenState extends ConsumerState<MylistScreen>
       ),
     );
   }
+
 
   Widget _buildPlaylistsTab() {
     final themeState = ref.watch(themeProviderEnhanced);
@@ -421,30 +532,80 @@ class _MylistScreenState extends ConsumerState<MylistScreen>
     
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: isDark ? const Color(0xFF333333) : const Color(0xFFE5E7EB)),
+        gradient: isDark
+          ? const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color(0xFF2A2A2A),
+                Color(0xFF1F1F1F),
+              ],
+            )
+          : const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Colors.white,
+                Color(0xFFFAFBFC),
+              ],
+            ),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: isDark 
+            ? const Color(0xFF404040).withValues(alpha: 0.3)
+            : const Color(0xFFE2E8F0).withValues(alpha: 0.6),
+          width: 1,
+        ),
         boxShadow: [
           BoxShadow(
-            color: (isDark ? Colors.black : Colors.black).withOpacity(0.08),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
+            color: isDark
+              ? Colors.black.withValues(alpha: 0.3)
+              : Colors.black.withValues(alpha: 0.04),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+            spreadRadius: 0,
+          ),
+          BoxShadow(
+            color: isDark
+              ? Colors.black.withValues(alpha: 0.2)
+              : Colors.white.withValues(alpha: 0.8),
+            blurRadius: 0,
+            offset: const Offset(0, 1),
+            spreadRadius: 0,
           ),
         ],
       ),
       child: Row(
         children: [
-          CircleAvatar(
-            radius: 30,
-            backgroundColor: const Color(0xFF4ECDC4),
-            child: Text(
-              star['name'][0],
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 20,
-                fontWeight: FontWeight.w600,
+          Container(
+            width: 64,
+            height: 64,
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Color(0xFF4ECDC4), Color(0xFF44A08D)],
+              ),
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF4ECDC4).withValues(alpha: 0.3),
+                  blurRadius: 12,
+                  offset: const Offset(0, 6),
+                ),
+              ],
+            ),
+            child: Center(
+              child: Text(
+                star['name'][0],
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -0.5,
+                ),
               ),
             ),
           ),
@@ -463,6 +624,8 @@ class _MylistScreenState extends ConsumerState<MylistScreen>
                           fontWeight: FontWeight.w600,
                           color: isDark ? Colors.white : Colors.black87,
                         ),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
                       ),
                     ),
                     if (star['verified'])
@@ -480,6 +643,8 @@ class _MylistScreenState extends ConsumerState<MylistScreen>
                     fontSize: 14,
                     color: isDark ? Colors.grey[400] : Colors.black54,
                   ),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
                 ),
                 const SizedBox(height: 4),
                 Text(
@@ -517,7 +682,7 @@ class _MylistScreenState extends ConsumerState<MylistScreen>
     final isDark = themeState.isDarkMode;
     
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
@@ -525,9 +690,9 @@ class _MylistScreenState extends ConsumerState<MylistScreen>
         border: Border.all(color: isDark ? const Color(0xFF333333) : const Color(0xFFE5E7EB)),
         boxShadow: [
           BoxShadow(
-            color: (isDark ? Colors.black : Colors.black).withOpacity(0.08),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
+            color: (isDark ? Colors.black : Colors.black).withValues(alpha: 0.06),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
@@ -541,6 +706,8 @@ class _MylistScreenState extends ConsumerState<MylistScreen>
               fontWeight: FontWeight.w600,
               color: isDark ? Colors.white : Colors.black87,
             ),
+            overflow: TextOverflow.ellipsis,
+            maxLines: 2,
           ),
           const SizedBox(height: 8),
           Row(
@@ -565,12 +732,14 @@ class _MylistScreenState extends ConsumerState<MylistScreen>
                     fontSize: 14,
                     color: isDark ? Colors.grey[400] : Colors.black54,
                   ),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
                 ),
               ),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF4ECDC4).withOpacity(0.2),
+                  color: const Color(0xFF4ECDC4).withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
@@ -649,7 +818,7 @@ class _MylistScreenState extends ConsumerState<MylistScreen>
     final isDark = themeState.isDarkMode;
     
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
@@ -657,9 +826,9 @@ class _MylistScreenState extends ConsumerState<MylistScreen>
         border: Border.all(color: isDark ? const Color(0xFF333333) : const Color(0xFFE5E7EB)),
         boxShadow: [
           BoxShadow(
-            color: (isDark ? Colors.black : Colors.black).withOpacity(0.08),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
+            color: (isDark ? Colors.black : Colors.black).withValues(alpha: 0.06),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
@@ -695,6 +864,8 @@ class _MylistScreenState extends ConsumerState<MylistScreen>
                           fontWeight: FontWeight.w600,
                           color: isDark ? Colors.white : Colors.black87,
                         ),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
                       ),
                     ),
                     if (playlist['isPublic'])
@@ -718,6 +889,8 @@ class _MylistScreenState extends ConsumerState<MylistScreen>
                     fontSize: 14,
                     color: isDark ? Colors.grey[400] : Colors.black54,
                   ),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 2,
                 ),
                 const SizedBox(height: 8),
                 Text(
@@ -819,68 +992,6 @@ class _MylistScreenState extends ConsumerState<MylistScreen>
     );
   }
 
-  void _showAddOptions() {
-    final themeState = ref.read(themeProviderEnhanced);
-    final isDark = themeState.isDarkMode;
-    
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: isDark ? const Color(0xFF2A2A2A) : Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              '追加',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: isDark ? Colors.white : Colors.black87,
-              ),
-            ),
-            const SizedBox(height: 20),
-            ListTile(
-              leading: const Icon(Icons.star, color: Color(0xFF4ECDC4)),
-              title: Text(
-                'スターをお気に入りに追加',
-                style: TextStyle(color: isDark ? Colors.white : Colors.black87),
-              ),
-              onTap: () {
-                Navigator.pop(context);
-                _addStar();
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.bookmark, color: Color(0xFF4ECDC4)),
-              title: Text(
-                'コンテンツをお気に入りに追加',
-                style: TextStyle(color: isDark ? Colors.white : Colors.black87),
-              ),
-              onTap: () {
-                Navigator.pop(context);
-                _addContent();
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.playlist_add, color: Color(0xFF4ECDC4)),
-              title: Text(
-                '新しいプレイリストを作成',
-                style: TextStyle(color: isDark ? Colors.white : Colors.black87),
-              ),
-              onTap: () {
-                Navigator.pop(context);
-                _createPlaylist();
-              },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
   void _showAllStars() {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -909,23 +1020,6 @@ class _MylistScreenState extends ConsumerState<MylistScreen>
     );
   }
 
-  void _addStar() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('スターをお気に入りに追加'),
-        backgroundColor: Color(0xFF4ECDC4),
-      ),
-    );
-  }
-
-  void _addContent() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('コンテンツをお気に入りに追加'),
-        backgroundColor: Color(0xFF4ECDC4),
-      ),
-    );
-  }
 
   void _createPlaylist() {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -991,34 +1085,98 @@ class _MylistScreenState extends ConsumerState<MylistScreen>
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(20),
+      margin: const EdgeInsets.symmetric(horizontal: 4),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFF4ECDC4), Color(0xFF44A08D)],
+          colors: [
+            Color(0xFF4ECDC4),
+            Color(0xFF44A08D),
+            Color(0xFF3A8B7A),
+          ],
+          stops: [0.0, 0.6, 1.0],
         ),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF4ECDC4).withValues(alpha: 0.4),
+            blurRadius: 24,
+            offset: const Offset(0, 12),
+            spreadRadius: 0,
+          ),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+            spreadRadius: 0,
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'フォロー状況',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w700,
-              color: Colors.white,
-            ),
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: const Icon(
+                  Icons.dashboard_rounded,
+                  color: Colors.white,
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 16),
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'フォロー状況',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white,
+                        letterSpacing: -0.5,
+                      ),
+                    ),
+                    Text(
+                      'あなたのフォロー統計',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.white70,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 24),
           Row(
             children: [
               Expanded(
-                child: _buildStatItem('フォロー中', '$totalFollowing人', Icons.people),
+                child: _buildEnhancedStatItem(
+                  'フォロー中', 
+                  '$totalFollowing人', 
+                  Icons.people_rounded,
+                  const Color(0xFFFFFFFF),
+                ),
               ),
+              const SizedBox(width: 20),
               Expanded(
-                child: _buildStatItem('新着投稿', '$totalNewPosts件', Icons.fiber_new),
+                child: _buildEnhancedStatItem(
+                  '新着投稿', 
+                  '$totalNewPosts件', 
+                  Icons.fiber_new_rounded,
+                  const Color(0xFFFFE66D),
+                ),
               ),
             ],
           ),
@@ -1027,32 +1185,53 @@ class _MylistScreenState extends ConsumerState<MylistScreen>
     );
   }
 
-  Widget _buildStatItem(String label, String value, IconData icon, [Color? iconColor]) {
-    return Column(
-      children: [
-        Icon(
-          icon,
-          color: iconColor ?? Colors.white,
-          size: 24,
+
+  Widget _buildEnhancedStatItem(String label, String value, IconData icon, Color iconColor) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.2),
+          width: 1,
         ),
-        const SizedBox(height: 8),
-        Text(
-          value,
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w700,
-            color: Colors.white,
+      ),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: iconColor.withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(
+              icon,
+              color: iconColor,
+              size: 20,
+            ),
           ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 12,
-            color: Colors.white,
+          const SizedBox(height: 12),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w800,
+              color: Colors.white,
+              letterSpacing: -0.5,
+            ),
           ),
-        ),
-      ],
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 12,
+              color: Colors.white70,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -1061,7 +1240,7 @@ class _MylistScreenState extends ConsumerState<MylistScreen>
     final isDark = themeState.isDarkMode;
     
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
@@ -1127,6 +1306,8 @@ class _MylistScreenState extends ConsumerState<MylistScreen>
                           fontWeight: FontWeight.w600,
                           color: isDark ? Colors.white : Colors.black87,
                         ),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
                       ),
                     ),
                     if (star['verified'])
@@ -1144,6 +1325,8 @@ class _MylistScreenState extends ConsumerState<MylistScreen>
                     fontSize: 14,
                     color: isDark ? Colors.grey[400] : Colors.black54,
                   ),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
                 ),
                 const SizedBox(height: 4),
                 Row(
@@ -1259,7 +1442,7 @@ class _MylistScreenState extends ConsumerState<MylistScreen>
     }
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
@@ -1273,7 +1456,7 @@ class _MylistScreenState extends ConsumerState<MylistScreen>
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: typeColor.withOpacity(0.2),
+              color: typeColor.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(typeIcon, color: typeColor, size: 20),
@@ -1290,6 +1473,8 @@ class _MylistScreenState extends ConsumerState<MylistScreen>
                     fontWeight: FontWeight.w600,
                     color: Color(0xFF4ECDC4),
                   ),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
                 ),
                 const SizedBox(height: 4),
                 Text(
@@ -1298,6 +1483,8 @@ class _MylistScreenState extends ConsumerState<MylistScreen>
                     fontSize: 14,
                     color: isDark ? Colors.white : Colors.black87,
                   ),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
                 ),
                 const SizedBox(height: 4),
                 Text(
@@ -1306,6 +1493,8 @@ class _MylistScreenState extends ConsumerState<MylistScreen>
                     fontSize: 12,
                     color: isDark ? const Color(0xFF888888) : Colors.black54,
                   ),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 2,
                 ),
                 const SizedBox(height: 8),
                 Text(
@@ -1551,6 +1740,180 @@ class _MylistScreenState extends ConsumerState<MylistScreen>
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildDrawer() {
+    final currentUser = ref.watch(currentUserProvider);
+    final themeState = ref.watch(themeProviderEnhanced);
+    final isDark = themeState.isDarkMode;
+    
+    return Drawer(
+      backgroundColor: isDark ? const Color(0xFF1A1A1A) : Colors.white,
+      child: Column(
+        children: [
+          SafeArea(
+            child: Container(
+              margin: const EdgeInsets.only(top: 8),
+              padding: const EdgeInsets.all(16),
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color(0xFF4ECDC4),
+                  Color(0xFF44A08D),
+                ],
+              ),
+              borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(20),
+                bottomRight: Radius.circular(20),
+              ),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(
+                    Icons.star,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text(
+                        'Starlist',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                          letterSpacing: -0.3,
+                        ),
+                      ),
+                      Text(
+                        currentUser.isStar ? 'スター' : 'ファン',
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.close, color: Colors.white70, size: 20),
+                  onPressed: () => Navigator.of(context).pop(),
+                  constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                  padding: EdgeInsets.zero,
+                ),
+              ],
+            ),
+            ),
+          ),
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              children: [
+                _buildDrawerItem(Icons.home, 'ホーム', false, () {
+                  Navigator.pop(context);
+                  Navigator.pushReplacementNamed(context, '/');
+                }),
+                _buildDrawerItem(Icons.search, '検索', false, () {
+                  Navigator.pop(context);
+                  Navigator.pushReplacementNamed(context, '/search');
+                }),
+                _buildDrawerItem(Icons.star, 'マイリスト', true, () {
+                  Navigator.pop(context);
+                }),
+                // スターのみ表示
+                if (currentUser.isStar) ...[
+                  _buildDrawerItem(Icons.camera_alt, 'データ取込み', false, () {
+                    Navigator.pop(context);
+                    Navigator.pushReplacementNamed(context, '/data-import');
+                  }),
+                  _buildDrawerItem(Icons.analytics, 'スターダッシュボード', false, () {
+                    Navigator.pop(context);
+                    Navigator.pushReplacementNamed(context, '/star-dashboard');
+                  }),
+                  _buildDrawerItem(Icons.workspace_premium, 'プランを管理', false, () {
+                    Navigator.pop(context);
+                    Navigator.pushReplacementNamed(context, '/plan-management');
+                  }),
+                ],
+                _buildDrawerItem(Icons.person, 'マイページ', false, () {
+                  Navigator.pop(context);
+                  Navigator.pushReplacementNamed(context, '/profile');
+                }),
+                _buildDrawerItem(Icons.settings, '設定', false, () {
+                  Navigator.pop(context);
+                  Navigator.pushReplacementNamed(context, '/settings');
+                }),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDrawerItem(IconData icon, String title, bool isActive, VoidCallback onTap) {
+    final themeState = ref.watch(themeProviderEnhanced);
+    final isDark = themeState.isDarkMode;
+    
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 3),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        color: isActive ? const Color(0xFF4ECDC4).withValues(alpha: 0.15) : null,
+        border: isActive ? Border.all(
+          color: const Color(0xFF4ECDC4).withValues(alpha: 0.3),
+          width: 1,
+        ) : null,
+      ),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        leading: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: isActive 
+              ? const Color(0xFF4ECDC4)
+              : (isDark ? Colors.white10 : Colors.grey.shade100),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(
+            icon,
+            color: isActive 
+              ? Colors.white
+              : (isDark ? Colors.white54 : Colors.grey.shade600),
+            size: 18,
+          ),
+        ),
+        title: Text(
+          title,
+          style: TextStyle(
+            color: isActive 
+              ? const Color(0xFF4ECDC4) 
+              : (isDark ? Colors.white : Colors.grey.shade800),
+            fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
+            fontSize: 15,
+          ),
+        ),
+        trailing: isActive ? const Icon(
+          Icons.arrow_forward_ios,
+          color: Color(0xFF4ECDC4),
+          size: 14,
+        ) : null,
+        onTap: onTap,
       ),
     );
   }

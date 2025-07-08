@@ -50,8 +50,13 @@ class LocationService {
     }
   }
   
-  /// 座標から住所を取得
+  /// 座標から住所を取得（プライバシー配慮のため無効化）
   Future<String?> getAddressFromCoordinates(double latitude, double longitude) async {
+    // プライバシー保護のため、詳細な住所取得は無効化
+    debugPrint('住所取得機能はプライバシー保護のため無効化されています');
+    return null;
+    
+    /* 元の実装（プライバシーリスクのため無効化）
     try {
       List<Placemark> placemarks = await placemarkFromCoordinates(latitude, longitude);
       
@@ -65,6 +70,7 @@ class LocationService {
       debugPrint('住所の取得に失敗しました: $e');
       return null;
     }
+    */
   }
   
   /// 住所から座標を取得
@@ -94,27 +100,20 @@ class LocationService {
     );
   }
   
-  /// GeoLocationモデルを作成
+  /// GeoLocationモデルを作成（プライバシー配慮版）
   Future<GeoLocation?> createGeoLocation({
     required double latitude,
     required double longitude,
     String? placeName,
+    String? category,
   }) async {
     try {
-      // 住所が指定されていない場合は逆ジオコーディングで取得
-      String? address;
-      if (placeName == null) {
-        address = await getAddressFromCoordinates(latitude, longitude);
-        placeName = address?.split(',').first.trim();
-      } else {
-        address = await getAddressFromCoordinates(latitude, longitude);
-      }
-      
+      // 住所取得は無効化、店名・施設名のみ許可
       return GeoLocation(
         latitude: latitude,
         longitude: longitude,
         placeName: placeName ?? '不明な場所',
-        address: address,
+        category: category,
       );
     } catch (e) {
       debugPrint('位置情報の作成に失敗しました: $e');
@@ -155,7 +154,7 @@ class LocationService {
         position: LatLng(location.latitude, location.longitude),
         markerId: markerId,
         title: location.placeName,
-        snippet: location.address,
+        snippet: location.displayText, // 住所の代わりに安全な表示テキストを使用
         icon: icon,
         onTap: onTap,
       );

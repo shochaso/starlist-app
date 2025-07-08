@@ -79,11 +79,27 @@ class ServiceIcons {
       backgroundColor: Color(0xFFFF9900),
       icon: FontAwesomeIcons.amazon,
     ),
+    'prime_video': ServiceIconData(
+      name: 'Prime',
+      color: Color(0xFF00A8E1), // Prime Video Blue
+      backgroundColor: Color(0xFF232F3E), // Amazon Dark Blue
+      icon: FontAwesomeIcons.play, // より洗練された再生アイコン
+      gradient: LinearGradient(
+        colors: [Color(0xFF00A8E1), Color(0xFF232F3E)],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      ),
+    ),
     'netflix': ServiceIconData(
       name: 'Netflix',
       color: Color(0xFFE50914), // 公式Netflix Red
       backgroundColor: Color(0xFF000000), // Netflix Black
-      icon: Icons.movie, // FontAwesome doesn't have Netflix icon
+      icon: FontAwesomeIcons.film, // より洗練された映画アイコン
+      gradient: LinearGradient(
+        colors: [Color(0xFFE50914), Color(0xFFB8070F)],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      ),
     ),
     'google': ServiceIconData(
       name: 'Google',
@@ -105,13 +121,23 @@ class ServiceIcons {
       name: '楽天',
       color: Color(0xFFBF0000), // 楽天レッド
       backgroundColor: Color(0xFFBF0000),
-      icon: Icons.store,
+      icon: FontAwesomeIcons.shopify, // より洗練されたECアイコン
+      gradient: LinearGradient(
+        colors: [Color(0xFFBF0000), Color(0xFF8B0000)],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      ),
     ),
     'valuecommerce': ServiceIconData(
       name: 'バリューコマース',
       color: Color(0xFF0066CC), // バリューコマースブルー
       backgroundColor: Color(0xFF0066CC),
-      icon: Icons.business,
+      icon: FontAwesomeIcons.handshake, // アフィリエイト・パートナーシップを表現
+      gradient: LinearGradient(
+        colors: [Color(0xFF0066CC), Color(0xFF004499)],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      ),
     ),
     'linkedin': ServiceIconData(
       name: 'LinkedIn',
@@ -197,6 +223,22 @@ class ServiceIcons {
     // 特別なアイコン処理
     if (serviceId.toLowerCase() == 'youtube') {
       return _buildYouTubeIcon(size: size, isDark: isDark);
+    }
+    
+    if (serviceId.toLowerCase() == 'prime_video') {
+      return _buildPrimeVideoIcon(size: size, isDark: isDark);
+    }
+    
+    if (serviceId.toLowerCase() == 'netflix') {
+      return _buildNetflixIcon(size: size, isDark: isDark);
+    }
+    
+    if (serviceId.toLowerCase() == 'rakuten') {
+      return _buildRakutenIcon(size: size, isDark: isDark);
+    }
+    
+    if (serviceId.toLowerCase() == 'valuecommerce') {
+      return _buildValueCommerceIcon(size: size, isDark: isDark);
     }
     
     if (serviceId.toLowerCase() == 'instagram') {
@@ -315,6 +357,90 @@ class ServiceIcons {
             color: const Color(0xFFEE1D52), // TikTok Red
           ),
         ],
+      ),
+    );
+  }
+
+  // Prime Video専用アイコン（公式デザイン準拠）
+  static Widget _buildPrimeVideoIcon({required double size, required bool isDark}) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF00A8E1), Color(0xFF232F3E)], // Prime Video Blue to Dark
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(size * 0.2), // 角丸
+      ),
+      child: Icon(
+        FontAwesomeIcons.play,
+        size: size * 0.5,
+        color: Colors.white,
+      ),
+    );
+  }
+
+  // Netflix専用アイコン（洗練されたフィルムアイコン）
+  static Widget _buildNetflixIcon({required double size, required bool isDark}) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFFE50914), Color(0xFFB8070F)], // Netflix Red gradient
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(size * 0.15), // 角丸
+      ),
+      child: Icon(
+        FontAwesomeIcons.film,
+        size: size * 0.55,
+        color: Colors.white,
+      ),
+    );
+  }
+
+  // Rakuten専用アイコン（洗練されたECアイコン）
+  static Widget _buildRakutenIcon({required double size, required bool isDark}) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFFBF0000), Color(0xFF8B0000)], // Rakuten Red gradient
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(size * 0.25), // より丸く
+      ),
+      child: Icon(
+        FontAwesomeIcons.shopify,
+        size: size * 0.5,
+        color: Colors.white,
+      ),
+    );
+  }
+
+  // ValueCommerce専用アイコン（パートナーシップアイコン）
+  static Widget _buildValueCommerceIcon({required double size, required bool isDark}) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF0066CC), Color(0xFF004499)], // ValueCommerce Blue gradient
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(size * 0.2), // 角丸
+      ),
+      child: Icon(
+        FontAwesomeIcons.handshake,
+        size: size * 0.5,
+        color: Colors.white,
       ),
     );
   }

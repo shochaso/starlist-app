@@ -687,9 +687,9 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
       case 2:
         return const DataImportScreen(showAppBar: false);
       case 3:
-        return const MylistScreen();
+        return const MylistScreen(showAppBar: false);
       case 4:
-        return const ProfileScreen();
+        return const ProfileScreen(showAppBar: false);
       case 5:
         return _buildHomeView();
       default:

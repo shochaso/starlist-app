@@ -2,9 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../src/providers/theme_provider_enhanced.dart';
 import '../../../providers/user_provider.dart';
-import '../../app/screens/settings_screen.dart';
-import '../../star/screens/star_dashboard_screen.dart';
-import '../../data_integration/screens/data_import_screen.dart';
 
 class PlanManagementScreen extends ConsumerStatefulWidget {
   const PlanManagementScreen({super.key});
@@ -51,10 +48,6 @@ class _PlanManagementScreenState extends ConsumerState<PlanManagementScreen> {
   ];
 
 
-  void _navigateToHome(BuildContext context) {
-    // すべてのルートをクリアしてホーム画面に戻る
-    Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -216,6 +209,8 @@ class _PlanManagementScreenState extends ConsumerState<PlanManagementScreen> {
                     fontWeight: FontWeight.w600,
                     color: Colors.white,
                   ),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
                 ),
               ),
               Switch(
@@ -271,52 +266,20 @@ class _PlanManagementScreenState extends ConsumerState<PlanManagementScreen> {
                   size: 16,
                 ),
                 const SizedBox(width: 8),
-                Text(
-                  feature,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: Color(0xFF888888),
+                Expanded(
+                  child: Text(
+                    feature,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Color(0xFF888888),
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
                   ),
                 ),
               ],
             ),
           )).toList(),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton(
-                  onPressed: () => _editPlan(plan),
-                  style: OutlinedButton.styleFrom(
-                    side: BorderSide(color: plan['color']),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  child: Text(
-                    '編集',
-                    style: TextStyle(color: plan['color']),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: () => _viewPlanDetails(plan),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: plan['color'],
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  child: const Text(
-                    '詳細',
-                    style: TextStyle(color: Colors.black),
-                  ),
-                ),
-              ),
-            ],
-          ),
         ],
       ),
     );
@@ -347,6 +310,8 @@ class _PlanManagementScreenState extends ConsumerState<PlanManagementScreen> {
             fontWeight: FontWeight.w600,
             color: Colors.white,
           ),
+          overflow: TextOverflow.ellipsis,
+          maxLines: 1,
         ),
       ],
     );
@@ -497,6 +462,8 @@ class _PlanManagementScreenState extends ConsumerState<PlanManagementScreen> {
                 fontWeight: FontWeight.w500,
                 color: Colors.white,
               ),
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
             ),
           ),
           Column(
@@ -743,40 +710,6 @@ class _PlanManagementScreenState extends ConsumerState<PlanManagementScreen> {
   }
 
   // アクションメソッド
-  void _showCreatePlanDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF2A2A2A),
-        title: const Text(
-          '新しいプランを作成',
-          style: TextStyle(color: Colors.white),
-        ),
-        content: const Text(
-          'プラン作成機能は実装予定です。',
-          style: TextStyle(color: Color(0xFF888888)),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text(
-              'OK',
-              style: TextStyle(color: Color(0xFF4ECDC4)),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showAnalytics() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('詳細分析画面に移動します'),
-        backgroundColor: Color(0xFF4ECDC4),
-      ),
-    );
-  }
 
   void _togglePlanStatus(String planId, bool isActive) {
     setState(() {
@@ -794,38 +727,6 @@ class _PlanManagementScreenState extends ConsumerState<PlanManagementScreen> {
     );
   }
 
-  void _editPlan(Map<String, dynamic> plan) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF2A2A2A),
-        title: Text(
-          '${plan['name']}を編集',
-          style: const TextStyle(color: Colors.white),
-        ),
-        content: const Text(
-          'プラン編集機能は実装予定です。',
-          style: TextStyle(color: Color(0xFF888888)),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text(
-              'キャンセル',
-              style: TextStyle(color: Color(0xFF888888)),
-            ),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text(
-              '保存',
-              style: TextStyle(color: Color(0xFF4ECDC4)),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _buildBottomNavigationBar() {
     final themeState = ref.watch(themeProviderEnhanced);
@@ -918,58 +819,6 @@ class _PlanManagementScreenState extends ConsumerState<PlanManagementScreen> {
     );
   }
 
-  void _viewPlanDetails(Map<String, dynamic> plan) {
-    final themeState = ref.read(themeProviderEnhanced);
-    final isDark = themeState.isDarkMode;
-    
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: isDark ? const Color(0xFF2A2A2A) : Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              plan['name'],
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w700,
-                color: isDark ? Colors.white : Colors.black87,
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              '価格: ¥${_formatNumber(plan['price'])}/月',
-              style: TextStyle(
-                fontSize: 16,
-                color: isDark ? Colors.white : Colors.black87,
-              ),
-            ),
-            Text(
-              '会員数: ${_formatNumber(plan['subscribers'])}人',
-              style: TextStyle(
-                fontSize: 16,
-                color: isDark ? Colors.white : Colors.black87,
-              ),
-            ),
-            Text(
-              '月間収益: ¥${_formatNumber(plan['revenue'])}',
-              style: TextStyle(
-                fontSize: 16,
-                color: isDark ? Colors.white : Colors.black87,
-              ),
-            ),
-            const SizedBox(height: 20),
-          ],
-        ),
-      ),
-    );
-  }
 
   Widget _buildDrawer() {
     final currentUser = ref.watch(currentUserProvider);
@@ -1067,17 +916,11 @@ class _PlanManagementScreenState extends ConsumerState<PlanManagementScreen> {
                 if (currentUser.isStar) ...[
                   _buildDrawerItem(Icons.camera_alt, 'データ取込み', false, () {
                     Navigator.pop(context);
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (context) => const DataImportScreen()),
-                    );
+                    Navigator.pushReplacementNamed(context, '/data-import');
                   }),
                   _buildDrawerItem(Icons.analytics, 'スターダッシュボード', false, () {
                     Navigator.pop(context);
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (context) => const StarDashboardScreen()),
-                    );
+                    Navigator.pushReplacementNamed(context, '/star-dashboard');
                   }),
                   _buildDrawerItem(Icons.workspace_premium, 'プランを管理', true, () {
                     Navigator.pop(context);
@@ -1089,10 +932,7 @@ class _PlanManagementScreenState extends ConsumerState<PlanManagementScreen> {
                 }),
                 _buildDrawerItem(Icons.settings, '設定', false, () {
                   Navigator.pop(context);
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (context) => const SettingsScreen()),
-                  );
+                  Navigator.pushReplacementNamed(context, '/settings');
                 }),
               ],
             ),

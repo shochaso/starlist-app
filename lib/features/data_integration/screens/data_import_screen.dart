@@ -82,84 +82,76 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
     },
   ];
 
-  // メインサービス（優先度順）
+  // メインサービス（実際のロゴを使用）
   final List<Map<String, dynamic>> mainServices = [
     {
       'id': 'youtube',
       'title': 'YouTube',
-      'subtitle': '最大の影響力、全世代利用',
-      'icon': Icons.play_circle_filled,
-      'color': const Color(0xFFFF0000),
+      'subtitle': '',
       'priority': 1,
     },
     {
       'id': 'amazon',
       'title': 'Amazon',
-      'subtitle': '購買データの宝庫、アフィリエイト直結',
-      'icon': Icons.shopping_cart,
-      'color': const Color(0xFFFF9900),
+      'subtitle': '',
       'priority': 2,
     },
     {
       'id': 'spotify',
       'title': 'Spotify',
-      'subtitle': '音楽嘱好の共有は強い訴求力',
-      'icon': Icons.music_note,
-      'color': const Color(0xFF1DB954),
+      'subtitle': '',
       'priority': 3,
     },
     {
-      'id': 'amazon_prime',
-      'title': 'Amazon Prime',
-      'subtitle': '映画・ドラマ・オリジナル作品',
-      'icon': Icons.play_arrow,
-      'color': const Color(0xFF00A8E1),
+      'id': 'prime_video',
+      'title': 'Prime',
+      'subtitle': '',
       'priority': 4,
     },
     {
       'id': 'netflix',
       'title': 'Netflix',
-      'subtitle': '映画・ドラマ嘱好は会話のきっかけ',
-      'icon': Icons.movie,
-      'color': const Color(0xFFE50914),
+      'subtitle': '',
       'priority': 5,
     },
     {
       'id': 'receipt',
       'title': 'レシート',
-      'subtitle': '日常の購入記録、リアルなデータ',
-      'icon': Icons.receipt,
-      'color': const Color(0xFF4CAF50),
+      'subtitle': '',
       'priority': 6,
     },
   ];
 
-  // ジャンル別サービス
+  // ジャンル別サービス（実際のロゴを使用）
   final Map<String, List<Map<String, dynamic>>> serviceCategories = {
     '動画': [
-      {'id': 'abema', 'title': 'ABEMA', 'subtitle': 'アニメ・バラエティ', 'icon': Icons.tv, 'color': const Color(0xFF00D4AA)},
-      {'id': 'hulu', 'title': 'Hulu', 'subtitle': '海外ドラマ・アニメ', 'icon': Icons.play_circle, 'color': const Color(0xFF1CE783)},
-      {'id': 'disney', 'title': 'Disney+', 'subtitle': 'ディズニー・マーベル', 'icon': Icons.movie_filter, 'color': const Color(0xFF113CCF)},
-      {'id': 'unext', 'title': 'U-NEXT', 'subtitle': '映画・アニメ・雑誌', 'icon': Icons.video_library, 'color': const Color(0xFF000000)},
-      {'id': 'dtv', 'title': 'dTV', 'subtitle': '音楽ライブ・映画', 'icon': Icons.live_tv, 'color': const Color(0xFFFF6B35)},
-      {'id': 'fod', 'title': 'FOD', 'subtitle': 'フジテレビ番組', 'icon': Icons.tv_rounded, 'color': const Color(0xFF0078D4)},
+      {'id': 'netflix', 'title': 'Netflix', 'subtitle': '映画・ドラマストリーミング'},
+      {'id': 'prime_video', 'title': 'Prime', 'subtitle': '映画・ドラマ・オリジナル作品'},
+      {'id': 'disney', 'title': 'Disney+', 'subtitle': 'ディズニー・マーベル・スター・ウォーズ'},
+      {'id': 'abema', 'title': 'ABEMA', 'subtitle': 'アニメ・バラエティ・ニュース'},
+      {'id': 'hulu', 'title': 'Hulu', 'subtitle': '海外ドラマ・アニメ'},
+      {'id': 'unext', 'title': 'U-NEXT', 'subtitle': '映画・アニメ・雑誌'},
     ],
     '音楽': [
-      {'id': 'youtube_music', 'title': 'YouTube Music', 'subtitle': '音楽再生サービス', 'icon': Icons.music_note, 'color': const Color(0xFFFF0000)},
-      {'id': 'apple_music', 'title': 'Apple Music', 'subtitle': '再生履歴', 'icon': Icons.music_note, 'color': const Color(0xFFFA57C1)},
-      {'id': 'live_concert', 'title': 'ライブ・コンサート', 'subtitle': '参加したライブ記録', 'icon': Icons.music_note, 'color': const Color(0xFF9C27B0)},
+      {'id': 'spotify', 'title': 'Spotify', 'subtitle': '音楽ストリーミング'},
+      {'id': 'youtube', 'title': 'YouTube Music', 'subtitle': '音楽再生サービス'},
+      {'id': 'apple_music', 'title': 'Apple Music', 'subtitle': '再生履歴'},
+      {'id': 'live_concert', 'title': 'ライブ・コンサート', 'subtitle': '参加したライブ記録'},
     ],
     'ショッピング': [
-      {'id': 'rakuten', 'title': '楽天市場', 'subtitle': '購入履歴・お気に入り', 'icon': Icons.store, 'color': const Color(0xFFBF0000)},
-      {'id': 'yahoo_shopping', 'title': 'Yahoo!ショッピング', 'subtitle': '購入履歴', 'icon': Icons.shopping_bag, 'color': const Color(0xFFFF0033)},
-      {'id': 'mercari', 'title': 'メルカリ', 'subtitle': 'フリマ取引履歴', 'icon': Icons.storefront, 'color': const Color(0xFFFF6B35)},
-      {'id': 'other_ec', 'title': 'その他EC', 'subtitle': 'オンラインショップ', 'icon': Icons.shopping_cart_outlined, 'color': const Color(0xFF757575)},
+      {'id': 'amazon', 'title': 'Amazon', 'subtitle': '購入履歴・お気に入り'},
+      {'id': 'rakuten', 'title': '楽天市場', 'subtitle': '購入履歴・お気に入り'},
+      {'id': 'yahoo_shopping', 'title': 'Yahoo!ショッピング', 'subtitle': '購入履歴'},
+      {'id': 'mercari', 'title': 'メルカリ', 'subtitle': 'フリマ取引履歴'},
+      {'id': 'other_ec', 'title': 'その他EC', 'subtitle': 'オンラインショップ'},
     ],
     'SNS': [
-      {'id': 'instagram', 'title': 'Instagram', 'subtitle': '投稿・ストーリー', 'icon': Icons.camera_alt, 'color': const Color(0xFFE4405F)},
-      {'id': 'tiktok', 'title': 'TikTok', 'subtitle': 'ショート動画', 'icon': Icons.music_video, 'color': const Color(0xFF000000)},
-      {'id': 'twitter', 'title': 'Twitter/X', 'subtitle': 'ツイート・フォロー', 'icon': Icons.chat, 'color': const Color(0xFF1DA1F2)},
-      {'id': 'facebook', 'title': 'Facebook', 'subtitle': '投稿・いいね', 'icon': Icons.facebook, 'color': const Color(0xFF1877F2)},
+      {'id': 'instagram', 'title': 'Instagram', 'subtitle': '投稿・ストーリー'},
+      {'id': 'tiktok', 'title': 'TikTok', 'subtitle': 'ショート動画'},
+      {'id': 'x', 'title': 'X (Twitter)', 'subtitle': 'ツイート・フォロー'},
+      {'id': 'facebook', 'title': 'Facebook', 'subtitle': '投稿・いいね'},
+      {'id': 'snapchat', 'title': 'Snapchat', 'subtitle': 'スナップ・ストーリー'},
+      {'id': 'linkedin', 'title': 'LinkedIn', 'subtitle': 'ビジネスネットワーク'},
     ],
     '購入・決済': [
       {'id': 'credit_card', 'title': 'クレジットカード', 'subtitle': '決済履歴', 'icon': Icons.credit_card, 'color': const Color(0xFF1976D2)},
@@ -508,14 +500,14 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
                   ],
                 ),
                 child: Icon(
-                  Icons.camera_alt_rounded,
+                  Icons.text_snippet_outlined,
                   color: isDark ? Colors.white : const Color(0xFF667EEA),
                   size: 48,
                 ),
               ),
               const SizedBox(height: 24),
               Text(
-                'スクリーンショットを取込む',
+                'データを手動入力',
                 style: TextStyle(
                   color: isDark ? Colors.white : const Color(0xFF1A1A2E),
                   fontSize: 22,
@@ -525,7 +517,7 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
               ),
               const SizedBox(height: 8),
               Text(
-                'カメラで撮影またはギャラリーから選択',
+                '実装済みのサービス連携機能をご利用ください',
                 style: TextStyle(
                   color: isDark 
                       ? const Color(0xFFB0B3B8) 
@@ -536,84 +528,38 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 32),
-              Row(
-                children: [
-                  Expanded(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: isDark 
-                                ? Colors.black.withValues(alpha: 0.3) 
-                                : const Color(0xFF667EEA).withValues(alpha: 0.15),
-                            blurRadius: 12,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: ElevatedButton.icon(
-                        onPressed: () => _startOCRCapture('camera'),
-                        icon: const Icon(Icons.camera_alt_rounded, size: 22),
-                        label: const Text('カメラ', style: TextStyle(fontWeight: FontWeight.w600)),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: isDark 
-                              ? Colors.white 
-                              : const Color(0xFF667EEA),
-                          foregroundColor: isDark 
-                              ? const Color(0xFF667EEA) 
-                              : Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          elevation: 0,
-                        ),
-                      ),
-                    ),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: isDark 
+                      ? const Color(0xFF4ECDC4).withValues(alpha: 0.1)
+                      : const Color(0xFF4ECDC4).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: const Color(0xFF4ECDC4),
+                    width: 1,
                   ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: isDark 
-                                ? Colors.black.withValues(alpha: 0.3) 
-                                : const Color(0xFF667EEA).withValues(alpha: 0.1),
-                            blurRadius: 12,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: ElevatedButton.icon(
-                        onPressed: () => _startOCRCapture('gallery'),
-                        icon: const Icon(Icons.photo_library_rounded, size: 22),
-                        label: const Text('ギャラリー', style: TextStyle(fontWeight: FontWeight.w600)),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: isDark 
-                              ? Colors.white.withValues(alpha: 0.1) 
-                              : Colors.white,
-                          foregroundColor: isDark 
-                              ? Colors.white 
-                              : const Color(0xFF667EEA),
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                            side: BorderSide(
-                              color: isDark 
-                                  ? Colors.white.withValues(alpha: 0.3) 
-                                  : const Color(0xFF667EEA).withValues(alpha: 0.2),
-                              width: 1.5,
-                            ),
-                          ),
-                          elevation: 0,
-                        ),
-                      ),
+                ),
+                child: Column(
+                  children: [
+                    Icon(
+                      Icons.info_outline,
+                      color: const Color(0xFF4ECDC4),
+                      size: 24,
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 8),
+                    Text(
+                      '画像読み込み機能は現在開発中です',
+                      style: TextStyle(
+                        color: isDark ? Colors.white : Colors.black87,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
@@ -629,23 +575,16 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
     
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
+          children: [
+            Text(
           '人気サービス',
-          style: TextStyle(
-            color: isDark ? Colors.white : Colors.black87,
+              style: TextStyle(
+                color: isDark ? Colors.white : Colors.black87,
             fontSize: 22,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+                fontWeight: FontWeight.bold,
+              ),
+            ),
         const SizedBox(height: 8),
-        Text(
-          '影響力・利用者数に基づく優先度順',
-          style: TextStyle(
-            color: isDark ? Colors.grey[400] : Colors.grey[600],
-            fontSize: 14,
-          ),
-        ),
         const SizedBox(height: 20),
         
         // 3×2グリッドで6つのメインサービス
@@ -656,7 +595,7 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
             crossAxisCount: 3,
             crossAxisSpacing: 12,
             mainAxisSpacing: 12,
-            childAspectRatio: 0.9,
+            childAspectRatio: 0.85,
           ),
           itemCount: mainServices.length,
           itemBuilder: (context, index) {
@@ -770,23 +709,40 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
     );
   }
 
-  // 優先度サービス用カード
+  // 優先度サービス用カード（実際のロゴ使用）
   Widget _buildPriorityServiceCard(Map<String, dynamic> service, bool isDark) {
     return GestureDetector(
       onTap: () => _navigateToService(service['id']),
       child: Container(
         decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: (service['color'] as Color).withValues(alpha: 0.3),
-            width: 1.5,
-          ),
+          gradient: isDark
+              ? const LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [Color(0xFF2A2A2A), Color(0xFF1F1F1F)],
+                )
+              : const LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [Colors.white, Color(0xFFFAFBFC)],
+                ),
+          borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: (service['color'] as Color).withValues(alpha: 0.1),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
+              color: isDark
+                  ? Colors.black.withValues(alpha: 0.3)
+                  : Colors.black.withValues(alpha: 0.08),
+              blurRadius: 20,
+              offset: const Offset(0, 8),
+              spreadRadius: 0,
+            ),
+            BoxShadow(
+              color: isDark
+                  ? Colors.black.withValues(alpha: 0.2)
+                  : Colors.white.withValues(alpha: 0.9),
+              blurRadius: 0,
+              offset: const Offset(0, 1),
+              spreadRadius: 0,
             ),
           ],
         ),
@@ -795,18 +751,11 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: (service['color'] as Color).withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(
-                  service['icon'] as IconData,
-                  color: service['color'] as Color,
-                  size: 24,
-                ),
+              // 実際のサービスロゴを使用
+              ServiceIcons.buildIcon(
+                serviceId: service['id'],
+                size: 40,
+                isDark: isDark,
               ),
               const SizedBox(height: 8),
               Text(
@@ -817,6 +766,8 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
                   fontWeight: FontWeight.w600,
                 ),
                 textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
               const SizedBox(height: 4),
               Text(
@@ -836,68 +787,134 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
     );
   }
 
-  // ジャンル別サービス用カード（横スクロール用）
+  // ジャンル別サービス用カード（実際のロゴ使用）
   Widget _buildCategoryServiceCard(Map<String, dynamic> service, bool isDark) {
+    final isImplemented = _isServiceImplemented(service['id']);
+    
     return GestureDetector(
       onTap: () => _navigateToService(service['id']),
       child: Container(
-        width: 140,
+        width: 160,
         decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
-          borderRadius: BorderRadius.circular(12),
+          gradient: isDark
+              ? LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: isImplemented 
+                    ? [Color(0xFF2A2A2A), Color(0xFF1F1F1F)]
+                    : [Color(0xFF2A2A2A).withOpacity(0.6), Color(0xFF1F1F1F).withOpacity(0.6)],
+                )
+              : LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: isImplemented 
+                    ? [Colors.white, Color(0xFFFAFBFC)]
+                    : [Colors.grey[100]!, Color(0xFFF5F5F5)],
+                ),
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isDark ? const Color(0xFF444444) : const Color(0xFFE5E7EB),
+            color: isImplemented 
+              ? (isDark 
+                  ? const Color(0xFF404040).withValues(alpha: 0.3)
+                  : const Color(0xFFE2E8F0).withValues(alpha: 0.6))
+              : const Color(0xFFFFC107).withValues(alpha: 0.3),
+            width: isImplemented ? 1 : 2,
           ),
+          boxShadow: [
+            BoxShadow(
+              color: isDark
+                  ? Colors.black.withValues(alpha: 0.3)
+                  : Colors.black.withValues(alpha: 0.08),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+              spreadRadius: 0,
+            ),
+          ],
         ),
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                width: 32,
-                height: 32,
-                decoration: BoxDecoration(
-                  color: (service['color'] as Color).withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(
-                  service['icon'] as IconData,
-                  color: service['color'] as Color,
-                  size: 18,
+        child: Stack(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // 実際のサービスロゴを使用
+                  Opacity(
+                    opacity: isImplemented ? 1.0 : 0.5,
+                    child: ServiceIcons.buildIcon(
+                      serviceId: service['id'],
+                      size: 32,
+                      isDark: isDark,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    service['title'],
+                    style: TextStyle(
+                      color: isImplemented 
+                        ? (isDark ? Colors.white : Colors.black87)
+                        : (isDark ? Colors.grey[500] : Colors.grey[600]),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    service['subtitle'],
+                    style: TextStyle(
+                      color: isImplemented 
+                        ? (isDark ? Colors.grey[400] : Colors.grey[600])
+                        : (isDark ? Colors.grey[600] : Colors.grey[500]),
+                      fontSize: 9,
+                    ),
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+            // 未実装サービス用のバッジ
+            if (!isImplemented)
+              Positioned(
+                top: 8,
+                right: 8,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFC107),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: const Text(
+                    '開発中',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 8,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ),
               ),
-              const SizedBox(height: 8),
-              Text(
-                service['title'],
-                style: TextStyle(
-                  color: isDark ? Colors.white : Colors.black87,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                ),
-                textAlign: TextAlign.center,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: 2),
-              Text(
-                service['subtitle'],
-                style: TextStyle(
-                  color: isDark ? Colors.grey[400] : Colors.grey[600],
-                  fontSize: 9,
-                ),
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
-          ),
+          ],
         ),
       ),
     );
   }
 
-  // API サービス用カード
+  // サービスが実装済みかどうかを判定
+  bool _isServiceImplemented(String serviceId) {
+    final implementedServices = [
+      'youtube', 'spotify', 'youtube_music', 'amazon', 'rakuten', 
+      'yahoo_shopping', 'mercari', 'other_ec', 'receipt', 'prime_video',
+      'netflix', 'abema', 'hulu', 'disney', 'unext'
+    ];
+    return implementedServices.contains(serviceId);
+  }
+
+  // API サービス用カード（実際のロゴ使用）
   Widget _buildApiServiceCard(Map<String, dynamic> service, Map<String, dynamic> serviceData, bool isDark) {
     final isConnected = serviceData['isConnected'] as bool;
     
@@ -906,28 +923,44 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
-          borderRadius: BorderRadius.circular(12),
+          gradient: isDark
+              ? const LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [Color(0xFF2A2A2A), Color(0xFF1F1F1F)],
+                )
+              : const LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [Colors.white, Color(0xFFFAFBFC)],
+                ),
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: isConnected 
                 ? const Color(0xFF4CAF50)
-                : (isDark ? const Color(0xFF444444) : const Color(0xFFE5E7EB)),
+                : (isDark 
+                    ? const Color(0xFF404040).withValues(alpha: 0.3)
+                    : const Color(0xFFE2E8F0).withValues(alpha: 0.6)),
+            width: 1,
           ),
+          boxShadow: [
+            BoxShadow(
+              color: isDark
+                  ? Colors.black.withValues(alpha: 0.3)
+                  : Colors.black.withValues(alpha: 0.08),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+              spreadRadius: 0,
+            ),
+          ],
         ),
         child: Row(
           children: [
-            Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                color: const Color(0xFF4ECDC4).withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Icon(
-                Icons.api,
-                color: Color(0xFF4ECDC4),
-                size: 24,
-              ),
+            // 実際のサービスロゴを使用
+            ServiceIcons.buildIcon(
+              serviceId: service['id'],
+              size: 48,
+              isDark: isDark,
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -1229,12 +1262,12 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
   void _navigateToService(String serviceId) {
     switch (serviceId) {
       case 'youtube':
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => const YouTubeImportScreen(),
-          ),
-        );
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const YouTubeImportScreen(),
+        ),
+      );
         break;
       case 'spotify':
         Navigator.push(
@@ -1368,19 +1401,144 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
         );
         break;
       default:
-        // 未実装サービスの場合、開発中メッセージを表示
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('$serviceId の取り込み機能は開発中です'),
-            backgroundColor: Colors.orange,
-          ),
-        );
+        // 未実装サービスの場合、詳細な案内ダイアログを表示
+        _showComingSoonDialog(serviceId);
         break;
     }
   }
 
   void _selectServiceForOCR(String serviceId) {
     _navigateToService(serviceId);
+  }
+
+  void _showComingSoonDialog(String serviceId) {
+    final serviceName = _getServiceDisplayName(serviceId);
+    final themeState = ref.watch(themeProviderEnhanced);
+    final isDark = themeState.isDarkMode;
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: isDark ? const Color(0xFF2A2A2A) : Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFC107).withOpacity(0.2),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(
+                Icons.construction,
+                color: Color(0xFFFFC107),
+                size: 24,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                '$serviceName\n開発中',
+                style: TextStyle(
+                  color: isDark ? Colors.white : Colors.black87,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '$serviceNameのデータ取り込み機能は現在開発中です。',
+              style: TextStyle(
+                color: isDark ? Colors.white70 : Colors.black54,
+                fontSize: 16,
+                height: 1.5,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0xFF4ECDC4).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: const Color(0xFF4ECDC4).withOpacity(0.3),
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.lightbulb_outline,
+                        color: Color(0xFF4ECDC4),
+                        size: 20,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        '代替手段',
+                        style: TextStyle(
+                          color: const Color(0xFF4ECDC4),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    '• 手動でデータを入力\n• スクリーンショットのOCR読み取り\n• 実装済みサービスをご利用ください',
+                    style: TextStyle(
+                      color: isDark ? Colors.white70 : Colors.black54,
+                      fontSize: 14,
+                      height: 1.4,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              '了解',
+              style: TextStyle(
+                color: isDark ? Colors.white70 : Colors.black54,
+              ),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              // 手動入力画面に遷移
+              setState(() {
+                selectedCategory = 'other';
+              });
+              _animationController.forward();
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF4ECDC4),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            child: const Text('手動入力'),
+          ),
+        ],
+      ),
+    );
   }
 
   String _getServiceDisplayName(String serviceId) {
@@ -2235,13 +2393,16 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
               padding: const EdgeInsets.symmetric(vertical: 16),
               children: [
                 _buildDrawerItem(Icons.home, 'ホーム', false, () {
-                  Navigator.of(context).popUntil((route) => route.isFirst);
+                  Navigator.pop(context);
+                  Navigator.pushReplacementNamed(context, '/');
                 }),
                 _buildDrawerItem(Icons.search, '検索', false, () {
-                  Navigator.of(context).popUntil((route) => route.isFirst);
+                  Navigator.pop(context);
+                  Navigator.pushReplacementNamed(context, '/search');
                 }),
                 _buildDrawerItem(Icons.star, 'マイリスト', false, () {
-                  Navigator.of(context).popUntil((route) => route.isFirst);
+                  Navigator.pop(context);
+                  Navigator.pushReplacementNamed(context, '/mylist');
                 }),
                 // スターのみ表示
                 if (currentUser.isStar) ...[
@@ -2250,28 +2411,20 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
                   }),
                   _buildDrawerItem(Icons.analytics, 'スターダッシュボード', false, () {
                     Navigator.pop(context);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const StarDashboardScreen()),
-                    );
+                    Navigator.pushReplacementNamed(context, '/star-dashboard');
                   }),
                   _buildDrawerItem(Icons.workspace_premium, 'プランを管理', false, () {
                     Navigator.pop(context);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const PlanManagementScreen()),
-                    );
+                    Navigator.pushReplacementNamed(context, '/plan-management');
                   }),
                 ],
                 _buildDrawerItem(Icons.person, 'マイページ', false, () {
-                  Navigator.of(context).popUntil((route) => route.isFirst);
+                  Navigator.pop(context);
+                  Navigator.pushReplacementNamed(context, '/profile');
                 }),
                 _buildDrawerItem(Icons.settings, '設定', false, () {
                   Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const SettingsScreen()),
-                  );
+                  Navigator.pushReplacementNamed(context, '/settings');
                 }),
               ],
             ),

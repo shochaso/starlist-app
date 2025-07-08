@@ -1335,59 +1335,37 @@ class _StarDashboardScreenState extends ConsumerState<StarDashboardScreen>
               children: [
                 _buildDrawerItem(Icons.home, 'ホーム', false, () {
                   Navigator.pop(context);
-                  Navigator.pushAndRemoveUntil(
-                    context,
-                    MaterialPageRoute(builder: (context) => const StarlistMainScreen()),
-                    (route) => false,
-                  );
+                  Navigator.pushReplacementNamed(context, '/');
                 }),
                 _buildDrawerItem(Icons.search, '検索', false, () {
                   Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const SearchScreen()),
-                  );
+                  Navigator.pushReplacementNamed(context, '/search');
                 }),
                 _buildDrawerItem(Icons.star, 'マイリスト', false, () {
                   Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const MylistScreen()),
-                  );
+                  Navigator.pushReplacementNamed(context, '/mylist');
                 }),
                 // スターのみ表示
                 if (currentUser.isStar) ...[
                   _buildDrawerItem(Icons.camera_alt, 'データ取込み', false, () {
                     Navigator.pop(context);
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (context) => const DataImportScreen()),
-                    );
+                    Navigator.pushReplacementNamed(context, '/data-import');
                   }),
                   _buildDrawerItem(Icons.analytics, 'スターダッシュボード', true, () {
                     Navigator.pop(context);
                   }),
                   _buildDrawerItem(Icons.workspace_premium, 'プランを管理', false, () {
                     Navigator.pop(context);
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (context) => const PlanManagementScreen()),
-                    );
+                    Navigator.pushReplacementNamed(context, '/plan-management');
                   }),
                 ],
                 _buildDrawerItem(Icons.person, 'マイページ', false, () {
                   Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const ProfileScreen()),
-                  );
+                  Navigator.pushReplacementNamed(context, '/profile');
                 }),
                 _buildDrawerItem(Icons.settings, '設定', false, () {
                   Navigator.pop(context);
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (context) => const SettingsScreen()),
-                  );
+                  Navigator.pushReplacementNamed(context, '/settings');
                 }),
               ],
             ),

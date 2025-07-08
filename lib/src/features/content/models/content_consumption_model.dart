@@ -18,26 +18,29 @@ enum PrivacyLevel {
   premium     // プレミアム会員のみ
 }
 
-/// 位置情報
+/// 位置情報（プライバシー配慮版）
 class GeoLocation {
   final double latitude;
   final double longitude;
-  final String? address;
-  final String? placeName;
+  // final String? address; // プライバシー保護のため削除
+  final String? placeName; // 店名・施設名のみ（住所情報なし）
+  final String? category; // 「レストラン」「ショッピングモール」等の大分類
   
   GeoLocation({
     required this.latitude,
     required this.longitude,
-    this.address,
+    // this.address, // 削除
     this.placeName,
+    this.category,
   });
   
   factory GeoLocation.fromJson(Map<String, dynamic> json) {
     return GeoLocation(
       latitude: json['latitude'],
       longitude: json['longitude'],
-      address: json['address'],
+      // address: json['address'], // 削除
       placeName: json['place_name'],
+      category: json['category'],
     );
   }
   
@@ -45,9 +48,18 @@ class GeoLocation {
     return {
       'latitude': latitude,
       'longitude': longitude,
-      'address': address,
+      // 'address': address, // 削除
       'place_name': placeName,
+      'category': category,
     };
+  }
+  
+  /// プライバシーに配慮した表示用テキスト
+  String get displayText {
+    final parts = <String>[];
+    if (placeName != null) parts.add(placeName!);
+    if (category != null) parts.add('(${category!})');
+    return parts.isNotEmpty ? parts.join(' ') : '位置情報';
   }
 }
 

@@ -328,7 +328,7 @@ class AppUsageParser {
     final categories = {
       'SNS': ['Instagram', 'Twitter', 'Facebook', 'TikTok', 'LINE', 'Discord'],
       'ゲーム': ['ゲーム', 'Game', 'パズドラ', 'モンスト', 'ポケモン'],
-      'エンタメ': ['YouTube', 'Netflix', 'Amazon Prime', 'Disney+', 'Spotify', 'Apple Music'],
+      'エンタメ': ['YouTube', 'Netflix', 'Prime Video', 'Disney+', 'Spotify', 'Apple Music'],
       '仕事': ['Slack', 'Teams', 'Zoom', 'Gmail', 'Outlook', 'Excel', 'Word'],
       'ツール': ['設定', 'カメラ', 'メモ', 'カレンダー', '天気'],
     };

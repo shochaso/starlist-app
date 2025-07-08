@@ -41,7 +41,7 @@ class _VideoImportScreenState extends ConsumerState<VideoImportScreen> {
       {'id': 'watchlist', 'title': 'マイリスト', 'subtitle': 'お気に入り・後で見る'},
       {'id': 'ratings', 'title': '評価', 'subtitle': '高評価・低評価'},
     ],
-    'amazon_prime': [
+    'prime_video': [
       {'id': 'viewing_history', 'title': '視聴履歴', 'subtitle': 'Prime Video視聴記録'},
       {'id': 'watchlist', 'title': 'ウォッチリスト', 'subtitle': 'お気に入り作品'},
       {'id': 'purchases', 'title': '購入・レンタル', 'subtitle': '有料コンテンツ'},
@@ -88,27 +88,69 @@ class _VideoImportScreenState extends ConsumerState<VideoImportScreen> {
   }
 
   void _pickImage() async {
-    final pickedFile = await _imagePicker.pickImage(source: ImageSource.gallery);
-    if (pickedFile != null) {
-      setState(() {
-        selectedImage = File(pickedFile.path);
-      });
+    try {
+      final pickedFile = await _imagePicker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 1920,
+        maxHeight: 1080,
+        imageQuality: 85,
+      );
+      if (pickedFile != null) {
+        setState(() {
+          selectedImage = File(pickedFile.path);
+        });
+        
+        // Haptic feedback
+        HapticFeedback.lightImpact();
+        
+        // Success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('画像が選択されました'),
+            backgroundColor: widget.serviceColor,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      _showErrorSnackBar('画像の選択に失敗しました: $e');
     }
   }
 
-  void _processImageOCR() async {
-    if (selectedImage == null) return;
-
-    setState(() {
-      isProcessing = true;
-    });
-
-    await Future.delayed(const Duration(seconds: 3));
-
-    setState(() {
-      isProcessing = false;
-      _textController.text = 'OCR解析結果がここに表示されます\\n\\n例：\\n作品名: サンプル映画\\n視聴日: 2024/01/15\\nジャンル: アクション';
-    });
+  void _openPhotoLibrary() async {
+    try {
+      final pickedFile = await _imagePicker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 1920,
+        maxHeight: 1080,
+        imageQuality: 85,
+      );
+      
+      if (pickedFile != null) {
+        setState(() {
+          selectedImage = File(pickedFile.path);
+        });
+        
+        // Haptic feedback
+        HapticFeedback.lightImpact();
+        
+        // Info message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('画像を選択しました。手動でデータを入力してください。'),
+            backgroundColor: widget.serviceColor,
+            duration: const Duration(seconds: 3),
+            action: SnackBarAction(
+              label: '了解',
+              textColor: Colors.white,
+              onPressed: () {},
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      _showErrorSnackBar('写真フォルダのアクセスに失敗しました: $e');
+    }
   }
 
   void _processData() async {
@@ -354,7 +396,7 @@ class _VideoImportScreenState extends ConsumerState<VideoImportScreen> {
 
             // 画像選択
             Text(
-              'またはスクリーンショットから読み込み',
+              '写真フォルダから画像を選択',
               style: TextStyle(
                 color: isDark ? Colors.white : Colors.black87,
                 fontSize: 16,
@@ -382,52 +424,67 @@ class _VideoImportScreenState extends ConsumerState<VideoImportScreen> {
               ),
               const SizedBox(height: 12),
             ],
-            Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: _pickImage,
-                    icon: const Icon(Icons.image, size: 18),
-                    label: Text(selectedImage == null ? '画像を選択' : '画像を変更'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: isDark ? const Color(0xFF444444) : const Color(0xFFF1F5F9),
-                      foregroundColor: isDark ? Colors.white : Colors.black87,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      elevation: 0,
-                    ),
+            // 写真フォルダアクセスボタン（iPhone/Android対応）
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: _openPhotoLibrary,
+                icon: Platform.isIOS 
+                    ? const Icon(Icons.photo_library, size: 20)
+                    : const Icon(Icons.photo, size: 20),
+                label: Text(
+                  Platform.isIOS 
+                      ? 'フォトライブラリを開く'
+                      : 'ギャラリーを開く',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
-                if (selectedImage != null) ...[
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: widget.serviceColor,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  elevation: 2,
+                ),
+              ),
+            ),
+            
+            const SizedBox(height: 12),
+            
+            // 説明テキスト
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: widget.serviceColor.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: widget.serviceColor.withOpacity(0.3),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.info_outline,
+                    color: widget.serviceColor,
+                    size: 20,
+                  ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: isProcessing ? null : _processImageOCR,
-                      icon: isProcessing 
-                          ? const SizedBox(
-                              width: 18,
-                              height: 18,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                              ),
-                            )
-                          : const Icon(Icons.text_fields, size: 18),
-                      label: Text(isProcessing ? '解析中...' : '画像を解析'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: widget.serviceColor,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
+                    child: Text(
+                      '画像を選択後、上記のテキストエリアに手動でデータを入力してください。',
+                      style: TextStyle(
+                        color: isDark ? Colors.white70 : Colors.black87,
+                        fontSize: 14,
+                        height: 1.4,
                       ),
                     ),
                   ),
                 ],
-              ],
+              ),
             ),
 
             const SizedBox(height: 24),
@@ -710,6 +767,6 @@ class _VideoImportScreenState extends ConsumerState<VideoImportScreen> {
 視聴日: 2024/01/15
 ジャンル: アクション
 
-または${widget.serviceName}の画面をOCRで読み取ったテキストをペーストしてください''';
+写真フォルダから画像を選択し、手動でデータを入力してください''';
   }
 }
