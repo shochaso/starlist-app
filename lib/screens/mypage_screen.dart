@@ -23,29 +23,18 @@ class MypageScreen extends ConsumerWidget {
     final dividerColor = isDarkMode ? Colors.grey.shade800 : Colors.grey.shade300;
     final secondaryTextColor = isDarkMode ? Colors.grey.shade400 : Colors.grey.shade700;
 
-    // テーマモードの取得
-    final themeMode = ref.watch(themeProvider);
+    // テーマモードの取得は不要（既にTheme.of(context)で取得済み）
 
     return Scaffold(
       backgroundColor: backgroundColor,
-      appBar: AppBar(
-        title: Text(
-          'マイページ',
-          style: TextStyle(
-            color: textColor,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        backgroundColor: backgroundColor,
-        elevation: 0,
-      ),
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // プロフィールセクション
             Container(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(4), // MP適用
+              margin: const EdgeInsets.all(4), // MP適用
               color: backgroundColor,
               child: Row(
                 children: [
@@ -97,7 +86,7 @@ class MypageScreen extends ConsumerWidget {
             
             // 設定セクション
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.all(4), // MP適用
               child: Text(
                 '設定',
                 style: TextStyle(
@@ -112,7 +101,7 @@ class MypageScreen extends ConsumerWidget {
             
             // 設定リスト
             Container(
-              margin: const EdgeInsets.symmetric(horizontal: 16),
+              margin: const EdgeInsets.all(4), // MP適用
               decoration: BoxDecoration(
                 color: cardColor,
                 borderRadius: BorderRadius.circular(12),

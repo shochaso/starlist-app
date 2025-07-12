@@ -594,7 +594,7 @@
             <a href="#" class="sidebar-nav-item" data-tab="follow-view"> <i class="fas fa-users"></i> <span>フォロー中</span> </a>
             <a href="#" class="sidebar-nav-item" data-tab="mylist-view"> <i class="fas fa-star"></i> <span>マイリスト</span> </a>
             <a href="#" class="sidebar-nav-item" data-tab="ocr-view"> <i class="fas fa-camera"></i> <span>データ取込み</span> </a>
-            <a href="#" class="sidebar-nav-item" data-tab="analytics-view"> <i class="fas fa-chart-pie"></i> <span>スターダッシュボード</span> </a>
+            <a href="#" class="sidebar-nav-item" data-tab="analytics-view"> <i class="fas fa-chart-pie"></i> <span>ダッシュボード</span> </a>
             <a href="#" class="sidebar-nav-item" data-tab="profile-view"> <i class="fas fa-user"></i> <span>マイページ</span> </a> <a href="#" class="sidebar-nav-item" data-tab="subscription-view"> <i class="fas fa-crown"></i> <span>プランを管理</span> </a>
             <a href="#" class="sidebar-nav-item" data-tab="settings-view"> <i class="fas fa-cog"></i> <span>設定</span> </a>
         </div>
@@ -602,14 +602,18 @@
 
     <div class="content-with-sidebar">
 
-        <header class="ios-header fixed top-0 left-0 right-0 md:left-[240px] py-3 px-4 flex justify-between items-center h-[60px]"> <button class="mobile-menu-button text-gray-600 hover:text-blue-600 text-lg mr-2" id="open-sidebar" title="メニューを開く">
+        <header class="ios-header fixed top-0 left-0 right-0 md:left-[240px] py-3 px-4 flex justify-between items-center h-[60px]">
+            <button class="mobile-menu-button text-gray-600 hover:text-blue-600 text-lg mr-2 md:hidden" id="open-sidebar" title="メニューを開く">
                 <i class="fas fa-bars"></i>
             </button>
-            <h1 class="text-lg font-semibold text-center flex-grow md:text-left md:flex-grow-0" id="main-header-title">ホーム</h1> <div class="flex items-center space-x-4">
+            <h1 class="text-lg font-semibold text-center flex-grow md:text-left md:flex-grow-0" id="main-header-title">ホーム</h1>
+            <div class="flex items-center space-x-4">
                 <button class="text-gray-600 hover:text-blue-600 text-lg" title="通知">
                     <i class="far fa-bell"></i>
-                    </button>
-                <button class="text-gray-600 hover:text-blue-600 text-lg" title="設定" data-tab="settings-view"> <i class="fas fa-cog"></i> </button>
+                </button>
+                <button class="text-gray-600 hover:text-blue-600 text-lg" title="設定" data-tab="settings-view">
+                    <i class="fas fa-cog"></i>
+                </button>
             </div>
         </header>
 
@@ -1526,8 +1530,7 @@
             </section>
 
             <section id="analytics-view" class="mb-8 hidden">
-                <h2 class="text-xl font-bold mb-4">スターダッシュボード</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6 mp-4">
                     <div class="content-card p-5">
                         <div class="flex items-center text-gray-500 mb-2">
                             <i class="fas fa-user-friends mr-2 text-lg text-blue-500"></i>
@@ -2222,7 +2225,7 @@
                     analyticsViewBtn.addEventListener('click', function() {
                         hideAllSections();
                         analyticsView.classList.remove('hidden');
-                        updateHeader('スターダッシュボード', 'アナリティクス');
+                        updateHeader('ダッシュボード', 'アナリティクス');
                         
                         // 棒グラフのアニメーション
                         const bars = document.querySelectorAll('.bar-chart .bar');
@@ -2274,7 +2277,7 @@
                         else if (targetTabId === 'follow-view') targetTitle = 'フォロー中';
                         else if (targetTabId === 'mylist-view') targetTitle = 'マイリスト';
                         else if (targetTabId === 'ocr-view') targetTitle = 'データ取込み';
-                        else if (targetTabId === 'analytics-view') targetTitle = 'スターダッシュボード';
+                        else if (targetTabId === 'analytics-view') targetTitle = 'ダッシュボード';
                         else if (targetTabId === 'profile-view') targetTitle = 'マイページ';
                         else if (targetTabId === 'subscription-view') targetTitle = 'プランを管理';
                         else if (targetTabId === 'settings-view') targetTitle = '設定';

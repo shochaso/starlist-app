@@ -9,7 +9,7 @@ import '../../app/screens/settings_screen.dart';
 import '../../star/screens/star_dashboard_screen.dart';
 import '../../star/screens/schedule_management_screen.dart';
 import '../../data_integration/screens/data_import_screen.dart';
-import '../../subscription/screens/plan_management_screen.dart';
+import '../../subscription/screens/fan_subscription_screen.dart';
 import '../../search/screens/search_screen.dart';
 import '../../mylist/screens/mylist_screen.dart';
 

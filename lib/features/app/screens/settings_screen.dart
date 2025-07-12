@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../src/providers/theme_provider_enhanced.dart';
 import '../../../providers/user_provider.dart';
-import '../../subscription/screens/plan_management_screen.dart';
+import '../../subscription/screens/fan_subscription_screen.dart';
 import '../../star/screens/star_dashboard_screen.dart';
 import '../../data_integration/screens/data_import_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -65,12 +65,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       appBar: AppBar(
         backgroundColor: isDark ? const Color(0xFF1A1A1A) : Colors.white,
         elevation: 0,
-        leading: IconButton(
-          icon: Icon(
-            Icons.home,
-            color: isDark ? Colors.white : Colors.black87,
+        leading: Builder(
+          builder: (context) => IconButton(
+            icon: Icon(
+              Icons.menu,
+              color: isDark ? Colors.white : Colors.black87,
+            ),
+            onPressed: () => Scaffold.of(context).openDrawer(),
           ),
-          onPressed: () => _navigateToHome(),
         ),
         title: Text(
           '設定',
@@ -81,14 +83,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ),
         ),
         actions: [
-          Builder(
-            builder: (context) => IconButton(
-              icon: Icon(
-                Icons.menu,
-                color: isDark ? Colors.white : Colors.black87,
-              ),
-              onPressed: () => Scaffold.of(context).openDrawer(),
+          IconButton(
+            icon: Icon(
+              Icons.home,
+              color: isDark ? Colors.white : Colors.black87,
             ),
+            onPressed: () => _navigateToHome(),
           ),
         ],
       ),
@@ -1459,7 +1459,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   void _navigateToPlanManagement() {
     Navigator.of(context).push(
-      MaterialPageRoute(builder: (context) => const PlanManagementScreen()),
+      MaterialPageRoute(builder: (context) => const FanSubscriptionScreen()),
     );
   }
 

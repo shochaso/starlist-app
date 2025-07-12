@@ -5,7 +5,7 @@ import '../../../src/core/components/service_icons.dart';
 import '../../../src/providers/theme_provider_enhanced.dart';
 import '../../../providers/user_provider.dart';
 import '../../star/screens/star_dashboard_screen.dart';
-import '../../subscription/screens/plan_management_screen.dart';
+import '../../subscription/screens/fan_subscription_screen.dart';
 import '../../app/screens/settings_screen.dart';
 import 'youtube_import_screen.dart';
 import 'music_import_screen.dart';
@@ -104,7 +104,7 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
     },
     {
       'id': 'prime_video',
-      'title': 'Prime',
+      'title': 'Amazon Prime',
       'subtitle': '',
       'priority': 4,
     },
@@ -125,22 +125,45 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
   // ジャンル別サービス（実際のロゴを使用）
   final Map<String, List<Map<String, dynamic>>> serviceCategories = {
     '動画': [
+      {'id': 'youtube', 'title': 'YouTube', 'subtitle': '動画共有・ライブ配信'},
       {'id': 'netflix', 'title': 'Netflix', 'subtitle': '映画・ドラマストリーミング'},
-      {'id': 'prime_video', 'title': 'Prime', 'subtitle': '映画・ドラマ・オリジナル作品'},
+      {'id': 'prime_video', 'title': 'Amazon Prime', 'subtitle': '映画・ドラマ・オリジナル作品'},
       {'id': 'disney', 'title': 'Disney+', 'subtitle': 'ディズニー・マーベル・スター・ウォーズ'},
+      {'id': 'niconico', 'title': 'ニコニコ動画', 'subtitle': '動画共有・生放送'},
       {'id': 'abema', 'title': 'ABEMA', 'subtitle': 'アニメ・バラエティ・ニュース'},
       {'id': 'hulu', 'title': 'Hulu', 'subtitle': '海外ドラマ・アニメ'},
       {'id': 'unext', 'title': 'U-NEXT', 'subtitle': '映画・アニメ・雑誌'},
     ],
+    '配信': [
+      {'id': 'twitch', 'title': 'Twitch', 'subtitle': 'ゲーム配信・ライブストリーミング'},
+      {'id': 'twitcasting', 'title': 'ツイキャス', 'subtitle': 'ライブ配信'},
+      {'id': 'fuwacchi', 'title': 'ふわっち', 'subtitle': 'ライブ配信'},
+      {'id': 'palmu', 'title': 'Palmu', 'subtitle': 'ライブ配信'},
+      {'id': 'showroom', 'title': 'SHOWROOM', 'subtitle': 'ライブ配信・応援'},
+      {'id': '17live', 'title': '17LIVE', 'subtitle': 'ライブ配信'},
+      {'id': 'linelive', 'title': 'LINE LIVE', 'subtitle': 'ライブ配信'},
+      {'id': 'mildom', 'title': 'Mildom', 'subtitle': 'ゲーム配信'},
+      {'id': 'openrec', 'title': 'OPENREC', 'subtitle': 'ゲーム配信'},
+      {'id': 'mirrativ', 'title': 'Mirrativ', 'subtitle': 'スマホゲーム配信'},
+      {'id': 'reality', 'title': 'REALITY', 'subtitle': 'バーチャル配信'},
+      {'id': 'iriam', 'title': 'IRIAM', 'subtitle': 'バーチャル配信'},
+      {'id': 'bigolive', 'title': 'BIGO LIVE', 'subtitle': 'グローバル配信'},
+      {'id': 'spoon', 'title': 'Spoon', 'subtitle': '音声配信'},
+      {'id': 'pococha', 'title': 'Pococha', 'subtitle': 'ライブコミュニケーション'},
+      {'id': 'tangome', 'title': 'TangoMe', 'subtitle': 'ライブ配信'},
+    ],
     '音楽': [
       {'id': 'spotify', 'title': 'Spotify', 'subtitle': '音楽ストリーミング'},
       {'id': 'youtube', 'title': 'YouTube Music', 'subtitle': '音楽再生サービス'},
+      {'id': 'amazon_music', 'title': 'Amazon Music', 'subtitle': '音楽ストリーミング・プレイリスト'},
       {'id': 'apple_music', 'title': 'Apple Music', 'subtitle': '再生履歴'},
       {'id': 'live_concert', 'title': 'ライブ・コンサート', 'subtitle': '参加したライブ記録'},
     ],
     'ショッピング': [
       {'id': 'amazon', 'title': 'Amazon', 'subtitle': '購入履歴・お気に入り'},
       {'id': 'rakuten', 'title': '楽天市場', 'subtitle': '購入履歴・お気に入り'},
+      {'id': 'zozotown', 'title': 'ZOZOTOWN', 'subtitle': 'ファッション購入履歴'},
+      {'id': 'qoo10', 'title': 'Qoo10', 'subtitle': '韓国コスメ・ファッション'},
       {'id': 'yahoo_shopping', 'title': 'Yahoo!ショッピング', 'subtitle': '購入履歴'},
       {'id': 'mercari', 'title': 'メルカリ', 'subtitle': 'フリマ取引履歴'},
       {'id': 'other_ec', 'title': 'その他EC', 'subtitle': 'オンラインショップ'},
@@ -150,6 +173,8 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
       {'id': 'tiktok', 'title': 'TikTok', 'subtitle': 'ショート動画'},
       {'id': 'x', 'title': 'X (Twitter)', 'subtitle': 'ツイート・フォロー'},
       {'id': 'facebook', 'title': 'Facebook', 'subtitle': '投稿・いいね'},
+      {'id': 'bereal', 'title': 'BeReal', 'subtitle': 'リアルタイム写真共有'},
+      {'id': 'threads', 'title': 'Threads', 'subtitle': 'テキスト共有SNS'},
       {'id': 'snapchat', 'title': 'Snapchat', 'subtitle': 'スナップ・ストーリー'},
       {'id': 'linkedin', 'title': 'LinkedIn', 'subtitle': 'ビジネスネットワーク'},
     ],
@@ -542,7 +567,7 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
                   ),
                 ),
                 child: Column(
-                  children: [
+                children: [
                     Icon(
                       Icons.info_outline,
                       color: const Color(0xFF4ECDC4),
@@ -713,8 +738,8 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
   Widget _buildPriorityServiceCard(Map<String, dynamic> service, bool isDark) {
     return GestureDetector(
       onTap: () => _navigateToService(service['id']),
-      child: Container(
-        decoration: BoxDecoration(
+                    child: Container(
+                      decoration: BoxDecoration(
           gradient: isDark
               ? const LinearGradient(
                   begin: Alignment.topLeft,
@@ -727,10 +752,10 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
                   colors: [Colors.white, Color(0xFFFAFBFC)],
                 ),
           borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: isDark
-                  ? Colors.black.withValues(alpha: 0.3)
+                        boxShadow: [
+                          BoxShadow(
+                            color: isDark 
+                                ? Colors.black.withValues(alpha: 0.3) 
                   : Colors.black.withValues(alpha: 0.08),
               blurRadius: 20,
               offset: const Offset(0, 8),
@@ -743,9 +768,9 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
               blurRadius: 0,
               offset: const Offset(0, 1),
               spreadRadius: 0,
-            ),
-          ],
-        ),
+                          ),
+                        ],
+                      ),
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -793,9 +818,9 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
     
     return GestureDetector(
       onTap: () => _navigateToService(service['id']),
-      child: Container(
+                    child: Container(
         width: 160,
-        decoration: BoxDecoration(
+                      decoration: BoxDecoration(
           gradient: isDark
               ? LinearGradient(
                   begin: Alignment.topLeft,
@@ -811,7 +836,7 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
                     ? [Colors.white, Color(0xFFFAFBFC)]
                     : [Colors.grey[100]!, Color(0xFFF5F5F5)],
                 ),
-          borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: isImplemented 
               ? (isDark 
@@ -820,60 +845,67 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
               : const Color(0xFFFFC107).withValues(alpha: 0.3),
             width: isImplemented ? 1 : 2,
           ),
-          boxShadow: [
-            BoxShadow(
-              color: isDark
-                  ? Colors.black.withValues(alpha: 0.3)
+                        boxShadow: [
+                          BoxShadow(
+                            color: isDark 
+                                ? Colors.black.withValues(alpha: 0.3) 
                   : Colors.black.withValues(alpha: 0.08),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
               spreadRadius: 0,
-            ),
-          ],
-        ),
+                          ),
+                        ],
+                      ),
         child: Stack(
           children: [
             Padding(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(8),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   // 実際のサービスロゴを使用
                   Opacity(
                     opacity: isImplemented ? 1.0 : 0.5,
                     child: ServiceIcons.buildIcon(
                       serviceId: service['id'],
-                      size: 32,
+                      size: 28,
                       isDark: isDark,
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    service['title'],
-                    style: TextStyle(
-                      color: isImplemented 
-                        ? (isDark ? Colors.white : Colors.black87)
-                        : (isDark ? Colors.grey[500] : Colors.grey[600]),
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
+                  const SizedBox(height: 4),
+                  Flexible(
+                    child: Text(
+                      service['title'],
+                      style: TextStyle(
+                        color: isImplemented 
+                          ? (isDark ? Colors.white : Colors.black87)
+                          : (isDark ? Colors.grey[500] : Colors.grey[600]),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      textAlign: TextAlign.center,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    textAlign: TextAlign.center,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 2),
-                  Text(
-                    service['subtitle'],
-                    style: TextStyle(
-                      color: isImplemented 
-                        ? (isDark ? Colors.grey[400] : Colors.grey[600])
-                        : (isDark ? Colors.grey[600] : Colors.grey[500]),
-                      fontSize: 9,
+                  if (service['subtitle'].isNotEmpty) ...[
+                    const SizedBox(height: 1),
+                    Flexible(
+                      child: Text(
+                        service['subtitle'],
+                        style: TextStyle(
+                          color: isImplemented 
+                            ? (isDark ? Colors.grey[400] : Colors.grey[600])
+                            : (isDark ? Colors.grey[600] : Colors.grey[500]),
+                          fontSize: 8,
+                        ),
+                        textAlign: TextAlign.center,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
-                    textAlign: TextAlign.center,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
+                  ],
                 ],
               ),
             ),
@@ -896,9 +928,9 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                ),
-              ),
-          ],
+          ),
+        ),
+      ],
         ),
       ),
     );
@@ -965,12 +997,12 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
             const SizedBox(width: 16),
             Expanded(
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
+      crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
                     service['name'],
-                    style: TextStyle(
-                      color: isDark ? Colors.white : Colors.black87,
+              style: TextStyle(
+                color: isDark ? Colors.white : Colors.black87,
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
                     ),
@@ -983,10 +1015,10 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
                     style: TextStyle(
                       color: isDark ? Colors.grey[400] : Colors.grey[600],
                       fontSize: 14,
-                    ),
-                  ),
-                ],
               ),
+            ),
+          ],
+        ),
             ),
             Icon(
               isConnected ? Icons.check_circle : Icons.add_circle_outline,
@@ -1522,7 +1554,7 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
             onPressed: () {
               Navigator.pop(context);
               // 手動入力画面に遷移
-              setState(() {
+      setState(() {
                 selectedCategory = 'other';
               });
               _animationController.forward();

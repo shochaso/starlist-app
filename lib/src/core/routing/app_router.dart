@@ -5,7 +5,7 @@ import '../../../features/home/screens/starlist_main_screen.dart';
 import '../../../features/auth/screens/star_signup_screen.dart';
 import '../../../features/auth/screens/star_email_signup_screen.dart';
 import '../../../features/star/screens/star_dashboard_screen.dart';
-import '../../../features/subscription/screens/plan_management_screen.dart';
+import '../../../features/subscription/screens/fan_subscription_screen.dart';
 import '../../../features/settings/screens/settings_screen.dart';
 import '../../../features/data_integration/screens/data_import_screen.dart';
 import '../../../features/search/screens/search_screen.dart';
@@ -47,7 +47,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/plan-management',
         name: 'plan-management',
-        builder: (context, state) => const PlanManagementScreen(),
+        builder: (context, state) => const FanSubscriptionScreen(),
       ),
       
       // 設定

@@ -2,10 +2,10 @@ import 'package:flutter/foundation.dart';
 
 /// サブスクリプションプランタイプ
 enum SubscriptionPlanType {
-  basic,      // ベーシック
+  free,       // 無料
+  light,      // ライト
   standard,   // スタンダード  
   premium,    // プレミアム
-  ultimate,   // アルティメット
 }
 
 /// サブスクリプションステータス
@@ -88,94 +88,77 @@ class SubscriptionPlan {
 class SubscriptionPlans {
   static const List<SubscriptionPlan> allPlans = [
     SubscriptionPlan(
-      planType: SubscriptionPlanType.basic,
-      nameJa: 'ベーシック',
-      nameEn: 'Basic',
-      priceMonthlyJpy: 400,
-      priceYearlyJpy: 4000, // 2ヶ月分お得
-      starPointsMonthly: 1500,
+      planType: SubscriptionPlanType.free,
+      nameJa: '無料',
+      nameEn: 'Free',
+      priceMonthlyJpy: 0,
+      priceYearlyJpy: 0,
+      starPointsMonthly: 0,
       benefits: [
-        '月間1,500スターP付与',
-        '広告非表示',
-        '毎日ピック優先表示',
-        'ベーシックサポート',
+        '「毎日ピック from Star」閲覧',
+        'スター基本プロフィール閲覧',
+        'スター「全体公開」お知らせ閲覧',
+        'Sポイント獲得（広告視聴、オファーウォール）',
+        'シルバーチケット交換（Sポイント使用）',
+        'スター活動スケジュール閲覧',
       ],
-      removedFeatures: [
-        'クーポン機能（削除済み）',
-        'コミュニティ機能（削除済み）',
-      ],
+      removedFeatures: [],
       isPopular: false,
-      description: 'はじめてのプレミアム体験に最適',
+      description: '基本的な機能を無料でお楽しみいただけます',
+    ),
+    SubscriptionPlan(
+      planType: SubscriptionPlanType.light,
+      nameJa: 'ライト',
+      nameEn: 'Light',
+      priceMonthlyJpy: 980,
+      priceYearlyJpy: 9800, // 2ヶ月分お得
+      starPointsMonthly: 300,
+      benefits: [
+        '選択3データカテゴリの基本情報閲覧',
+        '投票機能参加（Sポイント使用）',
+        '広告表示あり',
+      ],
+      removedFeatures: [],
+      isPopular: false,
+      description: '気軽にスターの日常の一部に触れたい方向け',
     ),
     SubscriptionPlan(
       planType: SubscriptionPlanType.standard,
       nameJa: 'スタンダード',
       nameEn: 'Standard',
-      priceMonthlyJpy: 800,
-      priceYearlyJpy: 8000, // 2ヶ月分お得
-      starPointsMonthly: 3500,
+      priceMonthlyJpy: 1980,
+      priceYearlyJpy: 19800, // 2ヶ月分お得
+      starPointsMonthly: 300,
       benefits: [
-        '月間3,500スターP付与',
-        '広告完全非表示',
-        'プレミアム質問50%割引',
-        '毎日ピック優先表示',
-        '限定コンテンツアクセス',
-        'プライオリティサポート',
+        '全データカテゴリ基本情報閲覧',
+        '投稿コメント参加',
+        '投票制度参加（Sポイント使用）',
+        'コミュニティコメント投稿（回数制限あり）',
+        '広告非表示',
       ],
-      removedFeatures: [
-        'クーポン機能（削除済み）',
-        'コミュニティ機能（削除済み）',
-      ],
+      removedFeatures: [],
       isPopular: true,
-      description: '最もバランスの取れた人気プラン',
+      description: 'スターの日常を幅広く知り、基本的な応援活動に参加',
     ),
     SubscriptionPlan(
       planType: SubscriptionPlanType.premium,
       nameJa: 'プレミアム',
       nameEn: 'Premium',
-      priceMonthlyJpy: 1200,
-      priceYearlyJpy: 12000, // 2ヶ月分お得
-      starPointsMonthly: 6000,
+      priceMonthlyJpy: 2980,
+      priceYearlyJpy: 29800, // 2ヶ月分お得
+      starPointsMonthly: 300,
       benefits: [
-        '月間6,000スターP付与',
-        '広告完全非表示',
-        'プレミアム質問無制限',
-        'Super Chat20%割引',
-        'スター限定配信アクセス',
-        'VIP毎日ピック',
-        '24時間優先サポート',
-        '独占コンテンツアクセス',
+        '全データカテゴリ詳細情報閲覧',
+        '商品コメント・レビュー閲覧',
+        '投票制度参加（初回無料、追加Sポイント使用）',
+        'プレミアムファンバッジ',
+        'プレミアムファンリスト掲載',
+        '投稿コメント投稿',
+        '広告非表示',
       ],
-      removedFeatures: [
-        'クーポン機能（削除済み）',
-        'コミュニティ機能（削除済み）',
-      ],
+      removedFeatures: [],
       isPopular: false,
-      description: '充実したプレミアム機能をフル活用',
-    ),
-    SubscriptionPlan(
-      planType: SubscriptionPlanType.ultimate,
-      nameJa: 'アルティメット',
-      nameEn: 'Ultimate',
-      priceMonthlyJpy: 2000,
-      priceYearlyJpy: 20000, // 2ヶ月分お得
-      starPointsMonthly: 12000,
-      benefits: [
-        '月間12,000スターP付与',
-        '全機能無制限利用',
-        'Super Chat30%割引',
-        'VIPスター限定イベント参加',
-        '専属コンシェルジュサポート',
-        'カスタム機能リクエスト',
-        '早期新機能アクセス',
-        '特別記念品プレゼント',
-      ],
-      removedFeatures: [
-        'クーポン機能（削除済み）',
-        'コミュニティ機能（削除済み）',
-      ],
-      isPopular: false,
-      description: '究極のStarlist体験をお楽しみください',
+      description: 'スターの日常や考えをより深く理解し、特別なファンとしての一体感を得る',
     ),
   ];
 
@@ -213,23 +196,21 @@ class SubscriptionPlans {
             case 'スターP月間付与':
               return plan.starPointsMonthly > 0;
             case '広告非表示':
-              return plan.planType != SubscriptionPlanType.basic;
+              return plan.planType != SubscriptionPlanType.free && plan.planType != SubscriptionPlanType.light;
             case 'プレミアム質問割引':
-              return [SubscriptionPlanType.standard, SubscriptionPlanType.premium, SubscriptionPlanType.ultimate]
+              return [SubscriptionPlanType.standard, SubscriptionPlanType.premium]
                   .contains(plan.planType);
             case 'Super Chat割引':
-              return [SubscriptionPlanType.premium, SubscriptionPlanType.ultimate]
-                  .contains(plan.planType);
+              return plan.planType == SubscriptionPlanType.premium;
             case '限定コンテンツ':
-              return [SubscriptionPlanType.standard, SubscriptionPlanType.premium, SubscriptionPlanType.ultimate]
+              return [SubscriptionPlanType.standard, SubscriptionPlanType.premium]
                   .contains(plan.planType);
             case 'VIP機能':
-              return [SubscriptionPlanType.premium, SubscriptionPlanType.ultimate]
-                  .contains(plan.planType);
+              return plan.planType == SubscriptionPlanType.premium;
             case '優先サポート':
-              return plan.planType != SubscriptionPlanType.basic;
+              return plan.planType != SubscriptionPlanType.free;
             case '独占特典':
-              return plan.planType == SubscriptionPlanType.ultimate;
+              return plan.planType == SubscriptionPlanType.premium;
             default:
               return false;
           }
@@ -278,7 +259,7 @@ class UserSubscription {
       userId: json['user_id'],
       planType: SubscriptionPlanType.values.firstWhere(
         (e) => e.name == json['plan_type'],
-        orElse: () => SubscriptionPlanType.basic,
+        orElse: () => SubscriptionPlanType.free,
       ),
       status: SubscriptionStatus.values.firstWhere(
         (e) => e.name == json['status'],

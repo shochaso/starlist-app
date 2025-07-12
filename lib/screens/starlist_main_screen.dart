@@ -1,17 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 // 新しく作成した画面をインポート
 import '../features/search/screens/search_screen.dart';
-import '../providers/youtube_history_provider.dart';
 import '../features/mylist/screens/mylist_screen.dart';
 import '../features/profile/screens/profile_screen.dart';
 import '../features/data_integration/screens/data_import_screen.dart';
 import '../features/star/screens/star_dashboard_screen.dart';
-import '../features/subscription/screens/plan_management_screen.dart';
+import '../src/features/subscription/screens/subscription_plans_screen.dart';
 import '../features/app/screens/settings_screen.dart';
 import '../providers/user_provider.dart';
 import '../src/providers/theme_provider_enhanced.dart';
 import '../src/core/components/service_icons.dart';
+import '../providers/youtube_history_provider.dart';
+import '../providers/posts_provider.dart';
+import '../src/widgets/post_card.dart';
+import '../features/content/screens/post_detail_screen.dart';
+import '../data/models/post_model.dart';
 import 'fan_home_screen.dart';
 
 // データモデル
@@ -67,7 +72,6 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
     with TickerProviderStateMixin {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   late ScrollController _scrollController;
-  String? _currentPageKey;
 
   // サンプルデータ
   final List<StarData> recommendedStars = [
@@ -111,7 +115,7 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
       category: 'ビジネス / 投資',
       followers: '41.2万',
       avatar: 'B6',
-      gradientColors: [const Color(0xFF6C5CE7), const Color(0xFDA4DE)],
+      gradientColors: [const Color(0xFF6C5CE7), const Color(0x00fda4de)],
     ),
     StarData(
       name: 'アニメレビュアー小林',
@@ -142,14 +146,14 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
       category: 'フィットネス / 健康',
       followers: '8.9万',
       avatar: 'F2',
-      gradientColors: [const Color(0xFFE84393), const Color(0xFDD5D5)],
+      gradientColors: [const Color(0xFFE84393), const Color(0x00fdd5d5)],
     ),
     StarData(
       name: 'アート系クリエイター高橋',
       category: 'アート / デザイン',
       followers: '3.8万',
       avatar: 'A3',
-      gradientColors: [const Color(0xFF6C5CE7), const Color(0xFDA4DE)],
+      gradientColors: [const Color(0xFF6C5CE7), const Color(0x00fda4de)],
     ),
     StarData(
       name: '音楽プロデューサー松本',
@@ -298,6 +302,48 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
   ];
 
   // 追加のテストデータ
+  final List<Map<String, dynamic>> trendingTopics = [
+    {
+      'title': 'iPhone 15',
+      'posts': '1,234',
+      'color': const Color(0xFF4ECDC4),
+    },
+    {
+      'title': 'Flutter 3.0',
+      'posts': '892',
+      'color': const Color(0xFF00B894),
+    },
+    {
+      'title': '秋のファッション',
+      'posts': '2,156',
+      'color': const Color(0xFFE17055),
+    },
+    {
+      'title': 'Apex Legends',
+      'posts': '3,421',
+      'color': const Color(0xFF667EEA),
+    },
+    {
+      'title': 'ChatGPT',
+      'posts': '4,567',
+      'color': const Color(0xFF6C5CE7),
+    },
+    {
+      'title': '鬼滅の刃',
+      'posts': '1,890',
+      'color': const Color(0xFFFF7675),
+    },
+    {
+      'title': 'DIY',
+      'posts': '987',
+      'color': const Color(0xFF00B894),
+    },
+    {
+      'title': '投資',
+      'posts': '2,345',
+      'color': const Color(0xFFFFD93D),
+    },
+  ];
 
   final List<Map<String, dynamic>> notifications = [
     {
@@ -436,9 +482,9 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
 
   PreferredSizeWidget _buildAppBar() {
     final selectedTab = ref.watch(selectedTabProvider);
-    final themeMode = ref.watch(themeProvider);
+    final themeState = ref.watch(themeProviderEnhanced);
     final titles = ['ホーム', '検索', 'データ取込み', 'マイリスト', 'マイページ'];
-    final isDark = themeMode == AppThemeMode.dark;
+    final isDark = themeState.isDarkMode;
     
     String title = titles[selectedTab];
     
@@ -446,43 +492,59 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
       backgroundColor: Colors.transparent,
       elevation: 0,
       shadowColor: Colors.transparent,
-      title: Text(
-        title,
-        style: TextStyle(
-          color: isDark ? Colors.white : Colors.black87,
-          fontSize: 18,
-          fontWeight: FontWeight.w600,
+      title: Container(
+        padding: const EdgeInsets.all(4), // MP適用
+        child: Text(
+          title,
+          style: TextStyle(
+            color: isDark ? Colors.white : Colors.black87,
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
       centerTitle: true,
       leading: Builder(
-        builder: (context) => IconButton(
-          icon: Icon(Icons.menu, color: isDark ? Colors.white54 : Colors.black54),
-          onPressed: () => Scaffold.of(context).openDrawer(),
+        builder: (context) => Container(
+          margin: const EdgeInsets.all(4), // MP適用
+          child: IconButton(
+            icon: Icon(Icons.menu, color: isDark ? Colors.white54 : Colors.black54),
+            onPressed: () => Scaffold.of(context).openDrawer(),
+          ),
         ),
       ),
       automaticallyImplyLeading: false, // 戻るボタンを無効化
       actions: [
-        IconButton(
-          icon: Icon(Icons.notifications_outlined, color: isDark ? Colors.white54 : Colors.black54),
-          onPressed: () {},
-        ),
-        IconButton(
-          icon: Icon(
-            isDark ? Icons.light_mode : Icons.dark_mode,
-            color: isDark ? Colors.white54 : Colors.black54,
+        Container(
+          margin: const EdgeInsets.all(4), // MP適用
+          child: IconButton(
+            icon: Icon(Icons.notifications_outlined, color: isDark ? Colors.white54 : Colors.black54),
+            onPressed: () {},
           ),
-          onPressed: () {
-            ref.read(themeActionProvider).toggle();
-          },
         ),
-        IconButton(
-          icon: Icon(Icons.settings_outlined, color: isDark ? Colors.white54 : Colors.black54),
-          onPressed: () {},
+        Container(
+          margin: const EdgeInsets.all(4), // MP適用
+          child: IconButton(
+            icon: Icon(
+              isDark ? Icons.light_mode : Icons.dark_mode,
+              color: isDark ? Colors.white54 : Colors.black54,
+            ),
+            onPressed: () {
+              ref.read(themeProviderEnhanced.notifier).toggleLightDark();
+            },
           ),
+        ),
+        Container(
+          margin: const EdgeInsets.all(4), // MP適用
+          child: IconButton(
+            icon: Icon(Icons.settings_outlined, color: isDark ? Colors.white54 : Colors.black54),
+            onPressed: () {},
+          ),
+        ),
       ],
     );
   }
+
 
   Widget _buildDrawer() {
     final currentUser = ref.watch(currentUserProvider);
@@ -497,16 +559,16 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
             child: Container(
               margin: const EdgeInsets.only(top: 8),
               padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  const Color(0xFF4ECDC4),
-                  const Color(0xFF44A08D),
+                  Color(0xFF4ECDC4),
+                  Color(0xFF44A08D),
                 ],
               ),
-              borderRadius: const BorderRadius.only(
+              borderRadius: BorderRadius.only(
                 bottomLeft: Radius.circular(20),
                 bottomRight: Radius.circular(20),
               ),
@@ -570,7 +632,7 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
                 // スターのみ表示
                 if (currentUser.isStar) ...[
                   _buildDrawerItem(Icons.camera_alt, 'データ取込み', 2, null),
-                  _buildDrawerItem(Icons.analytics, 'スターダッシュボード', -1, 'dashboard'),
+                  _buildDrawerItem(Icons.analytics, 'ダッシュボード', -1, 'dashboard'),
                   _buildDrawerItem(Icons.workspace_premium, 'プランを管理', -1, 'plan'),
                 ],
                 _buildDrawerItem(Icons.person, 'マイページ', 4, null),
@@ -589,12 +651,13 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
 
   Widget _buildDrawerItem(IconData icon, String title, int tabIndex, String? pageKey) {
     final selectedTab = ref.watch(selectedTabProvider);
+    final selectedDrawerPage = ref.watch(selectedDrawerPageProvider);
     final themeState = ref.watch(themeProviderEnhanced);
     final isDark = themeState.isDarkMode;
     
-    // 選択状態の判定を修正：タブページとナビゲーションページが同時に選択されないように
-    final isTabActive = tabIndex != -1 && selectedTab == tabIndex && _currentPageKey == null;
-    final isPageActive = pageKey != null && _currentPageKey == pageKey;
+    // 選択状態の判定を修正：現在選択されているページまたはタブのみアクティブ
+    final isTabActive = tabIndex != -1 && selectedTab == tabIndex && selectedDrawerPage == null;
+    final isPageActive = pageKey != null && selectedDrawerPage == pageKey;
     final isActive = isTabActive || isPageActive;
     
     return Container(
@@ -661,10 +724,10 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
         page = const StarDashboardScreen();
         break;
       case 'plan':
-        page = const PlanManagementScreen();
+        page = const SubscriptionPlansScreen();
         break;
       case 'subscription':
-        page = const PlanManagementScreen(); // ファン用も同じ課金プランページ
+        page = const SubscriptionPlansScreen(); // ファン用も同じ課金プランページ
         break;
       case 'settings':
         page = const SettingsScreen();
@@ -687,16 +750,13 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
       case 2:
         return const DataImportScreen(showAppBar: false);
       case 3:
-        return const MylistScreen(showAppBar: false);
+        return const MylistScreen();
       case 4:
-        return const ProfileScreen(showAppBar: false);
-      case 5:
-        return _buildHomeView();
+        return const ProfileScreen();
       default:
         return _buildHomeView();
     }
   }
-
 
   Widget _buildHomeView() {
     return SingleChildScrollView(
@@ -740,8 +800,12 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
           ),
           const SizedBox(height: 24),
           
-          // 最新YouTube履歴セクション（新規追加）
+          // 最新YouTube履歴セクション（一番上）
           _buildLatestYouTubeHistorySection(),
+          const SizedBox(height: 24),
+          
+          // 最新投稿セクション（花山瑞樹と他の投稿者を含む）
+          _buildRecentPostsSection(),
           const SizedBox(height: 24),
           
           // 通知セクション
@@ -752,6 +816,9 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
           _buildNativeAd1(),
           const SizedBox(height: 24),
           
+          // トレンドトピックセクション
+          _buildTrendingTopicsSection(),
+          const SizedBox(height: 24),
           
           // プレイリストセクション
           _buildFeaturedPlaylistsSection(),
@@ -781,59 +848,31 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
     final themeState = ref.watch(themeProviderEnhanced);
     final isDark = themeState.isDarkMode;
     final youtubeHistoryGroups = ref.watch(groupedYoutubeHistoryProvider);
+    final youtubePosts = ref.watch(youtubePostsProvider);
     
-    // デバッグ出力
-    print('=== ホーム画面YouTube履歴表示 ===');
-    print('YouTube履歴グループ数: ${youtubeHistoryGroups.length}');
-    if (youtubeHistoryGroups.isNotEmpty) {
-      youtubeHistoryGroups.forEach((group) {
-        print('グループ${group.sessionId}: ${group.itemCount}件 - ${group.items.map((e) => e.title).join(', ')}');
-      });
-    }
-    
-    // プロバイダーからのデータが空の場合は、デフォルトデータを表示
-    if (youtubeHistoryGroups.isEmpty) {
+    // YouTube履歴とYouTube投稿の両方が空の場合は、デフォルトデータを表示
+    if (youtubeHistoryGroups.isEmpty && youtubePosts.isEmpty) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildSectionTitle('最新YouTube履歴'),
           const SizedBox(height: 16),
           Container(
-            height: 140,
+            height: 120,
             margin: const EdgeInsets.symmetric(horizontal: 16),
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF1F2937) : Colors.white,
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: isDark ? const Color(0xFF374151) : const Color(0xFFE5E7EB)),
-              boxShadow: [
-                BoxShadow(
-                  color: (isDark ? Colors.black : Colors.black).withOpacity(0.05),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
-                ),
-              ],
+              color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: isDark ? const Color(0xFF333333) : const Color(0xFFF3F4F6)),
             ),
             child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.play_circle_outline,
-                    size: 48,
-                    color: isDark ? const Color(0xFF6B7280) : const Color(0xFF9CA3AF),
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    'YouTube履歴データが取り込まれるとここに表示されます',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280),
-                      fontWeight: FontWeight.w500,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
+              child: Text(
+                'YouTube履歴データが取り込まれるとここに表示されます',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: isDark ? Colors.white54 : Colors.black54,
+                ),
               ),
             ),
           ),
@@ -841,20 +880,75 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
       );
     }
 
+    // YouTube投稿とYouTube履歴を組み合わせたリストを作成
+    final combinedItems = <dynamic>[];
+    
+    // YouTube投稿を追加
+    for (final post in youtubePosts) {
+      combinedItems.add({'type': 'post', 'data': post});
+    }
+    
+    // YouTube履歴を追加
+    for (final group in youtubeHistoryGroups) {
+      combinedItems.add({'type': 'history', 'data': group});
+    }
+    
+    // 作成日時でソート（新しい順）
+    combinedItems.sort((a, b) {
+      DateTime aTime;
+      DateTime bTime;
+      
+      if (a['type'] == 'post') {
+        aTime = a['data'].createdAt;
+      } else {
+        aTime = a['data'].createdAt;
+      }
+      
+      if (b['type'] == 'post') {
+        bTime = b['data'].createdAt;
+      } else {
+        bTime = b['data'].createdAt;
+      }
+      
+      return bTime.compareTo(aTime);
+    });
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildSectionTitle('最新YouTube履歴'),
         const SizedBox(height: 16),
         SizedBox(
-          height: 140,
+          height: 280,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             physics: const BouncingScrollPhysics(),
             padding: const EdgeInsets.only(left: 16, right: 16),
-            itemCount: youtubeHistoryGroups.length,
+            itemCount: combinedItems.length,
             itemBuilder: (context, index) {
-              final group = youtubeHistoryGroups[index];
+              final item = combinedItems[index];
+              
+              if (item['type'] == 'post') {
+                // YouTube投稿の表示
+                final post = item['data'];
+                return Container(
+                  width: 320,
+                  margin: const EdgeInsets.only(right: 16),
+                  child: PostCard(
+                    post: post,
+                    isCompact: true,
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => PostDetailScreen(post: post),
+                        ),
+                      );
+                    },
+                  ),
+                );
+              } else {
+                // YouTube履歴の表示
+                final group = item['data'];
               return GestureDetector(
                 onTap: () {
                   // グループの詳細を表示するダイアログ
@@ -864,202 +958,279 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
                   );
                 },
                 child: Container(
-                  width: MediaQuery.of(context).size.width * 0.8,
-                  margin: const EdgeInsets.only(right: 20),
+                  width: MediaQuery.of(context).size.width * 0.85,
+                  margin: const EdgeInsets.only(right: 16),
+                  padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF1F2937) : Colors.white,
-                    borderRadius: BorderRadius.circular(20),
+                    color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
+                    borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
-                        color: (isDark ? Colors.black : const Color(0xFF000000)).withOpacity(0.04),
-                        blurRadius: 16,
-                        offset: const Offset(0, 6),
-                      ),
-                      BoxShadow(
-                        color: (isDark ? Colors.black : const Color(0xFF000000)).withOpacity(0.02),
-                        blurRadius: 4,
-                        offset: const Offset(0, 2),
+                        color: (isDark ? Colors.black : Colors.black).withOpacity(0.08),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
                       ),
                     ],
-                    border: Border.all(
-                      color: isDark ? const Color(0xFF374151) : const Color(0xFFE5E7EB),
-                      width: 1,
-                    ),
+                    border: Border.all(color: isDark ? const Color(0xFF333333) : const Color(0xFFF3F4F6)),
                   ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Container(
-                              width: 52,
-                              height: 52,
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: [
-                                    const Color(0xFFFF0000).withOpacity(0.12),
-                                    const Color(0xFFFF0000).withOpacity(0.20),
-                                  ],
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            width: 60,
+                            height: 45,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFF0000).withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                ServiceIcons.buildIcon(
+                                  serviceId: 'youtube',
+                                  size: 24,
+                                  isDark: false,
                                 ),
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(
-                                  color: const Color(0xFFFF0000).withOpacity(0.25),
-                                  width: 1.5,
-                                ),
-                              ),
-                              child: Stack(
-                                alignment: Alignment.center,
-                                children: [
-                                  ServiceIcons.buildIcon(
-                                    serviceId: 'youtube',
-                                    size: 28,
-                                    isDark: false,
-                                  ),
+                                if (group.itemCount > 1)
                                   Positioned(
-                                    top: -4,
-                                    right: -4,
+                                    top: -2,
+                                    right: -2,
                                     child: Container(
-                                      width: 22,
-                                      height: 22,
+                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                       decoration: BoxDecoration(
-                                        gradient: const LinearGradient(
-                                          colors: [Color(0xFF4ECDC4), Color(0xFF44A08D)],
-                                          begin: Alignment.topLeft,
-                                          end: Alignment.bottomRight,
-                                        ),
-                                        borderRadius: BorderRadius.circular(11),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: const Color(0xFF4ECDC4).withOpacity(0.4),
-                                            blurRadius: 4,
-                                            offset: const Offset(0, 2),
-                                          ),
-                                        ],
-                                        border: Border.all(
+                                        color: const Color(0xFF4ECDC4),
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: Text(
+                                        '${group.itemCount}',
+                                        style: const TextStyle(
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.bold,
                                           color: Colors.white,
-                                          width: 2,
-                                        ),
-                                      ),
-                                      child: Center(
-                                        child: Text(
-                                          '${group.itemCount}',
-                                          style: const TextStyle(
-                                            fontSize: 11,
-                                            fontWeight: FontWeight.w700,
-                                            color: Colors.white,
-                                          ),
                                         ),
                                       ),
                                     ),
                                   ),
-                                ],
-                              ),
+                              ],
                             ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    group.items.first.starName ?? group.items.first.channel,
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w700,
-                                      color: isDark ? const Color(0xFFF9FAFB) : const Color(0xFF111827),
-                                      letterSpacing: -0.2,
-                                      height: 1.2,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    '${group.itemCount}件の新着動画',
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w500,
-                                      color: isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280),
-                                      height: 1.3,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        Row(
-                          children: [
-                            if (group.items.first.starGenre != null) ...[
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    colors: [
-                                      _getStarGenreColor(group.items.first.starGenre!).withOpacity(0.12),
-                                      _getStarGenreColor(group.items.first.starGenre!).withOpacity(0.20),
-                                    ],
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                  ),
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(
-                                    color: _getStarGenreColor(group.items.first.starGenre!).withOpacity(0.3),
-                                    width: 1,
-                                  ),
-                                ),
-                                child: Text(
-                                  group.items.first.starGenre!,
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  group.itemCount > 1 
+                                    ? '${group.itemCount}件の動画をインポート' 
+                                    : group.items.first.title,
                                   style: TextStyle(
-                                    fontSize: 11,
+                                    fontSize: 14,
                                     fontWeight: FontWeight.w600,
-                                    color: _getStarGenreColor(group.items.first.starGenre!),
+                                    color: isDark ? Colors.white : Colors.black87,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  group.itemCount > 1
+                                    ? _formatImportTime(group.importedAt)
+                                    : group.items.first.channel,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: isDark ? Colors.white70 : Colors.black54,
                                   ),
                                 ),
-                              ),
-                              const Spacer(),
-                            ],
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-                              decoration: BoxDecoration(
-                                color: (isDark ? Colors.white : Colors.black).withOpacity(0.04),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    Icons.access_time_rounded,
-                                    size: 13,
-                                    color: isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280),
-                                  ),
-                                  const SizedBox(width: 5),
-                                  Text(
-                                    _formatImportTime(group.importedAt),
-                                    style: TextStyle(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w500,
-                                      color: isDark ? const Color(0xFF9CA3AF) : const Color(0xFF6B7280),
-                                    ),
-                                  ),
-                                ],
-                              ),
+                              ],
                             ),
-                          ],
+                          ),
+                        ],
+                      ),
+                      if (group.itemCount > 1) ...[
+                        const SizedBox(height: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: (isDark ? Colors.white : Colors.black).withOpacity(0.05),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            '${group.items.map((e) => e.channel).toSet().length}チャンネル',
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: isDark ? Colors.white54 : Colors.black54,
+                            ),
+                          ),
                         ),
                       ],
-                    ),
+                    ],
                   ),
                 ),
               );
+              }
             },
           ),
         ),
       ],
+    );
+  }
+
+  String _formatImportTime(DateTime time) {
+    final now = DateTime.now();
+    final difference = now.difference(time);
+    
+    if (difference.inMinutes < 60) {
+      return '${difference.inMinutes}分前';
+    } else if (difference.inHours < 24) {
+      return '${difference.inHours}時間前';
+    } else {
+      return '${time.month}/${time.day} ${time.hour}:${time.minute.toString().padLeft(2, '0')}';
+    }
+  }
+
+  Widget _buildGroupDetailDialog(BuildContext context, YouTubeHistoryGroup group, bool isDark) {
+    return Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      child: Container(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.7,
+          maxWidth: MediaQuery.of(context).size.width * 0.9,
+        ),
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0xFF4ECDC4).withOpacity(0.1),
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(20),
+                  topRight: Radius.circular(20),
+                ),
+              ),
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.video_library,
+                    color: Color(0xFF4ECDC4),
+                    size: 24,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      '${group.itemCount}件の動画',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: isDark ? Colors.white : Colors.black87,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    icon: Icon(
+                      Icons.close,
+                      color: isDark ? Colors.white70 : Colors.black54,
+                    ),
+                    onPressed: () => Navigator.of(context).pop(),
+                  ),
+                ],
+              ),
+            ),
+            Flexible(
+              child: ListView.builder(
+                shrinkWrap: true,
+                padding: const EdgeInsets.all(16),
+                itemCount: group.items.length,
+                itemBuilder: (context, index) {
+                  final item = group.items[index];
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF333333) : const Color(0xFFF3F4F6),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 48,
+                          height: 36,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFF0000).withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: ServiceIcons.buildIcon(
+                            serviceId: 'youtube',
+                            size: 20,
+                            isDark: false,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                item.title,
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: isDark ? Colors.white : Colors.black87,
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                item.channel,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: isDark ? Colors.white70 : Colors.black54,
+                                ),
+                              ),
+                              if (item.duration != null || item.viewCount != null) ...[
+                                const SizedBox(height: 2),
+                                Row(
+                                  children: [
+                                    if (item.duration != null) ...[
+                                      Text(
+                                        item.duration!,
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          color: isDark ? Colors.white54 : Colors.black38,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                    ],
+                                    if (item.viewCount != null)
+                                      Text(
+                                        '${item.viewCount}回視聴',
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          color: isDark ? Colors.white54 : Colors.black38,
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -1438,6 +1609,75 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
     );
   }
 
+  Widget _buildTrendingTopicsSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionTitle('トレンドトピック'),
+        const SizedBox(height: 16),
+        SizedBox(
+          height: 100,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.only(left: 16, right: 16),
+            itemCount: trendingTopics.length,
+            itemBuilder: (context, index) {
+              final topic = trendingTopics[index];
+    return Container(
+                width: 160,
+                margin: const EdgeInsets.only(right: 16),
+                padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+                  gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+                    colors: [
+                      topic['color'],
+                      topic['color'].withOpacity(0.7),
+                    ],
+        ),
+        borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: topic['color'].withOpacity(0.3),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+                    Text(
+                      topic['title'],
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+              ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '${topic['posts']} 投稿',
+                      style: const TextStyle(
+                  fontSize: 12,
+                        color: Colors.white,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+              );
+            },
+            ),
+          ),
+        ],
+    );
+  }
 
   Widget _buildFeaturedPlaylistsSection() {
     return Column(
@@ -1784,6 +2024,7 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
     final themeState = ref.watch(themeProviderEnhanced);
     final isDark = themeState.isDarkMode;
     
+    // フォローページなど特別なページが表示されている場合、どのタブも選択状態にしない
     int currentSelectedTab = selectedTab;
     
     return Container(
@@ -1829,9 +2070,6 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
       onTap: () {
         ref.read(selectedTabProvider.notifier).state = index;
           ref.read(selectedDrawerPageProvider.notifier).state = null; // ドロワー選択をリセット
-          setState(() {
-            _currentPageKey = null; // 特別なページキーもリセット
-          });
       },
       child: Container(
           padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 2),
@@ -1860,6 +2098,189 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildRecentPostsSection() {
+    final hanayamaPosts = ref.watch(hanayamaMizukiPostsProvider);
+    final themeState = ref.watch(themeProviderEnhanced);
+    final isDark = themeState.isDarkMode;
+    
+    // 花山瑞樹の投稿と他の投稿者の投稿を組み合わせ
+    final allPosts = <dynamic>[];
+    
+    // 花山瑞樹の投稿を追加
+    allPosts.addAll(hanayamaPosts);
+    
+    // 他の投稿者のダミーデータを追加
+    allPosts.addAll([
+      {
+        'title': 'iPhone 15 Pro Max レビュー',
+        'author': 'テックレビューアー田中',
+        'time': '2時間前',
+        'type': 'video',
+        'thumbnail': const Color(0xFF4ECDC4),
+      },
+      {
+        'title': '簡単チキンカレーの作り方',
+        'author': '料理研究家佐藤',
+        'time': '4時間前',
+        'type': 'recipe',
+        'thumbnail': const Color(0xFFFF6B6B),
+      },
+      {
+        'title': 'Flutter開発のコツ',
+        'author': 'プログラミング講師伊藤',
+        'time': '6時間前',
+        'type': 'tutorial',
+        'thumbnail': const Color(0xFF00B894),
+      },
+    ]);
+    
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionTitle('最新投稿'),
+        const SizedBox(height: 16),
+        SizedBox(
+          height: 280,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            itemCount: allPosts.length,
+            itemBuilder: (context, index) {
+              final post = allPosts[index];
+              
+                             // 花山瑞樹の投稿の場合
+               if (post is PostModel) {
+                return Container(
+                  width: 320,
+                  margin: const EdgeInsets.only(right: 16),
+                  child: PostCard(
+                    post: post,
+                    isCompact: true,
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => PostDetailScreen(post: post),
+                        ),
+                      );
+                    },
+                  ),
+                );
+              }
+              
+              // その他の投稿の場合
+              return Container(
+                width: 320,
+                margin: const EdgeInsets.only(right: 16),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: (isDark ? Colors.black : Colors.black).withOpacity(0.08),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      height: 160,
+                      decoration: BoxDecoration(
+                        color: post['thumbnail'] as Color,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Center(
+                        child: Icon(
+                          Icons.play_arrow,
+                          color: Colors.white,
+                          size: 48,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      post['title'] as String,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: isDark ? Colors.white : Colors.black87,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      post['author'] as String,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: isDark ? Colors.white70 : Colors.black54,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      post['time'] as String,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: isDark ? Colors.white54 : Colors.black38,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildHanayamaMizukiPostsSection() {
+    final hanayamaPosts = ref.watch(hanayamaMizukiPostsProvider);
+    
+    if (hanayamaPosts.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionTitle('花山瑞樹の投稿'),
+        const SizedBox(height: 16),
+        SizedBox(
+          height: 280,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            itemCount: hanayamaPosts.length,
+            itemBuilder: (context, index) {
+              final post = hanayamaPosts[index];
+              return Container(
+                width: 320,
+                margin: const EdgeInsets.only(right: 16),
+                child: PostCard(
+                  post: post,
+                  isCompact: true,
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => PostDetailScreen(post: post),
+                      ),
+                    );
+                  },
+                ),
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 
@@ -1893,206 +2314,5 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
         ],
       ),
     );
-  }
-
-  String _formatImportTime(DateTime time) {
-    final now = DateTime.now();
-    final difference = now.difference(time);
-    
-    if (difference.inMinutes < 60) {
-      return '${difference.inMinutes}分前';
-    } else if (difference.inHours < 24) {
-      return '${difference.inHours}時間前';
-    } else {
-      return '${time.month}/${time.day} ${time.hour}:${time.minute.toString().padLeft(2, '0')}';
-    }
-  }
-
-  Widget _buildGroupDetailDialog(BuildContext context, YouTubeHistoryGroup group, bool isDark) {
-    return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      child: Container(
-        constraints: BoxConstraints(
-          maxHeight: MediaQuery.of(context).size.height * 0.7,
-          maxWidth: MediaQuery.of(context).size.width * 0.9,
-        ),
-        decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: const Color(0xFF4ECDC4).withOpacity(0.1),
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(20),
-                  topRight: Radius.circular(20),
-                ),
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      '${group.items.first.starName ?? group.items.first.channel}の動画',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: isDark ? Colors.white : Colors.black87,
-                      ),
-                    ),
-                  ),
-                  IconButton(
-                    icon: Icon(
-                      Icons.close,
-                      color: isDark ? Colors.white70 : Colors.black54,
-                    ),
-                    onPressed: () => Navigator.of(context).pop(),
-                  ),
-                ],
-              ),
-            ),
-            Flexible(
-              child: ListView.builder(
-                shrinkWrap: true,
-                padding: const EdgeInsets.all(16),
-                itemCount: group.items.length,
-                itemBuilder: (context, index) {
-                  final item = group.items[index];
-                  return Container(
-                    margin: const EdgeInsets.only(bottom: 12),
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: isDark ? const Color(0xFF333333) : const Color(0xFFF3F4F6),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 48,
-                          height: 36,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFFF0000).withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: ServiceIcons.buildIcon(
-                            serviceId: 'youtube',
-                            size: 20,
-                            isDark: false,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                item.title,
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                  color: isDark ? Colors.white : Colors.black87,
-                                ),
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              const SizedBox(height: 4),
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: Text(
-                                      item.starName ?? item.channel,
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: isDark ? Colors.white70 : Colors.black54,
-                                      ),
-                                    ),
-                                  ),
-                                  if (item.starGenre != null) ...[
-                                    const SizedBox(width: 8),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                      decoration: BoxDecoration(
-                                        color: _getStarGenreColor(item.starGenre!).withOpacity(0.2),
-                                        borderRadius: BorderRadius.circular(6),
-                                      ),
-                                      child: Text(
-                                        item.starGenre!,
-                                        style: TextStyle(
-                                          fontSize: 9,
-                                          fontWeight: FontWeight.w500,
-                                          color: _getStarGenreColor(item.starGenre!),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ],
-                              ),
-                              if (item.duration != null || item.viewCount != null) ...[
-                                const SizedBox(height: 2),
-                                Row(
-                                  children: [
-                                    if (item.duration != null) ...[
-                                      Text(
-                                        item.duration!,
-                                        style: TextStyle(
-                                          fontSize: 10,
-                                          color: isDark ? Colors.white54 : Colors.black38,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 8),
-                                    ],
-                                    if (item.viewCount != null)
-                                      Text(
-                                        '${item.viewCount}回視聴',
-                                        style: TextStyle(
-                                          fontSize: 10,
-                                          color: isDark ? Colors.white54 : Colors.black38,
-                                        ),
-                                      ),
-                                  ],
-                                ),
-                              ],
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // ジャンルに応じた色を取得
-  Color _getStarGenreColor(String genre) {
-    switch (genre) {
-      case 'YouTuber':
-        return const Color(0xFFFF0000);
-      case 'ストリーマー':
-        return const Color(0xFF667EEA);
-      case 'アイドル':
-        return const Color(0xFFE84393);
-      case 'ミュージシャン':
-        return const Color(0xFF74B9FF);
-      case 'ゲーマー':
-        return const Color(0xFF00B894);
-      case 'アーティスト':
-        return const Color(0xFFFF7675);
-      case 'インフルエンサー':
-        return const Color(0xFFE17055);
-      case 'タレント':
-        return const Color(0xFF6C5CE7);
-      case 'アニメーター':
-        return const Color(0xFF10B981);
-      default:
-        return const Color(0xFFFFD93D);
-    }
   }
 } 

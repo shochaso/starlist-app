@@ -4,7 +4,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../src/providers/theme_provider_enhanced.dart';
 import '../../../providers/user_provider.dart';
-import '../../subscription/screens/plan_management_screen.dart';
+import '../../subscription/screens/fan_subscription_screen.dart';
 import '../../app/screens/settings_screen.dart';
 import '../../data_integration/screens/data_import_screen.dart';
 import '../../../src/features/youtube_easy/star_watch_history_widget.dart';
@@ -61,7 +61,7 @@ class _StarDashboardScreenState extends ConsumerState<StarDashboardScreen>
         backgroundColor: isDark ? const Color(0xFF1A1A1A) : Colors.white,
         elevation: 0,
         title: Text(
-          'スターダッシュボード',
+          'ダッシュボード',
           style: TextStyle(
             color: isDark ? Colors.white : Colors.black87,
             fontSize: 20,
@@ -69,11 +69,20 @@ class _StarDashboardScreenState extends ConsumerState<StarDashboardScreen>
           ),
         ),
         leading: IconButton(
-          icon: Icon(Icons.menu, color: isDark ? Colors.white : Colors.black87),
-          onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+          icon: Icon(Icons.arrow_back_ios, color: isDark ? Colors.white : Colors.black87),
+          onPressed: () => Navigator.of(context).pop(),
         ),
+        actions: [
+          Container(
+            margin: const EdgeInsets.only(right: 8),
+            child: IconButton(
+              icon: Icon(Icons.more_vert, color: isDark ? Colors.white : Colors.black87),
+              onPressed: () => _scaffoldKey.currentState?.openEndDrawer(),
+            ),
+          ),
+        ],
       ),
-      drawer: _buildDrawer(),
+      endDrawer: _buildDrawer(),
       body: SafeArea(
         child: Column(
           children: [
@@ -84,6 +93,7 @@ class _StarDashboardScreenState extends ConsumerState<StarDashboardScreen>
                     color: Colors.transparent,
                     child: Container(
                       margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                      padding: const EdgeInsets.all(4), // MP適用
                       decoration: BoxDecoration(
                         color: const Color(0xFF2A2A2A),
                         borderRadius: BorderRadius.circular(10),

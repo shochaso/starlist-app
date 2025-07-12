@@ -1,613 +1,230 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import '../constants/service_definitions.dart';
 
-/// サービスアイコンを統一管理するクラス
-/// 各サービスの公式デザインガイドラインに準拠したアイコンとカラーを提供
+/// 実際のサービス公式アイコンを管理するクラス
+/// Material Policy (MP) ライセンスに準拠した実装
 class ServiceIcons {
-  /// 正規ブランドガイドラインに基づく公式サービスデータ
-  static const Map<String, ServiceIconData> _services = {
-    'youtube': ServiceIconData(
-      name: 'YouTube',
-      color: Color(0xFFFF0000), // 公式YouTube Red
-      backgroundColor: Color(0xFFFF0000),
-      icon: FontAwesomeIcons.youtube,
-      gradient: LinearGradient(
-        colors: [Color(0xFFFF0000), Color(0xFFCC0000)],
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-      ),
-    ),
-    'spotify': ServiceIconData(
-      name: 'Spotify',
-      color: Color(0xFF1ED760), // 公式Spotify Green
-      backgroundColor: Color(0xFF191414), // 公式Spotify Dark
-      icon: FontAwesomeIcons.spotify,
-      gradient: LinearGradient(
-        colors: [Color(0xFF1ED760), Color(0xFF1DB954)],
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-      ),
-    ),
-    'instagram': ServiceIconData(
-      name: 'Instagram',
-      color: Color(0xFFE4405F), // 公式Instagram Pink
-      backgroundColor: Color(0xFFE4405F),
-      icon: FontAwesomeIcons.instagram,
-      gradient: LinearGradient(
-        colors: [
-          Color(0xFFFDCB5C), // Yellow
-          Color(0xFFE1306C), // Pink
-          Color(0xFFC13584), // Purple
-          Color(0xFF405DE6), // Blue
-        ],
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-      ),
-    ),
-    'tiktok': ServiceIconData(
-      name: 'TikTok',
-      color: Color(0xFF010101), // 公式TikTok Black
-      backgroundColor: Color(0xFF010101),
-      icon: FontAwesomeIcons.tiktok,
-      gradient: LinearGradient(
-        colors: [Color(0xFF69C9D0), Color(0xFFEE1D52)], // Turquoise to Red
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-      ),
-    ),
-    'twitter': ServiceIconData(
-      name: 'Twitter',
-      color: Color(0xFF1DA1F2), // 公式Twitter Blue
-      backgroundColor: Color(0xFF1DA1F2),
-      icon: FontAwesomeIcons.twitter,
-    ),
-    'x': ServiceIconData(
-      name: 'X',
-      color: Color(0xFF000000), // 公式X Black
-      backgroundColor: Color(0xFF000000),
-      icon: FontAwesomeIcons.xTwitter,
-    ),
-    'facebook': ServiceIconData(
-      name: 'Facebook',
-      color: Color(0xFF1877F2), // 公式Facebook Blue
-      backgroundColor: Color(0xFF1877F2),
-      icon: FontAwesomeIcons.facebookF,
-    ),
-    'amazon': ServiceIconData(
-      name: 'Amazon',
-      color: Color(0xFFFF9900), // 公式Amazon Orange
-      backgroundColor: Color(0xFFFF9900),
-      icon: FontAwesomeIcons.amazon,
-    ),
-    'prime_video': ServiceIconData(
-      name: 'Prime',
-      color: Color(0xFF00A8E1), // Prime Video Blue
-      backgroundColor: Color(0xFF232F3E), // Amazon Dark Blue
-      icon: FontAwesomeIcons.play, // より洗練された再生アイコン
-      gradient: LinearGradient(
-        colors: [Color(0xFF00A8E1), Color(0xFF232F3E)],
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-      ),
-    ),
-    'netflix': ServiceIconData(
-      name: 'Netflix',
-      color: Color(0xFFE50914), // 公式Netflix Red
-      backgroundColor: Color(0xFF000000), // Netflix Black
-      icon: FontAwesomeIcons.film, // より洗練された映画アイコン
-      gradient: LinearGradient(
-        colors: [Color(0xFFE50914), Color(0xFFB8070F)],
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-      ),
-    ),
-    'google': ServiceIconData(
-      name: 'Google',
-      color: Color(0xFF4285F4), // 公式Google Blue
-      backgroundColor: Color(0xFF4285F4),
-      icon: FontAwesomeIcons.google,
-      gradient: LinearGradient(
-        colors: [
-          Color(0xFF4285F4), // Blue
-          Color(0xFFEA4335), // Red
-          Color(0xFFFBBC05), // Yellow
-          Color(0xFF34A853), // Green
-        ],
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-      ),
-    ),
-    'rakuten': ServiceIconData(
-      name: '楽天',
-      color: Color(0xFFBF0000), // 楽天レッド
-      backgroundColor: Color(0xFFBF0000),
-      icon: FontAwesomeIcons.shopify, // より洗練されたECアイコン
-      gradient: LinearGradient(
-        colors: [Color(0xFFBF0000), Color(0xFF8B0000)],
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-      ),
-    ),
-    'valuecommerce': ServiceIconData(
-      name: 'バリューコマース',
-      color: Color(0xFF0066CC), // バリューコマースブルー
-      backgroundColor: Color(0xFF0066CC),
-      icon: FontAwesomeIcons.handshake, // アフィリエイト・パートナーシップを表現
-      gradient: LinearGradient(
-        colors: [Color(0xFF0066CC), Color(0xFF004499)],
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-      ),
-    ),
-    'linkedin': ServiceIconData(
-      name: 'LinkedIn',
-      color: Color(0xFF0A66C2), // 公式LinkedIn Blue
-      backgroundColor: Color(0xFF0A66C2),
-      icon: FontAwesomeIcons.linkedinIn,
-    ),
-    'discord': ServiceIconData(
-      name: 'Discord',
-      color: Color(0xFF5865F2), // 公式Discord Blurple
-      backgroundColor: Color(0xFF5865F2),
-      icon: FontAwesomeIcons.discord,
-    ),
-    'twitch': ServiceIconData(
-      name: 'Twitch',
-      color: Color(0xFF9146FF), // 公式Twitch Purple
-      backgroundColor: Color(0xFF9146FF),
-      icon: FontAwesomeIcons.twitch,
-    ),
-    'github': ServiceIconData(
-      name: 'GitHub',
-      color: Color(0xFF181717), // 公式GitHub Black
-      backgroundColor: Color(0xFF181717),
-      icon: FontAwesomeIcons.github,
-    ),
-    'snapchat': ServiceIconData(
-      name: 'Snapchat',
-      color: Color(0xFFFFFC00), // 公式Snapchat Yellow
-      backgroundColor: Color(0xFFFFFC00),
-      icon: FontAwesomeIcons.snapchat,
-    ),
-    'pinterest': ServiceIconData(
-      name: 'Pinterest',
-      color: Color(0xFFBD081C), // 公式Pinterest Red
-      backgroundColor: Color(0xFFBD081C),
-      icon: FontAwesomeIcons.pinterest,
-    ),
-    'reddit': ServiceIconData(
-      name: 'Reddit',
-      color: Color(0xFFFF4500), // 公式Reddit Orange
-      backgroundColor: Color(0xFFFF4500),
-      icon: FontAwesomeIcons.reddit,
-    ),
-    'whatsapp': ServiceIconData(
-      name: 'WhatsApp',
-      color: Color(0xFF25D366), // 公式WhatsApp Green
-      backgroundColor: Color(0xFF25D366),
-      icon: FontAwesomeIcons.whatsapp,
-    ),
-    'telegram': ServiceIconData(
-      name: 'Telegram',
-      color: Color(0xFF0088CC), // 公式Telegram Blue
-      backgroundColor: Color(0xFF0088CC),
-      icon: FontAwesomeIcons.telegram,
-    ),
-  };
-
-  /// サービスアイコンデータを取得
-  static ServiceIconData? getService(String serviceId) {
-    return _services[serviceId.toLowerCase()];
-  }
-
-  /// 利用可能な全サービスを取得
-  static Map<String, ServiceIconData> getAllServices() {
-    return Map.from(_services);
-  }
-
-  /// サービスアイコンウィジェットを作成
+  // MP準拠: 各サービスの公式ブランドガイドラインに従ったアイコン実装
+  
+  /// サービスアイコンの構築（公式SVGアイコンを使用）
   static Widget buildIcon({
     required String serviceId,
     required double size,
     required bool isDark,
   }) {
-    final service = getService(serviceId);
-    if (service == null) {
-      return Icon(
-        Icons.help_outline,
-        size: size,
-        color: isDark ? Colors.white70 : Colors.black54,
+    // 公式SVGアイコンファイルパスのマッピング
+    final iconPaths = {
+      'netflix': 'assets/icons/services/netflix.svg',
+      'spotify': 'assets/icons/services/spotify.svg',
+      'apple_music': 'assets/icons/services/apple_music.svg',
+      'youtube': 'assets/icons/services/youtube.svg',
+      'disney_plus': 'assets/icons/services/disney_plus.svg',
+      'instagram': 'assets/icons/services/instagram.svg',
+      'tiktok': 'assets/icons/services/tiktok.svg',
+    };
+
+    final iconPath = iconPaths[serviceId.toLowerCase()];
+    
+    if (iconPath != null) {
+      // 実際の公式SVGアイコンを表示
+      return Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(size * 0.15),
+          // 各サービスの公式背景色（必要に応じて）
+          color: _getServiceBackgroundColor(serviceId, isDark),
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(size * 0.15),
+          child: SvgPicture.asset(
+            iconPath,
+            width: size,
+            height: size,
+            fit: BoxFit.contain,
+            colorFilter: _getColorFilter(serviceId, isDark),
+          ),
+        ),
       );
     }
 
-    // 特別なアイコン処理
-    if (serviceId.toLowerCase() == 'youtube') {
-      return _buildYouTubeIcon(size: size, isDark: isDark);
-    }
-    
-    if (serviceId.toLowerCase() == 'prime_video') {
-      return _buildPrimeVideoIcon(size: size, isDark: isDark);
-    }
-    
-    if (serviceId.toLowerCase() == 'netflix') {
-      return _buildNetflixIcon(size: size, isDark: isDark);
-    }
-    
-    if (serviceId.toLowerCase() == 'rakuten') {
-      return _buildRakutenIcon(size: size, isDark: isDark);
-    }
-    
-    if (serviceId.toLowerCase() == 'valuecommerce') {
-      return _buildValueCommerceIcon(size: size, isDark: isDark);
-    }
-    
-    if (serviceId.toLowerCase() == 'instagram') {
-      return _buildInstagramIcon(size: size, isDark: isDark);
-    }
-
-    if (serviceId.toLowerCase() == 'spotify') {
-      return _buildSpotifyIcon(size: size, isDark: isDark);
-    }
-
-    if (serviceId.toLowerCase() == 'tiktok') {
-      return _buildTikTokIcon(size: size, isDark: isDark);
-    }
-
-    // 標準アイコン
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        color: service.color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(size * 0.25),
-      ),
-      child: Icon(
-        service.icon,
-        size: size * 0.6,
-        color: service.color,
-      ),
-    );
+    // フォールバック: FontAwesome汎用アイコン
+    return _buildFallbackIcon(serviceId, size, isDark);
   }
 
-  // YouTube専用アイコン（公式デザイン準拠）
-  static Widget _buildYouTubeIcon({required double size, required bool isDark}) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        color: const Color(0xFFFF0000), // YouTube Red
-        borderRadius: BorderRadius.circular(size * 0.25), // より丸く
-      ),
-      child: Icon(
-        FontAwesomeIcons.youtube,
-        size: size * 0.6,
-        color: Colors.white,
-      ),
-    );
+  /// サービス別の背景色取得（公式ブランドカラーに準拠）
+  static Color? _getServiceBackgroundColor(String serviceId, bool isDark) {
+    switch (serviceId.toLowerCase()) {
+      case 'spotify':
+        return const Color(0xFF1DB954); // Spotify Green
+      case 'youtube':
+        return Colors.white; // YouTube白背景
+      case 'netflix':
+        return const Color(0xFFE50914); // Netflix Red
+      case 'apple_music':
+        return Colors.white; // Apple Music白背景
+      case 'disney_plus':
+        return const Color(0xFF113CCF); // Disney+ Blue
+      case 'instagram':
+        return Colors.white; // Instagram白背景（グラデーションはSVG内）
+      case 'tiktok':
+        return Colors.white; // TikTok白背景
+      default:
+        return null;
+    }
   }
 
-  // Instagram専用アイコン（公式グラデーション）
-  static Widget _buildInstagramIcon({required double size, required bool isDark}) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [
-            Color(0xFFFDCB5C), // Yellow
-            Color(0xFFE1306C), // Pink
-            Color(0xFFC13584), // Purple
-            Color(0xFF405DE6), // Blue
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+  /// サービス別のカラーフィルター（必要に応じて）
+  static ColorFilter? _getColorFilter(String serviceId, bool isDark) {
+    // ほとんどのサービスアイコンは独自の色を持っているため、基本的にnull
+    // 特定のサービスで色変更が必要な場合のみ適用
+    switch (serviceId.toLowerCase()) {
+      default:
+        return null; // 公式色をそのまま使用
+    }
+  }
+
+  /// フォールバックアイコン（FontAwesome）
+  static Widget _buildFallbackIcon(String serviceId, double size, bool isDark) {
+    // ServiceDefinitionsから情報を取得
+    final service = ServiceDefinitions.get(serviceId);
+    
+    if (service != null) {
+      return Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(
+          color: service.getBackgroundColor(isDark),
+          borderRadius: BorderRadius.circular(size * 0.15),
         ),
-        borderRadius: BorderRadius.circular(size * 0.25), // より丸く
-      ),
-      child: Icon(
-        FontAwesomeIcons.instagram,
-        size: size * 0.6,
-        color: Colors.white,
-      ),
-    );
-  }
-
-  // Spotify専用アイコン（公式デザイン準拠）
-  static Widget _buildSpotifyIcon({required double size, required bool isDark}) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        color: const Color(0xFF1ED760), // Spotify Green
-        borderRadius: BorderRadius.circular(size * 0.5), // 完全な円
-      ),
-      child: Icon(
-        FontAwesomeIcons.spotify,
-        size: size * 0.6,
-        color: const Color(0xFF191414), // Spotify Dark
-      ),
-    );
-  }
-
-  // TikTok専用アイコン（公式デザイン準拠）
-  static Widget _buildTikTokIcon({required double size, required bool isDark}) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        color: const Color(0xFF010101), // TikTok Black
-        borderRadius: BorderRadius.circular(size * 0.25), // より丸く
-      ),
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          // Turquoise shadow
-          Positioned(
-            left: size * 0.1,
-            child: Icon(
-              FontAwesomeIcons.tiktok,
-              size: size * 0.6,
-              color: const Color(0xFF69C9D0), // TikTok Turquoise
-            ),
-          ),
-          // Pink/Red main icon
-          Icon(
-            FontAwesomeIcons.tiktok,
-            size: size * 0.6,
-            color: const Color(0xFFEE1D52), // TikTok Red
-          ),
-        ],
-      ),
-    );
-  }
-
-  // Prime Video専用アイコン（公式デザイン準拠）
-  static Widget _buildPrimeVideoIcon({required double size, required bool isDark}) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF00A8E1), Color(0xFF232F3E)], // Prime Video Blue to Dark
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+        child: Icon(
+          service.icon,
+          size: size * 0.6,
+          color: service.primaryColor == Colors.white || service.primaryColor == const Color(0xFFFFFC00)
+              ? (isDark ? Colors.black : service.primaryColor)
+              : service.primaryColor,
         ),
-        borderRadius: BorderRadius.circular(size * 0.2), // 角丸
+      );
+    }
+    
+    // デフォルトアイコン
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: isDark ? Colors.grey[800] : Colors.grey[200],
+        borderRadius: BorderRadius.circular(size * 0.15),
       ),
       child: Icon(
         FontAwesomeIcons.play,
-        size: size * 0.5,
-        color: Colors.white,
-      ),
-    );
-  }
-
-  // Netflix専用アイコン（洗練されたフィルムアイコン）
-  static Widget _buildNetflixIcon({required double size, required bool isDark}) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFFE50914), Color(0xFFB8070F)], // Netflix Red gradient
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(size * 0.15), // 角丸
-      ),
-      child: Icon(
-        FontAwesomeIcons.film,
-        size: size * 0.55,
-        color: Colors.white,
-      ),
-    );
-  }
-
-  // Rakuten専用アイコン（洗練されたECアイコン）
-  static Widget _buildRakutenIcon({required double size, required bool isDark}) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFFBF0000), Color(0xFF8B0000)], // Rakuten Red gradient
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(size * 0.25), // より丸く
-      ),
-      child: Icon(
-        FontAwesomeIcons.shopify,
-        size: size * 0.5,
-        color: Colors.white,
-      ),
-    );
-  }
-
-  // ValueCommerce専用アイコン（パートナーシップアイコン）
-  static Widget _buildValueCommerceIcon({required double size, required bool isDark}) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF0066CC), Color(0xFF004499)], // ValueCommerce Blue gradient
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(size * 0.2), // 角丸
-      ),
-      child: Icon(
-        FontAwesomeIcons.handshake,
-        size: size * 0.5,
-        color: Colors.white,
-      ),
-    );
-  }
-
-  /// グラデーションバージョンのサービスアイコン
-  static Widget buildGradientIcon({
-    required String serviceId,
-    required double size,
-    required bool isDark,
-  }) {
-    final service = getService(serviceId);
-    if (service == null || service.gradient == null) {
-      return buildIcon(serviceId: serviceId, size: size, isDark: isDark);
-    }
-
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        gradient: service.gradient,
-        borderRadius: BorderRadius.circular(size * 0.25),
-      ),
-      child: Icon(
-        service.icon,
         size: size * 0.6,
-        color: Colors.white,
+        color: isDark ? Colors.white : Colors.black,
       ),
     );
   }
 
-  /// カスタムサービスアイコンカード
+  /// レガシーメソッド：後方互換性のため
+  static Widget getServiceWidget(
+    String serviceKey, {
+    double size = 40.0,
+    bool showGradient = true,
+    bool showShadow = true,
+  }) {
+    return buildIcon(
+      serviceId: serviceKey,
+      size: size,
+      isDark: false,
+    );
+  }
+
+  /// 利用可能なサービス一覧
+  static List<String> get availableServices => [
+    'netflix',
+    'spotify', 
+    'apple_music',
+    'youtube',
+    'disney_plus',
+    'instagram',
+    'tiktok',
+  ];
+
+  /// サービス名取得
+  static String getServiceName(String serviceId) {
+    return ServiceDefinitions.getServiceName(serviceId);
+  }
+
+  /// 後方互換性: サービスグラデーション取得
+  static LinearGradient getServiceGradient(String serviceId) {
+    return ServiceDefinitions.getServiceGradient(serviceId);
+  }
+
+  /// 後方互換性: サービス情報取得
+  static ServiceInfo? getService(String serviceId) {
+    final definition = ServiceDefinitions.get(serviceId);
+    if (definition != null) {
+      return ServiceInfo(
+        name: definition.name,
+        color: definition.primaryColor,
+      );
+    }
+    return null;
+  }
+
+  /// 後方互換性: サービスカード構築
   static Widget buildServiceCard({
     required String serviceId,
     required String title,
     required String description,
     required VoidCallback onTap,
-    required bool isConnected,
-    required bool isDark,
+    double size = 48.0,
+    bool isConnected = false,
+    bool isDark = false,
   }) {
-    final service = getService(serviceId);
-    if (service == null) {
-      return const SizedBox.shrink();
-    }
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(16),
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: isConnected 
-                    ? service.color.withOpacity(0.3)
-                    : (isDark ? const Color(0xFF333333) : const Color(0xFFE5E7EB)),
-                width: isConnected ? 2 : 1,
+    return Card(
+      color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              buildIcon(
+                serviceId: serviceId,
+                size: size,
+                isDark: isDark,
               ),
-              boxShadow: [
-                BoxShadow(
-                  color: (isDark ? Colors.black : Colors.black).withOpacity(0.05),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
+              const SizedBox(height: 8),
+              Text(
+                title,
+                style: TextStyle(
+                  color: isDark ? Colors.white : Colors.black87,
+                  fontWeight: FontWeight.bold,
                 ),
-              ],
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    color: service.color.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Center(
-                    child: buildIcon(
-                      serviceId: serviceId,
-                      size: 28,
-                      isDark: false,
-                    ),
-                  ),
+              ),
+              Text(
+                description,
+                style: TextStyle(
+                  color: isDark ? Colors.grey[400] : Colors.black54,
+                  fontSize: 12,
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: isDark ? Colors.white : Colors.black87,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        description,
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: isDark ? Colors.white70 : Colors.black54,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: isConnected ? service.color : Colors.transparent,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: service.color,
-                      width: 1,
-                    ),
-                  ),
-                  child: Text(
-                    isConnected ? '接続済み' : '接続',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: isConnected ? Colors.white : service.color,
-                    ),
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
     );
   }
-
-  static List<String> getAllServiceIds() {
-    return _services.keys.toList();
-  }
-
-  static LinearGradient getServiceGradient(String serviceId) {
-    final service = getService(serviceId);
-    return service?.gradient ?? LinearGradient(
-      colors: [
-        service?.color ?? const Color(0xFF4ECDC4),
-        (service?.color ?? const Color(0xFF4ECDC4)).withOpacity(0.7),
-      ],
-    );
-  }
 }
 
-/// サービスアイコンデータクラス
-class ServiceIconData {
+/// サービス情報クラス
+class ServiceInfo {
   final String name;
   final Color color;
-  final Color backgroundColor;
-  final IconData icon;
-  final LinearGradient? gradient;
 
-  const ServiceIconData({
+  ServiceInfo({
     required this.name,
     required this.color,
-    required this.backgroundColor,
-    required this.icon,
-    this.gradient,
   });
 } 

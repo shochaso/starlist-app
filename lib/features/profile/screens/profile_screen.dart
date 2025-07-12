@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../providers/user_provider.dart';
+import '../../../models/user.dart';
 import '../../../src/providers/theme_provider_enhanced.dart';
 import 'profile_edit_screen.dart';
 
@@ -103,22 +104,24 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                         width: 60,
                         height: 60,
                         decoration: BoxDecoration(
-                          gradient: const LinearGradient(
+                          gradient: currentUser.isStar ? const LinearGradient(
+                            colors: [Color(0xFFFFB6C1), Color(0xFFFFC0CB)],
+                          ) : const LinearGradient(
                             colors: [Color(0xFF4ECDC4), Color(0xFF44A08D)],
                           ),
                           borderRadius: BorderRadius.circular(15),
                           boxShadow: [
                             BoxShadow(
-                              color: const Color(0xFF4ECDC4).withValues(alpha: 0.3),
+                              color: currentUser.isStar ? const Color(0xFFFFB6C1).withValues(alpha: 0.3) : const Color(0xFF4ECDC4).withValues(alpha: 0.3),
                               blurRadius: 10,
                               offset: const Offset(0, 5),
                             ),
                           ],
                         ),
-                        child: const Center(
+                        child: Center(
                           child: Text(
-                            '田',
-                            style: TextStyle(
+                            currentUser.isStar ? '花' : 'F',
+                            style: const TextStyle(
                               color: Colors.white,
                               fontSize: 24,
                               fontWeight: FontWeight.bold,
@@ -132,7 +135,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              currentUser.isStar ? currentUser.name : '田中太郎',
+                              currentUser.name,
                               style: TextStyle(
                                 color: isDark ? Colors.white : Colors.black87,
                                 fontSize: 18,
@@ -142,7 +145,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                               overflow: TextOverflow.ellipsis,
                             ),
                             Text(
-                              currentUser.isStar ? '@${currentUser.name.toLowerCase().replaceAll(' ', '_')}' : '@tanaka_taro',
+                              currentUser.isStar ? '@${currentUser.name.toLowerCase().replaceAll(' ', '_').replaceAll('花山瑞樹', 'hanayama_mizuki')}' : '@fan_user',
                               style: TextStyle(
                                 color: isDark ? Colors.grey[400] : Colors.black54,
                                 fontSize: 12,
@@ -158,7 +161,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                                 borderRadius: BorderRadius.circular(6),
                               ),
                               child: Text(
-                                currentUser.isStar ? 'スター' : 'ファン',
+                                currentUser.planDisplayName,
                                 style: const TextStyle(
                                   color: Color(0xFF4ECDC4),
                                   fontSize: 10,
@@ -189,7 +192,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                     ],
                   ),
                   
-                  // 役割切り替えボタン（テスト用）
+                  // プラン切り替えボタン（テスト用）
                   const SizedBox(height: 16),
                   Container(
                     width: double.infinity,
@@ -199,37 +202,29 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(color: isDark ? const Color(0xFF333333) : const Color(0xFFE5E7EB)),
                     ),
-                    child: Row(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Icon(Icons.swap_horiz, color: isDark ? const Color(0xFF888888) : Colors.black54, size: 14),
-                        const SizedBox(width: 6),
-                        Text(
-                          'テスト用役割切り替え:',
-                          style: TextStyle(color: isDark ? const Color(0xFF888888) : Colors.black54, fontSize: 10),
+                        Row(
+                          children: [
+                            Icon(Icons.swap_horiz, color: isDark ? const Color(0xFF888888) : Colors.black54, size: 14),
+                            const SizedBox(width: 6),
+                            Text(
+                              'テスト用プラン切り替え:',
+                              style: TextStyle(color: isDark ? const Color(0xFF888888) : Colors.black54, fontSize: 10),
+                            ),
+                          ],
                         ),
-                        const Spacer(),
-                        ToggleButtons(
-                          isSelected: [currentUser.isStar, currentUser.isFan],
-                          onPressed: (index) {
-                            final newRole = index == 0 ? UserRole.star : UserRole.fan;
-                            ref.read(currentUserProvider.notifier).state = UserInfo(
-                              id: currentUser.id,
-                              name: newRole == UserRole.star ? 'テックレビューアー田中' : '田中太郎',
-                              email: currentUser.email,
-                              role: newRole,
-                              starCategory: newRole == UserRole.star ? 'テクノロジー' : null,
-                              followers: newRole == UserRole.star ? 24500 : null,
-                              isVerified: newRole == UserRole.star,
-                            );
-                          },
-                          borderRadius: BorderRadius.circular(6),
-                          selectedColor: Colors.black,
-                          fillColor: const Color(0xFF4ECDC4),
-                          color: isDark ? Colors.white : Colors.black87,
-                          constraints: const BoxConstraints(minHeight: 28, minWidth: 50),
-                          children: const [
-                            Text('スター', style: TextStyle(fontSize: 9)),
-                            Text('ファン', style: TextStyle(fontSize: 9)),
+                        const SizedBox(height: 8),
+                        Wrap(
+                          spacing: 4,
+                          runSpacing: 4,
+                          children: [
+                            _buildPlanButton('スター', UserRole.star, null, currentUser, isDark),
+                            _buildPlanButton('無料ファン', UserRole.fan, FanPlanType.free, currentUser, isDark),
+                            _buildPlanButton('ライト', UserRole.fan, FanPlanType.light, currentUser, isDark),
+                            _buildPlanButton('スタンダード', UserRole.fan, FanPlanType.standard, currentUser, isDark),
+                            _buildPlanButton('プレミアム', UserRole.fan, FanPlanType.premium, currentUser, isDark),
                           ],
                         ),
                       ],
@@ -657,73 +652,172 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   }
 
   Widget _buildDrawer() {
+    final currentUser = ref.watch(currentUserProvider);
     final themeState = ref.watch(themeProviderEnhanced);
     final isDark = themeState.isDarkMode;
     
     return Drawer(
       backgroundColor: isDark ? const Color(0xFF1A1A1A) : Colors.white,
-      child: SafeArea(
-        child: Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(20),
+      child: Column(
+        children: [
+          SafeArea(
+            child: Container(
+              margin: const EdgeInsets.only(top: 8),
+              padding: const EdgeInsets.all(16),
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [Color(0xFF4ECDC4), Color(0xFF44A08D)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Color(0xFF4ECDC4),
+                    Color(0xFF44A08D),
+                  ],
                 ),
                 borderRadius: BorderRadius.only(
                   bottomLeft: Radius.circular(20),
                   bottomRight: Radius.circular(20),
                 ),
               ),
-              child: const Row(
+              child: Row(
                 children: [
-                  Icon(Icons.star, color: Colors.white, size: 24),
-                  SizedBox(width: 12),
-                  Text(
-                    'Starlist',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(
+                      Icons.star,
                       color: Colors.white,
+                      size: 20,
                     ),
                   ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text(
+                          'Starlist',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                            letterSpacing: -0.3,
+                          ),
+                        ),
+                        Text(
+                          currentUser.isStar ? 'スター' : 'ファン',
+                          style: const TextStyle(
+                            color: Colors.white70,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close, color: Colors.white70, size: 20),
+                    onPressed: () => Navigator.of(context).pop(),
+                    constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                    padding: EdgeInsets.zero,
+                  ),
                 ],
               ),
             ),
-            Expanded(
-              child: ListView(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                children: [
+          ),
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              children: [
+                _buildDrawerItem(
+                  icon: Icons.home,
+                  title: 'ホーム',
+                  isActive: false,
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.pushReplacementNamed(context, '/');
+                  },
+                  isDark: isDark,
+                ),
+                _buildDrawerItem(
+                  icon: Icons.search,
+                  title: '検索',
+                  isActive: false,
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.pushReplacementNamed(context, '/search');
+                  },
+                  isDark: isDark,
+                ),
+                _buildDrawerItem(
+                  icon: Icons.star,
+                  title: 'マイリスト',
+                  isActive: false,
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.pushReplacementNamed(context, '/mylist');
+                  },
+                  isDark: isDark,
+                ),
+                // スターのみ表示
+                if (currentUser.isStar) ...[
                   _buildDrawerItem(
-                    icon: Icons.home,
-                    title: 'ホーム',
-                    onTap: () => Navigator.pop(context),
+                    icon: Icons.camera_alt,
+                    title: 'データ取込み',
+                    isActive: false,
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.pushReplacementNamed(context, '/data-import');
+                    },
                     isDark: isDark,
                   ),
                   _buildDrawerItem(
-                    icon: Icons.search,
-                    title: '検索',
-                    onTap: () => Navigator.pop(context),
+                    icon: Icons.analytics,
+                    title: 'スターダッシュボード',
+                    isActive: false,
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.pushReplacementNamed(context, '/star-dashboard');
+                    },
                     isDark: isDark,
                   ),
                   _buildDrawerItem(
-                    icon: Icons.favorite,
-                    title: 'マイリスト',
-                    onTap: () => Navigator.pop(context),
-                    isDark: isDark,
-                  ),
-                  _buildDrawerItem(
-                    icon: Icons.settings,
-                    title: '設定',
-                    onTap: () => Navigator.pop(context),
+                    icon: Icons.workspace_premium,
+                    title: 'プランを管理',
+                    isActive: false,
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.pushReplacementNamed(context, '/plan-management');
+                    },
                     isDark: isDark,
                   ),
                 ],
-              ),
+                _buildDrawerItem(
+                  icon: Icons.person,
+                  title: 'マイページ',
+                  isActive: true,
+                  onTap: () {
+                    Navigator.pop(context);
+                    // 既にマイページなので何もしない
+                  },
+                  isDark: isDark,
+                ),
+                _buildDrawerItem(
+                  icon: Icons.settings,
+                  title: '設定',
+                  isActive: false,
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.pushReplacementNamed(context, '/settings');
+                  },
+                  isDark: isDark,
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -735,39 +829,51 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     required bool isDark,
     bool isActive = false,
   }) {
-    return ListTile(
-      leading: Container(
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          color: isActive 
-            ? const Color(0xFF4ECDC4)
-            : (isDark ? Colors.white10 : Colors.grey.shade100),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Icon(
-          icon,
-          color: isActive 
-            ? Colors.white
-            : (isDark ? Colors.white54 : Colors.grey.shade600),
-          size: 18,
-        ),
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 3),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        color: isActive ? const Color(0xFF4ECDC4).withValues(alpha: 0.15) : null,
+        border: isActive ? Border.all(
+          color: const Color(0xFF4ECDC4).withValues(alpha: 0.3),
+          width: 1,
+        ) : null,
       ),
-      title: Text(
-        title,
-        style: TextStyle(
-          color: isActive 
-            ? const Color(0xFF4ECDC4) 
-            : (isDark ? Colors.white : Colors.grey.shade800),
-          fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
-          fontSize: 15,
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        leading: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: isActive 
+              ? const Color(0xFF4ECDC4)
+              : (isDark ? Colors.white10 : Colors.grey.shade100),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(
+            icon,
+            color: isActive 
+              ? Colors.white
+              : (isDark ? Colors.white54 : Colors.grey.shade600),
+            size: 18,
+          ),
         ),
+        title: Text(
+          title,
+          style: TextStyle(
+            color: isActive 
+              ? const Color(0xFF4ECDC4) 
+              : (isDark ? Colors.white : Colors.grey.shade800),
+            fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
+            fontSize: 15,
+          ),
+        ),
+        trailing: isActive ? const Icon(
+          Icons.arrow_forward_ios,
+          color: Color(0xFF4ECDC4),
+          size: 14,
+        ) : null,
+        onTap: onTap,
       ),
-      trailing: isActive ? const Icon(
-        Icons.arrow_forward_ios,
-        color: Color(0xFF4ECDC4),
-        size: 14,
-      ) : null,
-      onTap: onTap,
     );
   }
 
@@ -775,6 +881,57 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const ProfileEditScreen()),
+    );
+  }
+
+  Widget _buildPlanButton(String label, UserRole role, FanPlanType? planType, UserInfo currentUser, bool isDark) {
+    final isSelected = currentUser.role == role && currentUser.fanPlanType == planType;
+    
+    return GestureDetector(
+      onTap: () {
+        String name;
+        String? category;
+        int? followers;
+        
+        if (role == UserRole.star) {
+          name = '花山瑞樹';
+          category = '日常Blog・ファッション';
+          followers = 127000;
+        } else {
+          name = 'ファンユーザー';
+          category = null;
+          followers = null;
+        }
+        
+        ref.read(currentUserProvider.notifier).state = UserInfo(
+          id: currentUser.id,
+          name: name,
+          email: currentUser.email,
+          role: role,
+          fanPlanType: planType,
+          starCategory: category,
+          followers: followers,
+          isVerified: role == UserRole.star,
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFF4ECDC4) : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected ? const Color(0xFF4ECDC4) : (isDark ? const Color(0xFF444444) : const Color(0xFFCCCCCC)),
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 9,
+            fontWeight: FontWeight.w500,
+            color: isSelected ? Colors.white : (isDark ? Colors.white : Colors.black87),
+          ),
+        ),
+      ),
     );
   }
 

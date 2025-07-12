@@ -11,7 +11,7 @@ import 'screens/starlist_main_screen.dart';
 import 'features/auth/screens/star_signup_screen.dart';
 import 'features/auth/screens/star_email_signup_screen.dart';
 import 'features/star/screens/star_dashboard_screen.dart';
-import 'features/subscription/screens/plan_management_screen.dart';
+import 'features/subscription/screens/fan_subscription_screen.dart';
 import 'features/data_integration/screens/data_import_screen.dart';
 import 'features/search/screens/search_screen.dart';
 import 'features/mylist/screens/mylist_screen.dart';
@@ -123,7 +123,7 @@ class StarlistApp extends ConsumerWidget {
         '/star-signup': (context) => const StarSignupScreen(),
         '/star-email-signup': (context) => const StarEmailSignupScreen(),
         '/star-dashboard': (context) => const StarDashboardScreen(),
-        '/plan-management': (context) => const PlanManagementScreen(),
+        '/subscription': (context) => const FanSubscriptionScreen(),
         '/data-import': (context) => const DataImportScreen(),
         '/theme-test': (context) => const ThemeTestScreen(),
         '/search': (context) => const SearchScreen(),

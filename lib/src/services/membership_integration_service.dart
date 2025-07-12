@@ -146,7 +146,7 @@ class MembershipIntegrationService {
     switch (membershipTier.toLowerCase()) {
       case 'bronze':
       case 'basic':
-        return SubscriptionPlanType.basic;
+        return SubscriptionPlanType.free;
       case 'silver':
       case 'standard':
         return SubscriptionPlanType.standard;
@@ -156,7 +156,7 @@ class MembershipIntegrationService {
       case 'platinum':
       case 'ultimate':
       case 'vip':
-        return SubscriptionPlanType.ultimate;
+        return SubscriptionPlanType.premium;
       default:
         return SubscriptionPlanType.standard; // デフォルトは人気プラン
     }

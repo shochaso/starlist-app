@@ -175,20 +175,21 @@ class SubscriptionPlanCard extends StatelessWidget {
     Color iconColor;
 
     switch (plan.planType) {
-      case SubscriptionPlanType.basic:
+      case SubscriptionPlanType.free:
         iconData = Icons.star_outline;
-        iconColor = Colors.blue;
+        iconColor = Colors.grey;
+        break;
+      case SubscriptionPlanType.light:
+        iconData = Icons.star_outline;
+        iconColor = Colors.green;
         break;
       case SubscriptionPlanType.standard:
         iconData = Icons.star_half;
-        iconColor = Colors.purple;
+        iconColor = Colors.blue;
         break;
       case SubscriptionPlanType.premium:
         iconData = Icons.star;
-        iconColor = Colors.orange;
-        break;
-      case SubscriptionPlanType.ultimate:
-        iconData = Icons.auto_awesome;
+        iconColor = Colors.purple;
         iconColor = Colors.red;
         break;
     }
