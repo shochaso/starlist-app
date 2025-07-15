@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../../src/core/components/service_icons.dart';
+import '../../../src/core/constants/service_definitions.dart';
 import '../../../src/providers/theme_provider_enhanced.dart';
 import '../../../providers/user_provider.dart';
 import '../../star/screens/star_dashboard_screen.dart';
@@ -128,7 +130,7 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
       {'id': 'youtube', 'title': 'YouTube', 'subtitle': '動画共有・ライブ配信'},
       {'id': 'netflix', 'title': 'Netflix', 'subtitle': '映画・ドラマストリーミング'},
       {'id': 'prime_video', 'title': 'Amazon Prime', 'subtitle': '映画・ドラマ・オリジナル作品'},
-      {'id': 'disney', 'title': 'Disney+', 'subtitle': 'ディズニー・マーベル・スター・ウォーズ'},
+      {'id': 'disney_plus', 'title': 'Disney+', 'subtitle': 'ディズニー・マーベル・スター・ウォーズ'},
       {'id': 'niconico', 'title': 'ニコニコ動画', 'subtitle': '動画共有・生放送'},
       {'id': 'abema', 'title': 'ABEMA', 'subtitle': 'アニメ・バラエティ・ニュース'},
       {'id': 'hulu', 'title': 'Hulu', 'subtitle': '海外ドラマ・アニメ'},
@@ -137,11 +139,11 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
     '配信': [
       {'id': 'twitch', 'title': 'Twitch', 'subtitle': 'ゲーム配信・ライブストリーミング'},
       {'id': 'twitcasting', 'title': 'ツイキャス', 'subtitle': 'ライブ配信'},
-      {'id': 'fuwacchi', 'title': 'ふわっち', 'subtitle': 'ライブ配信'},
+      {'id': 'furatch', 'title': 'ふわっち', 'subtitle': 'ライブ配信'},
       {'id': 'palmu', 'title': 'Palmu', 'subtitle': 'ライブ配信'},
       {'id': 'showroom', 'title': 'SHOWROOM', 'subtitle': 'ライブ配信・応援'},
       {'id': '17live', 'title': '17LIVE', 'subtitle': 'ライブ配信'},
-      {'id': 'linelive', 'title': 'LINE LIVE', 'subtitle': 'ライブ配信'},
+      {'id': 'line_live', 'title': 'LINE LIVE', 'subtitle': 'ライブ配信'},
       {'id': 'mildom', 'title': 'Mildom', 'subtitle': 'ゲーム配信'},
       {'id': 'openrec', 'title': 'OPENREC', 'subtitle': 'ゲーム配信'},
       {'id': 'mirrativ', 'title': 'Mirrativ', 'subtitle': 'スマホゲーム配信'},
@@ -154,7 +156,7 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
     ],
     '音楽': [
       {'id': 'spotify', 'title': 'Spotify', 'subtitle': '音楽ストリーミング'},
-      {'id': 'youtube', 'title': 'YouTube Music', 'subtitle': '音楽再生サービス'},
+      {'id': 'youtube_music', 'title': 'YouTube Music', 'subtitle': '音楽再生サービス'},
       {'id': 'amazon_music', 'title': 'Amazon Music', 'subtitle': '音楽ストリーミング・プレイリスト'},
       {'id': 'apple_music', 'title': 'Apple Music', 'subtitle': '再生履歴'},
       {'id': 'live_concert', 'title': 'ライブ・コンサート', 'subtitle': '参加したライブ記録'},
@@ -184,7 +186,7 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
     ],
     'エンタメ': [
       {'id': 'games', 'title': 'ゲーム', 'subtitle': 'プレイ履歴・実績', 'icon': Icons.sports_esports, 'color': const Color(0xFF9C27B0)},
-      {'id': 'books', 'title': '書籍・漫画', 'subtitle': '読書履歴・電子書籍', 'icon': Icons.book, 'color': const Color(0xFF8D6E63)},
+      {'id': 'books_manga', 'title': '書籍・漫画', 'subtitle': '読書履歴・電子書籍', 'icon': Icons.book, 'color': const Color(0xFF8D6E63)},
       {'id': 'cinema', 'title': '映画館', 'subtitle': '鑑賞履歴', 'icon': Icons.local_movies, 'color': const Color(0xFF795548)},
     ],
     '飲食・グルメ': [
@@ -1632,32 +1634,47 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
   }
 
   IconData _getServiceIcon(String serviceId) {
-    switch (serviceId) {
-      case 'amazon_prime':
-      case 'netflix':
-      case 'abema':
-      case 'hulu':
-      case 'disney':
-      case 'unext':
-      case 'dtv':
-      case 'fod': return Icons.play_arrow;
-      case 'restaurant': return Icons.restaurant;
-      case 'delivery': return Icons.delivery_dining;
-      case 'cooking': return Icons.kitchen;
-      case 'instagram': return Icons.camera_alt;
-      case 'tiktok': return Icons.music_video;
-      case 'twitter': return Icons.chat;
-      case 'facebook': return Icons.facebook;
-      case 'games': return Icons.sports_esports;
-      case 'books': return Icons.book;
-      case 'cinema': return Icons.local_movies;
-      case 'credit_card': return Icons.credit_card;
-      case 'electronic_money': return Icons.contactless;
-      case 'smartphone_apps': return Icons.phone_android;
-      case 'web_services': return Icons.web;
-      case 'game_apps': return Icons.games;
-      default: return Icons.category;
+    // ServiceDefinitionsクラスを使用して正しいアイコンを取得
+    // 存在しないサービスIDの場合は適切なフォールバックアイコンを使用
+    final icon = ServiceDefinitions.getServiceIcon(serviceId);
+    if (icon == FontAwesomeIcons.question) {
+      // service_definitionsに存在しないサービスの場合のフォールバック
+      switch (serviceId) {
+        case 'openrec':
+        case 'mirrativ':
+        case 'reality':
+        case 'iriam':
+        case 'bigolive':
+        case 'spoon':
+        case 'tangome':
+          return FontAwesomeIcons.video; // 配信サービス用
+        case 'books_manga':
+          return FontAwesomeIcons.book; // 書籍用
+        case 'cinema':
+          return FontAwesomeIcons.film; // 映画用
+        case 'restaurant':
+          return FontAwesomeIcons.utensils; // レストラン用
+        case 'delivery':
+          return FontAwesomeIcons.truck; // デリバリー用
+        case 'cooking':
+          return FontAwesomeIcons.kitchenSet; // 料理用
+        case 'games':
+          return FontAwesomeIcons.gamepad; // ゲーム用
+        case 'credit_card':
+          return FontAwesomeIcons.creditCard; // クレジットカード用
+        case 'electronic_money':
+          return FontAwesomeIcons.mobileScreen; // 電子マネー用
+        case 'smartphone_apps':
+          return FontAwesomeIcons.mobileScreen; // スマホアプリ用
+        case 'web_services':
+          return FontAwesomeIcons.globe; // ウェブサービス用
+        case 'game_apps':
+          return FontAwesomeIcons.gamepad; // ゲームアプリ用
+        default:
+          return FontAwesomeIcons.question;
+      }
     }
+    return icon;
   }
 
   void _showAllServices() {

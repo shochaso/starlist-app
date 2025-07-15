@@ -1,4 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-  <path fill="#000000" d="M0 0h24v24H0z"/>
-  <path fill="#FFFFFF" d="M5 6h2v7c0 1.1.9 2 2 2h2V6h2v9c0 2.2-1.8 4-4 4H5V6zm10 0h4v2h-4V6zm0 3h4v2h-4V9zm0 3h4v2h-4v-2zm0 3h4v2h-4v-2z"/>
-</svg>
+<?xml version="1.0" encoding="UTF-8"?>
+<Error>
+  <Code>NoSuchKey</Code>
+  <Message>The specified key does not exist.</Message>
+  <RequestId>6873E78E3FAECD3335390DD4</RequestId>
+  <HostId>www.logo.wine</HostId>
+  <Key>a/logo/U-NEXT/U-NEXT-Logo.wine.svg</Key>
+  <EC>0026-00000001</EC>
+  <RecommendDoc>https://api.alibabacloud.com/troubleshoot?q=0026-00000001</RecommendDoc>
+</Error>

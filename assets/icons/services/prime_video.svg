@@ -1,8 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 161">
-  <path fill="#00A8E1" d="M92.8 81.4c-9.2 0-16.6-7.4-16.6-16.6s7.4-16.6 16.6-16.6 16.6 7.4 16.6 16.6-7.4 16.6-16.6 16.6zm0-29c-6.8 0-12.4 5.6-12.4 12.4s5.6 12.4 12.4 12.4 12.4-5.6 12.4-12.4-5.6-12.4-12.4-12.4z"/>
-  <path fill="#00A8E1" d="M22.9 45.2c-12.6 0-22.9 10.3-22.9 22.9v14.8c0 12.6 10.3 22.9 22.9 22.9h15.5c12.6 0 22.9-10.3 22.9-22.9V68.1c0-12.6-10.3-22.9-22.9-22.9H22.9zm36.2 37.7c0 8.4-6.8 15.2-15.2 15.2H22.9c-8.4 0-15.2-6.8-15.2-15.2V68.1c0-8.4 6.8-15.2 15.2-15.2h15.5c8.4 0 15.2 6.8 15.2 15.2v14.8z"/>
-  <path fill="#232F3E" d="M149.2 98.5c-1.6 1.4-3.9 1.4-5.5 0l-14.2-12.5c-1.6-1.4-1.6-3.7 0-5.1l14.2-12.5c1.6-1.4 3.9-1.4 5.5 0 1.6 1.4 1.6 3.7 0 5.1l-11.4 10 11.4 10c1.6 1.4 1.6 3.7 0 5z"/>
-  <path fill="#232F3E" d="M173.8 127.5h-36.4c-2.1 0-3.8-1.7-3.8-3.8V37.3c0-2.1 1.7-3.8 3.8-3.8h36.4c2.1 0 3.8 1.7 3.8 3.8v86.4c0 2.1-1.7 3.8-3.8 3.8zm-32.6-7.6h28.8V41.1h-28.8v78.8z"/>
-  <text x="220" y="90" font-family="Amazon Ember, Arial, sans-serif" font-size="48" fill="#232F3E" font-weight="400">prime</text>
-  <text x="220" y="130" font-family="Amazon Ember, Arial, sans-serif" font-size="24" fill="#00A8E1" font-weight="300">video</text>
-</svg>
+<?xml version="1.0" encoding="UTF-8"?>
+<Error>
+  <Code>NoSuchKey</Code>
+  <Message>The specified key does not exist.</Message>
+  <RequestId>6873E78A91911B3535662FF6</RequestId>
+  <HostId>www.logo.wine</HostId>
+  <Key>a/logo/Amazon_Prime_Video/Amazon_Prime_Video-Logo.wine.svg</Key>
+  <EC>0026-00000001</EC>
+  <RecommendDoc>https://api.alibabacloud.com/troubleshoot?q=0026-00000001</RecommendDoc>
+</Error>

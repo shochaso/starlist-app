@@ -357,14 +357,7 @@ class PostCard extends ConsumerWidget {
                   ),
                 ),
               ),
-              if (post.content['totalDuration'] != null)
-                Text(
-                  '総視聴時間: ${post.content['totalDuration']}',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: isDark ? Colors.white54 : Colors.black54,
-                  ),
-                ),
+
             ],
           ),
         ),

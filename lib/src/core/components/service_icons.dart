@@ -14,15 +14,62 @@ class ServiceIcons {
     required double size,
     required bool isDark,
   }) {
-    // 公式SVGアイコンファイルパスのマッピング
+    // 公式SVGアイコンファイルパスのマッピング（実際の公式アイコンを使用）
     final iconPaths = {
+      // 動画サービス（公式アイコン）
       'netflix': 'assets/icons/services/netflix.svg',
       'spotify': 'assets/icons/services/spotify.svg',
       'apple_music': 'assets/icons/services/apple_music.svg',
       'youtube': 'assets/icons/services/youtube.svg',
+      'youtube_music': 'assets/icons/services/youtube_music.svg',
       'disney_plus': 'assets/icons/services/disney_plus.svg',
+      'prime_video': 'assets/icons/services/prime_video.svg',
+      'hulu': 'assets/icons/services/hulu.svg',
+      'unext': 'assets/icons/services/unext.svg',
+      'abema': 'assets/icons/services/abema.svg',
+      'niconico': 'assets/icons/services/niconico.svg',
+      
+      // 配信サービス（公式アイコン）
+      'twitch': 'assets/icons/services/twitch.svg',
+      'twitcasting': 'assets/icons/services/twitcasting.svg',
+      'furatch': 'assets/icons/services/furatch.svg',
+      'showroom': 'assets/icons/services/showroom.svg',
+      '17live': 'assets/icons/services/17live.svg',
+      'line_live': 'assets/icons/services/line_live.svg',
+      'mildom': 'assets/icons/services/mildom.svg',
+      'pococha': 'assets/icons/services/pococha.svg',
+      'palmu': 'assets/icons/services/palmu.svg',
+      
+      // SNS（公式アイコン）
       'instagram': 'assets/icons/services/instagram.svg',
       'tiktok': 'assets/icons/services/tiktok.svg',
+      'x': 'assets/icons/services/x_twitter.svg',
+      'facebook': 'assets/icons/services/facebook.svg',
+      'bereal': 'assets/icons/services/bereal.svg',
+      'threads': 'assets/icons/services/threads.svg',
+      'snapchat': 'assets/icons/services/snapchat.svg',
+      'linkedin': 'assets/icons/services/linkedin.svg',
+      'linktree': 'assets/icons/services/linktree.svg',
+      
+      // ショッピング（公式アイコン）
+      'amazon': 'assets/icons/services/amazon.svg',
+      'rakuten': 'assets/icons/services/rakuten.svg',
+      'zozotown': 'assets/icons/services/zozotown.svg',
+      'qoo10': 'assets/icons/services/qoo10.svg',
+      'yahoo_shopping': 'assets/icons/services/yahoo_shopping.svg',
+      'mercari': 'assets/icons/services/mercari.svg',
+      'other_ec': 'assets/icons/services/other_ec.svg',
+      
+      // エンタメ・その他（公式アイコン）
+      'games': 'assets/icons/services/games.svg',
+      'books_manga': 'assets/icons/services/books_manga.svg',
+      'cinema': 'assets/icons/services/cinema.svg',
+      'restaurant': 'assets/icons/services/restaurant_cafe.svg',
+      'delivery': 'assets/icons/services/delivery.svg',
+      'cooking': 'assets/icons/services/cooking.svg',
+      'credit_card': 'assets/icons/services/credit_card.svg',
+      'electronic_money': 'assets/icons/services/electronic_money.svg',
+      'live_concert': 'assets/icons/services/live_concert.svg',
     };
 
     final iconPath = iconPaths[serviceId.toLowerCase()];
@@ -57,9 +104,11 @@ class ServiceIcons {
   /// サービス別の背景色取得（公式ブランドカラーに準拠）
   static Color? _getServiceBackgroundColor(String serviceId, bool isDark) {
     switch (serviceId.toLowerCase()) {
+      // 動画・音楽サービス
       case 'spotify':
         return const Color(0xFF1DB954); // Spotify Green
       case 'youtube':
+      case 'youtube_music':
         return Colors.white; // YouTube白背景
       case 'netflix':
         return const Color(0xFFE50914); // Netflix Red
@@ -67,10 +116,45 @@ class ServiceIcons {
         return Colors.white; // Apple Music白背景
       case 'disney_plus':
         return const Color(0xFF113CCF); // Disney+ Blue
+      case 'prime_video':
+        return const Color(0xFF232F3E); // Amazon Prime背景
+      case 'hulu':
+        return const Color(0xFF1CE783); // Hulu Green
+      case 'abema':
+        return Colors.white; // ABEMA白背景
+      case 'niconico':
+        return Colors.white; // ニコニコ白背景
+      
+      // SNS
       case 'instagram':
         return Colors.white; // Instagram白背景（グラデーションはSVG内）
       case 'tiktok':
         return Colors.white; // TikTok白背景
+      case 'x':
+        return Colors.white; // X白背景
+      case 'facebook':
+        return const Color(0xFF1877F2); // Facebook Blue
+      case 'threads':
+        return Colors.white; // Threads白背景
+      case 'linkedin':
+        return const Color(0xFF0077B5); // LinkedIn Blue
+      
+      // 配信サービス
+      case 'twitch':
+        return const Color(0xFF9146FF); // Twitch Purple
+      case 'showroom':
+        return Colors.white; // SHOWROOM白背景
+      case 'pococha':
+        return Colors.white; // Pococha白背景
+      
+      // ショッピング
+      case 'amazon':
+        return const Color(0xFF232F3E); // Amazon背景
+      case 'rakuten':
+        return const Color(0xFFBF0000); // 楽天Red
+      case 'mercari':
+        return const Color(0xFFFF6F00); // メルカリオレンジ
+      
       default:
         return null;
     }
@@ -141,13 +225,21 @@ class ServiceIcons {
 
   /// 利用可能なサービス一覧
   static List<String> get availableServices => [
-    'netflix',
-    'spotify', 
-    'apple_music',
-    'youtube',
-    'disney_plus',
-    'instagram',
-    'tiktok',
+    // 動画サービス
+    'netflix', 'spotify', 'apple_music', 'youtube', 'youtube_music',
+    'disney_plus', 'prime_video', 'hulu', 'unext', 'abema', 'niconico',
+    // 配信サービス
+    'twitch', 'twitcasting', 'furatch', 'showroom', '17live', 'line_live',
+    'mildom', 'pococha', 'palmu',
+    // SNS
+    'instagram', 'tiktok', 'x', 'facebook', 'bereal', 'threads',
+    'snapchat', 'linkedin', 'linktree',
+    // ショッピング
+    'amazon', 'rakuten', 'zozotown', 'qoo10', 'yahoo_shopping',
+    'mercari', 'other_ec',
+    // エンタメ・その他
+    'games', 'books_manga', 'cinema', 'restaurant', 'delivery',
+    'cooking', 'credit_card', 'electronic_money', 'live_concert',
   ];
 
   /// サービス名取得

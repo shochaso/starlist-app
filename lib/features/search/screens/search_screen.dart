@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../src/providers/theme_provider_enhanced.dart';
 import '../../../providers/user_provider.dart';
 import '../../app/screens/settings_screen.dart';
 import '../../star/screens/star_dashboard_screen.dart';
 import '../../data_integration/screens/data_import_screen.dart';
-import '../../subscription/screens/fan_subscription_screen.dart';
+import '../../subscription/screens/plan_management_screen.dart';
 
 // プロバイダー
 final selectedTabProvider = StateProvider<int>((ref) => 0);
@@ -31,8 +29,10 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
   bool _isSearching = false;
   
   // フィルターオプション
-  String _sortBy = 'relevance'; // relevance, latest
+  String _sortBy = 'relevance'; // relevance, followers, latest
+  bool _verifiedOnly = false;
   String? _selectedCategory;
+  RangeValues _followerRange = const RangeValues(0, 500000);
 
   // 人気スターデータを大幅に追加
   final List<Map<String, dynamic>> _popularStars = [
@@ -43,7 +43,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
       'avatar': 'T',
       'verified': true,
       'description': '最新ガジェットの詳細レビューと比較',
-      'gradientColors': [Color(0xFF4ECDC4), Color(0xFF44A08D)],
+      'gradientColors': [const Color(0xFF4ECDC4), const Color(0xFF44A08D)],
     },
     {
       'name': '料理研究家佐藤',
@@ -52,7 +52,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
       'avatar': 'S',
       'verified': true,
       'description': '簡単で美味しい家庭料理レシピ',
-      'gradientColors': [Color(0xFFFFE66D), Color(0xFFFF6B6B)],
+      'gradientColors': [const Color(0xFFFFE66D), const Color(0xFFFF6B6B)],
     },
     {
       'name': 'ゲーム実況者山田',
@@ -61,7 +61,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
       'avatar': 'G',
       'verified': true,
       'description': 'FPS・RPGゲームの実況とレビュー',
-      'gradientColors': [Color(0xFF667EEA), Color(0xFF764BA2)],
+      'gradientColors': [const Color(0xFF667EEA), const Color(0xFF764BA2)],
     },
     {
       'name': '旅行ブロガー鈴木',
@@ -70,7 +70,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
       'avatar': 'T',
       'verified': false,
       'description': '世界各地の絶景スポットと旅行Tips',
-      'gradientColors': [Color(0xFF74B9FF), Color(0xFF0984E3)],
+      'gradientColors': [const Color(0xFF74B9FF), const Color(0xFF0984E3)],
     },
     {
       'name': 'ファッション系インフルエンサー',
@@ -79,7 +79,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
       'avatar': 'F',
       'verified': true,
       'description': 'トレンドファッションとコーディネート',
-      'gradientColors': [Color(0xFFE17055), Color(0xFFD63031)],
+      'gradientColors': [const Color(0xFFE17055), const Color(0xFFD63031)],
     },
     {
       'name': 'ビジネス系YouTuber中村',
@@ -88,7 +88,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
       'avatar': 'B',
       'verified': true,
       'description': '投資戦略と起業ノウハウ',
-      'gradientColors': [Color(0xFF6C5CE7), Color(0xFDA4DE)],
+      'gradientColors': [const Color(0xFF6C5CE7), const Color(0x00fda4de)],
     },
     {
       'name': 'アニメレビュアー小林',
@@ -97,7 +97,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
       'avatar': 'A',
       'verified': false,
       'description': '最新アニメの詳細レビューと考察',
-      'gradientColors': [Color(0xFFFF7675), Color(0xFFE84393)],
+      'gradientColors': [const Color(0xFFFF7675), const Color(0xFFE84393)],
     },
     {
       'name': 'DIYクリエイター木村',
@@ -106,7 +106,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
       'avatar': 'D',
       'verified': false,
       'description': '初心者でもできるDIYプロジェクト',
-      'gradientColors': [Color(0xFF00B894), Color(0xFF00A085)],
+      'gradientColors': [const Color(0xFF00B894), const Color(0xFF00A085)],
     },
     {
       'name': 'プログラミング講師伊藤',
@@ -115,7 +115,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
       'avatar': 'P',
       'verified': true,
       'description': 'Flutter・React開発チュートリアル',
-      'gradientColors': [Color(0xFF00B894), Color(0xFF00A085)],
+      'gradientColors': [const Color(0xFF00B894), const Color(0xFF00A085)],
     },
     {
       'name': 'フィットネストレーナー渡辺',
@@ -124,7 +124,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
       'avatar': 'F',
       'verified': false,
       'description': '自宅でできる効果的なトレーニング',
-      'gradientColors': [Color(0xFFE84393), Color(0xFDD5D5)],
+      'gradientColors': [const Color(0xFFE84393), const Color(0x00fdd5d5)],
     },
   ];
 
@@ -133,7 +133,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
     {
       'name': 'テクノロジー・ガジェット',
       'icon': Icons.devices,
-      'color': Color(0xFF4ECDC4),
+      'color': const Color(0xFF4ECDC4),
       'starCount': 156,
       'contentCount': 2340,
       'description': 'スマートフォン、PC、最新ガジェットのレビュー',
@@ -141,7 +141,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
     {
       'name': '料理・グルメ',
       'icon': Icons.restaurant,
-      'color': Color(0xFFFF6B6B),
+      'color': const Color(0xFFFF6B6B),
       'starCount': 89,
       'contentCount': 1890,
       'description': 'レシピ、レストランレビュー、料理テクニック',
@@ -149,7 +149,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
     {
       'name': 'ゲーム・エンタメ',
       'icon': Icons.sports_esports,
-      'color': Color(0xFF667EEA),
+      'color': const Color(0xFF667EEA),
       'starCount': 234,
       'contentCount': 4560,
       'description': 'ゲーム実況、レビュー、攻略情報',
@@ -157,7 +157,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
     {
       'name': 'ファッション・美容',
       'icon': Icons.checkroom,
-      'color': Color(0xFFE17055),
+      'color': const Color(0xFFE17055),
       'starCount': 178,
       'contentCount': 3210,
       'description': 'コーディネート、メイク、美容情報',
@@ -165,7 +165,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
     {
       'name': 'ビジネス・投資',
       'icon': Icons.trending_up,
-      'color': Color(0xFF6C5CE7),
+      'color': const Color(0xFF6C5CE7),
       'starCount': 67,
       'contentCount': 1450,
       'description': '投資戦略、起業ノウハウ、ビジネススキル',
@@ -173,7 +173,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
     {
       'name': '旅行・写真',
       'icon': Icons.camera_alt,
-      'color': Color(0xFF74B9FF),
+      'color': const Color(0xFF74B9FF),
       'starCount': 123,
       'contentCount': 2780,
       'description': '旅行記、写真撮影テクニック、観光情報',
@@ -181,7 +181,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
     {
       'name': 'アニメ・マンガ',
       'icon': Icons.movie,
-      'color': Color(0xFFFF7675),
+      'color': const Color(0xFFFF7675),
       'starCount': 145,
       'contentCount': 3890,
       'description': 'アニメレビュー、マンガ紹介、声優情報',
@@ -189,7 +189,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
     {
       'name': 'フィットネス・健康',
       'icon': Icons.fitness_center,
-      'color': Color(0xFFE84393),
+      'color': const Color(0xFFE84393),
       'starCount': 98,
       'contentCount': 1670,
       'description': 'トレーニング、ダイエット、健康管理',
@@ -197,7 +197,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
     {
       'name': 'プログラミング・IT',
       'icon': Icons.code,
-      'color': Color(0xFF00B894),
+      'color': const Color(0xFF00B894),
       'starCount': 76,
       'contentCount': 1230,
       'description': 'プログラミング学習、IT技術解説',
@@ -205,7 +205,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
     {
       'name': 'DIY・ハンドメイド',
       'icon': Icons.build,
-      'color': Color(0xFF00A085),
+      'color': const Color(0xFF00A085),
       'starCount': 54,
       'contentCount': 890,
       'description': 'DIYプロジェクト、手作り作品、工具レビュー',
@@ -213,7 +213,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
     {
       'name': '音楽・楽器',
       'icon': Icons.music_note,
-      'color': Color(0xFFFFD93D),
+      'color': const Color(0xFFFFD93D),
       'starCount': 87,
       'contentCount': 1560,
       'description': '楽器演奏、音楽理論、機材レビュー',
@@ -221,7 +221,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
     {
       'name': 'ペット・動物',
       'icon': Icons.pets,
-      'color': Color(0xFF55A3FF),
+      'color': const Color(0xFF55A3FF),
       'starCount': 112,
       'contentCount': 2100,
       'description': 'ペットケア、動物の生態、飼育方法',
@@ -238,7 +238,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
       'avatar': 'T',
       'verified': true,
       'description': '最新ガジェットの詳細レビューと比較',
-      'gradientColors': [Color(0xFF4ECDC4), Color(0xFF44A08D)],
+      'gradientColors': [const Color(0xFF4ECDC4), const Color(0xFF44A08D)],
     },
     {
       'type': 'star',
@@ -248,7 +248,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
       'avatar': 'S',
       'verified': true,
       'description': '簡単で美味しい家庭料理レシピ',
-      'gradientColors': [Color(0xFFFFE66D), Color(0xFFFF6B6B)],
+      'gradientColors': [const Color(0xFFFFE66D), const Color(0xFFFF6B6B)],
     },
     {
       'type': 'content',
@@ -444,7 +444,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
                     prefixIcon: AnimatedSwitcher(
                       duration: const Duration(milliseconds: 200),
                       child: _isSearching
-                          ? SizedBox(
+                          ? const SizedBox(
                               width: 40,
                               height: 40,
                               child: Center(
@@ -453,7 +453,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
                                   height: 20,
                                   child: CircularProgressIndicator(
                                     strokeWidth: 2,
-                                    color: const Color(0xFF4ECDC4),
+                                    color: Color(0xFF4ECDC4),
                                   ),
                                 ),
                               ),
@@ -501,7 +501,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
                       Icons.filter_list,
                       color: isDark ? Colors.white : Colors.black87,
                     ),
-                    if (_selectedCategory != null)
+                    if (_verifiedOnly || _selectedCategory != null)
                       Positioned(
                         right: 0,
                         top: 0,
@@ -756,6 +756,14 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '${category['starCount']}',
+                      style: TextStyle(
+                        color: isDark ? Colors.white54 : Colors.black38,
+                        fontSize: 10,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -796,10 +804,10 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(
+                const Icon(
                   Icons.trending_up,
                   size: 14,
-                  color: const Color(0xFF4ECDC4),
+                  color: Color(0xFF4ECDC4),
                 ),
                 const SizedBox(width: 6),
                 Text(
@@ -1083,10 +1091,10 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
               ),
               TextButton(
                 onPressed: () {},
-                child: Text(
+                child: const Text(
                   'すべて見る',
                   style: TextStyle(
-                    color: const Color(0xFF4ECDC4),
+                    color: Color(0xFF4ECDC4),
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                   ),
@@ -1124,10 +1132,10 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(
+                      const Icon(
                         Icons.trending_up,
                         size: 16,
-                        color: const Color(0xFF4ECDC4),
+                        color: Color(0xFF4ECDC4),
                       ),
                       const SizedBox(width: 8),
                       Text(
@@ -1572,7 +1580,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
                       onPressed: () {
                         setModalState(() {
                           _sortBy = 'relevance';
+                          _verifiedOnly = false;
                           _selectedCategory = null;
+                          _followerRange = const RangeValues(0, 500000);
                         });
                       },
                       child: const Text(
@@ -1601,6 +1611,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
                       const SizedBox(height: 12),
                       ...[
                         {'value': 'relevance', 'label': '関連性'},
+                        {'value': 'followers', 'label': 'フォロワー数'},
                         {'value': 'latest', 'label': '最新'},
                       ].map((option) {
                         return RadioListTile<String>(
@@ -1622,6 +1633,68 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
                         );
                       }).toList(),
                       
+                      const SizedBox(height: 24),
+                      
+                      // 認証済みのみ
+                      SwitchListTile(
+                        value: _verifiedOnly,
+                        onChanged: (value) {
+                          setModalState(() {
+                            _verifiedOnly = value;
+                          });
+                        },
+                        title: Text(
+                          '認証済みスターのみ',
+                          style: TextStyle(
+                            color: isDark ? Colors.white : Colors.black87,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        subtitle: Text(
+                          '認証マークのあるスターのみ表示',
+                          style: TextStyle(
+                            color: isDark ? Colors.white54 : Colors.black54,
+                            fontSize: 12,
+                          ),
+                        ),
+                        activeColor: const Color(0xFF4ECDC4),
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                      
+                      const SizedBox(height: 24),
+                      
+                      // フォロワー数範囲
+                      Text(
+                        'フォロワー数',
+                        style: TextStyle(
+                          color: isDark ? Colors.white : Colors.black87,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        '${(_followerRange.start / 1000).toStringAsFixed(0)}k - ${(_followerRange.end / 1000).toStringAsFixed(0)}k',
+                        style: const TextStyle(
+                          color: Color(0xFF4ECDC4),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      RangeSlider(
+                        values: _followerRange,
+                        min: 0,
+                        max: 500000,
+                        divisions: 50,
+                        activeColor: const Color(0xFF4ECDC4),
+                        inactiveColor: isDark ? Colors.white24 : Colors.black12,
+                        onChanged: (values) {
+                          setModalState(() {
+                            _followerRange = values;
+                          });
+                        },
+                      ),
                     ],
                   ),
                 ),
@@ -1872,7 +1945,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
 
   void _navigateToPlanManagement() {
     Navigator.of(context).push(
-      MaterialPageRoute(builder: (context) => const FanSubscriptionScreen()),
+      MaterialPageRoute(builder: (context) => const PlanManagementScreen()),
     );
   }
 

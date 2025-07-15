@@ -12,12 +12,13 @@ import '../features/app/screens/settings_screen.dart';
 import '../providers/user_provider.dart';
 import '../src/providers/theme_provider_enhanced.dart';
 import '../src/core/components/service_icons.dart';
+import '../src/features/reactions/screens/reaction_demo_screen.dart';
 import '../providers/youtube_history_provider.dart';
 import '../providers/posts_provider.dart';
 import '../src/widgets/post_card.dart';
 import '../features/content/screens/post_detail_screen.dart';
 import '../data/models/post_model.dart';
-import 'fan_home_screen.dart';
+
 
 // データモデル
 class StarData {
@@ -305,42 +306,34 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
   final List<Map<String, dynamic>> trendingTopics = [
     {
       'title': 'iPhone 15',
-      'posts': '1,234',
       'color': const Color(0xFF4ECDC4),
     },
     {
       'title': 'Flutter 3.0',
-      'posts': '892',
       'color': const Color(0xFF00B894),
     },
     {
       'title': '秋のファッション',
-      'posts': '2,156',
       'color': const Color(0xFFE17055),
     },
     {
       'title': 'Apex Legends',
-      'posts': '3,421',
       'color': const Color(0xFF667EEA),
     },
     {
       'title': 'ChatGPT',
-      'posts': '4,567',
       'color': const Color(0xFF6C5CE7),
     },
     {
       'title': '鬼滅の刃',
-      'posts': '1,890',
       'color': const Color(0xFFFF7675),
     },
     {
       'title': 'DIY',
-      'posts': '987',
       'color': const Color(0xFF00B894),
     },
     {
       'title': '投資',
-      'posts': '2,345',
       'color': const Color(0xFFFFD93D),
     },
   ];
@@ -732,6 +725,9 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
       case 'settings':
         page = const SettingsScreen();
         break;
+      case 'reaction_demo':
+        page = const ReactionDemoScreen();
+        break;
       default:
         return;
     }
@@ -765,17 +761,17 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // テスト用: FanHomeScreenへのナビゲーションボタン
+          // リアクションシステムデモボタン
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.symmetric(horizontal: 16),
             child: ElevatedButton(
               onPressed: () {
                 Navigator.of(context).push(
-                  MaterialPageRoute(builder: (context) => const FanHomeScreen()),
+                  MaterialPageRoute(builder: (context) => const ReactionDemoScreen()),
                 );
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF4ECDC4),
+                backgroundColor: const Color(0xFF8C52FF),
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -784,10 +780,12 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
               child: const Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.people, color: Colors.white),
+                  Text('👍', style: TextStyle(fontSize: 20)),
+                  SizedBox(width: 4),
+                  Text('❤️', style: TextStyle(fontSize: 20)),
                   SizedBox(width: 8),
                   Text(
-                    'ファン画面を見る（メンバーシッププラン含む）',
+                    'リアクションシステムデモ',
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 16,
@@ -799,7 +797,7 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
             ),
           ),
           const SizedBox(height: 24),
-          
+
           // 最新YouTube履歴セクション（一番上）
           _buildLatestYouTubeHistorySection(),
           const SizedBox(height: 24),
@@ -1659,15 +1657,6 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-              ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '${topic['posts']} 投稿',
-                      style: const TextStyle(
-                  fontSize: 12,
-                        color: Colors.white,
-                  fontWeight: FontWeight.w500,
-                ),
               ),
             ],
           ),

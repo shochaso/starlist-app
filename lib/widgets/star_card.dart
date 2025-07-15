@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 import '../models/star.dart';
+import '../src/features/reactions/widgets/post_reactions_widget.dart';
 
 class StarCard extends StatelessWidget {
   final Star star;
   final VoidCallback? onTap;
+  final String? postId; // 投稿ID（リアクション用）
 
   const StarCard({
     Key? key,
     required this.star,
     this.onTap,
+    this.postId,
   }) : super(key: key);
 
   @override
@@ -142,6 +145,15 @@ class StarCard extends StatelessWidget {
                       ),
                     ],
                   ),
+                  
+                  // リアクションボタン（投稿IDがある場合のみ表示）
+                  if (postId != null) ...[
+                    const SizedBox(height: 8),
+                    PostReactionsWidget(
+                      postId: postId!,
+                      compact: true,
+                    ),
+                  ],
                 ],
               ),
             ),

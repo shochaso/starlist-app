@@ -1,4 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-  <rect width="24" height="24" fill="#00D4AA"/>
-  <path fill="white" d="M4.5 6.5h3l7 11h-3zm3 11h3l7-11h-3zm-3 0h15v1h-15z"/>
-</svg>
+<?xml version="1.0" encoding="UTF-8"?>
+<Error>
+  <Code>NoSuchKey</Code>
+  <Message>The specified key does not exist.</Message>
+  <RequestId>6873E78C84F61D3431FF5DA5</RequestId>
+  <HostId>www.logo.wine</HostId>
+  <Key>a/logo/ABEMA/ABEMA-Logo.wine.svg</Key>
+  <EC>0026-00000001</EC>
+  <RecommendDoc>https://api.alibabacloud.com/troubleshoot?q=0026-00000001</RecommendDoc>
+</Error>
