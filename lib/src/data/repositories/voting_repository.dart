@@ -9,7 +9,7 @@ class VotingRepository {
     required SupabaseClient supabase,
   }) : _supabase = supabase;
 
-  /// スターP残高を取得
+  /// スターポイント残高を取得
   Future<StarPointBalance?> getStarPointBalance(String userId) async {
     try {
       final response = await _supabase
@@ -21,11 +21,11 @@ class VotingRepository {
       if (response == null) return null;
       return StarPointBalance.fromJson(response);
     } catch (e) {
-      throw Exception('Failed to get S-point balance: $e');
+      throw Exception('Failed to get star point balance: $e');
     }
   }
 
-  /// スターP取引履歴を取得
+  /// スターポイント取引履歴を取得
   Future<List<StarPointTransaction>> getStarPointTransactions(
     String userId, {
     int limit = 50,
@@ -43,7 +43,7 @@ class VotingRepository {
           .map<StarPointTransaction>((json) => StarPointTransaction.fromJson(json))
           .toList();
     } catch (e) {
-      throw Exception('Failed to get S-point transactions: $e');
+      throw Exception('Failed to get star point transactions: $e');
     }
   }
 
@@ -232,7 +232,7 @@ class VotingRepository {
         });
   }
 
-  /// スターP残高のリアルタイム更新を監視
+  /// スターポイント残高のリアルタイム更新を監視
   Stream<StarPointBalance> watchStarPointBalance(String userId) {
     return _supabase
         .from('s_points')
@@ -240,13 +240,13 @@ class VotingRepository {
         .eq('user_id', userId)
         .map((List<Map<String, dynamic>> data) {
           if (data.isEmpty) {
-            throw Exception('S-point balance not found');
+            throw Exception('Star point balance not found');
           }
           return StarPointBalance.fromJson(data.first);
         });
   }
 
-  /// スターPを手動で付与（管理者用）
+  /// スターポイントを手動で付与（管理者用）
   Future<void> grantSPoints(
     String userId,
     int amount,
@@ -274,11 +274,11 @@ class VotingRepository {
             .eq('user_id', userId);
       }
     } catch (e) {
-      throw Exception('Failed to grant S-points: $e');
+      throw Exception('Failed to grant star points: $e');
     }
   }
 
-  /// 日次ログインボーナススターPを付与
+  /// 日次ログインボーナススターポイントを付与
   Future<bool> grantDailyLoginBonus(String userId) async {
     try {
       final today = DateTime.now().toIso8601String().substring(0, 10);

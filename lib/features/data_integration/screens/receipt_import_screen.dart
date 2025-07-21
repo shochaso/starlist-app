@@ -1009,7 +1009,7 @@ class _ReceiptImportScreenState extends ConsumerState<ReceiptImportScreen>
       processedReceipt = Receipt(
         items: selectedItems,
         purchaseDate: DateTime.now(),
-        totalAmount: selectedItems.fold(0.0, (sum, item) => sum + (item.price ?? 0)),
+        totalAmount: selectedItems.fold<double>(0.0, (sum, item) => sum + (item.price ?? 0.0)),
       );
       showConfirmation = false;
       extractedItems.clear();

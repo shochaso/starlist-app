@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 
-/// スターP取引タイプ
+/// スターポイント取引タイプ
 enum StarPointTransactionType {
   earned,  // 獲得
   spent,   // 使用
@@ -8,7 +8,7 @@ enum StarPointTransactionType {
   refund,  // 返金
 }
 
-/// スターP取引ソース
+/// スターポイント取引ソース
 enum StarPointSourceType {
   dailyLogin,      // 日次ログイン
   voting,          // 投票参加
@@ -23,7 +23,7 @@ enum VoteOption {
   B, // オプションB
 }
 
-/// スターP残高モデル
+/// スターポイント残高モデル
 @immutable
 class StarPointBalance {
   final String id;
@@ -91,7 +91,7 @@ class StarPointBalance {
     );
   }
 
-  /// スターPが足りているかチェック
+  /// スターポイントが足りているかチェック
   bool hasSufficientPoints(int requiredPoints) {
     return balance >= requiredPoints;
   }
@@ -121,7 +121,7 @@ class StarPointBalance {
       );
 }
 
-/// スターP取引履歴モデル
+/// スターポイント取引履歴モデル
 @immutable
 class StarPointTransaction {
   final String id;
@@ -434,7 +434,7 @@ class Vote {
       votingPostId: json['voting_post_id'],
       userId: json['user_id'],
       selectedOption: json['selected_option'] == 'A' ? VoteOption.A : VoteOption.B,
-      starPointsSpent: json['s_points_spent'] ?? 1,
+      starPointsSpent: json['star_points_spent'] ?? 1,
       votedAt: DateTime.parse(json['voted_at']),
     );
   }
@@ -446,7 +446,7 @@ class Vote {
       'voting_post_id': votingPostId,
       'user_id': userId,
       'selected_option': selectedOption == VoteOption.A ? 'A' : 'B',
-      's_points_spent': starPointsSpent,
+      'star_points_spent': starPointsSpent,
       'voted_at': votedAt.toIso8601String(),
     };
   }
@@ -508,7 +508,7 @@ class VotingResult {
   }) {
     return VotingResult(
       success: true,
-      message: 'スターPでの投票に成功しました',
+      message: 'スターポイントでの投票に成功しました',
       remainingBalance: remainingBalance,
     );
   }
@@ -525,7 +525,7 @@ class VotingResult {
   factory VotingResult.insufficientBalance() {
     return const VotingResult(
       success: false,
-      message: 'スターP残高が不足しています',
+      message: 'スターポイント残高が不足しています',
     );
   }
 

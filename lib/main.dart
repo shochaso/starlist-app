@@ -59,13 +59,20 @@ Future<void> _initializeLightweight() async {
 
 /// コア機能の初期化（軽量化版）
 Future<void> _initializeCore() async {
-  // 環境変数の読み込み
-  await dotenv.load(fileName: ".env");
+  try {
+    // 環境変数の読み込み
+    await dotenv.load(fileName: ".env");
+  } catch (e) {
+    debugPrint('環境変数の読み込みエラー: $e');
+    // Web環境でのエラーを回避するためにデフォルト値を設定
+    dotenv.env['SUPABASE_URL'] = 'https://example.supabase.co';
+    dotenv.env['SUPABASE_ANON_KEY'] = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.example';
+  }
   
   // Supabaseの初期化（必須）
   await Supabase.initialize(
-    url: dotenv.env['SUPABASE_URL']!,
-    anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
+    url: dotenv.env['SUPABASE_URL'] ?? 'https://example.supabase.co',
+    anonKey: dotenv.env['SUPABASE_ANON_KEY'] ?? 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.example',
   );
 }
 

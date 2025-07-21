@@ -5,7 +5,7 @@ import '../../../providers/user_provider.dart';
 import '../../app/screens/settings_screen.dart';
 import '../../star/screens/star_dashboard_screen.dart';
 import '../../data_integration/screens/data_import_screen.dart';
-import '../../subscription/screens/plan_management_screen.dart';
+import '../../../src/features/subscription/screens/subscription_plans_screen.dart';
 
 // プロバイダー
 final selectedTabProvider = StateProvider<int>((ref) => 0);
@@ -1945,7 +1945,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
 
   void _navigateToPlanManagement() {
     Navigator.of(context).push(
-      MaterialPageRoute(builder: (context) => const PlanManagementScreen()),
+      MaterialPageRoute(builder: (context) => const SubscriptionPlansScreen()),
     );
   }
 

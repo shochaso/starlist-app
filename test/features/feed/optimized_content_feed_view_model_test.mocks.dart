@@ -4,24 +4,27 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _i4;
+import 'dart:io' as _i5;
 
 import 'package:mockito/mockito.dart' as _i1;
-import 'package:starlist/src/core/cache/cache_manager.dart' as _i5;
-import 'package:starlist/src/core/logging/logger.dart' as _i13;
-import 'package:starlist/src/features/auth/models/user_model.dart' as _i6;
+import 'package:mockito/src/dummies.dart' as _i6;
+import 'package:starlist/src/core/cache/cache_manager.dart' as _i7;
+import 'package:starlist/src/core/logging/logger.dart' as _i15;
+import 'package:starlist/src/features/auth/models/user_model.dart' as _i8;
 import 'package:starlist/src/features/content/models/content_model.dart' as _i2;
 import 'package:starlist/src/features/content/services/content_service.dart'
     as _i3;
-import 'package:starlist/src/features/payment/models/payment_model.dart' as _i7;
+import 'package:starlist/src/features/payment/models/payment_model.dart' as _i9;
 import 'package:starlist/src/features/privacy/models/privacy_settings.dart'
-    as _i8;
-import 'package:starlist/src/features/ranking/models/ranking_entry.dart' as _i9;
-import 'package:starlist/src/features/subscription/models/subscription_plan.dart'
     as _i10;
-import 'package:starlist/src/features/subscription/models/subscription_status.dart'
+import 'package:starlist/src/features/ranking/models/ranking_entry.dart'
     as _i11;
-import 'package:starlist/src/features/youtube/models/youtube_video.dart'
+import 'package:starlist/src/features/subscription/models/subscription_plan.dart'
     as _i12;
+import 'package:starlist/src/features/subscription/models/subscription_status.dart'
+    as _i13;
+import 'package:starlist/src/features/youtube/models/youtube_video.dart'
+    as _i14;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -141,30 +144,129 @@ class MockContentService extends _i1.Mock implements _i3.ContentService {
       ) as _i4.Future<void>);
 
   @override
-  _i4.Future<void> likeContent(String? id) => (super.noSuchMethod(
+  _i4.Future<void> likeContent(
+    String? id,
+    String? userId,
+  ) =>
+      (super.noSuchMethod(
         Invocation.method(
           #likeContent,
-          [id],
+          [
+            id,
+            userId,
+          ],
         ),
         returnValue: _i4.Future<void>.value(),
         returnValueForMissingStub: _i4.Future<void>.value(),
       ) as _i4.Future<void>);
 
   @override
-  _i4.Future<void> unlikeContent(String? id) => (super.noSuchMethod(
+  _i4.Future<void> unlikeContent(
+    String? id,
+    String? userId,
+  ) =>
+      (super.noSuchMethod(
         Invocation.method(
           #unlikeContent,
-          [id],
+          [
+            id,
+            userId,
+          ],
         ),
         returnValue: _i4.Future<void>.value(),
         returnValueForMissingStub: _i4.Future<void>.value(),
       ) as _i4.Future<void>);
 
   @override
-  _i4.Future<void> shareContent(String? id) => (super.noSuchMethod(
+  _i4.Future<void> shareContent(
+    String? id,
+    String? userId,
+  ) =>
+      (super.noSuchMethod(
         Invocation.method(
           #shareContent,
-          [id],
+          [
+            id,
+            userId,
+          ],
+        ),
+        returnValue: _i4.Future<void>.value(),
+        returnValueForMissingStub: _i4.Future<void>.value(),
+      ) as _i4.Future<void>);
+
+  @override
+  _i4.Future<String> uploadContentFile(
+    _i5.File? file,
+    String? contentType,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #uploadContentFile,
+          [
+            file,
+            contentType,
+          ],
+        ),
+        returnValue: _i4.Future<String>.value(_i6.dummyValue<String>(
+          this,
+          Invocation.method(
+            #uploadContentFile,
+            [
+              file,
+              contentType,
+            ],
+          ),
+        )),
+      ) as _i4.Future<String>);
+
+  @override
+  _i4.Future<List<_i2.ContentModel>> searchContents(
+    String? query, {
+    int? page = 1,
+    int? limit = 20,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #searchContents,
+          [query],
+          {
+            #page: page,
+            #limit: limit,
+          },
+        ),
+        returnValue:
+            _i4.Future<List<_i2.ContentModel>>.value(<_i2.ContentModel>[]),
+      ) as _i4.Future<List<_i2.ContentModel>>);
+
+  @override
+  _i4.Future<List<_i2.ContentModel>> getRecommendedContents(
+    String? userId, {
+    int? limit = 10,
+  }) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #getRecommendedContents,
+          [userId],
+          {#limit: limit},
+        ),
+        returnValue:
+            _i4.Future<List<_i2.ContentModel>>.value(<_i2.ContentModel>[]),
+      ) as _i4.Future<List<_i2.ContentModel>>);
+
+  @override
+  _i4.Future<void> reportContent(
+    String? contentId,
+    String? userId,
+    String? reason,
+  ) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #reportContent,
+          [
+            contentId,
+            userId,
+            reason,
+          ],
         ),
         returnValue: _i4.Future<void>.value(),
         returnValueForMissingStub: _i4.Future<void>.value(),
@@ -174,13 +276,13 @@ class MockContentService extends _i1.Mock implements _i3.ContentService {
 /// A class which mocks [CacheManager].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockCacheManager extends _i1.Mock implements _i5.CacheManager {
+class MockCacheManager extends _i1.Mock implements _i7.CacheManager {
   MockCacheManager() {
     _i1.throwOnMissingStub(this);
   }
 
   @override
-  _i4.Future<void> cacheUser(_i6.UserModel? user) => (super.noSuchMethod(
+  _i4.Future<void> cacheUser(_i8.UserModel? user) => (super.noSuchMethod(
         Invocation.method(
           #cacheUser,
           [user],
@@ -190,19 +292,19 @@ class MockCacheManager extends _i1.Mock implements _i5.CacheManager {
       ) as _i4.Future<void>);
 
   @override
-  _i4.Future<_i6.UserModel?> getCachedUser(String? userId) =>
+  _i4.Future<_i8.UserModel?> getCachedUser(String? userId) =>
       (super.noSuchMethod(
         Invocation.method(
           #getCachedUser,
           [userId],
         ),
-        returnValue: _i4.Future<_i6.UserModel?>.value(),
-      ) as _i4.Future<_i6.UserModel?>);
+        returnValue: _i4.Future<_i8.UserModel?>.value(),
+      ) as _i4.Future<_i8.UserModel?>);
 
   @override
   _i4.Future<void> cachePayments(
     String? userId,
-    List<_i7.PaymentModel>? payments,
+    List<_i9.PaymentModel>? payments,
   ) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -217,19 +319,19 @@ class MockCacheManager extends _i1.Mock implements _i5.CacheManager {
       ) as _i4.Future<void>);
 
   @override
-  _i4.Future<List<_i7.PaymentModel>?> getCachedPayments(String? userId) =>
+  _i4.Future<List<_i9.PaymentModel>?> getCachedPayments(String? userId) =>
       (super.noSuchMethod(
         Invocation.method(
           #getCachedPayments,
           [userId],
         ),
-        returnValue: _i4.Future<List<_i7.PaymentModel>?>.value(),
-      ) as _i4.Future<List<_i7.PaymentModel>?>);
+        returnValue: _i4.Future<List<_i9.PaymentModel>?>.value(),
+      ) as _i4.Future<List<_i9.PaymentModel>?>);
 
   @override
   _i4.Future<void> cachePrivacySettings(
     String? userId,
-    _i8.PrivacySettings? settings,
+    _i10.PrivacySettings? settings,
   ) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -244,19 +346,19 @@ class MockCacheManager extends _i1.Mock implements _i5.CacheManager {
       ) as _i4.Future<void>);
 
   @override
-  _i4.Future<_i8.PrivacySettings?> getCachedPrivacySettings(String? userId) =>
+  _i4.Future<_i10.PrivacySettings?> getCachedPrivacySettings(String? userId) =>
       (super.noSuchMethod(
         Invocation.method(
           #getCachedPrivacySettings,
           [userId],
         ),
-        returnValue: _i4.Future<_i8.PrivacySettings?>.value(),
-      ) as _i4.Future<_i8.PrivacySettings?>);
+        returnValue: _i4.Future<_i10.PrivacySettings?>.value(),
+      ) as _i4.Future<_i10.PrivacySettings?>);
 
   @override
   _i4.Future<void> cacheRankings(
-    _i9.RankingType? type,
-    List<_i9.RankingEntry>? rankings,
+    _i11.RankingType? type,
+    List<_i11.RankingEntry>? rankings,
   ) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -271,18 +373,18 @@ class MockCacheManager extends _i1.Mock implements _i5.CacheManager {
       ) as _i4.Future<void>);
 
   @override
-  _i4.Future<List<_i9.RankingEntry>?> getCachedRankings(
-          _i9.RankingType? type) =>
+  _i4.Future<List<_i11.RankingEntry>?> getCachedRankings(
+          _i11.RankingType? type) =>
       (super.noSuchMethod(
         Invocation.method(
           #getCachedRankings,
           [type],
         ),
-        returnValue: _i4.Future<List<_i9.RankingEntry>?>.value(),
-      ) as _i4.Future<List<_i9.RankingEntry>?>);
+        returnValue: _i4.Future<List<_i11.RankingEntry>?>.value(),
+      ) as _i4.Future<List<_i11.RankingEntry>?>);
 
   @override
-  _i4.Future<void> cacheSubscriptionPlans(List<_i10.SubscriptionPlan>? plans) =>
+  _i4.Future<void> cacheSubscriptionPlans(List<_i12.SubscriptionPlan>? plans) =>
       (super.noSuchMethod(
         Invocation.method(
           #cacheSubscriptionPlans,
@@ -293,19 +395,19 @@ class MockCacheManager extends _i1.Mock implements _i5.CacheManager {
       ) as _i4.Future<void>);
 
   @override
-  _i4.Future<List<_i10.SubscriptionPlan>?> getCachedSubscriptionPlans() =>
+  _i4.Future<List<_i12.SubscriptionPlan>?> getCachedSubscriptionPlans() =>
       (super.noSuchMethod(
         Invocation.method(
           #getCachedSubscriptionPlans,
           [],
         ),
-        returnValue: _i4.Future<List<_i10.SubscriptionPlan>?>.value(),
-      ) as _i4.Future<List<_i10.SubscriptionPlan>?>);
+        returnValue: _i4.Future<List<_i12.SubscriptionPlan>?>.value(),
+      ) as _i4.Future<List<_i12.SubscriptionPlan>?>);
 
   @override
   _i4.Future<void> cacheSubscriptionStatus(
     String? userId,
-    _i11.SubscriptionStatusModel? status,
+    _i13.SubscriptionStatusModel? status,
   ) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -320,18 +422,18 @@ class MockCacheManager extends _i1.Mock implements _i5.CacheManager {
       ) as _i4.Future<void>);
 
   @override
-  _i4.Future<_i11.SubscriptionStatusModel?> getCachedSubscriptionStatus(
+  _i4.Future<_i13.SubscriptionStatusModel?> getCachedSubscriptionStatus(
           String? userId) =>
       (super.noSuchMethod(
         Invocation.method(
           #getCachedSubscriptionStatus,
           [userId],
         ),
-        returnValue: _i4.Future<_i11.SubscriptionStatusModel?>.value(),
-      ) as _i4.Future<_i11.SubscriptionStatusModel?>);
+        returnValue: _i4.Future<_i13.SubscriptionStatusModel?>.value(),
+      ) as _i4.Future<_i13.SubscriptionStatusModel?>);
 
   @override
-  _i4.Future<void> cacheVideo(_i12.YouTubeVideo? video) => (super.noSuchMethod(
+  _i4.Future<void> cacheVideo(_i14.YouTubeVideo? video) => (super.noSuchMethod(
         Invocation.method(
           #cacheVideo,
           [video],
@@ -341,19 +443,19 @@ class MockCacheManager extends _i1.Mock implements _i5.CacheManager {
       ) as _i4.Future<void>);
 
   @override
-  _i4.Future<_i12.YouTubeVideo?> getCachedVideo(String? videoId) =>
+  _i4.Future<_i14.YouTubeVideo?> getCachedVideo(String? videoId) =>
       (super.noSuchMethod(
         Invocation.method(
           #getCachedVideo,
           [videoId],
         ),
-        returnValue: _i4.Future<_i12.YouTubeVideo?>.value(),
-      ) as _i4.Future<_i12.YouTubeVideo?>);
+        returnValue: _i4.Future<_i14.YouTubeVideo?>.value(),
+      ) as _i4.Future<_i14.YouTubeVideo?>);
 
   @override
   _i4.Future<void> cacheSearchResults(
     String? query,
-    List<_i12.YouTubeVideo>? videos,
+    List<_i14.YouTubeVideo>? videos,
   ) =>
       (super.noSuchMethod(
         Invocation.method(
@@ -368,14 +470,14 @@ class MockCacheManager extends _i1.Mock implements _i5.CacheManager {
       ) as _i4.Future<void>);
 
   @override
-  _i4.Future<List<_i12.YouTubeVideo>?> getCachedSearchResults(String? query) =>
+  _i4.Future<List<_i14.YouTubeVideo>?> getCachedSearchResults(String? query) =>
       (super.noSuchMethod(
         Invocation.method(
           #getCachedSearchResults,
           [query],
         ),
-        returnValue: _i4.Future<List<_i12.YouTubeVideo>?>.value(),
-      ) as _i4.Future<List<_i12.YouTubeVideo>?>);
+        returnValue: _i4.Future<List<_i14.YouTubeVideo>?>.value(),
+      ) as _i4.Future<List<_i14.YouTubeVideo>?>);
 
   @override
   _i4.Future<void> clearUserCache(String? userId) => (super.noSuchMethod(
@@ -401,7 +503,7 @@ class MockCacheManager extends _i1.Mock implements _i5.CacheManager {
 /// A class which mocks [Logger].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockLogger extends _i1.Mock implements _i13.Logger {
+class MockLogger extends _i1.Mock implements _i15.Logger {
   MockLogger() {
     _i1.throwOnMissingStub(this);
   }
@@ -418,7 +520,7 @@ class MockLogger extends _i1.Mock implements _i13.Logger {
 
   @override
   _i4.Future<void> log(
-    _i13.LogLevel? level,
+    _i15.LogLevel? level,
     String? message, {
     Object? error,
     StackTrace? stackTrace,

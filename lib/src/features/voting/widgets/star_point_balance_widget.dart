@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../data/models/star_point_models.dart';
 import '../providers/voting_providers.dart';
 
-/// スターP残高表示ウィジェット
+/// スターポイント残高表示ウィジェット
 class StarPointBalanceWidget extends ConsumerWidget {
   final bool showTransactionHistory;
   final VoidCallback? onTap;
@@ -48,7 +48,7 @@ class StarPointBalanceWidget extends ConsumerWidget {
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        'スターP残高',
+                        'スターポイント残高',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           fontWeight: FontWeight.w500,
                         ),
@@ -57,7 +57,7 @@ class StarPointBalanceWidget extends ConsumerWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '${balance.balance.toStringAsFixed(0)} P',
+                    '${balance.balance.toStringAsFixed(0)} スターポイント',
                     style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                       color: Theme.of(context).primaryColor,
@@ -95,7 +95,7 @@ class StarPointBalanceWidget extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'スターP残高',
+                  'スターポイント残高',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     fontWeight: FontWeight.w500,
                   ),
@@ -132,7 +132,7 @@ class StarPointBalanceWidget extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'スターP残高',
+                    'スターポイント残高',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       fontWeight: FontWeight.w500,
                     ),
@@ -165,7 +165,7 @@ class StarPointBalanceWidget extends ConsumerWidget {
   }
 }
 
-/// スターP取引履歴シート
+/// スターポイント取引履歴シート
 class _TransactionHistorySheet extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -182,7 +182,7 @@ class _TransactionHistorySheet extends ConsumerWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'スターP履歴',
+                'スターポイント履歴',
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
@@ -236,17 +236,17 @@ class _TransactionHistorySheet extends ConsumerWidget {
         children: [
           _SummaryItem(
             title: '現在残高',
-            value: '${balance.balance} P',
+            value: '${balance.balance} スターポイント',
             icon: Icons.account_balance_wallet,
           ),
           _SummaryItem(
             title: '累計獲得',
-            value: '${balance.totalEarned} P',
+            value: '${balance.totalEarned} スターポイント',
             icon: Icons.trending_up,
           ),
           _SummaryItem(
             title: '累計使用',
-            value: '${balance.totalSpent} P',
+            value: '${balance.totalSpent} スターポイント',
             icon: Icons.trending_down,
           ),
         ],
@@ -347,7 +347,7 @@ class _TransactionItem extends StatelessWidget {
           style: Theme.of(context).textTheme.bodySmall,
         ),
         trailing: Text(
-          '${isEarning ? '+' : ''}${transaction.amount} P',
+          '${isEarning ? '+' : ''}${transaction.amount} スターポイント',
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
             color: color,
             fontWeight: FontWeight.bold,
@@ -381,7 +381,7 @@ class _TransactionItem extends StatelessWidget {
       case StarPointSourceType.premiumQuestion:
         return 'プレミアム質問';
       case StarPointSourceType.purchase:
-        return 'スターP購入';
+        return 'スターポイント購入';
       case StarPointSourceType.admin:
         return '管理者操作';
     }

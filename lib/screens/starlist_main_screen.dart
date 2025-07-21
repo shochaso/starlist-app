@@ -13,6 +13,7 @@ import '../providers/user_provider.dart';
 import '../src/providers/theme_provider_enhanced.dart';
 import '../src/core/components/service_icons.dart';
 import '../src/features/reactions/screens/reaction_demo_screen.dart';
+import '../src/features/gacha/presentation/gacha_screen.dart';
 import '../providers/youtube_history_provider.dart';
 import '../providers/posts_provider.dart';
 import '../src/widgets/post_card.dart';
@@ -508,6 +509,17 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
       ),
       automaticallyImplyLeading: false, // 戻るボタンを無効化
       actions: [
+        Container(
+          margin: const EdgeInsets.all(4), // MP適用
+          child: IconButton(
+            icon: Icon(Icons.casino, color: Colors.amber),
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => const GachaScreen()),
+              );
+            },
+          ),
+        ),
         Container(
           margin: const EdgeInsets.all(4), // MP適用
           child: IconButton(

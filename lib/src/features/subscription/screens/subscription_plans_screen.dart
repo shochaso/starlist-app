@@ -94,11 +94,11 @@ class _SubscriptionPlansScreenState extends ConsumerState<SubscriptionPlansScree
             size: 20,
           ),
           const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              'クーポン機能・コミュニティ機能は終了いたしました',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Colors.orange.shade700,
+                      Expanded(
+              child: Text(
+                '',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Colors.orange.shade700,
                 fontWeight: FontWeight.w500,
               ),
             ),
