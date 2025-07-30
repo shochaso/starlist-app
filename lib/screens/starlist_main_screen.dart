@@ -1,3 +1,4 @@
+import 'package:starlist/screens/test_account_switcher_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -18,6 +19,7 @@ import '../providers/youtube_history_provider.dart';
 import '../providers/posts_provider.dart';
 import '../src/widgets/post_card.dart';
 import '../features/content/screens/post_detail_screen.dart';
+import 'test_account_switcher_screen.dart';
 import '../data/models/post_model.dart';
 
 
@@ -471,6 +473,19 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
       drawer: _buildDrawer(),
       body: _buildBody(selectedTab),
       bottomNavigationBar: _buildBottomNavigationBar(selectedTab),
+      
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => const TestAccountSwitcherScreen(),
+            ),
+          );
+        },
+        backgroundColor: const Color(0xFF4ECDC4),
+        child: const Icon(Icons.swap_horiz, color: Colors.white),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
 

@@ -1,3 +1,4 @@
+import 'package:starlist/screens/test_account_switcher_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -137,6 +138,7 @@ class StarlistApp extends ConsumerWidget {
         '/mylist': (context) => const MylistScreen(),
         '/profile': (context) => const ProfileScreen(),
         '/settings': (context) => const SettingsScreen(),
+        '/test-account-switcher': (context) => const TestAccountSwitcherScreen(),
         '/home': (context) => const StarlistMainScreen(),
       },
       debugShowCheckedModeBanner: false,

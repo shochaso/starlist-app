@@ -127,4 +127,37 @@ class UserModeNotifier extends StateNotifier<UserMode> {
 final testPlanProvider = StateProvider<FanPlanType?>((ref) => null);
 
 // ユーザー役割切り替え用プロバイダー（テスト用）
-final userRoleToggleProvider = StateProvider<UserRole>((ref) => UserRole.star); 
+final userRoleToggleProvider = StateProvider<UserRole>((ref) => UserRole.star);
+
+// テスト用モックユーザーデータ
+final mockFreeFanUser = UserInfo(
+  id: 'test_free_fan_id',
+  name: '無料ファン',
+  email: 'free_fan@example.com',
+  role: UserRole.fan,
+  fanPlanType: FanPlanType.free,
+);
+
+final mockLightPlanUser = UserInfo(
+  id: 'test_light_plan_id',
+  name: 'ライトプランユーザー',
+  email: 'light_plan@example.com',
+  role: UserRole.fan,
+  fanPlanType: FanPlanType.light,
+);
+
+final mockStandardPlanUser = UserInfo(
+  id: 'test_standard_plan_id',
+  name: 'スタンダードプランユーザー',
+  email: 'standard_plan@example.com',
+  role: UserRole.fan,
+  fanPlanType: FanPlanType.standard,
+);
+
+final mockPremiumPlanUser = UserInfo(
+  id: 'test_premium_plan_id',
+  name: 'プレミアムプランユーザー',
+  email: 'premium_plan@example.com',
+  role: UserRole.fan,
+  fanPlanType: FanPlanType.premium,
+); 

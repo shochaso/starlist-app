@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/foundation.dart'; // kDebugMode を使用するために追加
+import '../providers/user_provider.dart'; // user_provider をインポート
+import 'package:flutter/foundation.dart'; // kDebugMode を使用するために追加
 import '../src/app.dart';
 import '../features/app/screens/notification_settings_screen.dart';
 import '../features/profile/screens/profile_edit_screen.dart';
 import '../features/payment/screens/payment_info_screen.dart';
 import '../screens/privacy_screen.dart';
+import '../providers/user_provider.dart'; // user_provider をインポート
 
 class MypageScreen extends ConsumerWidget {
   final Function? onThemeToggle;
@@ -321,6 +325,69 @@ class MypageScreen extends ConsumerWidget {
               ),
             ),
             
+            // 役割切り替え（テスト用）
+            if (kDebugMode) { // デバッグモードでのみ表示
+              const SizedBox(height: 24),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Text(
+                  '役割切り替え（テスト用）',
+                  style: TextStyle(
+                    color: textColor,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Container(
+                margin: const EdgeInsets.symmetric(horizontal: 16),
+                decoration: BoxDecoration(
+                  color: cardColor,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Column(
+                  children: [
+                    _buildRoleSwitchButton(
+                      context,
+                      ref,
+                      '無料',
+                      mockFreeFanUser,
+                      textColor,
+                      secondaryTextColor,
+                    ),
+                    Divider(color: dividerColor, height: 1),
+                    _buildRoleSwitchButton(
+                      context,
+                      ref,
+                      'ライト',
+                      mockLightPlanUser,
+                      textColor,
+                      secondaryTextColor,
+                    ),
+                    Divider(color: dividerColor, height: 1),
+                    _buildRoleSwitchButton(
+                      context,
+                      ref,
+                      'スタンダード',
+                      mockStandardPlanUser,
+                      textColor,
+                      secondaryTextColor,
+                    ),
+                    Divider(color: dividerColor, height: 1),
+                    _buildRoleSwitchButton(
+                      context,
+                      ref,
+                      'プレミアム',
+                      mockPremiumPlanUser,
+                      textColor,
+                      secondaryTextColor,
+                    ),
+                  ],
+                ),
+              ),
+            }
+            
             const SizedBox(height: 24),
             
             // バージョン情報
@@ -364,6 +431,35 @@ class MypageScreen extends ConsumerWidget {
           ),
         ],
       ),
+    );
+  }
+  
+  Widget _buildRoleSwitchButton(
+    BuildContext context,
+    WidgetRef ref,
+    String title,
+    UserInfo user,
+    Color textColor,
+    Color secondaryTextColor,
+  ) {
+    return ListTile(
+      title: Text(
+        title,
+        style: TextStyle(color: textColor),
+      ),
+      trailing: Icon(
+        Icons.chevron_right,
+        color: secondaryTextColor,
+      ),
+      onTap: () {
+        ref.read(currentUserProvider.notifier).state = user;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${title}アカウントに切り替えました。'),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      },
     );
   }
 } 

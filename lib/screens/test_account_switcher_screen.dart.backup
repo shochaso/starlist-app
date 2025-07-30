@@ -1,0 +1,359 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../models/user.dart';
+import '../data/test_accounts_data.dart';
+
+/// テストアカウント用のプロバイダー
+final currentTestUserProvider = StateProvider<User?>((ref) => null);
+
+class TestAccountSwitcherScreen extends ConsumerStatefulWidget {
+  const TestAccountSwitcherScreen({super.key});
+
+  @override
+  ConsumerState<TestAccountSwitcherScreen> createState() => _TestAccountSwitcherScreenState();
+}
+
+class _TestAccountSwitcherScreenState extends ConsumerState<TestAccountSwitcherScreen> {
+  @override
+  Widget build(BuildContext context) {
+    final currentUser = ref.watch(currentTestUserProvider);
+    
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('テストアカウント切り替え'),
+        backgroundColor: const Color(0xFF4ECDC4),
+        foregroundColor: Colors.white,
+      ),
+      body: Column(
+        children: [
+          // 現在のアカウント表示
+          if (currentUser != null) _buildCurrentUserCard(currentUser),
+          
+          // アカウント一覧
+          Expanded(
+            child: ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: TestAccountsData.allTestAccounts.length,
+              itemBuilder: (context, index) {
+                final user = TestAccountsData.allTestAccounts[index];
+                final isSelected = currentUser?.id == user.id;
+                return _buildAccountCard(user, isSelected);
+              },
+            ),
+          ),
+          
+          // 権限・機能説明
+          if (currentUser != null) _buildPermissionsSection(currentUser),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCurrentUserCard(User user) {
+    return Container(
+      margin: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF4ECDC4).withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFF4ECDC4), width: 2),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.person, color: Color(0xFF4ECDC4), size: 40),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '現在のアカウント',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey[600],
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                Text(
+                  user.name,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF4ECDC4),
+                  ),
+                ),
+                Text(
+                  user.planDisplayName,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAccountCard(User user, bool isSelected) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      elevation: isSelected ? 4 : 1,
+      child: InkWell(
+        onTap: () => _switchToAccount(user),
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(8),
+            border: isSelected 
+              ? Border.all(color: const Color(0xFF4ECDC4), width: 2)
+              : null,
+          ),
+          child: Row(
+            children: [
+              CircleAvatar(
+                backgroundColor: _getPlanColor(user),
+                child: Icon(
+                  _getPlanIcon(user),
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      user.name,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      user.planDisplayName,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: _getPlanColor(user),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    Text(
+                      user.email,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (isSelected)
+                const Icon(
+              if (isSelected)
+                const Icon(
+                  Icons.check_circle,
+                  color: Color(0xFF4ECDC4),
+                ) else
+                ElevatedButton(
+                  onPressed: () => _testLogin(user),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF4ECDC4),
+                    foregroundColor: Colors.white,
+                    minimumSize: const Size(80, 32),
+                  ),
+                  child: const Text("テストログイン"),
+                ),
+                  color: Color(0xFF4ECDC4),
+                ) else
+                ElevatedButton(
+                  onPressed: () => _testLogin(user),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF4ECDC4),
+                    foregroundColor: Colors.white,
+                    minimumSize: const Size(80, 32),
+                  ),
+                  child: const Text("テストログイン"),
+                ),
+                const Icon(
+                  Icons.check_circle,
+                  color: Color(0xFF4ECDC4),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPermissionsSection(User user) {
+    final features = TestAccountsData.getAccessibleFeatures(user);
+    final limitations = TestAccountsData.getPlanLimitations(user);
+    
+    return Container(
+      margin: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '${user.planDisplayName}の権限・機能',
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 12),
+          
+          // 利用可能機能
+          _buildFeatureSection('利用可能機能', features, Icons.check_circle, Colors.green),
+          
+          const SizedBox(height: 16),
+          
+          // 制限事項
+          _buildFeatureSection('制限事項', limitations, Icons.warning, Colors.orange),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFeatureSection(
+    String title, 
+    Map<String, List<String>> items, 
+    IconData icon, 
+    Color color
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(icon, color: color, size: 20),
+            const SizedBox(width: 8),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: color,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        ...items.entries.map((entry) => Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (entry.key != 'none' && entry.key != 'all')
+              Padding(
+                padding: const EdgeInsets.only(left: 28, bottom: 4),
+                child: Text(
+                  _getCategoryName(entry.key),
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey[700],
+                  ),
+                ),
+              ),
+            ...entry.value.map((feature) => Padding(
+              padding: const EdgeInsets.only(left: 40, bottom: 4),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.fiber_manual_record,
+                    size: 6,
+                    color: Colors.grey[600],
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      feature,
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.grey[700],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            )),
+          ],
+        )),
+      ],
+    );
+  }
+
+  String _getCategoryName(String key) {
+    switch (key) {
+      case 'content': return 'コンテンツ';
+      case 'features': return '機能';
+      case 'analytics': return '分析';
+      case 'interaction': return 'インタラクション';
+      case 'monetization': return '収益化';
+      case 'limitations': return '制限';
+      case 'ads': return '広告';
+      case 'exclusive': return '限定機能';
+      default: return key;
+    }
+  }
+
+  Color _getPlanColor(User user) {
+    if (user.isStar) return Colors.purple;
+    
+    switch (user.fanPlanType) {
+      case FanPlanType.free: return Colors.grey;
+      case FanPlanType.light: return Colors.blue;
+      case FanPlanType.standard: return Colors.green;
+      case FanPlanType.premium: return Colors.amber;
+      default: return Colors.grey;
+    }
+  }
+
+  IconData _getPlanIcon(User user) {
+    if (user.isStar) return Icons.star;
+    
+    switch (user.fanPlanType) {
+      case FanPlanType.free: return Icons.person;
+      case FanPlanType.light: return Icons.person_outline;
+      case FanPlanType.standard: return Icons.person_2;
+      case FanPlanType.premium: return Icons.diamond;
+      default: return Icons.person;
+    }
+  }
+
+
+  void _testLogin(User user) {
+    // テストアカウントでログイン処理
+    ref.read(currentTestUserProvider.notifier).state = user;
+    
+    // ログイン成功のフィードバック
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text("${user.name}（${user.planDisplayName}）でテストログインしました"),
+        backgroundColor: Colors.green,
+        behavior: SnackBarBehavior.floating,
+        action: SnackBarAction(
+          label: "ホームへ",
+          textColor: Colors.white,
+          onPressed: () {
+            Navigator.of(context).pushNamedAndRemoveUntil("/", (route) => false);
+          },
+        ),
+      ),
+    );
+  }  void _switchToAccount(User user) {
+    ref.read(currentTestUserProvider.notifier).state = user;
+    
+    // 切り替え完了のフィードバック
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('${user.name}（${user.planDisplayName}）に切り替えました'),
+        backgroundColor: const Color(0xFF4ECDC4),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+}

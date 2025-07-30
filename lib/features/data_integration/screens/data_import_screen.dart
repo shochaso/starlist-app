@@ -478,21 +478,21 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
                   ),
             borderRadius: BorderRadius.circular(24),
             border: isDark 
-                ? Border.all(color: const Color(0xFF9333EA).withValues(alpha: 0.3), width: 1)
-                : Border.all(color: const Color(0xFF667EEA).withValues(alpha: 0.2), width: 1),
+                ? Border.all(color: const Color(0xFF9333EA).withOpacity( 0.3), width: 1)
+                : Border.all(color: const Color(0xFF667EEA).withOpacity( 0.2), width: 1),
             boxShadow: [
               BoxShadow(
                 color: isDark 
-                    ? const Color(0xFF667EEA).withValues(alpha: 0.25) 
-                    : const Color(0xFF667EEA).withValues(alpha: 0.15),
+                    ? const Color(0xFF667EEA).withOpacity( 0.25) 
+                    : const Color(0xFF667EEA).withOpacity( 0.15),
                 blurRadius: 32,
                 offset: const Offset(0, 16),
                 spreadRadius: 0,
               ),
               BoxShadow(
                 color: isDark 
-                    ? Colors.black.withValues(alpha: 0.3) 
-                    : Colors.white.withValues(alpha: 0.8),
+                    ? Colors.black.withOpacity( 0.3) 
+                    : Colors.white.withOpacity( 0.8),
                 blurRadius: 1,
                 offset: const Offset(0, 1),
                 spreadRadius: 0,
@@ -507,20 +507,20 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
                 height: 96,
                 decoration: BoxDecoration(
                   color: isDark 
-                      ? Colors.white.withValues(alpha: 0.15) 
-                      : const Color(0xFF667EEA).withValues(alpha: 0.1),
+                      ? Colors.white.withOpacity( 0.15) 
+                      : const Color(0xFF667EEA).withOpacity( 0.1),
                   borderRadius: BorderRadius.circular(28),
                   border: Border.all(
                     color: isDark 
-                        ? Colors.white.withValues(alpha: 0.2) 
-                        : const Color(0xFF667EEA).withValues(alpha: 0.3),
+                        ? Colors.white.withOpacity( 0.2) 
+                        : const Color(0xFF667EEA).withOpacity( 0.3),
                     width: 1.5,
                   ),
                   boxShadow: [
                     BoxShadow(
                       color: isDark 
-                          ? Colors.black.withValues(alpha: 0.3) 
-                          : const Color(0xFF667EEA).withValues(alpha: 0.1),
+                          ? Colors.black.withOpacity( 0.3) 
+                          : const Color(0xFF667EEA).withOpacity( 0.1),
                       blurRadius: 16,
                       offset: const Offset(0, 8),
                     ),
@@ -560,8 +560,8 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
                   color: isDark 
-                      ? const Color(0xFF4ECDC4).withValues(alpha: 0.1)
-                      : const Color(0xFF4ECDC4).withValues(alpha: 0.1),
+                      ? const Color(0xFF4ECDC4).withOpacity( 0.1)
+                      : const Color(0xFF4ECDC4).withOpacity( 0.1),
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
                     color: const Color(0xFF4ECDC4),
@@ -757,16 +757,16 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
                         boxShadow: [
                           BoxShadow(
                             color: isDark 
-                                ? Colors.black.withValues(alpha: 0.3) 
-                  : Colors.black.withValues(alpha: 0.08),
+                                ? Colors.black.withOpacity( 0.3) 
+                  : Colors.black.withOpacity( 0.08),
               blurRadius: 20,
               offset: const Offset(0, 8),
               spreadRadius: 0,
             ),
             BoxShadow(
               color: isDark
-                  ? Colors.black.withValues(alpha: 0.2)
-                  : Colors.white.withValues(alpha: 0.9),
+                  ? Colors.black.withOpacity( 0.2)
+                  : Colors.white.withOpacity( 0.9),
               blurRadius: 0,
               offset: const Offset(0, 1),
               spreadRadius: 0,
@@ -842,16 +842,16 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
           border: Border.all(
             color: isImplemented 
               ? (isDark 
-                  ? const Color(0xFF404040).withValues(alpha: 0.3)
-                  : const Color(0xFFE2E8F0).withValues(alpha: 0.6))
-              : const Color(0xFFFFC107).withValues(alpha: 0.3),
+                  ? const Color(0xFF404040).withOpacity( 0.3)
+                  : const Color(0xFFE2E8F0).withOpacity( 0.6))
+              : const Color(0xFFFFC107).withOpacity( 0.3),
             width: isImplemented ? 1 : 2,
           ),
                         boxShadow: [
                           BoxShadow(
                             color: isDark 
-                                ? Colors.black.withValues(alpha: 0.3) 
-                  : Colors.black.withValues(alpha: 0.08),
+                                ? Colors.black.withOpacity( 0.3) 
+                  : Colors.black.withOpacity( 0.08),
                             blurRadius: 12,
                             offset: const Offset(0, 4),
               spreadRadius: 0,
@@ -973,15 +973,15 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
             color: isConnected 
                 ? const Color(0xFF4CAF50)
                 : (isDark 
-                    ? const Color(0xFF404040).withValues(alpha: 0.3)
-                    : const Color(0xFFE2E8F0).withValues(alpha: 0.6)),
+                    ? const Color(0xFF404040).withOpacity( 0.3)
+                    : const Color(0xFFE2E8F0).withOpacity( 0.6)),
             width: 1,
           ),
           boxShadow: [
             BoxShadow(
               color: isDark
-                  ? Colors.black.withValues(alpha: 0.3)
-                  : Colors.black.withValues(alpha: 0.08),
+                  ? Colors.black.withOpacity( 0.3)
+                  : Colors.black.withOpacity( 0.08),
               blurRadius: 12,
               offset: const Offset(0, 4),
               spreadRadius: 0,
@@ -1054,16 +1054,16 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
           boxShadow: [
             BoxShadow(
               color: isDark 
-                  ? Colors.black.withValues(alpha: 0.4) 
-                  : const Color(0xFF667EEA).withValues(alpha: 0.08),
+                  ? Colors.black.withOpacity( 0.4) 
+                  : const Color(0xFF667EEA).withOpacity( 0.08),
               blurRadius: 16,
               offset: const Offset(0, 4),
               spreadRadius: 0,
             ),
             BoxShadow(
               color: isDark 
-                  ? Colors.white.withValues(alpha: 0.03) 
-                  : Colors.white.withValues(alpha: 0.9),
+                  ? Colors.white.withOpacity( 0.03) 
+                  : Colors.white.withOpacity( 0.9),
               blurRadius: 1,
               offset: const Offset(0, 1),
               spreadRadius: 0,
@@ -1083,7 +1083,7 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: [
                     BoxShadow(
-                      color: ServiceIcons.getService(service['id']!)?.color.withValues(alpha: 0.2) ?? const Color(0xFF4ECDC4).withValues(alpha: 0.2),
+                      color: ServiceIcons.getService(service['id']!)?.color.withOpacity( 0.2) ?? const Color(0xFF4ECDC4).withOpacity( 0.2),
                       blurRadius: 6,
                       offset: const Offset(0, 2),
                     ),
@@ -1146,7 +1146,7 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: const Color(0xFF4ECDC4).withValues(alpha: 0.2),
+                color: const Color(0xFF4ECDC4).withOpacity( 0.2),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
@@ -1833,7 +1833,7 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: _getStatusColor(item['status'] as String).withValues(alpha: 0.2),
+                  color: _getStatusColor(item['status'] as String).withOpacity( 0.2),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Icon(
@@ -2031,7 +2031,7 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
                       borderRadius: BorderRadius.circular(14),
                       boxShadow: [
                         BoxShadow(
-                          color: (isDark ? Colors.black : Colors.black).withValues(alpha: 0.2),
+                          color: (isDark ? Colors.black : Colors.black).withOpacity( 0.2),
                           blurRadius: 8,
                           offset: const Offset(0, 4),
                         ),
@@ -2053,7 +2053,7 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFF4ECDC4).withValues(alpha: 0.4),
+                        color: const Color(0xFF4ECDC4).withOpacity( 0.4),
                         blurRadius: 15,
                         offset: const Offset(0, 8),
                       ),
@@ -2106,17 +2106,17 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    const Color(0xFF4ECDC4).withValues(alpha: 0.15),
-                    const Color(0xFF44A08D).withValues(alpha: 0.15),
+                    const Color(0xFF4ECDC4).withOpacity( 0.15),
+                    const Color(0xFF44A08D).withOpacity( 0.15),
                   ],
                 ),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: const Color(0xFF4ECDC4).withValues(alpha: 0.3),
+                  color: const Color(0xFF4ECDC4).withOpacity( 0.3),
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF4ECDC4).withValues(alpha: 0.1),
+                    color: const Color(0xFF4ECDC4).withOpacity( 0.1),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
                   ),
@@ -2127,7 +2127,7 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF4ECDC4).withValues(alpha: 0.2),
+                      color: const Color(0xFF4ECDC4).withOpacity( 0.2),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: const Icon(
@@ -2177,7 +2177,7 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: (isDark ? Colors.black : Colors.black).withValues(alpha: 0.2),
+                    color: (isDark ? Colors.black : Colors.black).withOpacity( 0.2),
                     blurRadius: 15,
                     offset: const Offset(0, 8),
                   ),
@@ -2215,7 +2215,7 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
-                          color: (isDark ? Colors.grey[700]! : Colors.grey[300]!).withValues(alpha: 0.3),
+                          color: (isDark ? Colors.grey[700]! : Colors.grey[300]!).withOpacity( 0.3),
                           blurRadius: 10,
                           offset: const Offset(0, 4),
                         ),
@@ -2265,7 +2265,7 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF4ECDC4).withValues(alpha: 0.4),
+                          color: const Color(0xFF4ECDC4).withOpacity( 0.4),
                           blurRadius: 15,
                           offset: const Offset(0, 8),
                         ),
@@ -2393,7 +2393,7 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.2),
+                    color: Colors.white.withOpacity( 0.2),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: const Icon(
@@ -2491,9 +2491,9 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 3),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
-        color: isActive ? const Color(0xFF4ECDC4).withValues(alpha: 0.15) : null,
+        color: isActive ? const Color(0xFF4ECDC4).withOpacity( 0.15) : null,
         border: isActive ? Border.all(
-          color: const Color(0xFF4ECDC4).withValues(alpha: 0.3),
+          color: const Color(0xFF4ECDC4).withOpacity( 0.3),
           width: 1,
         ) : null,
       ),
