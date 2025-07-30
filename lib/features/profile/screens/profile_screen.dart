@@ -6,6 +6,7 @@ import 'profile_edit_screen.dart';
 import '../../app/screens/settings_screen.dart';
 import '../../star/screens/star_dashboard_screen.dart';
 import '../../star/screens/schedule_management_screen.dart';
+import '../../star/screens/generic_star_detail_page.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -54,6 +55,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   // サンプルデータ
   final Map<String, List<Map<String, dynamic>>> _contentData = {
     'following': [
+      {
+        'id': 'hanayama_mizuki',
+        'name': '花山瑞樹',
+        'category': '日常Blog・ファッション',
+        'followers': '127K',
+        'avatar': null,
+        'isVerified': true,
+        'followedDate': '2024/01/01',
+        'description': 'ファッション・ライフスタイル・お買い物記録',
+        'specialties': ['ファッション', 'コスメ', '日用品', 'カフェ'],
+      },
       {
         'id': '1',
         'name': 'テックレビューアー田中',
@@ -649,17 +661,20 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   }
 
   Widget _buildFollowUserCard(Map<String, dynamic> user, bool isDark) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: isDark ? const Color(0xFF333333) : const Color(0xFFE5E7EB),
+    return InkWell(
+      onTap: () => _navigateToStarDetail(user),
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isDark ? const Color(0xFF333333) : const Color(0xFFE5E7EB),
+          ),
         ),
-      ),
-      child: Row(
+        child: Row(
         children: [
           // アバター
           Container(
@@ -808,6 +823,22 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
             ],
           ),
         ],
+      ),
+    ),
+    );
+  }
+
+  /// スター詳細ページへの遷移
+  void _navigateToStarDetail(Map<String, dynamic> user) {
+    final starId = user['id'] ?? '';
+    if (starId.isEmpty) return;
+
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => GenericStarDetailPage(
+          starId: starId,
+          starData: user,
+        ),
       ),
     );
   }

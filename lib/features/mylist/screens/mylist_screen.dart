@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../src/providers/theme_provider_enhanced.dart';
+import '../../star/screens/generic_star_detail_page.dart';
 
 // プロバイダー
 final selectedTabProvider = StateProvider<int>((ref) => 0);
@@ -19,6 +20,18 @@ class _MylistScreenState extends ConsumerState<MylistScreen>
 
   // ダミーデータ - フォロー中のスター
   final List<Map<String, dynamic>> _followingStars = [
+    {
+      'id': 'hanayama_mizuki',
+      'name': '花山瑞樹',
+      'category': '日常Blog・ファッション',
+      'followers': 127000,
+      'avatar': null,
+      'verified': true,
+      'lastPost': '30分前',
+      'isOnline': true,
+      'newPosts': 2,
+      'specialties': ['ファッション', 'コスメ', '日用品', 'カフェ'],
+    },
     {
       'id': '1',
       'name': 'テックレビューアー田中',
@@ -1059,24 +1072,27 @@ class _MylistScreenState extends ConsumerState<MylistScreen>
     final themeState = ref.watch(themeProviderEnhanced);
     final isDark = themeState.isDarkMode;
     
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: isDark ? const Color(0xFF333333) : Colors.grey.shade200,
-        ),
-        boxShadow: isDark ? null : [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+    return InkWell(
+      onTap: () => _navigateToStarDetail(star),
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 16),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isDark ? const Color(0xFF333333) : Colors.grey.shade200,
           ),
-        ],
-      ),
-      child: Row(
+          boxShadow: isDark ? null : [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
         children: [
           Stack(
             children: [
@@ -1228,6 +1244,22 @@ class _MylistScreenState extends ConsumerState<MylistScreen>
             ],
           ),
         ],
+      ),
+    ),
+    );
+  }
+
+  /// スター詳細ページへの遷移
+  void _navigateToStarDetail(Map<String, dynamic> star) {
+    final starId = star['id'] ?? '';
+    if (starId.isEmpty) return;
+
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => GenericStarDetailPage(
+          starId: starId,
+          starData: star,
+        ),
       ),
     );
   }

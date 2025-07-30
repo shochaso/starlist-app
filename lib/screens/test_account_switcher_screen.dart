@@ -104,6 +104,42 @@ class _TestAccountSwitcherScreenState
                 ),
               ),
             ),
+            // フォロー情報の表示
+            if (account.fanPlanType != null) ...[
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Icon(
+                    Icons.people_outline,
+                    size: 16,
+                    color: Colors.grey[600],
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    'フォロー中: ${TestAccountsData.getFollowingListForPlan(account.fanPlanType).length}人',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Icon(
+                    Icons.star_outline,
+                    size: 16,
+                    color: Colors.amber[600],
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    '花山瑞樹を含む',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.amber[600],
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ],
             const SizedBox(height: 16),
             Row(
               children: [
