@@ -281,7 +281,7 @@ class _PaymentImportScreenState extends ConsumerState<PaymentImportScreen> {
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [widget.serviceColor, widget.serviceColor.withValues(alpha: 0.8)],
+                  colors: [widget.serviceColor, widget.serviceColor.withOpacity( 0.8)],
                 ),
                 borderRadius: BorderRadius.circular(16),
               ),
@@ -325,9 +325,9 @@ class _PaymentImportScreenState extends ConsumerState<PaymentImportScreen> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.amber.withValues(alpha: 0.1),
+                color: Colors.amber.withOpacity( 0.1),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.amber.withValues(alpha: 0.3)),
+                border: Border.all(color: Colors.amber.withOpacity( 0.3)),
               ),
               child: Row(
                 children: [
@@ -628,7 +628,7 @@ class _PaymentImportScreenState extends ConsumerState<PaymentImportScreen> {
               decoration: BoxDecoration(
                 color: isSelected 
                     ? (isDark ? const Color(0xFF1A1A1A) : const Color(0xFFF8FAFC))
-                    : (isDark ? const Color(0xFF404040).withValues(alpha: 0.3) : const Color(0xFFF1F5F9)),
+                    : (isDark ? const Color(0xFF404040).withOpacity( 0.3) : const Color(0xFFF1F5F9)),
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(
                   color: isSelected ? widget.serviceColor : Colors.grey,

@@ -60,14 +60,14 @@ class PostCard extends ConsumerWidget {
           border: Border.all(
             color: canAccess 
                 ? (isDark ? const Color(0xFF333333) : const Color(0xFFE2E8F0))
-                : const Color(0xFFFF6B6B).withValues(alpha: 0.3),
+                : const Color(0xFFFF6B6B).withOpacity( 0.3),
             width: canAccess ? 1 : 2,
           ),
           boxShadow: [
             BoxShadow(
               color: canAccess 
-                  ? (isDark ? Colors.black : Colors.black).withValues(alpha: 0.08)
-                  : const Color(0xFFFF6B6B).withValues(alpha: 0.1),
+                  ? (isDark ? Colors.black : Colors.black).withOpacity( 0.08)
+                  : const Color(0xFFFF6B6B).withOpacity( 0.1),
               blurRadius: canAccess ? 12 : 16,
               offset: const Offset(0, 4),
             ),
@@ -109,7 +109,7 @@ class PostCard extends ConsumerWidget {
               ),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: Colors.white.withValues(alpha: 0.2),
+                color: Colors.white.withOpacity( 0.2),
                 width: 2,
               ),
             ),
@@ -162,7 +162,7 @@ class PostCard extends ConsumerWidget {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: _getTypeColor(post.type).withValues(alpha: 0.2),
+              color: _getTypeColor(post.type).withOpacity( 0.2),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(
@@ -181,7 +181,7 @@ class PostCard extends ConsumerWidget {
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
         decoration: BoxDecoration(
-          color: Colors.green.withValues(alpha: 0.2),
+          color: Colors.green.withOpacity( 0.2),
           borderRadius: BorderRadius.circular(8),
         ),
         child: const Text(
@@ -199,8 +199,8 @@ class PostCard extends ConsumerWidget {
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
         color: canAccess 
-            ? Colors.amber.withValues(alpha: 0.2)
-            : Colors.red.withValues(alpha: 0.2),
+            ? Colors.amber.withOpacity( 0.2)
+            : Colors.red.withOpacity( 0.2),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
@@ -278,10 +278,10 @@ class PostCard extends ConsumerWidget {
         width: double.infinity,
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: Colors.red.withValues(alpha: 0.1),
+          color: Colors.red.withOpacity( 0.1),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: Colors.red.withValues(alpha: 0.3),
+            color: Colors.red.withOpacity( 0.3),
           ),
         ),
         child: Column(
@@ -336,7 +336,7 @@ class PostCard extends ConsumerWidget {
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: const Color(0xFFFF0000).withValues(alpha: 0.1),
+            color: const Color(0xFFFF0000).withOpacity( 0.1),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Row(
@@ -384,7 +384,7 @@ class PostCard extends ConsumerWidget {
             width: 60,
             height: 45,
             decoration: BoxDecoration(
-              color: const Color(0xFFFF0000).withValues(alpha: 0.2),
+              color: const Color(0xFFFF0000).withOpacity( 0.2),
               borderRadius: BorderRadius.circular(6),
             ),
             child: const Icon(
@@ -444,7 +444,7 @@ class PostCard extends ConsumerWidget {
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: Colors.green.withValues(alpha: 0.1),
+            color: Colors.green.withOpacity( 0.1),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Row(
@@ -499,7 +499,7 @@ class PostCard extends ConsumerWidget {
             width: 50,
             height: 50,
             decoration: BoxDecoration(
-              color: Colors.grey.withValues(alpha: 0.3),
+              color: Colors.grey.withOpacity( 0.3),
               borderRadius: BorderRadius.circular(6),
             ),
             child: const Icon(
@@ -572,7 +572,7 @@ class PostCard extends ConsumerWidget {
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           decoration: BoxDecoration(
-            color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.05),
+            color: (isDark ? Colors.white : Colors.black).withOpacity( 0.05),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Text(
@@ -652,10 +652,10 @@ class PostCard extends ConsumerWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: Colors.red.withValues(alpha: 0.1),
+                color: Colors.red.withOpacity( 0.1),
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
-                  color: Colors.red.withValues(alpha: 0.3),
+                  color: Colors.red.withOpacity( 0.3),
                 ),
               ),
               child: Row(

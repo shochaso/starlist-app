@@ -196,15 +196,15 @@ class _PremiumRestrictionScreenState extends ConsumerState<PremiumRestrictionScr
                   borderRadius: BorderRadius.circular(60),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFFFFD700).withValues(alpha: 0.4),
+                      color: const Color(0xFFFFD700).withOpacity( 0.4),
                       blurRadius: 20,
                       offset: const Offset(0, 10),
                       spreadRadius: 0,
                     ),
                     BoxShadow(
                       color: isDark
-                          ? Colors.black.withValues(alpha: 0.3)
-                          : Colors.black.withValues(alpha: 0.1),
+                          ? Colors.black.withOpacity( 0.3)
+                          : Colors.black.withOpacity( 0.1),
                       blurRadius: 15,
                       offset: const Offset(0, 5),
                     ),
@@ -284,12 +284,12 @@ class _PremiumRestrictionScreenState extends ConsumerState<PremiumRestrictionScr
                   ),
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: const Color(0xFFFF6B6B).withValues(alpha: 0.3),
+              color: const Color(0xFFFF6B6B).withOpacity( 0.3),
               width: 2,
             ),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFFFF6B6B).withValues(alpha: 0.1),
+                color: const Color(0xFFFF6B6B).withOpacity( 0.1),
                 blurRadius: 20,
                 offset: const Offset(0, 8),
                 spreadRadius: 0,
@@ -304,7 +304,7 @@ class _PremiumRestrictionScreenState extends ConsumerState<PremiumRestrictionScr
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFFF6B6B).withValues(alpha: 0.2),
+                      color: const Color(0xFFFF6B6B).withOpacity( 0.2),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: const Icon(
@@ -440,15 +440,15 @@ class _PremiumRestrictionScreenState extends ConsumerState<PremiumRestrictionScr
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: isDark 
-              ? const Color(0xFF404040).withValues(alpha: 0.3)
-              : const Color(0xFFE2E8F0).withValues(alpha: 0.6),
+              ? const Color(0xFF404040).withOpacity( 0.3)
+              : const Color(0xFFE2E8F0).withOpacity( 0.6),
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
             color: isDark
-                ? Colors.black.withValues(alpha: 0.2)
-                : Colors.black.withValues(alpha: 0.05),
+                ? Colors.black.withOpacity( 0.2)
+                : Colors.black.withOpacity( 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -459,7 +459,7 @@ class _PremiumRestrictionScreenState extends ConsumerState<PremiumRestrictionScr
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: feature['color'].withValues(alpha: 0.2),
+              color: feature['color'].withOpacity( 0.2),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(
@@ -514,7 +514,7 @@ class _PremiumRestrictionScreenState extends ConsumerState<PremiumRestrictionScr
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFFFFD700).withValues(alpha: 0.4),
+                    color: const Color(0xFFFFD700).withOpacity( 0.4),
                     blurRadius: 20,
                     offset: const Offset(0, 8),
                     spreadRadius: 0,

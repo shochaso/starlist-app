@@ -141,7 +141,7 @@ class _FanSubscriptionScreenState extends ConsumerState<FanSubscriptionScreen>
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: _getPlanColor(currentMembership).withValues(alpha: 0.3),
+            color: _getPlanColor(currentMembership).withOpacity( 0.3),
             blurRadius: 20,
             offset: const Offset(0, 10),
             spreadRadius: 0,
@@ -218,8 +218,8 @@ class _FanSubscriptionScreenState extends ConsumerState<FanSubscriptionScreen>
         boxShadow: [
           BoxShadow(
             color: isCurrentPlan 
-                ? _getPlanColor(plan.type).withValues(alpha: 0.2)
-                : (isDark ? Colors.black.withValues(alpha: 0.3) : Colors.black.withValues(alpha: 0.1)),
+                ? _getPlanColor(plan.type).withOpacity( 0.2)
+                : (isDark ? Colors.black.withOpacity( 0.3) : Colors.black.withOpacity( 0.1)),
             blurRadius: isCurrentPlan ? 20 : 10,
             offset: const Offset(0, 8),
             spreadRadius: 0,
@@ -289,7 +289,7 @@ class _FanSubscriptionScreenState extends ConsumerState<FanSubscriptionScreen>
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.2),
+                          color: Colors.white.withOpacity( 0.2),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: const Text(
@@ -445,9 +445,9 @@ class _FanSubscriptionScreenState extends ConsumerState<FanSubscriptionScreen>
         width: double.infinity,
         padding: const EdgeInsets.symmetric(vertical: 16),
         decoration: BoxDecoration(
-          color: Colors.grey.withValues(alpha: 0.2),
+          color: Colors.grey.withOpacity( 0.2),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.grey.withValues(alpha: 0.3)),
+          border: Border.all(color: Colors.grey.withOpacity( 0.3)),
         ),
         child: Text(
           '現在のプラン',

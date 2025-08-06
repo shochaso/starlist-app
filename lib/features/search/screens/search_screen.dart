@@ -575,7 +575,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
               ),
               boxShadow: [
                 BoxShadow(
-                  color: (isDark ? Colors.black : Colors.black).withValues(alpha: 0.08),
+                  color: (isDark ? Colors.black : Colors.black).withOpacity( 0.08),
                   blurRadius: 12,
                   offset: const Offset(0, 4),
                 ),
@@ -597,7 +597,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
-                          color: gradientColors.first.withValues(alpha: 0.3),
+                          color: gradientColors.first.withOpacity( 0.3),
                           blurRadius: 10,
                           offset: const Offset(0, 4),
                         ),
@@ -720,7 +720,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
                   BoxShadow(
                     color: (_selectedCategory == category['name'] 
                         ? category['color'] 
-                        : (isDark ? Colors.black : Colors.black)).withValues(alpha: 0.1),
+                        : (isDark ? Colors.black : Colors.black)).withOpacity( 0.1),
                     blurRadius: _selectedCategory == category['name'] ? 16 : 8,
                     offset: const Offset(0, 4),
                   ),
@@ -735,7 +735,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
                       width: 40,
                       height: 40,
                       decoration: BoxDecoration(
-                        color: category['color'].withValues(alpha: 0.2),
+                        color: category['color'].withOpacity( 0.2),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Icon(
@@ -792,13 +792,13 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  const Color(0xFF4ECDC4).withValues(alpha: 0.1),
-                  const Color(0xFF44A08D).withValues(alpha: 0.1),
+                  const Color(0xFF4ECDC4).withOpacity( 0.1),
+                  const Color(0xFF44A08D).withOpacity( 0.1),
                 ],
               ),
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: const Color(0xFF4ECDC4).withValues(alpha: 0.3),
+                color: const Color(0xFF4ECDC4).withOpacity( 0.3),
               ),
             ),
             child: Row(
@@ -857,7 +857,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
               ),
               boxShadow: [
                 BoxShadow(
-                  color: (isDark ? Colors.black : Colors.black).withValues(alpha: 0.08),
+                  color: (isDark ? Colors.black : Colors.black).withOpacity( 0.08),
                   blurRadius: isSelected ? 20 : 12,
                   offset: const Offset(0, 4),
                 ),
@@ -889,7 +889,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: gradientColors.first.withValues(alpha: 0.3),
+                color: gradientColors.first.withOpacity( 0.3),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),
@@ -990,7 +990,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
           width: 60,
           height: 60,
           decoration: BoxDecoration(
-            color: const Color(0xFF4ECDC4).withValues(alpha: 0.2),
+            color: const Color(0xFF4ECDC4).withOpacity( 0.2),
             borderRadius: BorderRadius.circular(12),
           ),
           child: const Icon(
@@ -1120,13 +1120,13 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
-                        const Color(0xFF4ECDC4).withValues(alpha: 0.1),
-                        const Color(0xFF44A08D).withValues(alpha: 0.1),
+                        const Color(0xFF4ECDC4).withOpacity( 0.1),
+                        const Color(0xFF44A08D).withOpacity( 0.1),
                       ],
                     ),
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
-                      color: const Color(0xFF4ECDC4).withValues(alpha: 0.3),
+                      color: const Color(0xFF4ECDC4).withOpacity( 0.3),
                     ),
                   ),
                   child: Row(
@@ -1196,7 +1196,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
             ),
             boxShadow: [
               BoxShadow(
-                color: (isDark ? Colors.black : Colors.black).withValues(alpha: 0.08),
+                color: (isDark ? Colors.black : Colors.black).withOpacity( 0.08),
                 blurRadius: 12,
                 offset: const Offset(0, 4),
               ),
@@ -1216,7 +1216,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: gradientColors.first.withValues(alpha: 0.3),
+                      color: gradientColors.first.withOpacity( 0.3),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     ),
@@ -1351,7 +1351,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
                 BoxShadow(
                   color: (_selectedCategory == category['name'] 
                       ? category['color'] 
-                      : (isDark ? Colors.black : Colors.black)).withValues(alpha: 0.1),
+                      : (isDark ? Colors.black : Colors.black)).withOpacity( 0.1),
                   blurRadius: _selectedCategory == category['name'] ? 20 : 12,
                   offset: const Offset(0, 4),
                 ),
@@ -1367,7 +1367,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
                       width: 48,
                       height: 48,
                       decoration: BoxDecoration(
-                        color: category['color'].withValues(alpha: 0.2),
+                        color: category['color'].withOpacity( 0.2),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Icon(
@@ -1796,7 +1796,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.2),
+                      color: Colors.white.withOpacity( 0.2),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: const Icon(
@@ -1875,9 +1875,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 3),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
-        color: isActive ? const Color(0xFF4ECDC4).withValues(alpha: 0.15) : null,
+        color: isActive ? const Color(0xFF4ECDC4).withOpacity( 0.15) : null,
         border: isActive ? Border.all(
-          color: const Color(0xFF4ECDC4).withValues(alpha: 0.3),
+          color: const Color(0xFF4ECDC4).withOpacity( 0.3),
           width: 1,
         ) : null,
       ),

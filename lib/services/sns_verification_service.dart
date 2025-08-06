@@ -1,0 +1,488 @@
+import 'dart:convert';
+import 'dart:math';
+import 'package:http/http.dart' as http;
+import 'package:supabase_flutter/supabase_flutter.dart';
+import '../models/sns_verification.dart';
+
+/// SNS認証・連携サービス
+class SNSVerificationService {
+  static final _supabase = Supabase.instance.client;
+  
+  // API Keys (環境変数から取得)
+  static const String _youtubeApiKey = 'YOUR_YOUTUBE_API_KEY';
+  static const String _instagramApiKey = 'YOUR_INSTAGRAM_API_KEY';
+  static const String _tiktokApiKey = 'YOUR_TIKTOK_API_KEY';
+  static const String _twitterApiKey = 'YOUR_TWITTER_API_KEY';
+
+  /// SNSアカウント連携を開始
+  static Future<SNSVerificationResult> startSNSVerification({
+    required String userId,
+    required SNSPlatform platform,
+    required String accountHandle,
+    required String accountUrl,
+  }) async {
+    try {
+      // 1. ユニークな認証コードを生成
+      final verificationCode = _generateVerificationCode();
+      
+      // 2. SNS APIからアカウント情報を取得
+      final snsData = await _fetchSNSAccountData(platform, accountHandle);
+      
+      if (snsData == null) {
+        return SNSVerificationResult(
+          success: false,
+          error: 'SNSアカウントが見つかりません',
+        );
+      }
+
+      // 3. データベースに認証記録を作成
+      final response = await _supabase.from('sns_verifications').insert({
+        'user_id': userId,
+        'platform': platform.value,
+        'account_handle': accountHandle,
+        'account_url': accountUrl,
+        'follower_count': snsData['followerCount'],
+        'verification_code': verificationCode,
+        'api_data': snsData,
+        'verification_status': 'pending',
+      }).select().single();
+
+      return SNSVerificationResult(
+        success: true,
+        verificationId: response['id'],
+        verificationCode: verificationCode,
+        followerCount: snsData['followerCount'],
+        message: 'SNS連携を開始しました。プロフィールに認証コードを埋め込んでください。',
+      );
+    } catch (e) {
+      return SNSVerificationResult(
+        success: false,
+        error: 'SNS連携の開始に失敗しました: ${e.toString()}',
+      );
+    }
+  }
+
+  /// 所有権確認を実行
+  static Future<SNSVerificationResult> verifyOwnership(String verificationId) async {
+    try {
+      // 1. 認証記録を取得
+      final verification = await _supabase
+          .from('sns_verifications')
+          .select()
+          .eq('id', verificationId)
+          .single();
+
+      if (verification == null) {
+        return SNSVerificationResult(
+          success: false,
+          error: '認証記録が見つかりません',
+        );
+      }
+
+      final platform = SNSPlatform.fromString(verification['platform']);
+      final accountHandle = verification['account_handle'];
+      final verificationCode = verification['verification_code'];
+
+      // 2. SNSプロフィールから認証コードを検索
+      final profileData = await _fetchSNSProfile(platform, accountHandle);
+      
+      if (profileData == null) {
+        return SNSVerificationResult(
+          success: false,
+          error: 'プロフィール情報を取得できませんでした',
+        );
+      }
+
+      // 3. プロフィール内の認証コード確認
+      final isOwnershipVerified = _checkVerificationCodeInProfile(
+        profileData['profile'],
+        verificationCode,
+      );
+
+      // 4. データベースを更新
+      await _supabase.from('sns_verifications').update({
+        'ownership_verified': isOwnershipVerified,
+        'ownership_verified_at': isOwnershipVerified 
+            ? DateTime.now().toIso8601String() 
+            : null,
+        'verification_status': isOwnershipVerified ? 'verified' : 'failed',
+        'verification_attempts': (verification['verification_attempts'] ?? 0) + 1,
+        'last_verification_attempt': DateTime.now().toIso8601String(),
+        'updated_at': DateTime.now().toIso8601String(),
+      }).eq('id', verificationId);
+
+      // 5. 認証完了時にユーザーステータスを更新
+      if (isOwnershipVerified) {
+        await _updateUserVerificationStatus(verification['user_id']);
+      }
+
+      return SNSVerificationResult(
+        success: isOwnershipVerified,
+        verificationId: verificationId,
+        message: isOwnershipVerified 
+            ? 'SNSアカウントの所有権が確認されました'
+            : 'プロフィールに認証コードが見つかりませんでした',
+        error: isOwnershipVerified ? null : 'プロフィールに認証コードを正しく埋め込んでください',
+      );
+    } catch (e) {
+      return SNSVerificationResult(
+        success: false,
+        error: '所有権確認に失敗しました: ${e.toString()}',
+      );
+    }
+  }
+
+  /// ユーザーのSNS認証一覧を取得
+  static Future<List<SNSVerification>> getUserSNSVerifications(String userId) async {
+    try {
+      final response = await _supabase
+          .from('sns_verifications')
+          .select()
+          .eq('user_id', userId)
+          .order('created_at', ascending: false);
+
+      return response.map((json) => SNSVerification.fromJson(json)).toList();
+    } catch (e) {
+      print('SNS認証一覧の取得エラー: $e');
+      return [];
+    }
+  }
+
+  /// SNS認証を削除
+  static Future<bool> deleteSNSVerification(String verificationId) async {
+    try {
+      await _supabase
+          .from('sns_verifications')
+          .delete()
+          .eq('id', verificationId);
+      return true;
+    } catch (e) {
+      print('SNS認証削除エラー: $e');
+      return false;
+    }
+  }
+
+  /// 管理者用: SNS認証一覧を取得
+  static Future<List<SNSVerification>> getSNSVerificationsForAdmin({
+    String? status,
+    SNSPlatform? platform,
+    int limit = 50,
+    int offset = 0,
+  }) async {
+    try {
+      var query = _supabase
+          .from('sns_verifications')
+          .select('''
+            *,
+            users!inner(id, name, email, legal_name, verification_status)
+          ''')
+          .order('created_at', ascending: false)
+          .range(offset, offset + limit - 1);
+
+      if (status != null) {
+        query = query.eq('verification_status', status);
+      }
+      if (platform != null) {
+        query = query.eq('platform', platform.value);
+      }
+
+      final response = await query;
+      return response.map((json) => SNSVerification.fromJson(json)).toList();
+    } catch (e) {
+      print('管理者SNS認証一覧の取得エラー: $e');
+      return [];
+    }
+  }
+
+  /// 認証コードを生成
+  static String _generateVerificationCode() {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    final random = Random.secure();
+    return 'STARLIST-${List.generate(8, (index) => chars[random.nextInt(chars.length)]).join()}';
+  }
+
+  /// SNSアカウントデータを取得
+  static Future<Map<String, dynamic>?> _fetchSNSAccountData(
+    SNSPlatform platform,
+    String accountHandle,
+  ) async {
+    try {
+      switch (platform) {
+        case SNSPlatform.youtube:
+          return await _fetchYouTubeData(accountHandle);
+        case SNSPlatform.instagram:
+          return await _fetchInstagramData(accountHandle);
+        case SNSPlatform.tiktok:
+          return await _fetchTikTokData(accountHandle);
+        case SNSPlatform.twitter:
+          return await _fetchTwitterData(accountHandle);
+      }
+    } catch (e) {
+      print('SNSデータ取得エラー ($platform): $e');
+      return null;
+    }
+  }
+
+  /// SNSプロフィールを取得
+  static Future<Map<String, dynamic>?> _fetchSNSProfile(
+    SNSPlatform platform,
+    String accountHandle,
+  ) async {
+    try {
+      switch (platform) {
+        case SNSPlatform.youtube:
+          return await _fetchYouTubeProfile(accountHandle);
+        case SNSPlatform.instagram:
+          return await _fetchInstagramProfile(accountHandle);
+        case SNSPlatform.tiktok:
+          return await _fetchTikTokProfile(accountHandle);
+        case SNSPlatform.twitter:
+          return await _fetchTwitterProfile(accountHandle);
+      }
+    } catch (e) {
+      print('SNSプロフィール取得エラー ($platform): $e');
+      return null;
+    }
+  }
+
+  /// YouTube データを取得
+  static Future<Map<String, dynamic>?> _fetchYouTubeData(String channelHandle) async {
+    try {
+      // YouTube Data API v3を使用
+      final url = 'https://www.googleapis.com/youtube/v3/channels'
+          '?part=statistics,snippet'
+          '&forHandle=$channelHandle'
+          '&key=$_youtubeApiKey';
+
+      final response = await http.get(Uri.parse(url));
+      
+      if (response.statusCode != 200) {
+        return null;
+      }
+
+      final data = jsonDecode(response.body);
+      
+      if (data['items'] == null || data['items'].isEmpty) {
+        return null;
+      }
+
+      final item = data['items'][0];
+      
+      return {
+        'platform': 'youtube',
+        'channelId': item['id'],
+        'channelName': item['snippet']['title'],
+        'followerCount': int.parse(item['statistics']['subscriberCount'] ?? '0'),
+        'videoCount': int.parse(item['statistics']['videoCount'] ?? '0'),
+        'viewCount': int.parse(item['statistics']['viewCount'] ?? '0'),
+        'description': item['snippet']['description'],
+        'thumbnailUrl': item['snippet']['thumbnails']['default']['url'],
+      };
+    } catch (e) {
+      print('YouTubeデータ取得エラー: $e');
+      return null;
+    }
+  }
+
+  /// YouTube プロフィールを取得
+  static Future<Map<String, dynamic>?> _fetchYouTubeProfile(String channelHandle) async {
+    try {
+      final url = 'https://www.googleapis.com/youtube/v3/channels'
+          '?part=snippet'
+          '&forHandle=$channelHandle'
+          '&key=$_youtubeApiKey';
+
+      final response = await http.get(Uri.parse(url));
+      
+      if (response.statusCode != 200) {
+        return null;
+      }
+
+      final data = jsonDecode(response.body);
+      
+      if (data['items'] == null || data['items'].isEmpty) {
+        return null;
+      }
+
+      final item = data['items'][0];
+      
+      return {
+        'profile': item['snippet']['description'] ?? '',
+      };
+    } catch (e) {
+      print('YouTubeプロフィール取得エラー: $e');
+      return null;
+    }
+  }
+
+  /// Instagram データを取得（Basic Display API）
+  static Future<Map<String, dynamic>?> _fetchInstagramData(String username) async {
+    // Instagram Basic Display APIは個人アクセストークンが必要
+    // 実装時は適切なOAuth2フローを使用
+    return {
+      'platform': 'instagram',
+      'username': username,
+      'followerCount': 0, // APIから取得
+      'description': '', // APIから取得
+    };
+  }
+
+  /// Instagram プロフィールを取得
+  static Future<Map<String, dynamic>?> _fetchInstagramProfile(String username) async {
+    return {
+      'profile': '', // APIから取得
+    };
+  }
+
+  /// TikTok データを取得
+  static Future<Map<String, dynamic>?> _fetchTikTokData(String username) async {
+    // TikTok API v2を使用（企業向けAPI）
+    return {
+      'platform': 'tiktok',
+      'username': username,
+      'followerCount': 0, // APIから取得
+      'description': '', // APIから取得
+    };
+  }
+
+  /// TikTok プロフィールを取得
+  static Future<Map<String, dynamic>?> _fetchTikTokProfile(String username) async {
+    return {
+      'profile': '', // APIから取得
+    };
+  }
+
+  /// Twitter データを取得
+  static Future<Map<String, dynamic>?> _fetchTwitterData(String username) async {
+    try {
+      // Twitter API v2を使用
+      final url = 'https://api.twitter.com/2/users/by/username/$username'
+          '?user.fields=public_metrics,description';
+
+      final response = await http.get(
+        Uri.parse(url),
+        headers: {
+          'Authorization': 'Bearer $_twitterApiKey',
+        },
+      );
+      
+      if (response.statusCode != 200) {
+        return null;
+      }
+
+      final data = jsonDecode(response.body);
+      
+      if (data['data'] == null) {
+        return null;
+      }
+
+      final user = data['data'];
+      
+      return {
+        'platform': 'twitter',
+        'userId': user['id'],
+        'username': user['username'],
+        'followerCount': user['public_metrics']['followers_count'],
+        'tweetCount': user['public_metrics']['tweet_count'],
+        'description': user['description'] ?? '',
+      };
+    } catch (e) {
+      print('Twitterデータ取得エラー: $e');
+      return null;
+    }
+  }
+
+  /// Twitter プロフィールを取得
+  static Future<Map<String, dynamic>?> _fetchTwitterProfile(String username) async {
+    try {
+      final url = 'https://api.twitter.com/2/users/by/username/$username'
+          '?user.fields=description';
+
+      final response = await http.get(
+        Uri.parse(url),
+        headers: {
+          'Authorization': 'Bearer $_twitterApiKey',
+        },
+      );
+      
+      if (response.statusCode != 200) {
+        return null;
+      }
+
+      final data = jsonDecode(response.body);
+      
+      return {
+        'profile': data['data']['description'] ?? '',
+      };
+    } catch (e) {
+      print('Twitterプロフィール取得エラー: $e');
+      return null;
+    }
+  }
+
+  /// プロフィール内の認証コード確認
+  static bool _checkVerificationCodeInProfile(String profileText, String verificationCode) {
+    // 認証コードがプロフィール文に含まれているかチェック
+    return profileText.contains(verificationCode);
+  }
+
+  /// ユーザーの認証ステータスを更新
+  static Future<void> _updateUserVerificationStatus(String userId) async {
+    try {
+      // ユーザーの現在の認証状況をチェック
+      final user = await _supabase
+          .from('users')
+          .select('verification_status, is_minor')
+          .eq('id', userId)
+          .single();
+
+      String newStatus = 'sns_verification_completed';
+
+      // 未成年者の場合は親権者同意の確認も必要
+      if (user['is_minor'] == true) {
+        final parentalConsent = await _supabase
+            .from('parental_consents')
+            .select('verification_status')
+            .eq('user_id', userId)
+            .maybeSingle();
+
+        if (parentalConsent != null && 
+            (parentalConsent['verification_status'] == 'approved' || 
+             parentalConsent['verification_status'] == 'parental_ekyc_completed')) {
+          newStatus = 'under_review';
+        }
+      } else {
+        // 成人の場合、eKYCとSNS認証が完了していれば審査待ち
+        if (user['verification_status'] == 'ekyc_completed') {
+          newStatus = 'under_review';
+        }
+      }
+
+      await _supabase.from('users').update({
+        'verification_status': newStatus,
+        'updated_at': DateTime.now().toIso8601String(),
+      }).eq('id', userId);
+    } catch (e) {
+      print('ユーザー認証ステータス更新エラー: $e');
+    }
+  }
+}
+
+/// SNS認証結果
+class SNSVerificationResult {
+  final bool success;
+  final String? verificationId;
+  final String? verificationCode;
+  final int? followerCount;
+  final String? message;
+  final String? error;
+
+  SNSVerificationResult({
+    required this.success,
+    this.verificationId,
+    this.verificationCode,
+    this.followerCount,
+    this.message,
+    this.error,
+  });
+} 

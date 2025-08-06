@@ -478,21 +478,21 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
                   ),
             borderRadius: BorderRadius.circular(24),
             border: isDark 
-                ? Border.all(color: const Color(0xFF9333EA).withOpacity( 0.3), width: 1)
-                : Border.all(color: const Color(0xFF667EEA).withOpacity( 0.2), width: 1),
+                ? Border.all(color: const Color(0xFF9333EA).withOpacity(0.3), width: 1)
+                : Border.all(color: const Color(0xFF667EEA).withOpacity(0.2), width: 1),
             boxShadow: [
               BoxShadow(
                 color: isDark 
-                    ? const Color(0xFF667EEA).withOpacity( 0.25) 
-                    : const Color(0xFF667EEA).withOpacity( 0.15),
+                    ? const Color(0xFF667EEA).withOpacity(0.25) 
+                    : const Color(0xFF667EEA).withOpacity(0.15),
                 blurRadius: 32,
                 offset: const Offset(0, 16),
                 spreadRadius: 0,
               ),
               BoxShadow(
                 color: isDark 
-                    ? Colors.black.withOpacity( 0.3) 
-                    : Colors.white.withOpacity( 0.8),
+                    ? Colors.black.withOpacity(0.3) 
+                    : Colors.white.withOpacity(0.8),
                 blurRadius: 1,
                 offset: const Offset(0, 1),
                 spreadRadius: 0,
@@ -507,8 +507,8 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
                 height: 96,
                 decoration: BoxDecoration(
                   color: isDark 
-                      ? Colors.white.withOpacity( 0.15) 
-                      : const Color(0xFF667EEA).withOpacity( 0.1),
+                      ? Colors.white.withOpacity(0.15) 
+                      : const Color(0xFF667EEA).withOpacity(0.1),
                   borderRadius: BorderRadius.circular(28),
                   border: Border.all(
                     color: isDark 
@@ -1190,13 +1190,13 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
     setState(() {
       isProcessing = true;
     });
-    
+
     // 3秒後にサービス選択画面を表示
     Future.delayed(const Duration(seconds: 3), () {
       setState(() {
         isProcessing = false;
       });
-      _showServiceSelectionForOCR();
+    _showServiceSelectionForOCR();
     });
   }
 
@@ -1442,7 +1442,7 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
   }
 
   void _selectServiceForOCR(String serviceId) {
-    _navigateToService(serviceId);
+      _navigateToService(serviceId);
   }
 
   void _showComingSoonDialog(String serviceId) {
@@ -1953,7 +1953,7 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
             width: 1,
           ),
         ),
-        child: Row(
+            child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
@@ -2319,7 +2319,7 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
         style: TextStyle(color: Colors.white),
       ),
     );
-  }
+}
 
   Future<void> _processData() async {
     if (_textController.text.trim().isEmpty) {

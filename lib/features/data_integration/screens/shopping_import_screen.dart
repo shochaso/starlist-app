@@ -170,7 +170,7 @@ class _ShoppingImportScreenState extends ConsumerState<ShoppingImportScreen>
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
+                  color: Colors.white.withOpacity( 0.2),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Icon(
@@ -254,7 +254,7 @@ class _ShoppingImportScreenState extends ConsumerState<ShoppingImportScreen>
           ),
           boxShadow: isSelected ? [
             BoxShadow(
-              color: type['color'].withValues(alpha: 0.2),
+              color: type['color'].withOpacity( 0.2),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -265,7 +265,7 @@ class _ShoppingImportScreenState extends ConsumerState<ShoppingImportScreen>
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: type['color'].withValues(alpha: 0.1),
+                color: type['color'].withOpacity( 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Icon(
@@ -621,7 +621,7 @@ class _ShoppingImportScreenState extends ConsumerState<ShoppingImportScreen>
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                               decoration: BoxDecoration(
-                                color: _getConfidenceColor(item.confidence).withValues(alpha: 0.1),
+                                color: _getConfidenceColor(item.confidence).withOpacity( 0.1),
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: Text(

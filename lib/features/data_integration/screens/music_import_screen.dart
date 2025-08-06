@@ -163,7 +163,7 @@ class _MusicImportScreenState extends ConsumerState<MusicImportScreen>
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
+                  color: Colors.white.withOpacity( 0.2),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Icon(
@@ -247,7 +247,7 @@ class _MusicImportScreenState extends ConsumerState<MusicImportScreen>
           ),
           boxShadow: isSelected ? [
             BoxShadow(
-              color: type['color'].withValues(alpha: 0.2),
+              color: type['color'].withOpacity( 0.2),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -258,7 +258,7 @@ class _MusicImportScreenState extends ConsumerState<MusicImportScreen>
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: type['color'].withValues(alpha: 0.1),
+                color: type['color'].withOpacity( 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Icon(
@@ -563,7 +563,7 @@ class _MusicImportScreenState extends ConsumerState<MusicImportScreen>
                   decoration: BoxDecoration(
                     color: isSelected 
                         ? (isDark ? const Color(0xFF1A1A1A) : const Color(0xFFF8FAFC))
-                        : (isDark ? const Color(0xFF404040).withValues(alpha: 0.3) : const Color(0xFFF1F5F9)),
+                        : (isDark ? const Color(0xFF404040).withOpacity( 0.3) : const Color(0xFFF1F5F9)),
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(
                       color: isSelected 
@@ -593,7 +593,7 @@ class _MusicImportScreenState extends ConsumerState<MusicImportScreen>
                                   Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                     decoration: BoxDecoration(
-                                      color: const Color(0xFF1DB954).withValues(alpha: 0.2),
+                                      color: const Color(0xFF1DB954).withOpacity( 0.2),
                                       borderRadius: BorderRadius.circular(4),
                                     ),
                                     child: Text(
@@ -649,7 +649,7 @@ class _MusicImportScreenState extends ConsumerState<MusicImportScreen>
                                 Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                   decoration: BoxDecoration(
-                                    color: _getConfidenceColor(track.confidence).withValues(alpha: 0.1),
+                                    color: _getConfidenceColor(track.confidence).withOpacity( 0.1),
                                     borderRadius: BorderRadius.circular(4),
                                   ),
                                   child: Text(

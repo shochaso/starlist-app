@@ -1,16 +1,16 @@
 import "package:flutter/foundation.dart";
-import "package:firebase_auth/firebase_auth.dart";
+// import "package:firebase_auth/firebase_auth.dart";
 import "package:starlist/src/features/auth/models/user_model.dart";
-import "package:starlist/src/features/auth/services/auth_service.dart";
+// import "package:starlist/src/features/auth/services/auth_service.dart";
 
 class AuthProvider extends ChangeNotifier {
-  final AuthService _authService;
+  // final AuthService _authService;
   UserModel? _user;
   bool _isLoading = false;
   String? _error;
 
-  AuthProvider(this._authService) {
-    _authService.authStateChanges.listen(_onAuthStateChanged);
+  AuthProvider() {
+    // _authService.authStateChanges.listen(_onAuthStateChanged);
   }
 
   UserModel? get user => _user;
@@ -18,33 +18,33 @@ class AuthProvider extends ChangeNotifier {
   String? get error => _error;
   bool get isAuthenticated => _user != null;
 
-  void _onAuthStateChanged(User? firebaseUser) async {
-    if (firebaseUser != null) {
-      try {
-        _isLoading = true;
-        _error = null;
-        notifyListeners();
+  // void _onAuthStateChanged(User? firebaseUser) async {
+  //   if (firebaseUser != null) {
+  //     try {
+  //       _isLoading = true;
+  //       _error = null;
+  //       notifyListeners();
 
-        // TODO: Fetch user data from API
-        _user = UserModel(
-          id: firebaseUser.uid,
-          email: firebaseUser.email!,
-          username: firebaseUser.displayName ?? "",
-          createdAt: DateTime.now(),
-        );
+  //       // TODO: Fetch user data from API
+  //       _user = UserModel(
+  //         id: firebaseUser.uid,
+  //         email: firebaseUser.email!,
+  //         username: firebaseUser.displayName ?? "",
+  //         createdAt: DateTime.now(),
+  //       );
 
-        _isLoading = false;
-        notifyListeners();
-      } catch (e) {
-        _error = e.toString();
-        _isLoading = false;
-        notifyListeners();
-      }
-    } else {
-      _user = null;
-      notifyListeners();
-    }
-  }
+  //       _isLoading = false;
+  //       notifyListeners();
+  //     } catch (e) {
+  //       _error = e.toString();
+  //       _isLoading = false;
+  //       notifyListeners();
+  //     }
+  //   } else {
+  //     _user = null;
+  //     notifyListeners();
+  //   }
+  // }
 
   Future<void> signInWithEmailAndPassword(String email, String password) async {
     try {
@@ -52,7 +52,7 @@ class AuthProvider extends ChangeNotifier {
       _error = null;
       notifyListeners();
 
-      _user = await _authService.signInWithEmailAndPassword(email, password);
+      // _user = await _authService.signInWithEmailAndPassword(email, password);
       _isLoading = false;
       notifyListeners();
     } catch (e) {
@@ -68,7 +68,7 @@ class AuthProvider extends ChangeNotifier {
       _error = null;
       notifyListeners();
 
-      _user = await _authService.signInWithGoogle();
+      // _user = await _authService.signInWithGoogle();
       _isLoading = false;
       notifyListeners();
     } catch (e) {
@@ -88,7 +88,7 @@ class AuthProvider extends ChangeNotifier {
       _error = null;
       notifyListeners();
 
-      _user = await _authService.registerWithEmailAndPassword(email, password, username);
+      // _user = await _authService.registerWithEmailAndPassword(email, password, username);
       _isLoading = false;
       notifyListeners();
     } catch (e) {
@@ -104,7 +104,7 @@ class AuthProvider extends ChangeNotifier {
       _error = null;
       notifyListeners();
 
-      await _authService.signOut();
+      // await _authService.signOut();
       _user = null;
       _isLoading = false;
       notifyListeners();
@@ -121,7 +121,7 @@ class AuthProvider extends ChangeNotifier {
       _error = null;
       notifyListeners();
 
-      await _authService.resetPassword(email);
+      // await _authService.resetPassword(email);
       _isLoading = false;
       notifyListeners();
     } catch (e) {
@@ -137,7 +137,7 @@ class AuthProvider extends ChangeNotifier {
       _error = null;
       notifyListeners();
 
-      await _authService.changePassword(currentPassword, newPassword);
+      // await _authService.changePassword(currentPassword, newPassword);
       _isLoading = false;
       notifyListeners();
     } catch (e) {

@@ -2266,7 +2266,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.2),
+                    color: Colors.white.withOpacity( 0.2),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: const Icon(
@@ -2364,9 +2364,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 3),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
-        color: isActive ? const Color(0xFF4ECDC4).withValues(alpha: 0.15) : null,
+        color: isActive ? const Color(0xFF4ECDC4).withOpacity( 0.15) : null,
         border: isActive ? Border.all(
-          color: const Color(0xFF4ECDC4).withValues(alpha: 0.3),
+          color: const Color(0xFF4ECDC4).withOpacity( 0.3),
           width: 1,
         ) : null,
       ),

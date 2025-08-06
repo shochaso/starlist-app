@@ -524,7 +524,7 @@ class _StarDashboardScreenState extends ConsumerState<StarDashboardScreen>
         border: Border.all(color: const Color(0xFF333333)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.2),
+            color: Colors.black.withOpacity( 0.2),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -536,7 +536,7 @@ class _StarDashboardScreenState extends ConsumerState<StarDashboardScreen>
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.2),
+              color: color.withOpacity( 0.2),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(icon, color: color, size: 20),
@@ -573,7 +573,7 @@ class _StarDashboardScreenState extends ConsumerState<StarDashboardScreen>
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.2),
+              color: color.withOpacity( 0.2),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Text(
@@ -662,7 +662,7 @@ class _StarDashboardScreenState extends ConsumerState<StarDashboardScreen>
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.2),
+          color: Colors.white.withOpacity( 0.2),
           borderRadius: BorderRadius.circular(8),
         ),
         child: Column(
@@ -743,9 +743,9 @@ class _StarDashboardScreenState extends ConsumerState<StarDashboardScreen>
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.1),
+          color: color.withOpacity( 0.1),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: color.withValues(alpha: 0.3)),
+          border: Border.all(color: color.withOpacity( 0.3)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1295,7 +1295,7 @@ class _StarDashboardScreenState extends ConsumerState<StarDashboardScreen>
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.2),
+                    color: Colors.white.withOpacity( 0.2),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: const Icon(
@@ -1393,9 +1393,9 @@ class _StarDashboardScreenState extends ConsumerState<StarDashboardScreen>
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 3),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
-        color: isActive ? const Color(0xFF4ECDC4).withValues(alpha: 0.15) : null,
+        color: isActive ? const Color(0xFF4ECDC4).withOpacity( 0.15) : null,
         border: isActive ? Border.all(
-          color: const Color(0xFF4ECDC4).withValues(alpha: 0.3),
+          color: const Color(0xFF4ECDC4).withOpacity( 0.3),
           width: 1,
         ) : null,
       ),

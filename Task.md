@@ -74,6 +74,43 @@
 
 \- \[ \] P2 📅 ダークモード対応
 
+### 機能開発
+
+- [ ] **新規スター登録・認証フローの実装**
+  - [ ] **DBスキーマ設計**:
+    - [ ] `users`テーブルに`verification_status`カラムを追加/更新 (`awaiting_terms_agreement`, `awaiting_ekyc`, `awaiting_parental_consent`, `awaiting_sns_verification`, `pending_review`, `approved`, `rejected`)
+    - [ ] `parental_consents`テーブルを新規作成
+    - [ ] Supabaseマイグレーションスクリプトの作成
+  - [ ] **ステップA: 事務所利用規約への同意画面 (`TermsAgreementScreen`)**
+    - [ ] UI/UX実装
+    - [ ] 同意状態の永続化とステータス更新 (`awaiting_ekyc`)
+    - [ ] Widgetテスト作成
+  - [ ] **ステップB: eKYCによる本人・年齢確認 (`eKYCStartScreen`)**
+    - [ ] サードパーティeKYCサービスのSDK連携
+    - [ ] コールバックを受け取るAPIエンドポイント実装 (Supabase Edge Functions)
+    - [ ] 年齢判定ロジック（18歳未満/以上）を実装
+    - [ ] ステータス更新ロジック (`awaiting_sns_verification` or `awaiting_parental_consent`)
+    - [ ] ユニットテスト/統合テスト作成
+  - [ ] **ステップC: 親権者同意フロー (`ParentalConsentScreen`)**
+    - [ ] UI/UX実装（情報入力、同意書DL、画像アップロード）
+    - [ ] 同意書アップロード処理 (Supabase Storage)
+    - [ ] 親権者情報をDBに保存するAPI実装
+    - [ ] ステータス更新ロジック (`awaiting_sns_verification`)
+    - [ ] Widgetテスト作成
+  - [ ] **ステップD: SNSアカウント所有権確認**
+    - [ ] 既存のSNS連携機能を認証フローに統合
+    - [ ] 所有権確認ロジック（ユニークコード埋め込み等）を実装
+    - [ ] ステータス更新ロジック (`pending_review`)
+    - [ ] 統合テスト作成
+  - [ ] **運営向け承認管理画面の強化**
+    - [ ] 申請者情報（eKYC結果、年齢、親権者同意書など）の一元表示
+    - [ ] 承認(`approved`) / 拒否(`rejected`)の実行機能
+    - [ ] 変更後のステータスをDBに反映
+  - [ ] **認証フロー全体の制御**
+    - [ ] `verification_status`が`approved`になるまで機能制限をかけるロジックを実装
+
+- [ ] **UI/UX改善**
+
 \## フェーズ2タスク
 
 \### OCR機能

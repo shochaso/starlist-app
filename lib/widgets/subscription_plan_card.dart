@@ -24,7 +24,7 @@ class SubscriptionPlanCard extends ConsumerWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF667EEA).withValues(alpha: 0.4),
+            color: const Color(0xFF667EEA).withOpacity( 0.4),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -40,7 +40,7 @@ class SubscriptionPlanCard extends ConsumerWidget {
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.2),
+                    color: Colors.white.withOpacity( 0.2),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: const Icon(
@@ -78,7 +78,7 @@ class SubscriptionPlanCard extends ConsumerWidget {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.1),
+                color: Colors.white.withOpacity( 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
@@ -117,7 +117,7 @@ class SubscriptionPlanCard extends ConsumerWidget {
                   Container(
                     width: 1,
                     height: 40,
-                    color: Colors.white.withValues(alpha: 0.3),
+                    color: Colors.white.withOpacity( 0.3),
                   ),
                   const SizedBox(width: 16),
                   Expanded(

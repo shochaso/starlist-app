@@ -322,7 +322,7 @@ class _PaymentInfoScreenState extends ConsumerState<PaymentInfoScreen> {
                 width: 50,
                 height: 50,
                 decoration: BoxDecoration(
-                  color: methodColor.withValues(alpha: 0.2),
+                  color: methodColor.withOpacity( 0.2),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(methodIcon, color: methodColor, size: 24),
@@ -510,7 +510,7 @@ class _PaymentInfoScreenState extends ConsumerState<PaymentInfoScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: statusColor.withValues(alpha: 0.2),
+                  color: statusColor.withOpacity( 0.2),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
@@ -814,7 +814,7 @@ class _PaymentInfoScreenState extends ConsumerState<PaymentInfoScreen> {
         ),
         boxShadow: [
           BoxShadow(
-            color: (isDark ? Colors.black : Colors.black).withValues(alpha: 0.1),
+            color: (isDark ? Colors.black : Colors.black).withOpacity( 0.1),
             blurRadius: 10,
             offset: const Offset(0, -2),
           ),

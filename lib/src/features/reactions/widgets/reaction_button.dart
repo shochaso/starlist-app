@@ -184,8 +184,8 @@ class _ReactionButtonState extends State<ReactionButton>
   Color _getActiveBackgroundColor(bool isDark) {
     final baseColor = _getActiveColor();
     return isDark
-        ? baseColor.withValues(alpha: 0.15)
-        : baseColor.withValues(alpha: 0.1);
+        ? baseColor.withOpacity( 0.15)
+        : baseColor.withOpacity( 0.1);
   }
 
   Color _getInactiveColor(bool isDark) {

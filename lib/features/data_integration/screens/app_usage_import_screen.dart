@@ -169,7 +169,7 @@ class _AppUsageImportScreenState extends ConsumerState<AppUsageImportScreen>
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
+                  color: Colors.white.withOpacity( 0.2),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Icon(
@@ -253,7 +253,7 @@ class _AppUsageImportScreenState extends ConsumerState<AppUsageImportScreen>
           ),
           boxShadow: isSelected ? [
             BoxShadow(
-              color: type['color'].withValues(alpha: 0.2),
+              color: type['color'].withOpacity( 0.2),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -264,7 +264,7 @@ class _AppUsageImportScreenState extends ConsumerState<AppUsageImportScreen>
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: type['color'].withValues(alpha: 0.1),
+                color: type['color'].withOpacity( 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Icon(

@@ -306,7 +306,7 @@ class _EntertainmentImportScreenState extends ConsumerState<EntertainmentImportS
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [widget.serviceColor, widget.serviceColor.withValues(alpha: 0.8)],
+                  colors: [widget.serviceColor, widget.serviceColor.withOpacity( 0.8)],
                 ),
                 borderRadius: BorderRadius.circular(16),
               ),
@@ -614,7 +614,7 @@ class _EntertainmentImportScreenState extends ConsumerState<EntertainmentImportS
               decoration: BoxDecoration(
                 color: isSelected 
                     ? (isDark ? const Color(0xFF1A1A1A) : const Color(0xFFF8FAFC))
-                    : (isDark ? const Color(0xFF404040).withValues(alpha: 0.3) : const Color(0xFFF1F5F9)),
+                    : (isDark ? const Color(0xFF404040).withOpacity( 0.3) : const Color(0xFFF1F5F9)),
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(
                   color: isSelected ? widget.serviceColor : Colors.grey,

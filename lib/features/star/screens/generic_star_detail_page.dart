@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../models/user.dart';
 import '../../../src/providers/theme_provider_enhanced.dart';
 import '../../../data/mock_users/hanayama_mizuki.dart';
+import '../../../services/access_control_service.dart';
+import '../../../data/test_accounts_data.dart';
 
 /// 汎用スター詳細ページ
 /// 任意のスターの詳細情報を表示する再利用可能なコンポーネント
@@ -25,12 +27,21 @@ class _GenericStarDetailPageState extends ConsumerState<GenericStarDetailPage>
   late TabController _tabController;
   Map<String, dynamic>? _starData;
   bool _isFollowing = true; // フォローリストから来ているので初期値はtrue
+  User? _currentUser; // 現在のユーザー（アクセス制御用）
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
     _loadStarData();
+    _loadCurrentUser();
+  }
+  
+  /// 現在のユーザー情報を読み込み（テスト用に無料プランユーザーを設定）
+  void _loadCurrentUser() {
+    // テスト用：無料プランユーザーでアクセス制御をテスト
+    _currentUser = TestAccountsData.freeFan;
+    setState(() {});
   }
 
   @override
@@ -373,6 +384,21 @@ class _GenericStarDetailPageState extends ConsumerState<GenericStarDetailPage>
 
   /// 投稿タブ
   Widget _buildPostsTab(bool isDark) {
+    // アクセス制御チェック
+    final canView = AccessControlService.canViewContent(
+      _currentUser?.fanPlanType, 
+      ContentType.youtubeVideos
+    );
+    
+    if (!canView) {
+      return _buildRestrictedContentWidget(
+        isDark, 
+        ContentType.youtubeVideos,
+        'YouTube投稿',
+        Icons.play_circle_outline,
+      );
+    }
+    
     final posts = _getStarPosts();
     return ListView.builder(
       padding: const EdgeInsets.all(20),
@@ -386,6 +412,21 @@ class _GenericStarDetailPageState extends ConsumerState<GenericStarDetailPage>
 
   /// 購入履歴タブ
   Widget _buildPurchaseHistoryTab(bool isDark) {
+    // アクセス制御チェック
+    final canView = AccessControlService.canViewContent(
+      _currentUser?.fanPlanType, 
+      ContentType.purchaseHistory
+    );
+    
+    if (!canView) {
+      return _buildRestrictedContentWidget(
+        isDark, 
+        ContentType.purchaseHistory,
+        '購入履歴',
+        Icons.shopping_bag_outlined,
+      );
+    }
+    
     final purchases = _getStarPurchases();
     return ListView.builder(
       padding: const EdgeInsets.all(20),
@@ -399,6 +440,21 @@ class _GenericStarDetailPageState extends ConsumerState<GenericStarDetailPage>
 
   /// アクティビティタブ
   Widget _buildActivityTab(bool isDark) {
+    // アクセス制御チェック
+    final canView = AccessControlService.canViewContent(
+      _currentUser?.fanPlanType, 
+      ContentType.activities
+    );
+    
+    if (!canView) {
+      return _buildRestrictedContentWidget(
+        isDark, 
+        ContentType.activities,
+        'アクティビティ',
+        Icons.timeline,
+      );
+    }
+    
     return Center(
       child: Text(
         'アクティビティ（実装予定）',
@@ -411,6 +467,21 @@ class _GenericStarDetailPageState extends ConsumerState<GenericStarDetailPage>
 
   /// 限定タブ（プラン別制御）
   Widget _buildPremiumTab(bool isDark) {
+    // アクセス制御チェック
+    final canView = AccessControlService.canViewContent(
+      _currentUser?.fanPlanType, 
+      ContentType.premiumContent
+    );
+    
+    if (!canView) {
+      return _buildRestrictedContentWidget(
+        isDark, 
+        ContentType.premiumContent,
+        '限定コンテンツ',
+        Icons.diamond,
+      );
+    }
+    
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -431,10 +502,252 @@ class _GenericStarDetailPageState extends ConsumerState<GenericStarDetailPage>
           ),
           const SizedBox(height: 8),
           Text(
-            'プレミアムプラン以上で閲覧可能',
+            'プレミアムプラン限定コンテンツが表示されます',
             style: TextStyle(
               color: isDark ? Colors.grey[400] : Colors.grey[600],
             ),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  /// 制限コンテンツ表示ウィジェット
+  Widget _buildRestrictedContentWidget(
+    bool isDark, 
+    ContentType contentType, 
+    String contentName,
+    IconData icon,
+  ) {
+    final restrictionMessage = AccessControlService.getRestrictionMessage(
+      _currentUser?.fanPlanType, 
+      contentType
+    );
+    
+    final userPoints = _currentUser != null ? 
+      PointTicketService.getUserPoints(_currentUser!.id) : 0;
+    final userTickets = _currentUser != null ? 
+      PointTicketService.getUserTickets(_currentUser!.id) : 0;
+    
+    final requiredPoints = AccessControlService.getRequiredPoints(contentType);
+    final requiredTickets = AccessControlService.getRequiredTickets(contentType);
+    
+    return Container(
+      padding: const EdgeInsets.all(20),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: isDark ? Colors.grey[900] : Colors.grey[50],
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: isDark ? Colors.grey[700]! : Colors.grey[300]!,
+                ),
+              ),
+              child: Column(
+                children: [
+                  Icon(
+                    Icons.lock_outline,
+                    size: 64,
+                    color: isDark ? Colors.grey[400] : Colors.grey[600],
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    '$contentName（制限中）',
+                    style: TextStyle(
+                      color: isDark ? Colors.white : Colors.black,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    restrictionMessage,
+                    style: TextStyle(
+                      color: isDark ? Colors.grey[400] : Colors.grey[600],
+                      fontSize: 14,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 20),
+                  
+                  // ポイント/チケット情報表示
+                  if (contentType == ContentType.youtubeVideos) ...[
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: isDark ? Colors.grey[800] : Colors.blue[50],
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Column(
+                        children: [
+                          Text(
+                            '現在の残高',
+                            style: TextStyle(
+                              color: isDark ? Colors.grey[300] : Colors.grey[700],
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: [
+                              Column(
+                                children: [
+                                  Icon(
+                                    Icons.star,
+                                    color: Colors.amber,
+                                    size: 20,
+                                  ),
+                                  Text(
+                                    '$userPoints P',
+                                    style: TextStyle(
+                                      color: isDark ? Colors.white : Colors.black,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  Text(
+                                    '(必要: $requiredPoints P)',
+                                    style: TextStyle(
+                                      color: userPoints >= requiredPoints 
+                                        ? Colors.green 
+                                        : Colors.red,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              Column(
+                                children: [
+                                  Icon(
+                                    Icons.confirmation_number,
+                                    color: Colors.purple,
+                                    size: 20,
+                                  ),
+                                  Text(
+                                    '$userTickets 枚',
+                                    style: TextStyle(
+                                      color: isDark ? Colors.white : Colors.black,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  Text(
+                                    '(必要: $requiredTickets 枚)',
+                                    style: TextStyle(
+                                      color: userTickets >= requiredTickets 
+                                        ? Colors.green 
+                                        : Colors.red,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    
+                    // ポイント/チケット使用ボタン
+                    Row(
+                      children: [
+                        if (userPoints >= requiredPoints)
+                          Expanded(
+                            child: ElevatedButton.icon(
+                              onPressed: () => _usePointsToViewContent(contentType),
+                              icon: const Icon(Icons.star, size: 18),
+                              label: Text('$requiredPoints P で閲覧'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.amber,
+                                foregroundColor: Colors.white,
+                              ),
+                            ),
+                          ),
+                        if (userPoints >= requiredPoints && userTickets >= requiredTickets)
+                          const SizedBox(width: 12),
+                        if (userTickets >= requiredTickets)
+                          Expanded(
+                            child: ElevatedButton.icon(
+                              onPressed: () => _useTicketsToViewContent(contentType),
+                              icon: const Icon(Icons.confirmation_number, size: 18),
+                              label: Text('$requiredTickets 枚で閲覧'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.purple,
+                                foregroundColor: Colors.white,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ],
+                  
+                  const SizedBox(height: 16),
+                  OutlinedButton(
+                    onPressed: () => _showUpgradeDialog(),
+                    child: const Text('プランアップグレード'),
+                    style: OutlinedButton.styleFrom(
+                      side: BorderSide(color: Colors.blue),
+                      foregroundColor: Colors.blue,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+  
+  /// ポイントを使用してコンテンツを閲覧
+  void _usePointsToViewContent(ContentType contentType) {
+    // 実装：ポイント消費処理
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('ポイントを消費してコンテンツにアクセスしました'),
+        backgroundColor: Colors.green,
+      ),
+    );
+    // 一時的にアクセス許可（実際の実装では状態管理が必要）
+    setState(() {});
+  }
+  
+  /// チケットを使用してコンテンツを閲覧
+  void _useTicketsToViewContent(ContentType contentType) {
+    // 実装：チケット消費処理
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('チケットを消費してコンテンツにアクセスしました'),
+        backgroundColor: Colors.purple,
+      ),
+    );
+    // 一時的にアクセス許可（実際の実装では状態管理が必要）
+    setState(() {});
+  }
+  
+  /// プランアップグレードダイアログを表示
+  void _showUpgradeDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('プランアップグレード'),
+        content: const Text('上位プランに登録すると、制限なくコンテンツを閲覧できます。'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('キャンセル'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              // プラン選択画面に遷移（実装予定）
+            },
+            child: const Text('プラン選択'),
           ),
         ],
       ),

@@ -21,6 +21,8 @@ import '../src/widgets/post_card.dart';
 import '../features/content/screens/post_detail_screen.dart';
 import 'test_account_switcher_screen.dart';
 import '../data/models/post_model.dart';
+import 'login_status_screen.dart';
+import 'login_screen.dart'; // ログイン画面をインポート
 
 
 // データモデル
@@ -465,6 +467,24 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
     final selectedTab = ref.watch(selectedTabProvider);
     final themeState = ref.watch(themeProviderEnhanced);
     final isDark = themeState.isDarkMode;
+    final currentUser = ref.watch(currentUserProvider);
+
+    // ログイン状態をチェック
+    if (currentUser.id.isEmpty) {
+      // ログアウト状態の場合、即座にログイン画面を表示
+      // WidgetsBinding.instance.addPostFrameCallbackを使用して、ビルド完了後にナビゲーションを実行
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => const LoginScreen()),
+        );
+      });
+      // ログイン画面に遷移するまで一時的なプレースホルダーを表示
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
     
     return Scaffold(
       key: _scaffoldKey,
@@ -545,6 +565,19 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
         Container(
           margin: const EdgeInsets.all(4), // MP適用
           child: IconButton(
+            icon: Icon(Icons.login, color: isDark ? Colors.white54 : Colors.black54),
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const LoginStatusScreen(),
+                ),
+              );
+            },
+          ),
+        ),
+        Container(
+          margin: const EdgeInsets.all(4), // MP適用
+          child: IconButton(
             icon: Icon(
               isDark ? Icons.light_mode : Icons.dark_mode,
               color: isDark ? Colors.white54 : Colors.black54,
@@ -598,7 +631,7 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.2),
+                    color: Colors.white.withOpacity( 0.2),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: const Icon(
@@ -684,9 +717,9 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 3),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
-        color: isActive ? const Color(0xFF4ECDC4).withValues(alpha: 0.15) : null,
+        color: isActive ? const Color(0xFF4ECDC4).withOpacity( 0.15) : null,
         border: isActive ? Border.all(
-          color: const Color(0xFF4ECDC4).withValues(alpha: 0.3),
+          color: const Color(0xFF4ECDC4).withOpacity( 0.3),
           width: 1,
         ) : null,
       ),
@@ -727,7 +760,7 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
           Navigator.of(context).pop();
           if (tabIndex != -1) {
             ref.read(selectedTabProvider.notifier).state = tabIndex;
-            ref.read(selectedDrawerPageProvider.notifier).state = null;
+            ref.read(selectedDrawerPageProvider.notifier).state = null; // ドロワー選択をリセット
           } else if (pageKey != null) {
             ref.read(selectedDrawerPageProvider.notifier).state = pageKey;
             _navigateToPage(pageKey);
@@ -2051,7 +2084,7 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
         ),
         boxShadow: [
           BoxShadow(
-            color: (isDark ? Colors.black : Colors.black).withValues(alpha: 0.1),
+            color: (isDark ? Colors.black : Colors.black).withOpacity( 0.1),
             blurRadius: 10,
             offset: const Offset(0, -2),
           ),

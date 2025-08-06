@@ -6,6 +6,8 @@ import '../../../providers/user_provider.dart';
 import '../../subscription/screens/fan_subscription_screen.dart';
 import '../../star/screens/star_dashboard_screen.dart';
 import '../../data_integration/screens/data_import_screen.dart';
+import '../../../src/features/auth/providers/auth_provider.dart';
+import '../../../providers/user_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
@@ -138,16 +140,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         boxShadow: [
           BoxShadow(
             color: isDark
-                ? Colors.black.withValues(alpha: 0.3)
-                : Colors.black.withValues(alpha: 0.08),
+                ? Colors.black.withOpacity( 0.3)
+                : Colors.black.withOpacity( 0.08),
             blurRadius: 20,
             offset: const Offset(0, 8),
             spreadRadius: 0,
           ),
           BoxShadow(
             color: isDark
-                ? Colors.black.withValues(alpha: 0.2)
-                : Colors.white.withValues(alpha: 0.9),
+                ? Colors.black.withOpacity( 0.2)
+                : Colors.white.withOpacity( 0.9),
             blurRadius: 0,
             offset: const Offset(0, 1),
             spreadRadius: 0,
@@ -158,7 +160,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         children: [
           CircleAvatar(
             radius: 30,
-            backgroundColor: Colors.white.withValues(alpha: 0.2),
+            backgroundColor: Colors.white.withOpacity( 0.2),
             child: const Icon(
               Icons.person,
               color: Colors.white,
@@ -190,7 +192,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.2),
+                    color: Colors.white.withOpacity( 0.2),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: const Text(
@@ -431,18 +433,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 colors: [Colors.white, Color(0xFFFEF2F2)],
               ),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFFF6B6B).withValues(alpha: 0.3)),
+        border: Border.all(color: const Color(0xFFFF6B6B).withOpacity( 0.3)),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFFF6B6B).withValues(alpha: 0.1),
+            color: const Color(0xFFFF6B6B).withOpacity( 0.1),
             blurRadius: 20,
             offset: const Offset(0, 8),
             spreadRadius: 0,
           ),
           BoxShadow(
             color: isDark
-                ? Colors.black.withValues(alpha: 0.2)
-                : Colors.white.withValues(alpha: 0.9),
+                ? Colors.black.withOpacity( 0.2)
+                : Colors.white.withOpacity( 0.9),
             blurRadius: 0,
             offset: const Offset(0, 1),
             spreadRadius: 0,
@@ -516,23 +518,23 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
               color: isDark 
-                  ? const Color(0xFF404040).withValues(alpha: 0.3)
-                  : const Color(0xFFE2E8F0).withValues(alpha: 0.6),
+                  ? const Color(0xFF404040).withOpacity( 0.3)
+                  : const Color(0xFFE2E8F0).withOpacity( 0.6),
               width: 1,
             ),
             boxShadow: [
               BoxShadow(
                 color: isDark
-                    ? Colors.black.withValues(alpha: 0.3)
-                    : Colors.black.withValues(alpha: 0.08),
+                    ? Colors.black.withOpacity( 0.3)
+                    : Colors.black.withOpacity( 0.08),
                 blurRadius: 20,
                 offset: const Offset(0, 8),
                 spreadRadius: 0,
               ),
               BoxShadow(
                 color: isDark
-                    ? Colors.black.withValues(alpha: 0.2)
-                    : Colors.white.withValues(alpha: 0.9),
+                    ? Colors.black.withOpacity( 0.2)
+                    : Colors.white.withOpacity( 0.9),
                 blurRadius: 0,
                 offset: const Offset(0, 1),
                 spreadRadius: 0,
@@ -570,7 +572,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFF4ECDC4).withValues(alpha: 0.3),
+                      color: const Color(0xFF4ECDC4).withOpacity( 0.3),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     ),
@@ -627,7 +629,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF4ECDC4).withValues(alpha: 0.3),
+                  color: const Color(0xFF4ECDC4).withOpacity( 0.3),
                   blurRadius: 8,
                   offset: const Offset(0, 2),
                 ),
@@ -693,7 +695,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF4ECDC4).withValues(alpha: 0.3),
+                  color: const Color(0xFF4ECDC4).withOpacity( 0.3),
                   blurRadius: 8,
                   offset: const Offset(0, 2),
                 ),
@@ -813,7 +815,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFF4ECDC4).withValues(alpha: 0.3),
+                      color: const Color(0xFF4ECDC4).withOpacity( 0.3),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     ),
@@ -879,8 +881,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             boxShadow: [
               BoxShadow(
                 color: isDark
-                    ? Colors.black.withValues(alpha: 0.3)
-                    : Colors.black.withValues(alpha: 0.15),
+                    ? Colors.black.withOpacity( 0.3)
+                    : Colors.black.withOpacity( 0.15),
                 blurRadius: 30,
                 offset: const Offset(0, 10),
                 spreadRadius: 0,
@@ -1211,14 +1213,42 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
           ),
           TextButton(
-            onPressed: () {
+            onPressed: () async {
               Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('ログアウトしました'),
-                  backgroundColor: Color(0xFF4ECDC4),
-                ),
-              );
+              
+              try {
+                // ユーザープロバイダーの状態をクリア
+                ref.read(currentUserProvider.notifier).state = UserInfo(
+                  id: '',
+                  name: '',
+                  email: '',
+                  role: UserRole.fan,
+                );
+                
+                // ログイン画面に遷移
+                if (mounted) {
+                  Navigator.of(context).pushNamedAndRemoveUntil(
+                    '/',
+                    (route) => false,
+                  );
+                  
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('ログアウトしました'),
+                      backgroundColor: Color(0xFF4ECDC4),
+                    ),
+                  );
+                }
+              } catch (e) {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('ログアウトエラー: ${e.toString()}'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              }
             },
             child: const Text(
               'ログアウト',
@@ -1306,7 +1336,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.2),
+                      color: Colors.white.withOpacity( 0.2),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: const Icon(
@@ -1385,9 +1415,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 3),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
-        color: isActive ? const Color(0xFF4ECDC4).withValues(alpha: 0.15) : null,
+        color: isActive ? const Color(0xFF4ECDC4).withOpacity( 0.15) : null,
         border: isActive ? Border.all(
-          color: const Color(0xFF4ECDC4).withValues(alpha: 0.3),
+          color: const Color(0xFF4ECDC4).withOpacity( 0.3),
           width: 1,
         ) : null,
       ),

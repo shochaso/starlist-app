@@ -517,7 +517,7 @@ class _YouTubeMusicImportScreenState extends ConsumerState<YouTubeMusicImportScr
                   decoration: BoxDecoration(
                     color: isSelected 
                         ? (isDark ? const Color(0xFF1A1A1A) : const Color(0xFFF8FAFC))
-                        : (isDark ? const Color(0xFF404040).withValues(alpha: 0.3) : const Color(0xFFF1F5F9)),
+                        : (isDark ? const Color(0xFF404040).withOpacity( 0.3) : const Color(0xFFF1F5F9)),
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(
                       color: isSelected 

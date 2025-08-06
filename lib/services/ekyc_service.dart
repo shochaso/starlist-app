@@ -1,0 +1,374 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:supabase_flutter/supabase_flutter.dart';
+import '../models/user.dart';
+import '../models/ekyc_verification.dart';
+
+/// eKYC認証サービス
+class EKYCService {
+  static const String _trustdockApiUrl = 'https://api.trustdock.io/v1';
+  static const String _apiKey = 'YOUR_TRUSTDOCK_API_KEY'; // 環境変数から取得
+  
+  /// eKYC認証を開始
+  static Future<EKYCVerificationResult> startVerification({
+    required String userId,
+    required EKYCVerificationType type,
+    String? parentalConsentId,
+  }) async {
+    try {
+      // 1. SupabaseにeKYC記録を作成
+      final verificationRecord = await _createVerificationRecord(
+        userId: userId,
+        type: type,
+        parentalConsentId: parentalConsentId,
+      );
+
+      // 2. TrustDock APIでeKYC開始
+      final trustdockResponse = await _initiateTrustdockVerification(
+        verificationRecord.id,
+        type,
+      );
+
+      // 3. 認証URLを返す
+      return EKYCVerificationResult(
+        success: true,
+        verificationId: verificationRecord.id,
+        verificationUrl: trustdockResponse['verification_url'],
+        message: 'eKYC認証を開始しました',
+      );
+    } catch (e) {
+      return EKYCVerificationResult(
+        success: false,
+        error: 'eKYC認証の開始に失敗しました: ${e.toString()}',
+      );
+    }
+  }
+
+  /// TrustDock認証結果のコールバック処理
+  static Future<bool> handleVerificationCallback({
+    required String verificationId,
+    required Map<String, dynamic> callbackData,
+  }) async {
+    try {
+      // 1. TrustDockから詳細な認証結果を取得
+      final verificationDetails = await _getTrustdockVerificationDetails(
+        callbackData['verification_id'],
+      );
+
+      // 2. 年齢判定
+      final birthDate = DateTime.parse(verificationDetails['birth_date']);
+      final age = _calculateAge(birthDate);
+      final isMinor = age < 18;
+
+      // 3. Supabaseの認証記録を更新
+      await _updateVerificationRecord(
+        verificationId: verificationId,
+        status: verificationDetails['status'] == 'success' ? 'success' : 'failed',
+        resultData: verificationDetails,
+        verifiedName: verificationDetails['name'],
+        verifiedBirthDate: birthDate,
+        verifiedAddress: verificationDetails['address'],
+        verificationScore: verificationDetails['confidence_score']?.toDouble(),
+      );
+
+      // 4. ユーザー情報を更新
+      if (verificationDetails['status'] == 'success') {
+        await _updateUserAfterEKYC(
+          verificationId: verificationId,
+          legalName: verificationDetails['name'],
+          birthDate: birthDate,
+          isMinor: isMinor,
+        );
+      }
+
+      return verificationDetails['status'] == 'success';
+    } catch (e) {
+      print('eKYC結果処理エラー: $e');
+      return false;
+    }
+  }
+
+  /// 親権者eKYC認証を開始
+  static Future<EKYCVerificationResult> startParentalVerification({
+    required String parentalConsentId,
+  }) async {
+    try {
+      // 親権者同意情報を取得
+      final parentalConsent = await _getParentalConsent(parentalConsentId);
+      if (parentalConsent == null) {
+        return EKYCVerificationResult(
+          success: false,
+          error: '親権者同意情報が見つかりません',
+        );
+      }
+
+      // 親権者用のeKYC認証を開始
+      return await startVerification(
+        userId: parentalConsent['user_id'],
+        type: EKYCVerificationType.parent,
+        parentalConsentId: parentalConsentId,
+      );
+    } catch (e) {
+      return EKYCVerificationResult(
+        success: false,
+        error: '親権者eKYC認証の開始に失敗しました: ${e.toString()}',
+      );
+    }
+  }
+
+  /// 年齢計算
+  static int _calculateAge(DateTime birthDate) {
+    final today = DateTime.now();
+    int age = today.year - birthDate.year;
+    if (today.month < birthDate.month || 
+        (today.month == birthDate.month && today.day < birthDate.day)) {
+      age--;
+    }
+    return age;
+  }
+
+  /// SupabaseにeKYC記録を作成
+  static Future<EKYCVerification> _createVerificationRecord({
+    required String userId,
+    required EKYCVerificationType type,
+    String? parentalConsentId,
+  }) async {
+    final supabase = Supabase.instance.client;
+    
+    final response = await supabase.from('ekyc_verifications').insert({
+      if (type == EKYCVerificationType.user) 'user_id': userId,
+      if (type == EKYCVerificationType.parent) 'parental_consent_id': parentalConsentId,
+      'verification_type': type.toString().split('.').last,
+      'provider': 'trustdock',
+      'status': 'pending',
+    }).select().single();
+
+    return EKYCVerification.fromJson(response);
+  }
+
+  /// TrustDock APIでeKYC開始
+  static Future<Map<String, dynamic>> _initiateTrustdockVerification(
+    String verificationId,
+    EKYCVerificationType type,
+  ) async {
+    final response = await http.post(
+      Uri.parse('$_trustdockApiUrl/verifications'),
+      headers: {
+        'Authorization': 'Bearer $_apiKey',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({
+        'type': 'identity_verification',
+        'webhook_url': 'https://your-app.com/api/ekyc/callback/$verificationId',
+        'return_url': 'https://your-app.com/verification/complete',
+        'metadata': {
+          'verification_id': verificationId,
+          'verification_type': type.toString().split('.').last,
+        },
+      }),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('TrustDock API呼び出しに失敗しました: ${response.body}');
+    }
+
+    return jsonDecode(response.body);
+  }
+
+  /// TrustDockから認証詳細を取得
+  static Future<Map<String, dynamic>> _getTrustdockVerificationDetails(
+    String trustdockVerificationId,
+  ) async {
+    final response = await http.get(
+      Uri.parse('$_trustdockApiUrl/verifications/$trustdockVerificationId'),
+      headers: {
+        'Authorization': 'Bearer $_apiKey',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('TrustDock認証詳細の取得に失敗しました: ${response.body}');
+    }
+
+    return jsonDecode(response.body);
+  }
+
+  /// eKYC記録を更新
+  static Future<void> _updateVerificationRecord({
+    required String verificationId,
+    required String status,
+    required Map<String, dynamic> resultData,
+    String? verifiedName,
+    DateTime? verifiedBirthDate,
+    String? verifiedAddress,
+    double? verificationScore,
+  }) async {
+    final supabase = Supabase.instance.client;
+    
+    await supabase.from('ekyc_verifications').update({
+      'status': status,
+      'result_data': resultData,
+      'verified_name': verifiedName,
+      'verified_birth_date': verifiedBirthDate?.toIso8601String(),
+      'verified_address': verifiedAddress,
+      'verification_score': verificationScore,
+      'completed_at': DateTime.now().toIso8601String(),
+      'updated_at': DateTime.now().toIso8601String(),
+    }).eq('id', verificationId);
+  }
+
+  /// ユーザー情報をeKYC後に更新
+  static Future<void> _updateUserAfterEKYC({
+    required String verificationId,
+    required String legalName,
+    required DateTime birthDate,
+    required bool isMinor,
+  }) async {
+    final supabase = Supabase.instance.client;
+    
+    // eKYC記録からユーザーIDを取得
+    final verification = await supabase
+        .from('ekyc_verifications')
+        .select('user_id, parental_consent_id')
+        .eq('id', verificationId)
+        .single();
+
+    String targetUserId;
+    String newVerificationStatus;
+
+    if (verification['user_id'] != null) {
+      // 本人のeKYC
+      targetUserId = verification['user_id'];
+      newVerificationStatus = isMinor ? 'awaiting_parental_consent' : 'ekyc_completed';
+    } else {
+      // 親権者のeKYC
+      final parentalConsent = await supabase
+          .from('parental_consents')
+          .select('user_id')
+          .eq('id', verification['parental_consent_id'])
+          .single();
+      
+      targetUserId = parentalConsent['user_id'];
+      newVerificationStatus = 'parental_ekyc_completed';
+      
+      // 親権者同意の状態も更新
+      await supabase.from('parental_consents').update({
+        'parent_legal_name': legalName,
+        'parent_ekyc_provider': 'trustdock',
+        'parent_ekyc_verification_id': verificationId,
+        'parent_ekyc_verified_at': DateTime.now().toIso8601String(),
+        'verification_status': 'parental_ekyc_completed',
+        'updated_at': DateTime.now().toIso8601String(),
+      }).eq('id', verification['parental_consent_id']);
+    }
+
+    // ユーザー情報を更新
+    await supabase.from('users').update({
+      'legal_name': legalName,
+      'birth_date': birthDate.toIso8601String(),
+      'is_minor': isMinor,
+      'ekyc_provider': 'trustdock',
+      'ekyc_verification_id': verificationId,
+      'ekyc_verified_at': DateTime.now().toIso8601String(),
+      'verification_status': newVerificationStatus,
+      'updated_at': DateTime.now().toIso8601String(),
+    }).eq('id', targetUserId);
+  }
+
+  /// 親権者同意情報を取得
+  static Future<Map<String, dynamic>?> _getParentalConsent(String consentId) async {
+    final supabase = Supabase.instance.client;
+    
+    try {
+      final response = await supabase
+          .from('parental_consents')
+          .select()
+          .eq('id', consentId)
+          .single();
+      return response;
+    } catch (e) {
+      return null;
+    }
+  }
+}
+
+/// eKYC認証タイプ
+enum EKYCVerificationType {
+  user,   // 本人認証
+  parent, // 親権者認証
+}
+
+/// eKYC認証結果
+class EKYCVerificationResult {
+  final bool success;
+  final String? verificationId;
+  final String? verificationUrl;
+  final String? message;
+  final String? error;
+
+  EKYCVerificationResult({
+    required this.success,
+    this.verificationId,
+    this.verificationUrl,
+    this.message,
+    this.error,
+  });
+}
+
+/// eKYC認証記録モデル
+class EKYCVerification {
+  final String id;
+  final String? userId;
+  final String? parentalConsentId;
+  final EKYCVerificationType verificationType;
+  final String provider;
+  final String status;
+  final Map<String, dynamic>? resultData;
+  final String? verifiedName;
+  final DateTime? verifiedBirthDate;
+  final String? verifiedAddress;
+  final double? verificationScore;
+  final DateTime startedAt;
+  final DateTime? completedAt;
+
+  EKYCVerification({
+    required this.id,
+    this.userId,
+    this.parentalConsentId,
+    required this.verificationType,
+    required this.provider,
+    required this.status,
+    this.resultData,
+    this.verifiedName,
+    this.verifiedBirthDate,
+    this.verifiedAddress,
+    this.verificationScore,
+    required this.startedAt,
+    this.completedAt,
+  });
+
+  factory EKYCVerification.fromJson(Map<String, dynamic> json) {
+    return EKYCVerification(
+      id: json['id'],
+      userId: json['user_id'],
+      parentalConsentId: json['parental_consent_id'],
+      verificationType: EKYCVerificationType.values.firstWhere(
+        (e) => e.toString().split('.').last == json['verification_type'],
+      ),
+      provider: json['provider'],
+      status: json['status'],
+      resultData: json['result_data'],
+      verifiedName: json['verified_name'],
+      verifiedBirthDate: json['verified_birth_date'] != null
+          ? DateTime.parse(json['verified_birth_date'])
+          : null,
+      verifiedAddress: json['verified_address'],
+      verificationScore: json['verification_score']?.toDouble(),
+      startedAt: DateTime.parse(json['started_at']),
+      completedAt: json['completed_at'] != null
+          ? DateTime.parse(json['completed_at'])
+          : null,
+    );
+  }
+} 

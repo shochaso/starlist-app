@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import '../models/user.dart';
 import '../data/mock_users/hanayama_mizuki.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class UserProvider with ChangeNotifier {
   User? _currentUser;
@@ -89,21 +90,96 @@ class UserInfo {
   }
 }
 
+// ログアウト状態を確認する関数
+Future<bool> _isLoggedOut() async {
+  try {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool('is_logged_out') ?? false;
+  } catch (e) {
+    debugPrint('ログアウト状態の確認に失敗: $e');
+    return false;
+  }
+}
+
 // 現在のユーザー情報を管理するプロバイダー
-final currentUserProvider = StateProvider<UserInfo>((ref) {
-  // デフォルトは花山瑞樹（スター）
-  final profile = HanayamaMizukiData.profile;
-  return UserInfo(
-    id: profile['id'],
-    name: '花山瑞樹', // 公式スター名を設定
-    email: 'mizuki@starlist.com',
-    role: UserRole.star,
-    currentMode: UserMode.star,  // デフォルトはスターモード
-    starCategory: profile['category'],
-    followers: profile['followers'],
-    isVerified: profile['verified'],
-  );
+final currentUserProvider = StateNotifierProvider<UserInfoNotifier, UserInfo>((ref) {
+  return UserInfoNotifier();
 });
+
+class UserInfoNotifier extends StateNotifier<UserInfo> {
+  UserInfoNotifier() : super(_getDefaultUserInfo()) {
+    _initializeUserState();
+  }
+
+  static UserInfo _getDefaultUserInfo() {
+    final profile = HanayamaMizukiData.profile;
+    return UserInfo(
+      id: profile['id'],
+      name: '花山瑞樹',
+      email: 'mizuki@starlist.com',
+      role: UserRole.star,
+      currentMode: UserMode.star,
+      starCategory: profile['category'],
+      followers: profile['followers'],
+      isVerified: profile['verified'],
+    );
+  }
+
+  Future<void> _initializeUserState() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final isLoggedOut = prefs.getBool('is_logged_out') ?? false;
+      
+      if (isLoggedOut) {
+        state = UserInfo(
+          id: '',
+          name: '',
+          email: '',
+          role: UserRole.fan,
+        );
+      }
+    } catch (e) {
+      debugPrint('ユーザー状態の初期化に失敗: $e');
+    }
+  }
+
+  void setUser(UserInfo user) {
+    state = user;
+  }
+
+  void logout() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('is_logged_out', true);
+      await prefs.setString('logout_timestamp', DateTime.now().toIso8601String());
+      
+      state = UserInfo(
+        id: '',
+        name: '',
+        email: '',
+        role: UserRole.fan,
+      );
+    } catch (e) {
+      debugPrint('ログアウト処理に失敗: $e');
+    }
+  }
+
+  void login() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('is_logged_out', false);
+      await prefs.remove('logout_timestamp');
+      
+      state = _getDefaultUserInfo();
+    } catch (e) {
+      debugPrint('ログイン処理に失敗: $e');
+    }
+  }
+
+  void setTestUser(UserInfo user) {
+    state = user;
+  }
+}
 
 // ユーザーモード切り替え用プロバイダー
 final userModeProvider = StateNotifierProvider<UserModeNotifier, UserMode>((ref) {

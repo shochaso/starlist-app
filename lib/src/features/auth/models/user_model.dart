@@ -1,3 +1,5 @@
+import 'package:supabase_flutter/supabase_flutter.dart';
+
 /// ユーザーモデル
 class UserModel {
   final String id;
@@ -114,6 +116,18 @@ class UserModel {
 
   /// ユーザーの種類を表す文字列
   String get roleText => isStar ? 'スター' : 'ファン';
+
+  // Factory constructor to create a UserModel from a Supabase User object
+  factory UserModel.fromSupabaseUser(User user) {
+    return UserModel(
+      id: user.id,
+      email: user.email ?? '',
+      // The username is stored in the user_metadata
+      username: user.userMetadata?['username'] as String? ?? '',
+      createdAt: DateTime.parse(user.createdAt),
+      updatedAt: DateTime.parse(user.updatedAt!),
+    );
+  }
 }
 
 /// スターランク（ユーザーの等級）

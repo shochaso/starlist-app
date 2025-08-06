@@ -579,7 +579,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
                     return Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF4ECDC4).withValues(alpha: 0.2),
+                        color: const Color(0xFF4ECDC4).withOpacity( 0.2),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Row(
@@ -697,7 +697,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFFF6B6B).withValues(alpha: 0.3)),
+        border: Border.all(color: const Color(0xFFFF6B6B).withOpacity( 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -856,7 +856,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
         ),
         boxShadow: [
           BoxShadow(
-            color: (isDark ? Colors.black : Colors.black).withValues(alpha: 0.1),
+            color: (isDark ? Colors.black : Colors.black).withOpacity( 0.1),
             blurRadius: 10,
             offset: const Offset(0, -2),
           ),

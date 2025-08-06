@@ -1,133 +1,67 @@
-import "package:firebase_auth/firebase_auth.dart";
-import "package:google_sign_in/google_sign_in.dart";
-import "package:starlist/src/core/api/api_client.dart";
-import "package:starlist/src/core/api/api_endpoints.dart";
-import "package:starlist/src/features/auth/models/user_model.dart";
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:starlist/src/features/auth/models/user_model.dart';
 
 class AuthService {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  final GoogleSignIn _googleSignIn = GoogleSignIn();
-  final ApiClient _apiClient;
+  final SupabaseClient _supabase = Supabase.instance.client;
 
-  AuthService(this._apiClient);
+  Stream<AuthState> get authStateChanges => _supabase.auth.onAuthStateChange;
 
-  Stream<User?> get authStateChanges => _auth.authStateChanges();
+  User? get currentUser => _supabase.auth.currentUser;
 
-  Future<UserModel?> signInWithEmailAndPassword(String email, String password) async {
+  Future<UserModel> signInWithEmailAndPassword(String email, String password) async {
     try {
-      final userCredential = await _auth.signInWithEmailAndPassword(
+      final response = await _supabase.auth.signInWithPassword(
         email: email,
         password: password,
       );
-
-      if (userCredential.user != null) {
-        final response = await _apiClient.post(
-          ApiEndpoints.login,
-          {"email": email, "password": password},
-        );
-        _apiClient.setAuthToken(response["token"]);
-        return UserModel.fromJson(response["user"]);
+      if (response.user == null) {
+        throw Exception('ログインに失敗しました');
       }
-      return null;
+      // This is a simplified user model conversion. 
+      // In a real app, you'd fetch more details from your 'profiles' table.
+      return UserModel.fromSupabaseUser(response.user!);
     } catch (e) {
-      rethrow;
+      throw Exception('ログインに失敗しました: ${e.toString()}');
     }
   }
 
-  Future<UserModel?> signInWithGoogle() async {
+  Future<UserModel> registerWithEmailAndPassword({
+    required String email,
+    required String password,
+    required String username,
+  }) async {
     try {
-      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
-      if (googleUser == null) return null;
-
-      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
-      final credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
-      );
-
-      final userCredential = await _auth.signInWithCredential(credential);
-      if (userCredential.user != null) {
-        final response = await _apiClient.post(
-          ApiEndpoints.login,
-          {"provider": "google", "token": googleAuth.idToken},
-        );
-        _apiClient.setAuthToken(response["token"]);
-        return UserModel.fromJson(response["user"]);
-      }
-      return null;
-    } catch (e) {
-      rethrow;
-    }
-  }
-
-  Future<UserModel?> registerWithEmailAndPassword(
-    String email,
-    String password,
-    String username,
-  ) async {
-    try {
-      final userCredential = await _auth.createUserWithEmailAndPassword(
+      final response = await _supabase.auth.signUp(
         email: email,
         password: password,
+        data: {'username': username},
       );
-
-      if (userCredential.user != null) {
-        final response = await _apiClient.post(
-          ApiEndpoints.register,
-          {
-            "email": email,
-            "password": password,
-            "username": username,
-          },
-        );
-        _apiClient.setAuthToken(response["token"]);
-        return UserModel.fromJson(response["user"]);
+      if (response.user == null) {
+        throw Exception('ユーザー登録に失敗しました');
       }
-      return null;
+      return UserModel.fromSupabaseUser(response.user!);
     } catch (e) {
-      rethrow;
+      // Handle specific Supabase errors, e.g., user already exists
+      if (e is AuthException && e.message.contains('User already registered')) {
+         throw Exception('このメールアドレスは既に使用されています。');
+      }
+      throw Exception('ユーザー登録に失敗しました: ${e.toString()}');
     }
   }
 
   Future<void> signOut() async {
     try {
-      await Future.wait([
-        _auth.signOut(),
-        _googleSignIn.signOut(),
-        _apiClient.post(ApiEndpoints.logout, {}),
-      ]);
-      _apiClient.setAuthToken(null);
+      await _supabase.auth.signOut();
     } catch (e) {
-      rethrow;
+      throw Exception('ログアウトに失敗しました: ${e.toString()}');
     }
   }
 
   Future<void> resetPassword(String email) async {
     try {
-      await _auth.sendPasswordResetEmail(email: email);
-      await _apiClient.post(ApiEndpoints.resetPassword, {"email": email});
+       await _supabase.auth.resetPasswordForEmail(email);
     } catch (e) {
-      rethrow;
-    }
-  }
-
-  Future<void> changePassword(String currentPassword, String newPassword) async {
-    try {
-      final user = _auth.currentUser;
-      if (user != null) {
-        final credential = EmailAuthProvider.credential(
-          email: user.email!,
-          password: currentPassword,
-        );
-        await user.reauthenticateWithCredential(credential);
-        await user.updatePassword(newPassword);
-        await _apiClient.post(
-          ApiEndpoints.changePassword,
-          {"newPassword": newPassword},
-        );
-      }
-    } catch (e) {
-      rethrow;
+      throw Exception('パスワードリセットに失敗しました: ${e.toString()}');
     }
   }
 }

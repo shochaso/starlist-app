@@ -196,9 +196,9 @@ class AppThemeEnhanced {
       // Chip
       chipTheme: ChipThemeData(
         backgroundColor: ThemeConstants.lightMuted,
-        selectedColor: ThemeConstants.primaryPurple.withValues(alpha: 0.1),
+        selectedColor: ThemeConstants.primaryPurple.withOpacity( 0.1),
         deleteIconColor: ThemeConstants.lightMutedForeground,
-        disabledColor: ThemeConstants.lightMuted.withValues(alpha: 0.5),
+        disabledColor: ThemeConstants.lightMuted.withOpacity( 0.5),
         labelStyle: GoogleFonts.mPlusRounded1c(
           color: ThemeConstants.lightOnSurface,
           fontWeight: ThemeConstants.fontWeightMedium,
@@ -414,9 +414,9 @@ class AppThemeEnhanced {
       // Chip
       chipTheme: ChipThemeData(
         backgroundColor: ThemeConstants.darkMuted,
-        selectedColor: ThemeConstants.primaryPurple.withValues(alpha: 0.2),
+        selectedColor: ThemeConstants.primaryPurple.withOpacity( 0.2),
         deleteIconColor: ThemeConstants.darkMutedForeground,
-        disabledColor: ThemeConstants.darkMuted.withValues(alpha: 0.5),
+        disabledColor: ThemeConstants.darkMuted.withOpacity( 0.5),
         labelStyle: GoogleFonts.mPlusRounded1c(
           color: ThemeConstants.darkOnSurface,
           fontWeight: ThemeConstants.fontWeightMedium,
@@ -581,7 +581,7 @@ class AppThemeEnhanced {
   static BoxDecoration get backgroundGradient => BoxDecoration(
     gradient: RadialGradient(
       colors: [
-        ThemeConstants.primaryPurple.withValues(alpha: 0.1),
+        ThemeConstants.primaryPurple.withOpacity( 0.1),
         Colors.transparent,
       ],
       center: Alignment.topRight,
@@ -594,8 +594,8 @@ class AppThemeEnhanced {
   static BoxDecoration get lightCardGradient => BoxDecoration(
     gradient: LinearGradient(
       colors: [
-        Colors.white.withValues(alpha: 0.1),
-        Colors.white.withValues(alpha: 0.05),
+        Colors.white.withOpacity( 0.1),
+        Colors.white.withOpacity( 0.05),
       ],
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
@@ -609,8 +609,8 @@ class AppThemeEnhanced {
   static BoxDecoration get darkCardGradient => BoxDecoration(
     gradient: LinearGradient(
       colors: [
-        Colors.white.withValues(alpha: 0.05),
-        Colors.white.withValues(alpha: 0.02),
+        Colors.white.withOpacity( 0.05),
+        Colors.white.withOpacity( 0.02),
       ],
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,

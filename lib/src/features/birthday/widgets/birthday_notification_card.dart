@@ -28,7 +28,7 @@ class BirthdayNotificationCard extends ConsumerWidget {
             decoration: BoxDecoration(
               color: notification.isRead 
                   ? const Color(0xFF2A2A2A) 
-                  : const Color(0xFF2A2A2A).withValues(alpha: 0.8),
+                  : const Color(0xFF2A2A2A).withOpacity( 0.8),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
                 color: notification.isRead 
@@ -44,7 +44,7 @@ class BirthdayNotificationCard extends ConsumerWidget {
                   width: 50,
                   height: 50,
                   decoration: BoxDecoration(
-                    color: _getNotificationColor().withValues(alpha: 0.2),
+                    color: _getNotificationColor().withOpacity( 0.2),
                     borderRadius: BorderRadius.circular(25),
                   ),
                   child: Icon(

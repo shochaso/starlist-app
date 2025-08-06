@@ -445,7 +445,7 @@ class _NotificationSettingsScreenState extends ConsumerState<NotificationSetting
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               decoration: BoxDecoration(
-                color: const Color(0xFF4ECDC4).withValues(alpha: 0.2),
+                color: const Color(0xFF4ECDC4).withOpacity( 0.2),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
@@ -512,7 +512,7 @@ class _NotificationSettingsScreenState extends ConsumerState<NotificationSetting
         ),
         boxShadow: [
           BoxShadow(
-            color: (isDark ? Colors.black : Colors.black).withValues(alpha: 0.1),
+            color: (isDark ? Colors.black : Colors.black).withOpacity( 0.1),
             blurRadius: 10,
             offset: const Offset(0, -2),
           ),

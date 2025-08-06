@@ -82,12 +82,12 @@ class ThemeModeSwitcher extends ConsumerWidget {
         ),
         decoration: BoxDecoration(
           color: isSelected 
-              ? ThemeConstants.primaryPurple.withValues(alpha: 0.1)
+              ? ThemeConstants.primaryPurple.withOpacity( 0.1)
               : Colors.transparent,
           borderRadius: BorderRadius.circular(ThemeConstants.radiusSm),
           border: isSelected
               ? Border.all(
-                  color: ThemeConstants.primaryPurple.withValues(alpha: 0.3),
+                  color: ThemeConstants.primaryPurple.withOpacity( 0.3),
                 )
               : null,
         ),
@@ -272,10 +272,10 @@ class ThemeSettingsCard extends ConsumerWidget {
                     vertical: ThemeConstants.spaceXs,
                   ),
                   decoration: BoxDecoration(
-                    color: ThemeConstants.primaryPurple.withValues(alpha: 0.1),
+                    color: ThemeConstants.primaryPurple.withOpacity( 0.1),
                     borderRadius: BorderRadius.circular(ThemeConstants.radiusSm),
                     border: Border.all(
-                      color: ThemeConstants.primaryPurple.withValues(alpha: 0.3),
+                      color: ThemeConstants.primaryPurple.withOpacity( 0.3),
                     ),
                   ),
                   child: Text(
@@ -304,7 +304,7 @@ class ThemeSettingsCard extends ConsumerWidget {
               Container(
                 padding: const EdgeInsets.all(ThemeConstants.spaceSm),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).hintColor.withValues(alpha: 0.1),
+                  color: Theme.of(context).hintColor.withOpacity( 0.1),
                   borderRadius: BorderRadius.circular(ThemeConstants.radiusSm),
                 ),
                 child: Row(
@@ -421,7 +421,7 @@ class _AnimatedThemeButtonState extends ConsumerState<AnimatedThemeButton>
                     BoxShadow(
                       color: (themeState.isDarkMode 
                           ? Colors.purple 
-                          : Colors.orange).withValues(alpha: 0.3),
+                          : Colors.orange).withOpacity( 0.3),
                       blurRadius: 8,
                       offset: const Offset(0, 4),
                     ),
