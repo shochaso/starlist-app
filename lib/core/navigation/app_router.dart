@@ -1,4 +1,7 @@
 import 'package:go_router/go_router.dart';
+import 'package:starlist/features/login/screens/login_screen.dart';
+import 'package:starlist/features/login/screens/password_reset_request_screen.dart';
+import 'package:starlist/features/login/screens/password_reset_screen.dart';
 import 'package:starlist/features/registration/presentation/screens/1_follower_check_screen.dart';
 import 'package:starlist/features/registration/presentation/screens/2_basic_info_screen.dart';
 import 'package:starlist/features/registration/presentation/screens/3_profile_info_screen.dart';
@@ -6,11 +9,29 @@ import 'package:starlist/features/registration/presentation/screens/4_verificati
 import 'package:starlist/features/registration/presentation/screens/5_sns_link_screen.dart';
 import 'package:starlist/features/registration/presentation/screens/6_terms_screen.dart';
 import 'package:starlist/features/registration/presentation/screens/registration_complete_screen.dart';
+import 'package:starlist/screens/starlist_main_screen.dart';
+import 'package:starlist/features/app/screens/settings_screen.dart';
 
 
 final GoRouter appRouter = GoRouter(
-  initialLocation: '/follower-check',
+  initialLocation: '/login', // Set initial to login
   routes: [
+    GoRoute(
+      path: '/login',
+      builder: (context, state) => const LoginScreen(),
+    ),
+    GoRoute(
+      path: '/home',
+      builder: (context, state) => const StarlistMainScreen(),
+    ),
+    GoRoute(
+      path: '/password-reset-request',
+      builder: (context, state) => const PasswordResetRequestScreen(),
+    ),
+    GoRoute(
+      path: '/password-reset', // Path for the actual password update screen
+      builder: (context, state) => const PasswordResetScreen(),
+    ),
     GoRoute(
       path: '/follower-check',
       builder: (context, state) => const FollowerCheckScreen(),
@@ -38,6 +59,10 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: '/registration-complete',
       builder: (context, state) => const RegistrationCompleteScreen(),
+    ),
+    GoRoute(
+      path: '/settings',
+      builder: (context, state) => const SettingsScreen(),
     ),
   ],
 ); 

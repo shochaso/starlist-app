@@ -18,7 +18,13 @@ class SnsLinkScreen extends ConsumerWidget {
         automaticallyImplyLeading: false,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios),
-          onPressed: () => context.pop(),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/verification');
+            }
+          },
         ),
         centerTitle: true,
         bottom: const PreferredSize(

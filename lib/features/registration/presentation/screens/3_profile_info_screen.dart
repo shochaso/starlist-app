@@ -27,7 +27,13 @@ class ProfileInfoScreen extends ConsumerWidget {
         automaticallyImplyLeading: false,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios),
-          onPressed: () => context.pop(),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/basic-info');
+            }
+          },
         ),
         centerTitle: true,
         bottom: const PreferredSize(
@@ -145,7 +151,7 @@ class ProfileInfoScreen extends ConsumerWidget {
             const SizedBox(height: 24),
 
             // Gender Selection
-            const Text('性別 (任意)', style: TextStyle(fontWeight: FontWeight.bold)),
+            const Text('性別 (必須)', style: TextStyle(fontWeight: FontWeight.bold)),
             ...Gender.values.map((gender) => RadioListTile<Gender>(
                   title: Text(_genderToString(gender)),
                   value: gender,

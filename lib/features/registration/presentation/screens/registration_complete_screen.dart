@@ -77,8 +77,7 @@ class _RegistrationCompleteScreenState extends State<RegistrationCompleteScreen>
                   const Spacer(flex: 2),
                   ElevatedButton(
                     onPressed: () {
-                      // TODO: Navigate to the main dashboard
-                      context.go('/');
+                      context.go('/home');
                     },
                     child: const Text('管理画面に進む'),
                   ),

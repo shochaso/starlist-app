@@ -17,11 +17,20 @@ dependencies:
   image_picker: ^1.1.2
   google_fonts: ^6.2.1
   supabase_flutter: ^2.5.8
+  freezed_annotation: ^3.1.0
+  flutter_svg: ^2.0.10+1
+  lottie: ^2.7.0
+  url_launcher: ^6.3.0
+  otp: ^3.1.4
+  qr_flutter: ^4.1.0
+  simple_icons: ^14.6.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^4.0.0
+  build_runner: ^2.6.0
+  freezed: ^3.0.0-0.0.dev
 
 flutter:
   uses-material-design: true

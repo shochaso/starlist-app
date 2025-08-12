@@ -21,6 +21,7 @@ import 'entertainment_import_screen.dart';
 import 'food_import_screen.dart';
 import 'payment_import_screen.dart';
 import 'digital_import_screen.dart';
+import 'package:go_router/go_router.dart';
 
 class DataImportScreen extends ConsumerStatefulWidget {
   final bool showAppBar;
@@ -781,7 +782,7 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
               // 実際のサービスロゴを使用
               ServiceIcons.buildIcon(
                 serviceId: service['id'],
-                size: 40,
+                size: 43,
                 isDark: isDark,
               ),
               const SizedBox(height: 8),
@@ -871,7 +872,7 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
                     opacity: isImplemented ? 1.0 : 0.5,
                     child: ServiceIcons.buildIcon(
                       serviceId: service['id'],
-                      size: 28,
+                      size: 31,
                       isDark: isDark,
                     ),
                   ),
@@ -2442,16 +2443,22 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
               padding: const EdgeInsets.symmetric(vertical: 16),
               children: [
                 _buildDrawerItem(Icons.home, 'ホーム', false, () {
-                  Navigator.pop(context);
-                  Navigator.pushReplacementNamed(context, '/');
+                  Navigator.of(context).pop();
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    if (mounted) context.go('/home');
+                  });
                 }),
                 _buildDrawerItem(Icons.search, '検索', false, () {
-                  Navigator.pop(context);
-                  Navigator.pushReplacementNamed(context, '/search');
+                  Navigator.of(context).pop();
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    if (mounted) context.go('/home');
+                  });
                 }),
                 _buildDrawerItem(Icons.star, 'マイリスト', false, () {
-                  Navigator.pop(context);
-                  Navigator.pushReplacementNamed(context, '/mylist');
+                  Navigator.of(context).pop();
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    if (mounted) context.go('/home');
+                  });
                 }),
                 // スターのみ表示
                 if (currentUser.isStar) ...[
@@ -2459,21 +2466,33 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
                     Navigator.pop(context);
                   }),
                   _buildDrawerItem(Icons.analytics, 'スターダッシュボード', false, () {
-                    Navigator.pop(context);
-                    Navigator.pushReplacementNamed(context, '/star-dashboard');
+                    Navigator.of(context).pop();
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(builder: (context) => const StarDashboardScreen()),
+                      );
+                    });
                   }),
                   _buildDrawerItem(Icons.workspace_premium, 'プランを管理', false, () {
-                    Navigator.pop(context);
-                    Navigator.pushReplacementNamed(context, '/plan-management');
+                    Navigator.of(context).pop();
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(builder: (context) => const FanSubscriptionScreen()),
+                      );
+                    });
                   }),
                 ],
                 _buildDrawerItem(Icons.person, 'マイページ', false, () {
-                  Navigator.pop(context);
-                  Navigator.pushReplacementNamed(context, '/profile');
+                  Navigator.of(context).pop();
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    if (mounted) context.go('/home');
+                  });
                 }),
                 _buildDrawerItem(Icons.settings, '設定', false, () {
-                  Navigator.pop(context);
-                  Navigator.pushReplacementNamed(context, '/settings');
+                  Navigator.of(context).pop();
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    if (mounted) context.go('/settings');
+                  });
                 }),
               ],
             ),

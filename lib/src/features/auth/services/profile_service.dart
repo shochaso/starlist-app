@@ -36,13 +36,58 @@ class ProfileService {
         'updated_at': DateTime.now().toIso8601String(),
       });
       
-      // Note: Supabase insert doesn't throw by default on failure with upsert=false.
-      // You might need to check the response if you have specific constraints.
-      // For example, if the primary key (id) already exists.
-      
     } catch (e) {
-      // Re-throw the exception to be handled by the calling provider
       throw Exception('Failed to create profile: ${e.toString()}');
+    }
+  }
+
+  Future<Map<String, dynamic>?> fetchProfile(String userId) async {
+    try {
+      final data = await _supabase
+          .from('profiles')
+          .select('id, display_name, email, username, avatar_url, genres, sns_links')
+          .eq('id', userId)
+          .maybeSingle();
+      return data;
+    } catch (e) {
+      throw Exception('Failed to fetch profile: ${e.toString()}');
+    }
+  }
+
+  Future<void> updateProfile({
+    required String userId,
+    String? displayName,
+    String? avatarUrl,
+    String? website,
+    List<String>? genres,
+  }) async {
+    try {
+      final Map<String, dynamic> updates = {
+        'updated_at': DateTime.now().toIso8601String(),
+      };
+
+      if (displayName != null) updates['display_name'] = displayName;
+      if (avatarUrl != null) updates['avatar_url'] = avatarUrl;
+      if (genres != null) updates['genres'] = genres;
+
+      if (website != null) {
+        final current = await _supabase
+            .from('profiles')
+            .select('sns_links')
+            .eq('id', userId)
+            .maybeSingle();
+        final Map<String, dynamic> snsLinks = (current?['sns_links'] as Map?)?.cast<String, dynamic>() ?? {};
+        if (website.isEmpty) {
+          snsLinks.remove('website');
+        } else {
+          snsLinks['website'] = website;
+        }
+        updates['sns_links'] = snsLinks;
+      }
+
+      await _supabase.from('profiles').update(updates).eq('id', userId);
+    } catch (e) {
+      throw Exception('Failed to update profile: ${e.toString()}');
     }
   }
 } 

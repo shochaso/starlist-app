@@ -240,9 +240,11 @@ class PostCard extends ConsumerWidget {
               color: isDark ? Colors.white : Colors.black87,
               height: 1.3,
             ),
+            maxLines: isCompact ? 2 : null,
+            overflow: isCompact ? TextOverflow.ellipsis : null,
           ),
           
-          if (post.description != null) ...[
+          if (!isCompact && post.description != null) ...[
             const SizedBox(height: 8),
             Text(
               post.description!,
@@ -262,7 +264,7 @@ class PostCard extends ConsumerWidget {
           _buildTypeSpecificContent(isDark),
           
           // タグ
-          if (post.tags.isNotEmpty) ...[
+          if (!isCompact && post.tags.isNotEmpty) ...[
             const SizedBox(height: 12),
             _buildTags(isDark),
           ],

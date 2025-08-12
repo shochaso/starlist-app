@@ -1,4 +1,6 @@
 import 'dart:io';
+import 'dart:typed_data';
+import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -7,20 +9,31 @@ class StorageService {
 
   Future<String?> uploadProfileImage(XFile image, String userId) async {
     try {
-      final file = File(image.path);
-      final fileName = '${userId}_${DateTime.now().millisecondsSinceEpoch}.${image.path.split('.').last}';
+      final fileExtension = image.name.split('.').last;
+      final fileName = '${userId}_${DateTime.now().millisecondsSinceEpoch}.$fileExtension';
       final path = 'public/avatars/$fileName';
 
-      await _supabase.storage.from('avatars').upload(
-            path,
-            file,
-            fileOptions: const FileOptions(cacheControl: '3600', upsert: false),
-          );
-      
+      if (kIsWeb) {
+        final Uint8List bytes = await image.readAsBytes();
+        await _supabase.storage.from('avatars').uploadBinary(
+              path,
+              bytes,
+              fileOptions: const FileOptions(cacheControl: '3600', upsert: false,
+                contentType: 'image/*',
+              ),
+            );
+      } else {
+        final file = File(image.path);
+        await _supabase.storage.from('avatars').upload(
+              path,
+              file,
+              fileOptions: const FileOptions(cacheControl: '3600', upsert: false),
+            );
+      }
+
       final urlResponse = _supabase.storage.from('avatars').getPublicUrl(path);
       return urlResponse;
     } catch (e) {
-      // Handle exceptions
       return null;
     }
   }

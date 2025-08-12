@@ -84,7 +84,7 @@ class _FollowerCheckScreenState extends ConsumerState<FollowerCheckScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const Text(
-                  'はじめに、あなたの影響力を教えてください',
+                  'あなたの総フォロワー数を教えてください',
                   style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                   textAlign: TextAlign.center,
                 ),

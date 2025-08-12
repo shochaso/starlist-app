@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../providers/theme_provider.dart';
 
 class PaymentInfoScreen extends ConsumerStatefulWidget {
@@ -828,16 +829,16 @@ class _PaymentInfoScreenState extends ConsumerState<PaymentInfoScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               _buildBottomNavItem(Icons.home, 'ホーム', () {
-                Navigator.popUntil(context, (route) => route.isFirst);
+                context.go('/home');
               }),
               _buildBottomNavItem(Icons.search, '検索', () {
-                Navigator.popUntil(context, (route) => route.isFirst);
+                context.go('/home');
               }),
               _buildBottomNavItem(Icons.notifications, '通知', () {
-                Navigator.popUntil(context, (route) => route.isFirst);
+                context.go('/home');
               }),
               _buildBottomNavItem(Icons.star, 'マイリスト', () {
-                Navigator.popUntil(context, (route) => route.isFirst);
+                context.go('/home');
               }),
               _buildBottomNavItem(Icons.person, 'マイページ', null, isSelected: true),
             ],

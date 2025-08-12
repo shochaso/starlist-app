@@ -5,6 +5,7 @@ import '../../../src/providers/theme_provider_enhanced.dart';
 // import '../../../src/widgets/profile_header.dart';
 import '../../../data/test_accounts_data.dart';
 import '../../star/screens/generic_star_detail_page.dart';
+import 'profile_edit_screen.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -48,6 +49,16 @@ class ProfileScreen extends ConsumerWidget {
                 pinned: true,
                 backgroundColor: isDark ? const Color(0xFF1A1A1A) : Colors.white,
                 elevation: 0,
+                actions: [
+                  IconButton(
+                    icon: Icon(Icons.edit, color: isDark ? Colors.white : Colors.black87),
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(builder: (context) => const ProfileEditScreen()),
+                      );
+                    },
+                  )
+                ],
                 flexibleSpace: FlexibleSpaceBar(
                   background: Center(child: Text(userProfile['name'], style: TextStyle(fontSize: 24, color: isDark ? Colors.white : Colors.black))),
                 ),

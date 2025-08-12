@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:starlist/features/registration/application/basic_info_provider.dart';
-import 'package:starlist/features/registration/application/profile_info_provider.dart';
-import 'package:starlist/features/registration/application/sns_link_provider.dart';
+import 'package:starlist/features/registration/application/basic_info_provider.dart' as basic_info_provider;
+import 'package:starlist/features/registration/application/profile_info_provider.dart' as profile_info_provider;
+import 'package:starlist/features/registration/application/sns_link_provider.dart' as sns_link_provider;
 import 'package:starlist/src/features/auth/services/auth_service.dart';
 import 'package:starlist/src/features/auth/services/profile_service.dart';
 import 'package:starlist/src/features/auth/services/storage_service.dart';
@@ -17,20 +17,21 @@ class RegistrationNotifier extends AsyncNotifier<void> {
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(() async {
       // 1. Read data from all registration providers
-      final basicInfo = ref.read(basicInfoProvider);
-      final profileInfo = ref.read(profileInfoProvider);
-      final snsInfo = ref.read(snsLinkProvider);
+      final basicInfo = ref.read(basic_info_provider.basicInfoProvider);
+      final profileInfo = ref.read(profile_info_provider.profileInfoProvider);
+      final snsInfo = ref.read(sns_link_provider.snsLinkProvider);
 
       // Instantiate services
       final authService = AuthService();
       final storageService = StorageService();
       final profileService = ProfileService();
 
-      // 2. Create user account
+      // 2. Create user account (store display_name in user_metadata too)
       final userModel = await authService.registerWithEmailAndPassword(
         email: basicInfo.email,
         password: basicInfo.password,
         username: basicInfo.username,
+        displayName: basicInfo.displayName,
       );
       
       final userId = userModel.id;

@@ -63,7 +63,17 @@ class BasicInfoNotifier extends StateNotifier<BasicInfoState> {
     final bool isEmailValid = state.email.contains('@');
     final bool isPasswordValid = state.password.length >= 8;
 
-    state = state.copyWith(isFormValid: isUsernameValid && isDisplayNameValid && isEmailValid && isPasswordValid);
+    final bool currentFormValid = isUsernameValid && isDisplayNameValid && isEmailValid && isPasswordValid;
+
+    print('--- BasicInfoForm Validation ---');
+    print('Username: ${state.username} (Valid: $isUsernameValid)');
+    print('DisplayName: ${state.displayName} (Valid: $isDisplayNameValid)');
+    print('Email: ${state.email} (Valid: $isEmailValid)');
+    print('Password: ${state.password} (Valid: $isPasswordValid)');
+    print('Overall Form Valid: $currentFormValid');
+    print('------------------------------');
+
+    state = state.copyWith(isFormValid: currentFormValid);
   }
 }
 

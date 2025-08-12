@@ -1,17 +1,17 @@
 import 'package:flutter/foundation.dart';
-import '../models/user.dart';
-import '../data/mock_users/hanayama_mizuki.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import '../models/user.dart' show FanPlanType; 
 
 class UserProvider with ChangeNotifier {
-  User? _currentUser;
+  dynamic _currentUser;
 
-  User? get currentUser => _currentUser;
-  bool get isStar => _currentUser?.type == UserType.star;
-  bool get isFan => _currentUser?.type == UserType.fan;
+  dynamic get currentUser => _currentUser;
+  bool get isStar => false;
+  bool get isFan => false;
 
-  void setUser(User user) {
+  void setUser(dynamic user) {
     _currentUser = user;
     notifyListeners();
   }
@@ -22,57 +22,42 @@ class UserProvider with ChangeNotifier {
   }
 }
 
-// ユーザーの役割を定義
 enum UserRole {
-  star,  // スター
-  fan,   // ファン
+  star,
+  fan,
 }
 
-// ユーザーのモード（スターのみ切り替え可能）
 enum UserMode {
-  star,    // スターとしての活動
-  fan,     // ファンとしての活動
+  star,
+  fan,
 }
 
-// ユーザー情報のモデル
 class UserInfo {
   final String id;
   final String name;
   final String email;
   final UserRole role;
-  final UserMode currentMode;  // 現在のモード
-  final FanPlanType? fanPlanType; // ファンの場合のプランタイプ
+  final UserMode currentMode;
   final String? starCategory;
   final int? followers;
   final bool isVerified;
+  final FanPlanType? fanPlanType; // 追加: ファンプラン
 
-  UserInfo({
+  const UserInfo({
     required this.id,
     required this.name,
     required this.email,
     required this.role,
-    UserMode? currentMode,  // デフォルトは役割に応じて設定
-    this.fanPlanType,
+    UserMode? currentMode,
     this.starCategory,
     this.followers,
     this.isVerified = false,
+    this.fanPlanType,
   }) : currentMode = currentMode ?? (role == UserRole.star ? UserMode.star : UserMode.fan);
 
   bool get isStar => role == UserRole.star;
   bool get isFan => role == UserRole.fan;
-  bool get isFreeFan => role == UserRole.fan && fanPlanType == FanPlanType.free;
-  bool get isLightPlan => role == UserRole.fan && fanPlanType == FanPlanType.light;
-  bool get isStandardPlan => role == UserRole.fan && fanPlanType == FanPlanType.standard;
-  bool get isPremiumPlan => role == UserRole.fan && fanPlanType == FanPlanType.premium;
-  
-  // モード切り替え可能かどうか
-  bool get canSwitchMode => role == UserRole.star;
-  
-  // 現在のモードでの表示用
-  bool get isInStarMode => currentMode == UserMode.star;
-  bool get isInFanMode => currentMode == UserMode.fan;
-  
-  // プラン表示名取得
+
   String get planDisplayName {
     if (isStar) return 'スター';
     switch (fanPlanType) {
@@ -88,9 +73,32 @@ class UserInfo {
         return 'ファン';
     }
   }
+
+  UserInfo copyWith({
+    String? id,
+    String? name,
+    String? email,
+    UserRole? role,
+    UserMode? currentMode,
+    String? starCategory,
+    int? followers,
+    bool? isVerified,
+    FanPlanType? fanPlanType,
+  }) {
+    return UserInfo(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      email: email ?? this.email,
+      role: role ?? this.role,
+      currentMode: currentMode ?? this.currentMode,
+      starCategory: starCategory ?? this.starCategory,
+      followers: followers ?? this.followers,
+      isVerified: isVerified ?? this.isVerified,
+      fanPlanType: fanPlanType ?? this.fanPlanType,
+    );
+  }
 }
 
-// ログアウト状態を確認する関数
 Future<bool> _isLoggedOut() async {
   try {
     final prefs = await SharedPreferences.getInstance();
@@ -101,45 +109,98 @@ Future<bool> _isLoggedOut() async {
   }
 }
 
-// 現在のユーザー情報を管理するプロバイダー
 final currentUserProvider = StateNotifierProvider<UserInfoNotifier, UserInfo>((ref) {
   return UserInfoNotifier();
 });
 
 class UserInfoNotifier extends StateNotifier<UserInfo> {
-  UserInfoNotifier() : super(_getDefaultUserInfo()) {
+  UserInfoNotifier()
+      : super(const UserInfo(
+          id: '',
+          name: '',
+          email: '',
+          role: UserRole.star,
+          currentMode: UserMode.star,
+        )) {
     _initializeUserState();
-  }
-
-  static UserInfo _getDefaultUserInfo() {
-    final profile = HanayamaMizukiData.profile;
-    return UserInfo(
-      id: profile['id'],
-      name: '花山瑞樹',
-      email: 'mizuki@starlist.com',
-      role: UserRole.star,
-      currentMode: UserMode.star,
-      starCategory: profile['category'],
-      followers: profile['followers'],
-      isVerified: profile['verified'],
-    );
+    Supabase.instance.client.auth.onAuthStateChange.listen((event) async {
+      final session = event.session;
+      if (session?.user != null) {
+        await loadFromSupabase();
+      } else {
+        await _setLoggedOut();
+      }
+    });
   }
 
   Future<void> _initializeUserState() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final isLoggedOut = prefs.getBool('is_logged_out') ?? false;
-      
       if (isLoggedOut) {
-        state = UserInfo(
-          id: '',
-          name: '',
-          email: '',
-          role: UserRole.fan,
-        );
+        await _setLoggedOut();
+        return;
+      }
+      final user = Supabase.instance.client.auth.currentUser;
+      if (user != null) {
+        await loadFromSupabase();
       }
     } catch (e) {
       debugPrint('ユーザー状態の初期化に失敗: $e');
+    }
+  }
+
+  Future<void> _setLoggedOut() async {
+    state = const UserInfo(id: '', name: '', email: '', role: UserRole.fan, currentMode: UserMode.fan);
+  }
+
+  Future<void> loadFromSupabase() async {
+    try {
+      final supabase = Supabase.instance.client;
+      final authUser = supabase.auth.currentUser;
+      if (authUser == null) {
+        await _setLoggedOut();
+        return;
+      }
+
+      final profile = await supabase
+          .from('profiles')
+          .select('id, display_name, email, username')
+          .eq('id', authUser.id)
+          .maybeSingle();
+
+      final String? metadataDisplayName = authUser.userMetadata != null
+          ? (authUser.userMetadata!['display_name'] as String?)
+          : null;
+
+      String displayName = ((profile?['display_name'] as String?) ?? '').trim();
+
+      // display_nameが未設定で、authのメタデータに存在する場合は自動補完
+      if (displayName.isEmpty && metadataDisplayName != null && metadataDisplayName.trim().isNotEmpty) {
+        displayName = metadataDisplayName.trim();
+        await supabase
+            .from('profiles')
+            .update({'display_name': displayName, 'updated_at': DateTime.now().toIso8601String()})
+            .eq('id', authUser.id);
+      }
+
+      if (displayName.isEmpty) {
+        displayName = authUser.email ?? '';
+      }
+
+      final String email = (profile?['email'] as String?) ?? (authUser.email ?? '');
+
+      final newUser = UserInfo(
+        id: authUser.id,
+        name: displayName,
+        email: email,
+        role: UserRole.star,
+        currentMode: UserMode.star,
+      );
+
+      state = newUser;
+    } catch (e) {
+      debugPrint('Supabaseプロフィールの取得に失敗: $e');
     }
   }
 
@@ -147,41 +208,31 @@ class UserInfoNotifier extends StateNotifier<UserInfo> {
     state = user;
   }
 
-  void logout() async {
+  Future<void> logout() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool('is_logged_out', true);
       await prefs.setString('logout_timestamp', DateTime.now().toIso8601String());
-      
-      state = UserInfo(
-        id: '',
-        name: '',
-        email: '',
-        role: UserRole.fan,
-      );
+      await Supabase.instance.client.auth.signOut();
+      await _setLoggedOut();
     } catch (e) {
       debugPrint('ログアウト処理に失敗: $e');
     }
   }
 
-  void login() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool('is_logged_out', false);
-      await prefs.remove('logout_timestamp');
-      
-      state = _getDefaultUserInfo();
-    } catch (e) {
-      debugPrint('ログイン処理に失敗: $e');
-    }
+  Future<void> loginRefreshFromSupabase() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('is_logged_out', false);
+    await prefs.remove('logout_timestamp');
+    await loadFromSupabase();
   }
 
-  void setTestUser(UserInfo user) {
-    state = user;
+  // 互換API: 旧コードのlogin()呼び出しをサポート
+  Future<void> login() async {
+    await loginRefreshFromSupabase();
   }
 }
 
-// ユーザーモード切り替え用プロバイダー
 final userModeProvider = StateNotifierProvider<UserModeNotifier, UserMode>((ref) {
   final currentUser = ref.watch(currentUserProvider);
   return UserModeNotifier(currentUser.currentMode);
@@ -189,51 +240,11 @@ final userModeProvider = StateNotifierProvider<UserModeNotifier, UserMode>((ref)
 
 class UserModeNotifier extends StateNotifier<UserMode> {
   UserModeNotifier(UserMode initialMode) : super(initialMode);
-  
-  void switchMode() {
-    state = state == UserMode.star ? UserMode.fan : UserMode.star;
-  }
-  
-  void setMode(UserMode mode) {
-    state = mode;
-  }
+  void switchMode() { state = state == UserMode.star ? UserMode.fan : UserMode.star; }
+  void setMode(UserMode mode) { state = mode; }
 }
 
-// テスト用プラン切り替えプロバイダー
-final testPlanProvider = StateProvider<FanPlanType?>((ref) => null);
+final testPlanProvider = StateProvider<String?>((ref) => null);
 
-// ユーザー役割切り替え用プロバイダー（テスト用）
-final userRoleToggleProvider = StateProvider<UserRole>((ref) => UserRole.star);
-
-// テスト用モックユーザーデータ
-final mockFreeFanUser = UserInfo(
-  id: 'test_free_fan_id',
-  name: '無料ファン',
-  email: 'free_fan@example.com',
-  role: UserRole.fan,
-  fanPlanType: FanPlanType.free,
-);
-
-final mockLightPlanUser = UserInfo(
-  id: 'test_light_plan_id',
-  name: 'ライトプランユーザー',
-  email: 'light_plan@example.com',
-  role: UserRole.fan,
-  fanPlanType: FanPlanType.light,
-);
-
-final mockStandardPlanUser = UserInfo(
-  id: 'test_standard_plan_id',
-  name: 'スタンダードプランユーザー',
-  email: 'standard_plan@example.com',
-  role: UserRole.fan,
-  fanPlanType: FanPlanType.standard,
-);
-
-final mockPremiumPlanUser = UserInfo(
-  id: 'test_premium_plan_id',
-  name: 'プレミアムプランユーザー',
-  email: 'premium_plan@example.com',
-  role: UserRole.fan,
-  fanPlanType: FanPlanType.premium,
-); 
+// 互換: 旧コードで参照しているユーザー役割トグル
+final userRoleToggleProvider = StateProvider<UserRole>((ref) => UserRole.star); 

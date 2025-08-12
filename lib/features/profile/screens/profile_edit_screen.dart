@@ -1,6 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:image_picker/image_picker.dart';
+import '../../../src/features/auth/services/profile_service.dart';
+import '../../../src/features/auth/services/storage_service.dart';
+import '../../../providers/user_provider.dart';
 import '../../../providers/theme_provider.dart';
+import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
 
 class ProfileEditScreen extends ConsumerStatefulWidget {
   const ProfileEditScreen({super.key});
@@ -15,13 +22,11 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
   // テキストコントローラー
   late TextEditingController _nameController;
   late TextEditingController _bioController;
-  late TextEditingController _emailController;
-  late TextEditingController _phoneController;
+  // 連絡先/所在地は非表示要件のため削除
   late TextEditingController _websiteController;
-  late TextEditingController _locationController;
   
   // プロフィール画像
-  String? _selectedAvatarPath;
+  String? _selectedAvatarUrl;
   String? _selectedCoverPath;
   
   // カテゴリ・タグ設定
@@ -32,7 +37,6 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
   // プライバシー設定
   bool _isProfilePublic = true;
   bool _allowDirectMessages = true;
-  bool _showOnlineStatus = true;
   bool _allowNotifications = true;
   
   // カテゴリオプション
@@ -61,26 +65,36 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
   }
 
   void _initializeControllers() {
-    // 現在のユーザー情報を取得して初期化
-    _nameController = TextEditingController(text: 'スターユーザー'); // 実際のユーザー情報から取得
-    _bioController = TextEditingController(text: 'よろしくお願いします！');
-    _emailController = TextEditingController(text: 'star@example.com');
-    _phoneController = TextEditingController(text: '');
+    // Supabaseから現在のプロフィールを読み込む
+    final user = Supabase.instance.client.auth.currentUser;
+    _nameController = TextEditingController();
+    _bioController = TextEditingController(text: '');
     _websiteController = TextEditingController(text: '');
-    _locationController = TextEditingController(text: '東京都');
-    
-    _selectedCategories = ['テクノロジー・ガジェット'];
-    _selectedTags = ['Flutter', 'プログラミング', 'レビュー'];
+    _selectedCategories = [];
+    _selectedTags = [];
+
+    if (user != null) {
+      Future.microtask(() async {
+        final profileService = ProfileService();
+        final data = await profileService.fetchProfile(user.id);
+        if (!mounted) return;
+        setState(() {
+          _nameController.text = (data?['display_name'] as String?) ?? '';
+          _selectedAvatarUrl = data?['avatar_url'] as String?;
+          final List<dynamic>? genres = data?['genres'] as List<dynamic>?;
+          _selectedCategories = genres?.map((e) => e.toString()).toList() ?? [];
+          final Map<String, dynamic>? snsLinks = (data?['sns_links'] as Map?)?.cast<String, dynamic>();
+          _websiteController.text = snsLinks != null ? (snsLinks['website'] as String? ?? '') : '';
+        });
+      });
+    }
   }
 
   @override
   void dispose() {
     _nameController.dispose();
     _bioController.dispose();
-    _emailController.dispose();
-    _phoneController.dispose();
     _websiteController.dispose();
-    _locationController.dispose();
     _tagController.dispose();
     super.dispose();
   }
@@ -157,14 +171,13 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
                       controller: _bioController,
                       label: '自己紹介',
                       icon: Icons.description,
-                      maxLines: 4,
+                      maxLines: 5,
                       maxLength: 200,
-                    ),
-                    const SizedBox(height: 16),
-                    _buildTextFormField(
-                      controller: _locationController,
-                      label: '所在地',
-                      icon: Icons.location_on,
+                      keyboardType: TextInputType.multiline,
+                      inputFormatters: [
+                        // 入力中に出る不要なアンダーバー対策（自己紹介では'_'を禁止）
+                        FilteringTextInputFormatter.deny(RegExp(r'[_]')),
+                      ],
                     ),
                     const SizedBox(height: 16),
                     _buildTextFormField(
@@ -178,35 +191,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
                 
                 const SizedBox(height: 24),
                 
-                // 連絡先情報セクション
-                _buildSection(
-                  '連絡先情報',
-                  [
-                    _buildTextFormField(
-                      controller: _emailController,
-                      label: 'メールアドレス',
-                      icon: Icons.email,
-                      keyboardType: TextInputType.emailAddress,
-                      validator: (value) {
-                        if (value != null && value.isNotEmpty) {
-                          final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
-                          if (!emailRegex.hasMatch(value)) {
-                            return '有効なメールアドレスを入力してください';
-                          }
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    _buildTextFormField(
-                      controller: _phoneController,
-                      label: '電話番号',
-                      icon: Icons.phone,
-                      keyboardType: TextInputType.phone,
-                    ),
-                  ],
-                ),
-                
+                // 連絡先情報セクションは仕様により削除
                 const SizedBox(height: 24),
                 
                 // カテゴリ選択セクション
@@ -276,11 +261,11 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
                     ),
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  child: _selectedAvatarPath != null
+                  child: _selectedAvatarUrl != null
                       ? ClipRRect(
                           borderRadius: BorderRadius.circular(20),
-                          child: Image.asset(
-                            _selectedAvatarPath!,
+                          child: Image.network(
+                            _selectedAvatarUrl!,
                             fit: BoxFit.cover,
                           ),
                         )
@@ -379,6 +364,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
     int? maxLength,
     TextInputType? keyboardType,
     String? Function(String?)? validator,
+    List<TextInputFormatter>? inputFormatters,
   }) {
     final themeMode = ref.watch(themeProvider);
     final isDark = themeMode == AppThemeMode.dark;
@@ -388,6 +374,7 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
       maxLines: maxLines,
       maxLength: maxLength,
       keyboardType: keyboardType,
+      inputFormatters: inputFormatters,
       validator: validator,
       style: TextStyle(color: isDark ? Colors.white : Colors.black87),
       decoration: InputDecoration(
@@ -634,13 +621,6 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
         ),
         const SizedBox(height: 16),
         _buildSwitchItem(
-          'オンライン状態表示',
-          'オンライン状態を他のユーザーに表示する',
-          _showOnlineStatus,
-          (value) => setState(() => _showOnlineStatus = value),
-        ),
-        const SizedBox(height: 16),
-        _buildSwitchItem(
           '通知を許可',
           'フォローやいいねの通知を受け取る',
           _allowNotifications,
@@ -776,13 +756,33 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
   }
 
   void _selectAvatar() {
-    // 画像選択の実装
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('画像選択機能は実装予定です'),
-        backgroundColor: Color(0xFF4ECDC4),
-      ),
-    );
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user == null) return;
+    ImagePicker()
+        .pickImage(source: ImageSource.gallery, maxWidth: 1024, maxHeight: 1024, imageQuality: 85)
+        .then((xfile) async {
+      if (xfile == null) return;
+      final storage = StorageService();
+      final url = await storage.uploadProfileImage(xfile, user.id);
+      if (url != null) {
+        await ProfileService().updateProfile(userId: user.id, avatarUrl: url);
+        if (!mounted) return;
+        setState(() {
+          _selectedAvatarUrl = url;
+        });
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('プロフィール画像を更新しました'), backgroundColor: Color(0xFF4ECDC4)),
+          );
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('画像のアップロードに失敗しました'), backgroundColor: Colors.red),
+          );
+        }
+      }
+    });
   }
 
   void _showDeleteAccountDialog() {
@@ -830,16 +830,30 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
   }
 
   void _saveProfile() {
-    if (_formKey.currentState!.validate()) {
-      // プロフィール保存処理
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('プロフィールを保存しました'),
-          backgroundColor: Color(0xFF4ECDC4),
-        ),
-      );
-      Navigator.pop(context);
-    }
+    if (!_formKey.currentState!.validate()) return;
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user == null) return;
+    final displayName = _nameController.text.trim();
+    final website = _websiteController.text.trim();
+    final genres = _selectedCategories;
+    ProfileService()
+        .updateProfile(userId: user.id, displayName: displayName, website: website, genres: genres)
+        .then((_) async {
+      if (!mounted) return;
+      await ref.read(currentUserProvider.notifier).loadFromSupabase();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('プロフィールを保存しました'), backgroundColor: Color(0xFF4ECDC4)),
+        );
+        Navigator.pop(context);
+      }
+    }).catchError((e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('保存に失敗しました: $e'), backgroundColor: Colors.red),
+        );
+      }
+    });
   }
 
   Widget _buildBottomNavigationBar() {
@@ -870,16 +884,16 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               _buildBottomNavItem(Icons.home, 'ホーム', () {
-                Navigator.popUntil(context, (route) => route.isFirst);
+                context.go('/home');
               }),
               _buildBottomNavItem(Icons.search, '検索', () {
-                Navigator.popUntil(context, (route) => route.isFirst);
+                context.go('/home');
               }),
               _buildBottomNavItem(Icons.notifications, '通知', () {
-                Navigator.popUntil(context, (route) => route.isFirst);
+                context.go('/home');
               }),
               _buildBottomNavItem(Icons.star, 'マイリスト', () {
-                Navigator.popUntil(context, (route) => route.isFirst);
+                context.go('/home');
               }),
               _buildBottomNavItem(Icons.person, 'マイページ', null, isSelected: true),
             ],

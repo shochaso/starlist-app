@@ -27,6 +27,9 @@ class MypageScreen extends ConsumerWidget {
     final dividerColor = isDarkMode ? Colors.grey.shade800 : Colors.grey.shade300;
     final secondaryTextColor = isDarkMode ? Colors.grey.shade400 : Colors.grey.shade700;
 
+    // 現在のユーザー（display_name優先）
+    final currentUser = ref.watch(currentUserProvider);
+
     // テーマモードの取得は不要（既にTheme.of(context)で取得済み）
 
     return Scaffold(
@@ -57,7 +60,7 @@ class MypageScreen extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'ユーザー名',
+                          (currentUser.name.isNotEmpty) ? currentUser.name : 'ゲスト',
                           style: TextStyle(
                             color: textColor,
                             fontSize: 20,
@@ -66,7 +69,7 @@ class MypageScreen extends ConsumerWidget {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          'user@example.com',
+                          currentUser.email,
                           style: TextStyle(
                             color: secondaryTextColor,
                             fontSize: 14,
@@ -326,7 +329,7 @@ class MypageScreen extends ConsumerWidget {
             ),
             
             // 役割切り替え（テスト用）
-            if (kDebugMode) { // デバッグモードでのみ表示
+            if (kDebugMode) ...[
               const SizedBox(height: 24),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -352,7 +355,7 @@ class MypageScreen extends ConsumerWidget {
                       context,
                       ref,
                       '無料',
-                      mockFreeFanUser,
+                      const UserInfo(id: 'debug-free', name: '無料ファン', email: 'free@example.com', role: UserRole.fan),
                       textColor,
                       secondaryTextColor,
                     ),
@@ -361,7 +364,7 @@ class MypageScreen extends ConsumerWidget {
                       context,
                       ref,
                       'ライト',
-                      mockLightPlanUser,
+                      const UserInfo(id: 'debug-light', name: 'ライトプラン', email: 'light@example.com', role: UserRole.fan),
                       textColor,
                       secondaryTextColor,
                     ),
@@ -370,7 +373,7 @@ class MypageScreen extends ConsumerWidget {
                       context,
                       ref,
                       'スタンダード',
-                      mockStandardPlanUser,
+                      const UserInfo(id: 'debug-standard', name: 'スタンダード', email: 'standard@example.com', role: UserRole.fan),
                       textColor,
                       secondaryTextColor,
                     ),
@@ -379,14 +382,14 @@ class MypageScreen extends ConsumerWidget {
                       context,
                       ref,
                       'プレミアム',
-                      mockPremiumPlanUser,
+                      const UserInfo(id: 'debug-premium', name: 'プレミアム', email: 'premium@example.com', role: UserRole.fan),
                       textColor,
                       secondaryTextColor,
                     ),
                   ],
                 ),
               ),
-            }
+            ],
             
             const SizedBox(height: 24),
             

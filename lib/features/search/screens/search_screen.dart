@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../src/providers/theme_provider_enhanced.dart';
 import '../../../providers/user_provider.dart';
 import '../../app/screens/settings_screen.dart';
 import '../../star/screens/star_dashboard_screen.dart';
 import '../../data_integration/screens/data_import_screen.dart';
 import '../../../src/features/subscription/screens/subscription_plans_screen.dart';
+import '../../../screens/starlist_main_screen.dart' show selectedTabProvider, selectedDrawerPageProvider;
 
 // プロバイダー
 final selectedTabProvider = StateProvider<int>((ref) => 0);
@@ -1923,12 +1925,18 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
   }
 
   void _navigateToHome() {
-    Navigator.popUntil(context, (route) => route.isFirst);
+    if (!mounted) return;
+    ref.read(selectedDrawerPageProvider.notifier).state = null;
+    ref.read(selectedTabProvider.notifier).state = 0;
+    context.go('/home');
   }
 
 
   void _navigateToMylist() {
-    Navigator.popUntil(context, (route) => route.isFirst);
+    if (!mounted) return;
+    ref.read(selectedDrawerPageProvider.notifier).state = null;
+    ref.read(selectedTabProvider.notifier).state = 3;
+    context.go('/home');
   }
 
   void _navigateToDataImport() {
@@ -1950,12 +1958,15 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
   }
 
   void _navigateToProfile() {
-    Navigator.popUntil(context, (route) => route.isFirst);
+    if (!mounted) return;
+    ref.read(selectedDrawerPageProvider.notifier).state = null;
+    ref.read(selectedTabProvider.notifier).state = 4;
+    context.go('/home');
   }
 
   void _navigateToSettings() {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (context) => const SettingsScreen()),
-    );
+    if (!mounted) return;
+    ref.read(selectedDrawerPageProvider.notifier).state = 'settings';
+    context.go('/settings');
   }
 } 

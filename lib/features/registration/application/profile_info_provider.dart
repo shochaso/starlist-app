@@ -90,11 +90,8 @@ class ProfileInfoNotifier extends StateNotifier<ProfileInfoState> {
   }
 
   void _validateForm() {
-    // For this step, we can consider all fields optional for now,
-    // so the "Next" button is always enabled.
-    // Or add specific validation logic if needed.
-    // Example: At least one genre must be selected.
-    final isValid = state.selectedGenres.isNotEmpty;
+    // 性別必須 + 少なくとも1ジャンル選択
+    final isValid = state.gender != null && state.selectedGenres.isNotEmpty;
     state = state.copyWith(isFormValid: isValid);
   }
 }

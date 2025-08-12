@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../providers/theme_provider_enhanced.dart';
 
 class CommonAppBar extends ConsumerWidget implements PreferredSizeWidget {
@@ -65,8 +66,7 @@ class CommonAppBar extends ConsumerWidget implements PreferredSizeWidget {
   }
 
   void _navigateToHome(BuildContext context) {
-    // すべてのルートをクリアしてホーム画面に戻る
-    Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+    context.go('/home');
   }
 
   @override
@@ -111,8 +111,7 @@ class CommonBackButton extends ConsumerWidget {
 
   void _handleBack(BuildContext context) {
     if (toHome) {
-      // ホーム画面に戻る
-      Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+      context.go('/home');
     } else {
       // 前のページに戻る
       Navigator.of(context).pop();

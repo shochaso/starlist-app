@@ -1,19 +1,48 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:simple_icons/simple_icons.dart';
 import '../constants/service_definitions.dart';
+import 'package:flutter/services.dart' show rootBundle;
 
 /// 実際のサービス公式アイコンを管理するクラス
 /// Material Policy (MP) ライセンスに準拠した実装
 class ServiceIcons {
   // MP準拠: 各サービスの公式ブランドガイドラインに従ったアイコン実装
   
+  static String _normalizeServiceId(String rawId) {
+    final id = rawId.toLowerCase();
+    switch (id) {
+      case 'amazon_prime':
+      case 'amazonprime':
+      case 'prime':
+        return 'prime_video';
+      case 'x_twitter':
+        return 'x';
+      default:
+        return id;
+    }
+  }
+
   /// サービスアイコンの構築（公式SVGアイコンを使用）
   static Widget buildIcon({
     required String serviceId,
     required double size,
     required bool isDark,
   }) {
+    // 特別扱いなし（まずは同梱の公式SVGを優先）
+    final preferRemote = <String, bool>{};
+    final id = _normalizeServiceId(serviceId);
+
+    // ユーザー要望: SimpleIcons を優先採用（安定表示 & ブランド一貫性）
+    const preferSimpleIcon = <String>{
+      'youtube', 'prime_video', 'amazon', 'spotify', 'netflix',
+      'apple_music'
+    };
+    if (preferSimpleIcon.contains(id)) {
+      return _buildSimpleIcon(id: id, size: size, isDark: isDark);
+    }
+
     // 公式SVGアイコンファイルパスのマッピング（実際の公式アイコンを使用）
     final iconPaths = {
       // 動画サービス（公式アイコン）
@@ -59,6 +88,7 @@ class ServiceIcons {
       'yahoo_shopping': 'assets/icons/services/yahoo_shopping.svg',
       'mercari': 'assets/icons/services/mercari.svg',
       'other_ec': 'assets/icons/services/other_ec.svg',
+      'amazon_music': 'assets/icons/services/amazon_music.svg',
       
       // エンタメ・その他（公式アイコン）
       'games': 'assets/icons/services/games.svg',
@@ -71,34 +101,108 @@ class ServiceIcons {
       'electronic_money': 'assets/icons/services/electronic_money.svg',
       'live_concert': 'assets/icons/services/live_concert.svg',
     };
-
-    final iconPath = iconPaths[serviceId.toLowerCase()];
+    final iconPath = iconPaths[id];
+    if (preferRemote[id] == true) {
+      // 公式CDNのベクターロゴを強制使用
+      return _buildRemoteLogo(serviceId: id, size: size, isDark: isDark);
+    }
     
+    // 1) アセットが存在する場合はそれを使用
     if (iconPath != null) {
-      // 実際の公式SVGアイコンを表示
-      return Container(
+      return _buildSvgWithFallback(iconPath: iconPath, serviceId: id, size: size, isDark: isDark);
+    }
+    // 2) アセット未定義のサービスはリモートロゴ(CDN/Clearbit)にフォールバック
+    return _buildRemoteLogo(serviceId: id, size: size, isDark: isDark);
+  }
+
+  static Widget _buildSimpleIcon({
+    required String id,
+    required double size,
+    required bool isDark,
+  }) {
+    final simpleIconMap = <String, IconData>{
+      'youtube': SimpleIcons.youtube,
+      'amazon': SimpleIcons.amazon,
+      'spotify': SimpleIcons.spotify,
+      'netflix': SimpleIcons.netflix,
+      'prime_video': SimpleIcons.primevideo,
+      'apple_music': SimpleIcons.applemusic,
+    };
+    final brandColors = <String, Color>{
+      'youtube': const Color(0xFFFF0000),
+      'amazon': const Color(0xFFFF9900),
+      'spotify': const Color(0xFF1DB954),
+      'netflix': const Color(0xFFE50914),
+      'prime_video': const Color(0xFF00A8E1),
+      'apple_music': const Color(0xFFFA57C1),
+    };
+    final iconData = simpleIconMap[id];
+    final color = brandColors[id] ?? (isDark ? Colors.white : Colors.black);
+    if (iconData != null) {
+      return SizedBox(
         width: size,
         height: size,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(size * 0.15),
-          // 各サービスの公式背景色（必要に応じて）
-          color: _getServiceBackgroundColor(serviceId, isDark),
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(size * 0.15),
-          child: SvgPicture.asset(
-            iconPath,
-            width: size,
-            height: size,
-            fit: BoxFit.contain,
-            colorFilter: _getColorFilter(serviceId, isDark),
-          ),
+        child: Center(
+          child: Icon(iconData, size: size * 0.82, color: color),
         ),
       );
     }
+    // 万一未定義なら従来フォールバック
+    return _buildFallbackIcon(id, size, isDark);
+  }
 
-    // フォールバック: FontAwesome汎用アイコン
+  /// アセット→CDN(Simple Icons)→Clearbitの順でロゴを解決
+  static Widget _buildSvgWithFallback({
+    required String iconPath,
+    required String serviceId,
+    required double size,
+    required bool isDark,
+  }) {
+    return FutureBuilder<bool>(
+      future: _assetIsValidSvg(iconPath),
+      builder: (context, snapshot) {
+        final exists = snapshot.data == true;
+        final borderRadius = BorderRadius.circular(size * 0.15);
+        final bg = Colors.transparent; // 背景色は透明にしてロゴの可視性を担保
+        
+        if (exists) {
+          return Container(
+            width: size,
+            height: size,
+            decoration: BoxDecoration(borderRadius: borderRadius, color: bg),
+            child: ClipRRect(
+              borderRadius: borderRadius,
+              child: SvgPicture.asset(
+                iconPath,
+                width: size,
+                height: size,
+                fit: BoxFit.contain,
+              ),
+            ),
+          );
+        }
+        // アセットが無い場合は最後にフォールバックアイコン
+        return _buildFallbackIcon(serviceId, size, isDark);
+      },
+    );
+  }
+
+  /// 廃止: ネットワークフォールバックは使用しない（RLS要件によりローカルアセット限定）
+  static Widget _buildRemoteLogo({
+    required String serviceId,
+    required double size,
+    required bool isDark,
+  }) {
     return _buildFallbackIcon(serviceId, size, isDark);
+  }
+
+  static Future<bool> _assetIsValidSvg(String assetPath) async {
+    try {
+      final content = await rootBundle.loadString(assetPath);
+      return content.contains('<svg');
+    } catch (_) {
+      return false;
+    }
   }
 
   /// サービス別の背景色取得（公式ブランドカラーに準拠）
@@ -109,51 +213,51 @@ class ServiceIcons {
         return const Color(0xFF1DB954); // Spotify Green
       case 'youtube':
       case 'youtube_music':
-        return Colors.white; // YouTube白背景
+        return null; // 背景は透明
       case 'netflix':
-        return const Color(0xFFE50914); // Netflix Red
+        return null; // 透明
       case 'apple_music':
-        return Colors.white; // Apple Music白背景
+        return null;
       case 'disney_plus':
-        return const Color(0xFF113CCF); // Disney+ Blue
+        return null;
       case 'prime_video':
-        return const Color(0xFF232F3E); // Amazon Prime背景
+        return null;
       case 'hulu':
-        return const Color(0xFF1CE783); // Hulu Green
+        return null;
       case 'abema':
-        return Colors.white; // ABEMA白背景
+        return null;
       case 'niconico':
-        return Colors.white; // ニコニコ白背景
+        return null;
       
       // SNS
       case 'instagram':
-        return Colors.white; // Instagram白背景（グラデーションはSVG内）
+        return null;
       case 'tiktok':
-        return Colors.white; // TikTok白背景
+        return null;
       case 'x':
-        return Colors.white; // X白背景
+        return null;
       case 'facebook':
-        return const Color(0xFF1877F2); // Facebook Blue
+        return null;
       case 'threads':
-        return Colors.white; // Threads白背景
+        return null;
       case 'linkedin':
-        return const Color(0xFF0077B5); // LinkedIn Blue
+        return null;
       
       // 配信サービス
       case 'twitch':
-        return const Color(0xFF9146FF); // Twitch Purple
+        return null;
       case 'showroom':
-        return Colors.white; // SHOWROOM白背景
+        return null;
       case 'pococha':
-        return Colors.white; // Pococha白背景
+        return null;
       
       // ショッピング
       case 'amazon':
-        return const Color(0xFF232F3E); // Amazon背景
+        return null;
       case 'rakuten':
-        return const Color(0xFFBF0000); // 楽天Red
+        return null;
       case 'mercari':
-        return const Color(0xFFFF6F00); // メルカリオレンジ
+        return null;
       
       default:
         return null;
@@ -172,9 +276,42 @@ class ServiceIcons {
 
   /// フォールバックアイコン（FontAwesome）
   static Widget _buildFallbackIcon(String serviceId, double size, bool isDark) {
-    // ServiceDefinitionsから情報を取得
+    // 1) SimpleIcons でブランドロゴを優先表示（ローカルパッケージのためネットワーク非依存）
+    final id = _normalizeServiceId(serviceId);
+    final simpleIconMap = <String, IconData>{
+      'youtube': SimpleIcons.youtube,
+      'amazon': SimpleIcons.amazon,
+      'spotify': SimpleIcons.spotify,
+      'netflix': SimpleIcons.netflix,
+      'prime_video': SimpleIcons.primevideo,
+      'amazon_prime': SimpleIcons.primevideo,
+    };
+    final brandColors = <String, Color>{
+      'youtube': const Color(0xFFFF0000),
+      'amazon': const Color(0xFFFF9900),
+      'spotify': const Color(0xFF1DB954),
+      'netflix': const Color(0xFFE50914),
+      'prime_video': const Color(0xFF00A8E1),
+      'amazon_prime': const Color(0xFF00A8E1),
+    };
+
+    final iconData = simpleIconMap[id];
+    if (iconData != null) {
+      return SizedBox(
+        width: size,
+        height: size,
+        child: Center(
+          child: Icon(
+            iconData,
+            size: size * 0.82,
+            color: brandColors[id] ?? (isDark ? Colors.white : Colors.black87),
+          ),
+        ),
+      );
+    }
+
+    // 2) ServiceDefinitions に定義があればそのアイコンを使用
     final service = ServiceDefinitions.get(serviceId);
-    
     if (service != null) {
       return Container(
         width: size,
@@ -192,8 +329,8 @@ class ServiceIcons {
         ),
       );
     }
-    
-    // デフォルトアイコン
+
+    // 3) デフォルトのプレイアイコン
     return Container(
       width: size,
       height: size,

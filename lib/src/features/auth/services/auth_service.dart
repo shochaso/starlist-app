@@ -17,9 +17,27 @@ class AuthService {
       if (response.user == null) {
         throw Exception('ログインに失敗しました');
       }
-      // This is a simplified user model conversion. 
-      // In a real app, you'd fetch more details from your 'profiles' table.
       return UserModel.fromSupabaseUser(response.user!);
+    } catch (e) {
+      throw Exception('ログインに失敗しました: ${e.toString()}');
+    }
+  }
+
+  Future<UserModel> signInWithIdentifier(String identifier, String password) async {
+    try {
+      String email = identifier.trim();
+      if (!email.contains('@')) {
+        final data = await _supabase
+            .from('profiles')
+            .select('email')
+            .eq('username', identifier)
+            .maybeSingle();
+        if (data == null || data['email'] == null || (data['email'] as String).isEmpty) {
+          throw Exception('ユーザー名が見つかりませんでした');
+        }
+        email = data['email'] as String;
+      }
+      return await signInWithEmailAndPassword(email, password);
     } catch (e) {
       throw Exception('ログインに失敗しました: ${e.toString()}');
     }
@@ -29,19 +47,22 @@ class AuthService {
     required String email,
     required String password,
     required String username,
+    String? displayName,
   }) async {
     try {
       final response = await _supabase.auth.signUp(
         email: email,
         password: password,
-        data: {'username': username},
+        data: {
+          'username': username,
+          if (displayName != null && displayName.isNotEmpty) 'display_name': displayName,
+        },
       );
       if (response.user == null) {
         throw Exception('ユーザー登録に失敗しました');
       }
       return UserModel.fromSupabaseUser(response.user!);
     } catch (e) {
-      // Handle specific Supabase errors, e.g., user already exists
       if (e is AuthException && e.message.contains('User already registered')) {
          throw Exception('このメールアドレスは既に使用されています。');
       }

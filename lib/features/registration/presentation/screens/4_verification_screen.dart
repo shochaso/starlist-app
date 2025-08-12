@@ -18,7 +18,13 @@ class VerificationScreen extends ConsumerWidget {
         automaticallyImplyLeading: false,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios),
-          onPressed: () => context.pop(),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/profile-info');
+            }
+          },
         ),
         centerTitle: true,
         bottom: const PreferredSize(

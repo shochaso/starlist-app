@@ -22,7 +22,7 @@ import '../features/content/screens/post_detail_screen.dart';
 import 'test_account_switcher_screen.dart';
 import '../data/models/post_model.dart';
 import 'login_status_screen.dart';
-import 'login_screen.dart'; // ログイン画面をインポート
+import 'package:go_router/go_router.dart'; // GoRouter for navigation
 
 
 // データモデル
@@ -474,9 +474,7 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
       // ログアウト状態の場合、即座にログイン画面を表示
       // WidgetsBinding.instance.addPostFrameCallbackを使用して、ビルド完了後にナビゲーションを実行
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const LoginScreen()),
-        );
+        if (mounted) context.go('/login');
       });
       // ログイン画面に遷移するまで一時的なプレースホルダーを表示
       return const Scaffold(
@@ -783,8 +781,8 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
         page = const SubscriptionPlansScreen(); // ファン用も同じ課金プランページ
         break;
       case 'settings':
-        page = const SettingsScreen();
-        break;
+        if (mounted) context.go('/settings');
+        return;
       case 'reaction_demo':
         page = const ReactionDemoScreen();
         break;
@@ -792,6 +790,7 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
         return;
     }
     
+    if (pageKey == 'settings') return; // settingsはGoRouter遷移済み
     Navigator.of(context).push(
       MaterialPageRoute(builder: (context) => page),
     );

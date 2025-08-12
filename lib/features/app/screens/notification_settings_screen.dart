@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../providers/theme_provider.dart';
 
 class NotificationSettingsScreen extends ConsumerStatefulWidget {
@@ -526,17 +529,17 @@ class _NotificationSettingsScreenState extends ConsumerState<NotificationSetting
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               _buildBottomNavItem(Icons.home, 'ホーム', () {
-                Navigator.popUntil(context, (route) => route.isFirst);
+                context.go('/home');
               }),
               _buildBottomNavItem(Icons.search, '検索', () {
-                Navigator.popUntil(context, (route) => route.isFirst);
+                context.go('/home');
               }),
               _buildBottomNavItem(Icons.notifications, '通知', null, isSelected: true),
               _buildBottomNavItem(Icons.star, 'マイリスト', () {
-                Navigator.popUntil(context, (route) => route.isFirst);
+                context.go('/home');
               }),
               _buildBottomNavItem(Icons.person, 'マイページ', () {
-                Navigator.popUntil(context, (route) => route.isFirst);
+                context.go('/home');
               }),
             ],
           ),

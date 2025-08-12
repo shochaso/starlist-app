@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../src/providers/theme_provider_enhanced.dart';
 import '../../../providers/user_provider.dart';
 import '../../subscription/screens/fan_subscription_screen.dart';
@@ -9,6 +10,11 @@ import '../../data_integration/screens/data_import_screen.dart';
 import '../../../src/features/auth/providers/auth_provider.dart';
 import '../../../providers/user_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../profile/screens/profile_edit_screen.dart';
+import '../../../src/features/auth/services/profile_service.dart';
+import '../../../src/features/auth/presentation/pages/two_factor_setup_screen.dart';
+import '../../../screens/starlist_main_screen.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -125,6 +131,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   Widget _buildUserProfile() {
     final themeState = ref.watch(themeProviderEnhanced);
+    final currentUser = ref.watch(currentUserProvider);
     final isDark = themeState.isDarkMode;
     
     return Container(
@@ -172,18 +179,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'スターユーザー',
-                  style: TextStyle(
+                Text(
+                  currentUser.name.isEmpty ? 'ゲスト' : currentUser.name,
+                  style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
                     color: Colors.white,
                   ),
                 ),
                 const SizedBox(height: 4),
-                const Text(
-                  'star@example.com',
-                  style: TextStyle(
+                Text(
+                  currentUser.email,
+                  style: const TextStyle(
                     fontSize: 14,
                     color: Colors.white,
                   ),
@@ -195,9 +202,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     color: Colors.white.withOpacity( 0.2),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Text(
-                    'プレミアム',
-                    style: TextStyle(
+                  child: Text(
+                    currentUser.planDisplayName,
+                    style: const TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                       color: Colors.white,
@@ -207,10 +214,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ],
             ),
           ),
-          IconButton(
-            icon: const Icon(Icons.edit, color: Colors.white),
-            onPressed: () => _editProfile(),
-          ),
+          const SizedBox.shrink(),
         ],
       ),
     );
@@ -220,12 +224,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     return _buildSettingsSection(
       'アカウント',
       [
-        _buildSettingsItem(
-          Icons.person_outline,
-          'プロフィール編集',
-          'プロフィール情報を変更',
-          () => _editProfile(),
-        ),
         _buildSettingsItem(
           Icons.lock_outline,
           'パスワード変更',
@@ -242,7 +240,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           Icons.verified_user_outlined,
           '二段階認証',
           'アカウントのセキュリティを強化',
-          () => _setupTwoFactor(),
+          () => Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const TwoFactorSetupScreen()),
+          ),
         ),
       ],
     );
@@ -341,28 +341,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             } else {
               await themeActions.setLight();
             }
-          },
-        ),
-        _buildCustomItem(
-          Icons.brightness_6,
-          'テーマ設定',
-          '現在: ${themeState.themeMode.displayName}',
-          () => _showThemeDialog(),
-        ),
-        _buildDropdownItem(
-          Icons.language,
-          '言語',
-          'アプリの表示言語',
-          _language,
-          {
-            'ja': '日本語',
-            'en': 'English',
-            'ko': '한국어',
-            'zh': '中文',
-          },
-          (value) {
-            setState(() => _language = value!);
-            _saveSetting('language', value!);
           },
         ),
         _buildSettingsItem(
@@ -945,55 +923,88 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   // アクションメソッド
   void _editProfile() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('プロフィール編集画面に移動します'),
-        backgroundColor: Color(0xFF4ECDC4),
-      ),
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (context) => const ProfileEditScreen()),
     );
   }
 
   void _changePassword() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('パスワード変更画面に移動します'),
-        backgroundColor: Color(0xFF4ECDC4),
-      ),
-    );
+    if (mounted) context.go('/password-reset-request');
   }
 
   void _manageSocialLinks() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('SNS連携管理画面に移動します'),
-        backgroundColor: Color(0xFF4ECDC4),
+    final TextEditingController websiteCtrl = TextEditingController();
+    final user = Supabase.instance.client.auth.currentUser;
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('SNS連携（ウェブサイト）'),
+        content: FutureBuilder(
+          future: user != null ? ProfileService().fetchProfile(user.id) : Future.value(null),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const SizedBox(height: 60, child: Center(child: CircularProgressIndicator()));
+            }
+            final data = snapshot.data as Map<String, dynamic>?;
+            final Map<String, dynamic>? sns = (data?['sns_links'] as Map?)?.cast<String, dynamic>();
+            websiteCtrl.text = sns != null ? (sns['website'] as String? ?? '') : '';
+            return TextField(
+              controller: websiteCtrl,
+              decoration: const InputDecoration(labelText: 'ウェブサイトURL'),
+              keyboardType: TextInputType.url,
+            );
+          },
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('キャンセル')),
+          TextButton(
+            onPressed: () async {
+              if (user == null) return;
+              await ProfileService().updateProfile(userId: user.id, website: websiteCtrl.text.trim());
+              if (mounted) {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('SNSリンクを保存しました'), backgroundColor: Color(0xFF4ECDC4)),
+                );
+              }
+            },
+            child: const Text('保存'),
+          ),
+        ],
       ),
     );
   }
 
   void _setupTwoFactor() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('二段階認証設定画面に移動します'),
-        backgroundColor: Color(0xFF4ECDC4),
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('二段階認証'),
+        content: const Text('二段階認証は近日提供予定です。'),
+        actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('閉じる'))],
       ),
     );
   }
 
   void _manageData() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('データ管理画面に移動します'),
-        backgroundColor: Color(0xFF4ECDC4),
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('データ管理'),
+        content: const Text('エクスポート/削除は近日提供予定です。'),
+        actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('閉じる'))],
       ),
     );
   }
 
   void _showPrivacyPolicy() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('プライバシーポリシーを表示します'),
-        backgroundColor: Color(0xFF4ECDC4),
+    // 簡易表示
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('プライバシーポリシー'),
+        content: const Text('最新のプライバシーポリシーはWebサイトでご確認ください。'),
+        actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('閉じる'))],
       ),
     );
   }
@@ -1001,7 +1012,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   void _configureNotifications() {
     final themeState = ref.read(themeProviderEnhanced);
     final isDark = themeState.isDarkMode;
-    
+    bool notifPosts = true;
+    bool notifRanking = false;
+    bool notifFeatures = true;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -1018,8 +1031,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 'スターの新着投稿',
                 style: TextStyle(color: isDark ? Colors.white : Colors.black87),
               ),
-              value: true,
-              onChanged: (value) {},
+              value: notifPosts,
+              onChanged: (value) { notifPosts = value ?? false; },
               activeColor: const Color(0xFF4ECDC4),
             ),
             CheckboxListTile(
@@ -1027,8 +1040,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 'ランキング更新',
                 style: TextStyle(color: isDark ? Colors.white : Colors.black87),
               ),
-              value: false,
-              onChanged: (value) {},
+              value: notifRanking,
+              onChanged: (value) { notifRanking = value ?? false; },
               activeColor: const Color(0xFF4ECDC4),
             ),
             CheckboxListTile(
@@ -1036,15 +1049,26 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 '新機能のお知らせ',
                 style: TextStyle(color: isDark ? Colors.white : Colors.black87),
               ),
-              value: true,
-              onChanged: (value) {},
+              value: notifFeatures,
+              onChanged: (value) { notifFeatures = value ?? false; },
               activeColor: const Color(0xFF4ECDC4),
             ),
           ],
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () async {
+              final prefs = await SharedPreferences.getInstance();
+              await prefs.setBool('notif_posts', notifPosts);
+              await prefs.setBool('notif_ranking', notifRanking);
+              await prefs.setBool('notif_features', notifFeatures);
+              if (mounted) {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                  content: Text('通知設定を保存しました'), backgroundColor: Color(0xFF4ECDC4),
+                ));
+              }
+            },
             child: const Text(
               '保存',
               style: TextStyle(color: Color(0xFF4ECDC4)),
@@ -1058,7 +1082,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   void _clearCache() {
     final themeState = ref.read(themeProviderEnhanced);
     final isDark = themeState.isDarkMode;
-    
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -1080,14 +1103,28 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
           ),
           TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('キャッシュを削除しました'),
-                  backgroundColor: Color(0xFF4ECDC4),
-                ),
-              );
+            onPressed: () async {
+              try {
+                // Flutter image cache
+                PaintingBinding.instance.imageCache.clear();
+                PaintingBinding.instance.imageCache.clearLiveImages();
+                // App preferences keys（必要キーのみ）
+                final prefs = await SharedPreferences.getInstance();
+                await prefs.remove('push_notifications');
+                await prefs.remove('email_notifications');
+                await prefs.remove('analytics');
+                await prefs.remove('language');
+                await prefs.remove('notif_posts');
+                await prefs.remove('notif_ranking');
+                await prefs.remove('notif_features');
+              } finally {
+                if (mounted) {
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('キャッシュを削除しました'), backgroundColor: Color(0xFF4ECDC4)),
+                  );
+                }
+              }
             },
             child: const Text(
               '削除',
@@ -1191,7 +1228,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   void _logout() {
     final themeState = ref.read(themeProviderEnhanced);
     final isDark = themeState.isDarkMode;
-    
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -1217,26 +1253,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               Navigator.pop(context);
               
               try {
-                // ユーザープロバイダーの状態をクリア
-                ref.read(currentUserProvider.notifier).state = UserInfo(
-                  id: '',
-                  name: '',
-                  email: '',
-                  role: UserRole.fan,
-                );
-                
-                // ログイン画面に遷移
+                await Supabase.instance.client.auth.signOut();
+                await ref.read(currentUserProvider.notifier).logout();
+                if (mounted) context.go('/login');
                 if (mounted) {
-                  Navigator.of(context).pushNamedAndRemoveUntil(
-                    '/',
-                    (route) => false,
-                  );
-                  
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('ログアウトしました'),
-                      backgroundColor: Color(0xFF4ECDC4),
-                    ),
+                    const SnackBar(content: Text('ログアウトしました'), backgroundColor: Color(0xFF4ECDC4)),
                   );
                 }
               } catch (e) {
@@ -1456,23 +1478,33 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ) : null,
         onTap: onTap != null ? () {
           Navigator.of(context).pop();
-          onTap();
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) onTap();
+          });
         } : null,
       ),
     );
   }
 
   void _navigateToHome() {
-    // すべてのルートをクリアしてホーム画面に戻る
-    Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+    if (!mounted) return;
+    ref.read(selectedDrawerPageProvider.notifier).state = null;
+    ref.read(selectedTabProvider.notifier).state = 0;
+    context.go('/home');
   }
 
   void _navigateToSearch() {
-    Navigator.popUntil(context, (route) => route.isFirst);
+    if (!mounted) return;
+    ref.read(selectedDrawerPageProvider.notifier).state = null;
+    ref.read(selectedTabProvider.notifier).state = 1;
+    context.go('/home');
   }
 
   void _navigateToMylist() {
-    Navigator.popUntil(context, (route) => route.isFirst);
+    if (!mounted) return;
+    ref.read(selectedDrawerPageProvider.notifier).state = null;
+    ref.read(selectedTabProvider.notifier).state = 3;
+    context.go('/home');
   }
 
   void _navigateToDataImport() {
@@ -1494,6 +1526,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   void _navigateToProfile() {
-    Navigator.popUntil(context, (route) => route.isFirst);
+    if (!mounted) return;
+    ref.read(selectedDrawerPageProvider.notifier).state = null;
+    ref.read(selectedTabProvider.notifier).state = 4;
+    context.go('/home');
   }
 } 

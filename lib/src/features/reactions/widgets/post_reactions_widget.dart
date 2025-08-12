@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../models/reaction_model.dart';
 import '../providers/reaction_provider.dart';
 import 'reaction_button.dart';
@@ -65,7 +66,7 @@ class _PostReactionsWidgetState extends ConsumerState<PostReactionsWidget> {
           label: 'ログイン',
           onPressed: () {
             // ログイン画面に遷移
-            Navigator.of(context).pushNamed('/login');
+            context.go('/login');
           },
         ),
       ),
