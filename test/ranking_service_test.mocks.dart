@@ -6,8 +6,8 @@
 import 'dart:async' as _i4;
 
 import 'package:mockito/mockito.dart' as _i1;
-import 'package:starlist/src/features/ranking/models/ranking_model.dart' as _i2;
-import 'package:starlist/src/features/ranking/repositories/ranking_repository.dart'
+import 'package:starlist_app/src/features/ranking/models/ranking_model.dart' as _i2;
+import 'package:starlist_app/src/features/ranking/repositories/ranking_repository.dart'
     as _i3;
 
 // ignore_for_file: type=lint

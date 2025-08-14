@@ -1,10 +1,10 @@
 import "package:flutter_test/flutter_test.dart";
 import "package:mockito/mockito.dart";
-import "package:starlist/src/features/subscription/models/subscription_plan.dart";
-import "package:starlist/src/features/subscription/models/subscription_status.dart";
-import "package:starlist/src/features/subscription/providers/subscription_provider.dart";
-import "package:starlist/src/features/subscription/services/subscription_service.dart";
-import "package:starlist/src/features/subscription/services/subscription_validation_service.dart";
+import "package:starlist_app/src/features/subscription/models/subscription_plan.dart";
+import "package:starlist_app/src/features/subscription/models/subscription_status.dart";
+import "package:starlist_app/src/features/subscription/providers/subscription_provider.dart";
+import "package:starlist_app/src/features/subscription/services/subscription_service.dart";
+import "package:starlist_app/src/features/subscription/services/subscription_validation_service.dart";
 
 class MockSubscriptionService extends Mock implements SubscriptionService {}
 class MockValidationService extends Mock implements SubscriptionValidationService {}

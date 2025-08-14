@@ -1,4 +1,4 @@
-import "package:starlist/src/features/youtube/models/youtube_video.dart";
+import "package:starlist_app/src/features/youtube/models/youtube_video.dart";
 
 abstract class YouTubeService {
   Future<List<YouTubeVideo>> searchVideos(String query, {int maxResults = 10});

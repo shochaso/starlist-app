@@ -1,11 +1,11 @@
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:starlist/src/models/user_model.dart';
-import 'package:starlist/src/models/content_consumption_model.dart';
-import 'package:starlist/src/models/subscription_model.dart';
-import 'package:starlist/src/models/fan_star_relationship_model.dart';
-import 'package:starlist/src/models/transaction_model.dart';
+import 'package:starlist_app/src/models/user_model.dart';
+import 'package:starlist_app/src/models/content_consumption_model.dart';
+import 'package:starlist_app/src/models/subscription_model.dart';
+import 'package:starlist_app/src/models/fan_star_relationship_model.dart';
+import 'package:starlist_app/src/models/transaction_model.dart';
 
 void main() {
   group('User Model Tests', () {

@@ -1,8 +1,8 @@
 import "package:flutter_test/flutter_test.dart";
 import "package:mockito/mockito.dart";
-import "package:starlist/src/features/ranking/models/ranking_entry.dart";
-import "package:starlist/src/features/ranking/providers/ranking_provider.dart";
-import "package:starlist/src/features/ranking/services/ranking_service.dart";
+import "package:starlist_app/src/features/ranking/models/ranking_entry.dart";
+import "package:starlist_app/src/features/ranking/providers/ranking_provider.dart";
+import "package:starlist_app/src/features/ranking/services/ranking_service.dart";
 
 class MockRankingService extends Mock implements RankingService {}
 

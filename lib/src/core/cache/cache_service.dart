@@ -1,5 +1,5 @@
 import "dart:convert";
-import "package:shared_preferences.dart";
+import "package:shared_preferences/shared_preferences.dart";
 
 class CacheService {
   static const String _prefix = "starlist_cache_";

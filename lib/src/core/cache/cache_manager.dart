@@ -1,11 +1,11 @@
-import "package:starlist/src/core/cache/cache_service.dart";
-import "package:starlist/src/features/auth/models/user_model.dart";
-import "package:starlist/src/features/payment/models/payment_model.dart";
-import "package:starlist/src/features/privacy/models/privacy_settings.dart";
-import "package:starlist/src/features/ranking/models/ranking_entry.dart";
-import "package:starlist/src/features/subscription/models/subscription_plan.dart";
-import "package:starlist/src/features/subscription/models/subscription_status.dart";
-import "package:starlist/src/features/youtube/models/youtube_video.dart";
+import "package:starlist_app/src/core/cache/cache_service.dart";
+import "package:starlist_app/src/features/auth/models/user_model.dart";
+import "package:starlist_app/src/features/payment/models/payment_model.dart";
+import "package:starlist_app/src/features/privacy/models/privacy_settings.dart";
+import "package:starlist_app/src/features/ranking/models/ranking_entry.dart";
+import "package:starlist_app/src/features/subscription/models/subscription_plan.dart";
+import "package:starlist_app/src/features/subscription/models/subscription_status.dart";
+import "package:starlist_app/src/features/youtube/models/youtube_video.dart";
 
 class CacheManager {
   final CacheService _cache;

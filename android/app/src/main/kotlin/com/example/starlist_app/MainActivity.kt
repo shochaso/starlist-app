@@ -1,4 +1,4 @@
-package com.example.starlist
+package com.example.starlist_app
 
 import io.flutter.embedding.android.FlutterActivity
 

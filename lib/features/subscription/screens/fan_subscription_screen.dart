@@ -4,6 +4,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../../src/providers/theme_provider_enhanced.dart';
 import '../../../src/providers/membership_provider.dart';
+import '../../payment/screens/payment_info_screen.dart';
+import '../../../src/features/payment/services/payment_service.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'dart:convert';
 
 class FanSubscriptionScreen extends ConsumerStatefulWidget {
   const FanSubscriptionScreen({super.key});
@@ -61,71 +66,36 @@ class _FanSubscriptionScreenState extends ConsumerState<FanSubscriptionScreen>
     final isDark = themeState.isDarkMode;
     final currentMembership = ref.watch(membershipProvider);
     final plans = ref.watch(membershipPlansProvider);
-    
-    return Container(
-      color: isDark ? const Color(0xFF1A1A1A) : const Color(0xFFF8FAFC),
-      child: AnimatedBuilder(
-        animation: _animationController,
-        builder: (context, child) {
-          return SafeArea(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // ヘッダーセクション
-                  FadeTransition(
-                    opacity: _fadeAnimation,
-                    child: SlideTransition(
-                      position: _slideAnimation,
-                      child: _buildHeaderSection(isDark, currentMembership),
-                    ),
-                  ),
-                  
-                  const SizedBox(height: 32),
-                  
-                  // プラン一覧
-                  ...plans.asMap().entries.map((entry) {
-                    final index = entry.key;
-                    final plan = entry.value;
-                    
-                    return FadeTransition(
-                      opacity: _fadeAnimation,
-                      child: SlideTransition(
-                        position: Tween<Offset>(
-                          begin: Offset(0, 0.2 + (index * 0.1)),
-                          end: Offset.zero,
-                        ).animate(CurvedAnimation(
-                          parent: _animationController,
-                          curve: Interval(
-                            0.3 + (index * 0.1), 
-                            1.0, 
-                            curve: Curves.easeOutCubic,
-                          ),
-                        )),
-                        child: Container(
-                          margin: const EdgeInsets.only(bottom: 20),
-                          child: _buildPlanCard(plan, currentMembership, isDark),
-                        ),
-                      ),
-                    );
-                  }).toList(),
-                  
-                  const SizedBox(height: 32),
-                  
-                  // 特典比較表
-                  FadeTransition(
-                    opacity: _fadeAnimation,
-                    child: _buildFeatureComparison(isDark, plans),
-                  ),
-                  
-                  const SizedBox(height: 32),
-                ],
-              ),
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('プランを管理'),
+        actions: [
+          TextButton.icon(
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const PaymentInfoScreen()),
             ),
-          );
-        },
+            icon: const Icon(Icons.receipt_long),
+            label: const Text('お支払い管理'),
+          ),
+        ],
       ),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          _buildHeaderSection(isDark, currentMembership),
+          const SizedBox(height: 16),
+          for (final plan in plans)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: _buildPlanCard(plan, currentMembership, isDark),
+            ),
+          const SizedBox(height: 8),
+          _buildFeatureComparison(isDark, plans),
+          const SizedBox(height: 16),
+        ],
+      ),
+      backgroundColor: isDark ? const Color(0xFF1A1A1A) : const Color(0xFFF8FAFC),
     );
   }
 
@@ -721,19 +691,7 @@ class _FanSubscriptionScreenState extends ConsumerState<FanSubscriptionScreen>
           ),
           ElevatedButton(
             onPressed: () {
-              ref.read(membershipProvider.notifier).changeMembership(plan.type);
-              Navigator.of(context).pop();
-              
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('${plan.title}に変更しました'),
-                  backgroundColor: _getPlanColor(plan.type),
-                  behavior: SnackBarBehavior.floating,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-              );
+              _handlePlanChange(plan);
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: _getPlanColor(plan.type),
@@ -750,5 +708,92 @@ class _FanSubscriptionScreenState extends ConsumerState<FanSubscriptionScreen>
         ],
       ),
     );
+  }
+
+  Future<void> _handlePlanChange(MembershipPlan plan) async {
+    // 無料は即時ローカル適用
+    if (plan.type == MembershipType.free) {
+      ref.read(membershipProvider.notifier).changeMembership(plan.type);
+      if (mounted) Navigator.of(context).pop();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('${plan.title}に変更しました'),
+          backgroundColor: _getPlanColor(plan.type),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        ),
+      );
+      return;
+    }
+
+    try {
+      final client = Supabase.instance.client;
+      final userId = client.auth.currentUser?.id;
+      if (userId == null) {
+        if (mounted) Navigator.of(context).pop();
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('ログインが必要です')),
+        );
+        return;
+      }
+
+      final launcher = _CheckoutLauncher(client);
+      final checkoutUrl = await launcher.createCheckout(
+        userId: userId,
+        planId: plan.type.name, // 仮ID（バックエンドと合わせて調整）
+        successUrl: 'https://starlist.app/pay/success',
+        cancelUrl: 'https://starlist.app/pay/cancel',
+      );
+
+      if (checkoutUrl == null) {
+        if (mounted) Navigator.of(context).pop();
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('決済の開始に失敗しました')),
+        );
+        return;
+      }
+
+      // ダイアログを閉じてブラウザで開く
+      if (mounted) Navigator.of(context).pop();
+      await launcher.openCheckoutUrl(checkoutUrl);
+    } catch (e) {
+      if (mounted) Navigator.of(context).pop();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('エラーが発生しました: $e')),
+      );
+    }
+  }
+}
+
+class _CheckoutLauncher {
+  _CheckoutLauncher(this._client);
+  final SupabaseClient _client;
+
+  Future<Uri?> createCheckout({
+    required String userId,
+    required String planId,
+    String? successUrl,
+    String? cancelUrl,
+  }) async {
+    final res = await _client.functions.invoke('create-checkout-session', body: {
+      'user_id': userId,
+      'plan_id': planId,
+      if (successUrl != null) 'success_url': successUrl,
+      if (cancelUrl != null) 'cancel_url': cancelUrl,
+    });
+    final data = res.data;
+    if (data == null) return null;
+    final map = data is String ? (jsonDecode(data) as Map<String, dynamic>) : (data as Map<String, dynamic>);
+    final url = map['url'] as String?;
+    return url != null ? Uri.tryParse(url) : null;
+  }
+
+  Future<bool> openCheckoutUrl(Uri url) async {
+    if (await canLaunchUrl(url)) return launchUrl(url, mode: LaunchMode.externalApplication);
+    return false;
   }
 }

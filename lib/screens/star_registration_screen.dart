@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:starlist/theme/app_theme.dart';
+import 'package:starlist_app/theme/app_theme.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class StarRegistrationScreen extends StatefulWidget {

@@ -1,8 +1,8 @@
 import "package:firebase_crashlytics/firebase_crashlytics.dart";
 import "package:flutter_test/flutter_test.dart";
 import "package:mockito/mockito.dart";
-import "package:starlist/src/core/error/app_error.dart";
-import "package:starlist/src/core/error/services/error_log_service.dart";
+import "package:starlist_app/src/core/error/app_error.dart";
+import "package:starlist_app/src/core/error/services/error_log_service.dart";
 
 class MockFirebaseCrashlytics extends Mock implements FirebaseCrashlytics {}
 

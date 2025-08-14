@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:starlist/src/features/auth/services/auth_service.dart';
+import 'package:starlist_app/src/features/auth/services/auth_service.dart';
 
 class LoginState {
   final String email;

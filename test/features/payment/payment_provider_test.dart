@@ -1,8 +1,8 @@
 import "package:flutter_test/flutter_test.dart";
 import "package:mockito/mockito.dart";
-import "package:starlist/src/features/payment/models/payment_model.dart";
-import "package:starlist/src/features/payment/providers/payment_provider.dart";
-import "package:starlist/src/features/payment/services/payment_service.dart";
+import "package:starlist_app/src/features/payment/models/payment_model.dart";
+import "package:starlist_app/src/features/payment/providers/payment_provider.dart";
+import "package:starlist_app/src/features/payment/services/payment_service.dart";
 
 class MockPaymentService extends Mock implements PaymentService {}
 

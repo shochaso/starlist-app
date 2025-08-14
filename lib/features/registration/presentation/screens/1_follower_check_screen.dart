@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
-import 'package:starlist/features/registration/application/follower_check_provider.dart';
-import 'package:starlist/features/registration/presentation/widgets/registration_progress_indicator.dart';
+import 'package:starlist_app/features/registration/application/follower_check_provider.dart';
+import 'package:starlist_app/features/registration/presentation/widgets/registration_progress_indicator.dart';
 
 class FollowerCheckScreen extends ConsumerStatefulWidget {
   const FollowerCheckScreen({super.key});

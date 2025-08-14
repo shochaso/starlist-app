@@ -1,4 +1,4 @@
-name: starlist
+name: starlist_app
 description: A new Flutter project.
 publish_to: 'none' 
 version: 1.0.0+1
@@ -24,6 +24,15 @@ dependencies:
   otp: ^3.1.4
   qr_flutter: ^4.1.0
   simple_icons: ^14.6.1
+  # Added for push notifications and monitoring
+  firebase_core: ^2.24.2
+  flutter_local_notifications: ^17.1.2
+  rxdart: ^0.27.7
+  # Monitoring
+  sentry_flutter: ^8.3.0
+  # Connectivity and settings storage
+  connectivity_plus: ^6.0.5
+  shared_preferences: ^2.2.3
 
 dev_dependencies:
   flutter_test:

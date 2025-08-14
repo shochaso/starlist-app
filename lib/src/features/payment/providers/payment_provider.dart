@@ -1,6 +1,6 @@
 import "package:flutter/foundation.dart";
-import "package:starlist/src/features/payment/models/payment_model.dart";
-import "package:starlist/src/features/payment/services/payment_service.dart";
+import "package:starlist_app/src/features/payment/models/payment_model.dart";
+import "package:starlist_app/src/features/payment/services/payment_service.dart";
 
 class PaymentProvider extends ChangeNotifier {
   final PaymentService _paymentService;

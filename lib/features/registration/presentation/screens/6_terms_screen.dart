@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
-import 'package:starlist/features/registration/application/terms_provider.dart';
-import 'package:starlist/features/registration/presentation/widgets/registration_progress_indicator.dart';
-import 'package:starlist/features/registration/application/registration_provider.dart';
+import 'package:starlist_app/features/registration/application/terms_provider.dart';
+import 'package:starlist_app/features/registration/presentation/widgets/registration_progress_indicator.dart';
+import 'package:starlist_app/features/registration/application/registration_provider.dart';
 
 class TermsScreen extends ConsumerWidget {
   const TermsScreen({super.key});

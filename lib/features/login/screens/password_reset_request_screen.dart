@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:starlist/features/login/application/password_reset_provider.dart';
+import 'package:starlist_app/features/login/application/password_reset_provider.dart';
 
 class PasswordResetRequestScreen extends ConsumerWidget {
   const PasswordResetRequestScreen({super.key});

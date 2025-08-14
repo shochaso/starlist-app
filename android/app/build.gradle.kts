@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.starlist"
+    namespace = "com.example.starlist_app"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 

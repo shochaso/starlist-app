@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
 import 'package:mockito/annotations.dart';
-import 'package:starlist/src/features/feed/viewmodels/optimized_content_feed_view_model.dart';
-import 'package:starlist/src/features/content/services/content_service.dart';
-import 'package:starlist/src/core/cache/cache_manager.dart';
-import 'package:starlist/src/core/logging/logger.dart';
-import 'package:starlist/src/features/content/models/content_model.dart';
+import 'package:starlist_app/src/features/feed/viewmodels/optimized_content_feed_view_model.dart';
+import 'package:starlist_app/src/features/content/services/content_service.dart';
+import 'package:starlist_app/src/core/cache/cache_manager.dart';
+import 'package:starlist_app/src/core/logging/logger.dart';
+import 'package:starlist_app/src/features/content/models/content_model.dart';
 
 // モックの生成
 @GenerateMocks([ContentService, CacheManager, Logger])

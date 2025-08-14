@@ -1,6 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:starlist/features/registration/application/profile_info_provider.dart';
-import 'package:starlist/features/registration/application/sns_link_provider.dart';
+import 'package:starlist_app/features/registration/application/profile_info_provider.dart';
+import 'package:starlist_app/features/registration/application/sns_link_provider.dart';
 
 class ProfileService {
   final SupabaseClient _supabase = Supabase.instance.client;

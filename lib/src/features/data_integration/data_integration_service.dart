@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 import '../services/youtube_api_service.dart';
 import '../services/spotify_api_service.dart';
 import '../services/netflix_api_service.dart';
@@ -54,6 +56,13 @@ class DataIntegrationService {
     bool forceRefresh = false,
   }) async {
     final cacheKey = 'youtube_${accessToken}_${includeSubscriptions}_${includeWatchHistory}_$watchHistoryLimit';
+    // オフライン時はキャッシュを優先的に返す
+    final connectivity = await Connectivity().checkConnectivity();
+    final isOffline = connectivity == ConnectivityResult.none;
+    if (isOffline) {
+      final cachedData = await _cacheManager.get<Map<String, dynamic>>(cacheKey);
+      if (cachedData != null) return cachedData;
+    }
     
     // キャッシュチェック（強制リフレッシュでない場合）
     if (!forceRefresh) {
@@ -120,6 +129,12 @@ class DataIntegrationService {
     bool forceRefresh = false,
   }) async {
     final cacheKey = 'spotify_${accessToken}_${includeRecentlyPlayed}_${includeTopArtists}_${includeTopTracks}_${includePlaylists}_$itemLimit';
+    final connectivity = await Connectivity().checkConnectivity();
+    final isOffline = connectivity == ConnectivityResult.none;
+    if (isOffline) {
+      final cachedData = await _cacheManager.get<Map<String, dynamic>>(cacheKey);
+      if (cachedData != null) return cachedData;
+    }
     
     // キャッシュチェック（強制リフレッシュでない場合）
     if (!forceRefresh) {
@@ -694,6 +709,11 @@ class DataIntegrationService {
 
   /// 統合エラーを処理する（改善版）
   Exception _handleIntegrationError(String platform, dynamic error) {
+    // 監視に送信
+    // ignore: unawaited_futures
+    Sentry.captureException(error, withScope: (scope) {
+      scope.setTag('platform', platform);
+    });
     if (error is AppException) {
       return error;
     } else if (error is TimeoutException) {

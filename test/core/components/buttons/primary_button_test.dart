@@ -1,5 +1,5 @@
 import "package:flutter_test/flutter_test.dart";
-import "package:starlist/src/core/components/buttons/primary_button.dart";
+import "package:starlist_app/src/core/components/buttons/primary_button.dart";
 
 void main() {
   group("PrimaryButton", () {

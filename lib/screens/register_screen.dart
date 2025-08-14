@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:starlist/theme/app_theme.dart';
+import 'package:starlist_app/theme/app_theme.dart';
 
 class RegisterScreen extends StatefulWidget {
   final bool isStar; // スターとして登録かファンとして登録かの区別

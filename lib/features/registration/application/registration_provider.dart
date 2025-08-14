@@ -1,11 +1,11 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:starlist/features/registration/application/basic_info_provider.dart' as basic_info_provider;
-import 'package:starlist/features/registration/application/profile_info_provider.dart' as profile_info_provider;
-import 'package:starlist/features/registration/application/sns_link_provider.dart' as sns_link_provider;
-import 'package:starlist/src/features/auth/services/auth_service.dart';
-import 'package:starlist/src/features/auth/services/profile_service.dart';
-import 'package:starlist/src/features/auth/services/storage_service.dart';
+import 'package:starlist_app/features/registration/application/basic_info_provider.dart' as basic_info_provider;
+import 'package:starlist_app/features/registration/application/profile_info_provider.dart' as profile_info_provider;
+import 'package:starlist_app/features/registration/application/sns_link_provider.dart' as sns_link_provider;
+import 'package:starlist_app/src/features/auth/services/auth_service.dart';
+import 'package:starlist_app/src/features/auth/services/profile_service.dart';
+import 'package:starlist_app/src/features/auth/services/storage_service.dart';
 
 class RegistrationNotifier extends AsyncNotifier<void> {
   @override

@@ -1,8 +1,8 @@
 import "package:flutter_test/flutter_test.dart";
 import "package:mockito/mockito.dart";
-import "package:starlist/src/features/content/models/content_model.dart";
-import "package:starlist/src/features/content/providers/content_provider.dart";
-import "package:starlist/src/features/content/services/content_service.dart";
+import "package:starlist_app/src/features/content/models/content_model.dart";
+import "package:starlist_app/src/features/content/providers/content_provider.dart";
+import "package:starlist_app/src/features/content/services/content_service.dart";
 
 class MockContentService extends Mock implements ContentService {}
 

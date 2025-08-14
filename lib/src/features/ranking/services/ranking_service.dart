@@ -1,4 +1,4 @@
-import "package:starlist/src/features/ranking/models/ranking_entry.dart";
+import "package:starlist_app/src/features/ranking/models/ranking_entry.dart";
 import "package:hive/hive.dart";
 import "package:supabase_flutter/supabase_flutter.dart";
 

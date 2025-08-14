@@ -1,8 +1,10 @@
-import "package:starlist/src/features/payment/models/payment_model.dart";
+import "package:starlist_app/src/features/payment/models/payment_model.dart";
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter/foundation.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 abstract class PaymentService {
   Future<PaymentModel> createPayment({
@@ -157,6 +159,7 @@ class PaymentServiceImpl implements PaymentService {
           .from('payments')
           .update({
             'status': 'cancelled',
+            'auto_renew': false,
             'updated_at': DateTime.now().toIso8601String(),
           })
           .eq('id', paymentId)
@@ -176,7 +179,7 @@ class PaymentServiceImpl implements PaymentService {
       
       if (payment.status != 'succeeded') {
         throw PaymentException('成功した決済のみ返金可能です');
-      }
+        }
 
       final refundData = {
         'payment_intent': paymentId,
@@ -235,6 +238,7 @@ class PaymentServiceImpl implements PaymentService {
           await _handlePaymentCanceled(paymentIntent);
           break;
         default:
+          // ignore: avoid_print
           print('未処理のWebhookイベント: $eventType');
       }
     } catch (e) {
@@ -256,8 +260,6 @@ class PaymentServiceImpl implements PaymentService {
           'updated_at': DateTime.now().toIso8601String(),
         })
         .eq('id', paymentId);
-
-    await _awardStarPoints(paymentIntent);
   }
 
   Future<void> _handlePaymentFailed(Map<String, dynamic> paymentIntent) async {
@@ -283,23 +285,6 @@ class PaymentServiceImpl implements PaymentService {
           'updated_at': DateTime.now().toIso8601String(),
         })
         .eq('id', paymentId);
-  }
-
-  Future<void> _awardStarPoints(Map<String, dynamic> paymentIntent) async {
-    try {
-      final amount = paymentIntent['amount'] / 100;
-      final userId = paymentIntent['customer'];
-      final points = (amount * 10).toInt();
-
-      await _supabase.rpc('add_star_points', params: {
-        'user_id': userId,
-        'points': points,
-        'transaction_type': 'payment_reward',
-        'description': '決済完了報酬',
-      });
-    } catch (e) {
-      print('スターポイント付与エラー: $e');
-    }
   }
 }
 

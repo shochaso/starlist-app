@@ -1,6 +1,6 @@
 import "package:flutter/foundation.dart";
-import "package:starlist/src/features/youtube/models/youtube_video.dart";
-import "package:starlist/src/features/youtube/services/youtube_service.dart";
+import "package:starlist_app/src/features/youtube/models/youtube_video.dart";
+import "package:starlist_app/src/features/youtube/services/youtube_service.dart";
 
 class YouTubeProvider extends ChangeNotifier {
   final YouTubeService _youtubeService;

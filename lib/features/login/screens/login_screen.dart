@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:starlist/features/login/application/login_provider.dart';
-import 'package:starlist/core/theme/app_theme.dart'; // Assuming common styles are here
-import 'package:starlist/providers/user_provider.dart';
+import 'package:starlist_app/features/login/application/login_provider.dart';
+import 'package:starlist_app/core/theme/app_theme.dart'; // Assuming common styles are here
+import 'package:starlist_app/providers/user_provider.dart';
 
 class LoginScreen extends ConsumerWidget {
   const LoginScreen({super.key});

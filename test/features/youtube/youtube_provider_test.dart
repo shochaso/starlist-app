@@ -1,8 +1,8 @@
 import "package:flutter_test/flutter_test.dart";
 import "package:mockito/mockito.dart";
-import "package:starlist/src/features/youtube/models/youtube_video.dart";
-import "package:starlist/src/features/youtube/providers/youtube_provider.dart";
-import "package:starlist/src/features/youtube/services/youtube_service.dart";
+import "package:starlist_app/src/features/youtube/models/youtube_video.dart";
+import "package:starlist_app/src/features/youtube/providers/youtube_provider.dart";
+import "package:starlist_app/src/features/youtube/services/youtube_service.dart";
 
 class MockYouTubeService extends Mock implements YouTubeService {}
 

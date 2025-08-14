@@ -1,5 +1,5 @@
 import "package:firebase_crashlytics/firebase_crashlytics.dart";
-import "package:starlist/src/core/error/app_error.dart";
+import "package:starlist_app/src/core/error/app_error.dart";
 
 class ErrorLogService {
   final FirebaseCrashlytics _crashlytics = FirebaseCrashlytics.instance;

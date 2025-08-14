@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
 import 'package:mockito/annotations.dart';
-import 'package:starlist/src/features/auth/domain/entities/agency_terms_agreement.dart';
-import 'package:starlist/src/features/auth/infrastructure/services/terms_agreement_service.dart';
+import 'package:starlist_app/src/features/auth/domain/entities/agency_terms_agreement.dart';
+import 'package:starlist_app/src/features/auth/infrastructure/services/terms_agreement_service.dart';
 
 import 'terms_agreement_test.mocks.dart';
 

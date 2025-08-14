@@ -24,6 +24,7 @@ class _SubscriptionPlansScreenState extends ConsumerState<SubscriptionPlansScree
 
   @override
   Widget build(BuildContext context) {
+    final plans = SubscriptionPlans.allPlans;
     return Scaffold(
       appBar: AppBar(
         title: const Text('プラン選択'),
@@ -31,21 +32,47 @@ class _SubscriptionPlansScreenState extends ConsumerState<SubscriptionPlansScree
         backgroundColor: Colors.transparent,
         foregroundColor: Colors.black,
       ),
-      body: Column(
+      body: ListView(
+        padding: const EdgeInsets.symmetric(vertical: 8),
         children: [
-          // ヘッダーセクション
-          _buildHeaderSection(context),
-          
-          // 年額/月額切り替え
-          _buildBillingToggle(context),
-          
-          // プランリスト
-          Expanded(
-            child: _buildPlansList(context),
+          // ヘッダーセクション（余白をやや圧縮）
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: _buildHeaderSection(context),
           ),
-          
-          // フッターセクション
-          _buildFooterSection(context),
+          const SizedBox(height: 8),
+          // 年額/月額切り替え
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: _buildBillingToggle(context),
+          ),
+          const SizedBox(height: 12),
+          // プラン一覧（縦にそのまま並べる）
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Column(
+              children: [
+                for (final plan in plans)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: SubscriptionPlanCard(
+                      plan: plan,
+                      isSelected: selectedPlan == plan.planType,
+                      isYearly: isYearly,
+                      onTap: () => setState(() => selectedPlan = plan.planType),
+                      showRemovedFeatures: false,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 8),
+          // フッター（スクロールに含める）
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: _buildFooterSection(context),
+          ),
+          const SizedBox(height: 16),
         ],
       ),
     );
@@ -53,17 +80,17 @@ class _SubscriptionPlansScreenState extends ConsumerState<SubscriptionPlansScree
 
   Widget _buildHeaderSection(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.only(top: 12, bottom: 8),
       child: Column(
         children: [
           Text(
             'あなたにぴったりのプランを\n見つけてください',
             textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.bold,
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
           Text(
             'すべてのプランで毎日ピック機能をお楽しみいただけます',
             textAlign: TextAlign.center,
@@ -71,7 +98,7 @@ class _SubscriptionPlansScreenState extends ConsumerState<SubscriptionPlansScree
               color: Colors.grey.shade600,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 8),
           _buildRemovedFeaturesNotice(context),
         ],
       ),
@@ -94,11 +121,11 @@ class _SubscriptionPlansScreenState extends ConsumerState<SubscriptionPlansScree
             size: 20,
           ),
           const SizedBox(width: 8),
-                      Expanded(
-              child: Text(
-                '',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Colors.orange.shade700,
+          Expanded(
+            child: Text(
+              '',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Colors.orange.shade700,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -110,7 +137,7 @@ class _SubscriptionPlansScreenState extends ConsumerState<SubscriptionPlansScree
 
   Widget _buildBillingToggle(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20),
+      margin: EdgeInsets.zero,
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
         color: Colors.grey.shade200,
@@ -126,13 +153,15 @@ class _SubscriptionPlansScreenState extends ConsumerState<SubscriptionPlansScree
                 decoration: BoxDecoration(
                   color: !isYearly ? Colors.white : Colors.transparent,
                   borderRadius: BorderRadius.circular(6),
-                  boxShadow: !isYearly ? [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 4,
-                      offset: const Offset(0, 2),
-                    ),
-                  ] : null,
+                  boxShadow: !isYearly
+                      ? [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                        ]
+                      : null,
                 ),
                 child: Text(
                   '月額プラン',
@@ -153,13 +182,15 @@ class _SubscriptionPlansScreenState extends ConsumerState<SubscriptionPlansScree
                 decoration: BoxDecoration(
                   color: isYearly ? Colors.white : Colors.transparent,
                   borderRadius: BorderRadius.circular(6),
-                  boxShadow: isYearly ? [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 4,
-                      offset: const Offset(0, 2),
-                    ),
-                  ] : null,
+                  boxShadow: isYearly
+                      ? [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                        ]
+                      : null,
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -197,93 +228,66 @@ class _SubscriptionPlansScreenState extends ConsumerState<SubscriptionPlansScree
     );
   }
 
-  Widget _buildPlansList(BuildContext context) {
-    return ListView.builder(
-      padding: const EdgeInsets.all(20),
-      itemCount: SubscriptionPlans.allPlans.length,
-      itemBuilder: (context, index) {
-        final plan = SubscriptionPlans.allPlans[index];
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 16),
-          child: SubscriptionPlanCard(
-            plan: plan,
-            isSelected: selectedPlan == plan.planType,
-            isYearly: isYearly,
-            onTap: () => setState(() => selectedPlan = plan.planType),
-            showRemovedFeatures: false, // 本番では非表示
-          ),
-        );
-      },
-    );
-  }
+  // _buildPlansList は未使用になったが、必要なら別画面で再利用可能
 
   Widget _buildFooterSection(BuildContext context) {
-    final selectedPlanData = selectedPlan != null 
+    final selectedPlanData = selectedPlan != null
         ? SubscriptionPlans.getPlan(selectedPlan!)
         : null;
 
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 8,
-            offset: const Offset(0, -2),
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // 選択中プランの要約
           if (selectedPlanData != null) ...[
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Theme.of(context).primaryColor.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '${selectedPlanData.nameJa}プラン',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${selectedPlanData.nameJa}プラン',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
                       ),
-                      Text(
-                        isYearly 
-                            ? '年額 ¥${selectedPlanData.priceYearlyJpy}（月額換算 ¥${selectedPlanData.yearlyMonthlyEquivalent}）'
-                            : '月額 ¥${selectedPlanData.priceMonthlyJpy}',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Colors.grey.shade600,
-                        ),
-                      ),
-                    ],
-                  ),
-                  Text(
-                    '${selectedPlanData.starPointsMonthly}P/月',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: Theme.of(context).primaryColor,
-                      fontWeight: FontWeight.bold,
                     ),
+                    Text(
+                      isYearly
+                          ? '年額 ¥${selectedPlanData.priceYearlyJpy}（月額換算 ¥${selectedPlanData.yearlyMonthlyEquivalent}）'
+                          : '月額 ¥${selectedPlanData.priceMonthlyJpy}',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                  ],
+                ),
+                Text(
+                  '${selectedPlanData.starPointsMonthly}P/月',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    color: Theme.of(context).primaryColor,
+                    fontWeight: FontWeight.bold,
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
           ],
-          
-          // 続行ボタン
           SizedBox(
             width: double.infinity,
-            height: 50,
+            height: 48,
             child: ElevatedButton(
               onPressed: selectedPlan != null ? () => _proceedToPayment() : null,
               style: ElevatedButton.styleFrom(
@@ -302,10 +306,7 @@ class _SubscriptionPlansScreenState extends ConsumerState<SubscriptionPlansScree
               ),
             ),
           ),
-          
-          const SizedBox(height: 12),
-          
-          // 注意事項
+          const SizedBox(height: 8),
           Text(
             '• いつでもキャンセル可能です\n• 初回7日間無料トライアル\n• 自動更新（設定で変更可能）',
             textAlign: TextAlign.center,
@@ -327,7 +328,7 @@ class _SubscriptionPlansScreenState extends ConsumerState<SubscriptionPlansScree
         backgroundColor: Theme.of(context).primaryColor,
       ),
     );
-    
+
     // TODO: 支払い画面への遷移実装
     // Navigator.of(context).push(
     //   MaterialPageRoute(

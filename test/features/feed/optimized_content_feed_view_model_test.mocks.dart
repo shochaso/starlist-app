@@ -8,22 +8,22 @@ import 'dart:io' as _i5;
 
 import 'package:mockito/mockito.dart' as _i1;
 import 'package:mockito/src/dummies.dart' as _i6;
-import 'package:starlist/src/core/cache/cache_manager.dart' as _i7;
-import 'package:starlist/src/core/logging/logger.dart' as _i15;
-import 'package:starlist/src/features/auth/models/user_model.dart' as _i8;
-import 'package:starlist/src/features/content/models/content_model.dart' as _i2;
-import 'package:starlist/src/features/content/services/content_service.dart'
+import 'package:starlist_app/src/core/cache/cache_manager.dart' as _i7;
+import 'package:starlist_app/src/core/logging/logger.dart' as _i15;
+import 'package:starlist_app/src/features/auth/models/user_model.dart' as _i8;
+import 'package:starlist_app/src/features/content/models/content_model.dart' as _i2;
+import 'package:starlist_app/src/features/content/services/content_service.dart'
     as _i3;
-import 'package:starlist/src/features/payment/models/payment_model.dart' as _i9;
-import 'package:starlist/src/features/privacy/models/privacy_settings.dart'
+import 'package:starlist_app/src/features/payment/models/payment_model.dart' as _i9;
+import 'package:starlist_app/src/features/privacy/models/privacy_settings.dart'
     as _i10;
-import 'package:starlist/src/features/ranking/models/ranking_entry.dart'
+import 'package:starlist_app/src/features/ranking/models/ranking_entry.dart'
     as _i11;
-import 'package:starlist/src/features/subscription/models/subscription_plan.dart'
+import 'package:starlist_app/src/features/subscription/models/subscription_plan.dart'
     as _i12;
-import 'package:starlist/src/features/subscription/models/subscription_status.dart'
+import 'package:starlist_app/src/features/subscription/models/subscription_status.dart'
     as _i13;
-import 'package:starlist/src/features/youtube/models/youtube_video.dart'
+import 'package:starlist_app/src/features/youtube/models/youtube_video.dart'
     as _i14;
 
 // ignore_for_file: type=lint

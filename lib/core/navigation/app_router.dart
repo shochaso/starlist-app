@@ -1,16 +1,16 @@
 import 'package:go_router/go_router.dart';
-import 'package:starlist/features/login/screens/login_screen.dart';
-import 'package:starlist/features/login/screens/password_reset_request_screen.dart';
-import 'package:starlist/features/login/screens/password_reset_screen.dart';
-import 'package:starlist/features/registration/presentation/screens/1_follower_check_screen.dart';
-import 'package:starlist/features/registration/presentation/screens/2_basic_info_screen.dart';
-import 'package:starlist/features/registration/presentation/screens/3_profile_info_screen.dart';
-import 'package:starlist/features/registration/presentation/screens/4_verification_screen.dart';
-import 'package:starlist/features/registration/presentation/screens/5_sns_link_screen.dart';
-import 'package:starlist/features/registration/presentation/screens/6_terms_screen.dart';
-import 'package:starlist/features/registration/presentation/screens/registration_complete_screen.dart';
-import 'package:starlist/screens/starlist_main_screen.dart';
-import 'package:starlist/features/app/screens/settings_screen.dart';
+import 'package:starlist_app/features/login/screens/login_screen.dart';
+import 'package:starlist_app/features/login/screens/password_reset_request_screen.dart';
+import 'package:starlist_app/features/login/screens/password_reset_screen.dart';
+import 'package:starlist_app/features/registration/presentation/screens/1_follower_check_screen.dart';
+import 'package:starlist_app/features/registration/presentation/screens/2_basic_info_screen.dart';
+import 'package:starlist_app/features/registration/presentation/screens/3_profile_info_screen.dart';
+import 'package:starlist_app/features/registration/presentation/screens/4_verification_screen.dart';
+import 'package:starlist_app/features/registration/presentation/screens/5_sns_link_screen.dart';
+import 'package:starlist_app/features/registration/presentation/screens/6_terms_screen.dart';
+import 'package:starlist_app/features/registration/presentation/screens/registration_complete_screen.dart';
+import 'package:starlist_app/screens/starlist_main_screen.dart';
+import 'package:starlist_app/features/app/screens/settings_screen.dart';
 
 
 final GoRouter appRouter = GoRouter(

@@ -1,6 +1,6 @@
 import "package:flutter/foundation.dart";
-import "package:starlist/src/features/privacy/models/privacy_settings.dart";
-import "package:starlist/src/features/privacy/services/privacy_service.dart";
+import "package:starlist_app/src/features/privacy/models/privacy_settings.dart";
+import "package:starlist_app/src/features/privacy/services/privacy_service.dart";
 
 class PrivacyProvider extends ChangeNotifier {
   final PrivacyService _privacyService;

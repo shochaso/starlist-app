@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:starlist/features/registration/application/basic_info_provider.dart';
-import 'package:starlist/features/registration/presentation/widgets/registration_progress_indicator.dart';
+import 'package:starlist_app/features/registration/application/basic_info_provider.dart';
+import 'package:starlist_app/features/registration/presentation/widgets/registration_progress_indicator.dart';
 
 class BasicInfoScreen extends ConsumerWidget {
   const BasicInfoScreen({super.key});

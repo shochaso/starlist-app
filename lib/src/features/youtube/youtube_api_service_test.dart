@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
 import 'package:mockito/annotations.dart';
 import 'package:dio/dio.dart';
-import 'package:starlist/src/features/data_integration/services/youtube_api_service.dart';
+import 'package:starlist_app/src/features/data_integration/services/youtube_api_service.dart';
 
 import 'youtube_api_service_test.mocks.dart';
 

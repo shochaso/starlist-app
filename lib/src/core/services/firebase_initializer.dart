@@ -1,5 +1,5 @@
 import "package:firebase_core/firebase_core.dart";
-import "package:starlist/src/core/config/firebase_config.dart";
+import "package:starlist_app/src/core/config/firebase_config.dart";
 
 class FirebaseInitializer {
   static Future<void> initialize() async {
