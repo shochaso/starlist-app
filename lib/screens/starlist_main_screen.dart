@@ -23,6 +23,11 @@ import 'test_account_switcher_screen.dart';
 import '../data/models/post_model.dart';
 import 'login_status_screen.dart';
 import 'package:go_router/go_router.dart'; // GoRouter for navigation
+import '../src/features/points/screens/star_points_purchase_screen.dart';
+import '../services/access_control_service.dart';
+import '../data/models/post_model.dart';
+import '../models/user.dart';
+import '../features/premium/screens/premium_restriction_screen.dart';
 
 
 // データモデル
@@ -684,12 +689,12 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
                 if (currentUser.isStar) ...[
                   _buildDrawerItem(Icons.camera_alt, 'データ取込み', 2, null),
                   _buildDrawerItem(Icons.analytics, 'ダッシュボード', -1, 'dashboard'),
-                  _buildDrawerItem(Icons.workspace_premium, 'プランを管理', -1, 'plan'),
                 ],
                 _buildDrawerItem(Icons.person, 'マイページ', 4, null),
                 // ファンのみ課金プラン表示
                 if (currentUser.isFan) ...[
                   _buildDrawerItem(Icons.credit_card, '課金プラン', -1, 'subscription'),
+                  _buildDrawerItem(Icons.stars, 'スターポイント購入', -1, 'buy_points'),
                 ],
                 _buildDrawerItem(Icons.settings, '設定', -1, 'settings'),
               ],
@@ -774,11 +779,11 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
       case 'dashboard':
         page = const StarDashboardScreen();
         break;
-      case 'plan':
-        page = const SubscriptionPlansScreen();
-        break;
       case 'subscription':
         page = const SubscriptionPlansScreen(); // ファン用も同じ課金プランページ
+        break;
+      case 'buy_points':
+        page = const StarPointsPurchaseScreen();
         break;
       case 'settings':
         if (mounted) context.go('/settings');
@@ -2152,22 +2157,35 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
   Widget _buildRecentPostsSection() {
     final hanayamaPosts = ref.watch(hanayamaMizukiPostsProvider);
     final themeState = ref.watch(themeProviderEnhanced);
+    final currentUser = ref.watch(currentUserProvider);
     final isDark = themeState.isDarkMode;
     
     // 花山瑞樹の投稿と他の投稿者の投稿を組み合わせ
     final allPosts = <dynamic>[];
     
-    // 花山瑞樹の投稿を追加
-    allPosts.addAll(hanayamaPosts);
+    // 花山瑞樹の投稿を追加（アクセス制御適用）
+    final accessiblePosts = hanayamaPosts.where((post) {
+      if (post.accessLevel == AccessLevel.public) return true;
+      if (post.accessLevel == AccessLevel.light) {
+        return AccessControlService.canViewContent(
+          currentUser?.fanPlanType,
+          ContentType.youtubeVideos,
+        );
+      }
+      return false;
+    }).toList();
     
-    // 他の投稿者のダミーデータを追加
-    allPosts.addAll([
+    allPosts.addAll(accessiblePosts);
+    
+    // 他の投稿者のダミーデータを追加（無料プランでも概要表示）
+    final otherPosts = [
       {
         'title': 'iPhone 15 Pro Max レビュー',
         'author': 'テックレビューアー田中',
         'time': '2時間前',
         'type': 'video',
         'thumbnail': const Color(0xFF4ECDC4),
+        'accessLevel': AccessLevel.light,
       },
       {
         'title': '簡単チキンカレーの作り方',
@@ -2175,6 +2193,7 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
         'time': '4時間前',
         'type': 'recipe',
         'thumbnail': const Color(0xFFFF6B6B),
+        'accessLevel': AccessLevel.light,
       },
       {
         'title': 'Flutter開発のコツ',
@@ -2182,8 +2201,24 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
         'time': '6時間前',
         'type': 'tutorial',
         'thumbnail': const Color(0xFF00B894),
+        'accessLevel': AccessLevel.light,
       },
-    ]);
+    ];
+    
+    // 無料プランの場合は概要のみ表示
+    if (currentUser?.fanPlanType == FanPlanType.free) {
+      allPosts.addAll(otherPosts.map((post) => {
+        'title': post['title'], // 制限付きの表記を削除
+        'author': post['author'],
+        'time': post['time'],
+        'type': post['type'],
+        'thumbnail': post['thumbnail'],
+        'accessLevel': post['accessLevel'],
+        'isRestricted': true,
+      }));
+    } else {
+      allPosts.addAll(otherPosts);
+    }
     
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -2200,8 +2235,8 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
             itemBuilder: (context, index) {
               final post = allPosts[index];
               
-                             // 花山瑞樹の投稿の場合
-               if (post is PostModel) {
+              // 花山瑞樹の投稿の場合
+              if (post is PostModel) {
                 return Container(
                   width: 320,
                   margin: const EdgeInsets.only(right: 16),
@@ -2220,66 +2255,123 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
               }
               
               // その他の投稿の場合
-              return Container(
-                width: 320,
-                margin: const EdgeInsets.only(right: 16),
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: (isDark ? Colors.black : Colors.black).withOpacity(0.08),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      height: 160,
-                      decoration: BoxDecoration(
-                        color: post['thumbnail'] as Color,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Center(
-                        child: Icon(
-                          Icons.play_arrow,
-                          color: Colors.white,
-                          size: 48,
+              final isRestricted = post['isRestricted'] == true;
+              return GestureDetector(
+                onTap: () {
+                  if (isRestricted) {
+                    // 閲覧制限画面に遷移
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => PremiumRestrictionScreen(
+                          contentTitle: post['title'] as String,
+                          contentType: '投稿',
+                          starName: post['author'] as String,
+                          requiredPlan: post['accessLevel'] == AccessLevel.light ? 'ライトプラン以上' : 'プレミアムプラン以上',
+                          contentTypeEnum: ContentType.premiumContent,
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      post['title'] as String,
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: isDark ? Colors.white : Colors.black87,
+                    );
+                  }
+                },
+                child: Container(
+                  width: 320,
+                  margin: const EdgeInsets.only(right: 16),
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: (isDark ? Colors.black : Colors.black).withOpacity(0.08),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
                       ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      post['author'] as String,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: isDark ? Colors.white70 : Colors.black54,
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        height: 160,
+                        decoration: BoxDecoration(
+                          color: post['thumbnail'] as Color,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                isRestricted ? Icons.lock : Icons.play_arrow,
+                                color: Colors.white,
+                                size: 32, // 48から32に縮小
+                              ),
+                              if (isRestricted) ...[
+                                const SizedBox(height: 8),
+                                Text(
+                                  'プラン制限',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 10, // 12から10に縮小
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      post['time'] as String,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: isDark ? Colors.white54 : Colors.black38,
+                      const SizedBox(height: 12),
+                      Text(
+                        post['title'] as String,
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: isDark ? Colors.white : Colors.black87,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 8),
+                      Text(
+                        post['author'] as String,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: isDark ? Colors.white70 : Colors.black54,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      if (isRestricted) ...[
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.blue.withOpacity(0.2), // オレンジから青に変更
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: Colors.blue.withOpacity(0.5), // オレンジから青に変更
+                              width: 1,
+                            ),
+                          ),
+                          child: Text(
+                            '${post['accessLevel'] == AccessLevel.light ? 'ライトプラン以上' : 'プレミアムプラン以上'}で閲覧可能',
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: Colors.blue.shade700, // オレンジから青に変更
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ],
+                      const SizedBox(height: 4),
+                      Text(
+                        post['time'] as String,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: isDark ? Colors.white54 : Colors.black38,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               );
             },
@@ -2291,8 +2383,55 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
 
   Widget _buildHanayamaMizukiPostsSection() {
     final hanayamaPosts = ref.watch(hanayamaMizukiPostsProvider);
+    final currentUser = ref.watch(currentUserProvider);
+    final themeState = ref.watch(themeProviderEnhanced);
     
     if (hanayamaPosts.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    
+    // アクセス制御を適用
+    final accessiblePosts = hanayamaPosts.where((post) {
+      if (post.accessLevel == AccessLevel.public) return true;
+      if (post.accessLevel == AccessLevel.light) {
+        return AccessControlService.canViewContent(
+          currentUser?.fanPlanType,
+          ContentType.youtubeVideos,
+        );
+      }
+      return false;
+    }).toList();
+    
+    // 制限された投稿も概要として表示
+    final restrictedPosts = hanayamaPosts.where((post) {
+      if (post.accessLevel == AccessLevel.public) return false;
+      if (post.accessLevel == AccessLevel.light) {
+        return !AccessControlService.canViewContent(
+          currentUser?.fanPlanType,
+          ContentType.youtubeVideos,
+        );
+      }
+      return false;
+    }).toList();
+    
+    final allDisplayPosts = <dynamic>[];
+    allDisplayPosts.addAll(accessiblePosts);
+    
+    // 制限された投稿を概要として追加
+    if (restrictedPosts.isNotEmpty) {
+      allDisplayPosts.addAll(restrictedPosts.map((post) => {
+        'title': post.title, // 制限付きの表記を削除
+        'author': '花山瑞樹',
+        'time': '最近',
+        'type': 'restricted',
+        'thumbnail': const Color(0xFF9C27B0),
+        'accessLevel': post.accessLevel,
+        'isRestricted': true,
+        'originalPost': post,
+      }));
+    }
+    
+    if (allDisplayPosts.isEmpty) {
       return const SizedBox.shrink();
     }
     
@@ -2307,19 +2446,26 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
             scrollDirection: Axis.horizontal,
             physics: const BouncingScrollPhysics(),
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            itemCount: hanayamaPosts.length,
+            itemCount: allDisplayPosts.length,
             itemBuilder: (context, index) {
-              final post = hanayamaPosts[index];
+              final post = allDisplayPosts[index];
+              
+              // 制限された投稿の場合
+              if (post is Map<String, dynamic> && post['isRestricted'] == true) {
+                return _buildRestrictedPostCard(post, context, themeState.isDarkMode);
+              }
+              
+              // 通常の投稿の場合
               return Container(
                 width: 320,
                 margin: const EdgeInsets.only(right: 16),
                 child: PostCard(
-                  post: post,
+                  post: post as PostModel,
                   isCompact: true,
                   onTap: () {
                     Navigator.of(context).push(
                       MaterialPageRoute(
-                        builder: (context) => PostDetailScreen(post: post),
+                        builder: (context) => PostDetailScreen(post: post as PostModel),
                       ),
                     );
                   },
@@ -2360,6 +2506,122 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  /// 制限された投稿のカードを表示
+  Widget _buildRestrictedPostCard(Map<String, dynamic> post, BuildContext context, bool isDark) {
+    return GestureDetector(
+      onTap: () {
+        // 閲覧制限画面に遷移
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => PremiumRestrictionScreen(
+              contentTitle: post['title'] as String,
+              contentType: '投稿',
+              starName: post['author'] as String,
+              requiredPlan: post['accessLevel'] == AccessLevel.light ? 'ライトプラン以上' : 'プレミアムプラン以上',
+              contentTypeEnum: ContentType.premiumContent,
+            ),
+          ),
+        );
+      },
+      child: Container(
+        width: 320,
+        margin: const EdgeInsets.only(right: 16),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: (isDark ? Colors.black : Colors.black).withOpacity(0.08),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              height: 160,
+              decoration: BoxDecoration(
+                color: post['thumbnail'] as Color,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(
+                      Icons.lock,
+                      color: Colors.white,
+                      size: 32, // 48から32に縮小
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'プラン制限',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 10, // 12から10に縮小
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              post['title'] as String,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: isDark ? Colors.white : Colors.black87,
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              post['author'] as String,
+              style: TextStyle(
+                fontSize: 14,
+                color: isDark ? Colors.white70 : Colors.black54,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.blue.withOpacity(0.2), // オレンジから青に変更
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: Colors.blue.withOpacity(0.5), // オレンジから青に変更
+                  width: 1,
+                ),
+              ),
+              child: Text(
+                '${post['accessLevel'] == AccessLevel.light ? 'ライトプラン以上' : 'プレミアムプラン以上'}で閲覧可能',
+                style: TextStyle(
+                  fontSize: 10,
+                  color: Colors.blue.shade700, // オレンジから青に変更
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              post['time'] as String,
+              style: TextStyle(
+                fontSize: 12,
+                color: isDark ? Colors.white54 : Colors.black38,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

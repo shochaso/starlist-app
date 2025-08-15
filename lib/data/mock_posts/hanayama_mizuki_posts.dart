@@ -170,7 +170,7 @@ class HanayamaMizukiPosts {
       title: '新しいカフェ発見',
       description: '今日見つけた素敵なカフェをご紹介！',
       type: PostType.food,
-      accessLevel: AccessLevel.public,
+      accessLevel: AccessLevel.light,
       createdAt: DateTime.now().subtract(const Duration(hours: 8)),
       content: {
         'cafe': {

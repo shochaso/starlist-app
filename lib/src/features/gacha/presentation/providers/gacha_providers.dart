@@ -25,5 +25,5 @@ final gachaSoundServiceProvider = Provider<GachaSoundService>((ref) {
 final gachaViewModelProvider = StateNotifierProvider<GachaViewModel, GachaState>((ref) {
   final usecase = ref.watch(drawGachaUsecaseProvider);
   final soundService = ref.watch(gachaSoundServiceProvider);
-  return GachaViewModel(usecase, soundService);
+  return GachaViewModel(usecase, soundService, ref);
 });

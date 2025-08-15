@@ -3,14 +3,18 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../src/providers/theme_provider_enhanced.dart';
 import '../../../providers/user_provider.dart';
-import '../../subscription/screens/fan_subscription_screen.dart';
+import '../../../src/features/subscription/screens/subscription_plans_screen.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import '../../../services/access_control_service.dart';
+import '../../../src/features/voting/providers/voting_providers.dart';
+import '../../../src/features/points/screens/star_points_purchase_screen.dart';
 
 class PremiumRestrictionScreen extends ConsumerStatefulWidget {
   final String contentTitle;
   final String contentType;
   final String starName;
   final String requiredPlan;
+  final ContentType? contentTypeEnum;
   
   const PremiumRestrictionScreen({
     super.key,
@@ -18,6 +22,7 @@ class PremiumRestrictionScreen extends ConsumerStatefulWidget {
     required this.contentType,
     required this.starName,
     this.requiredPlan = 'プレミアム',
+    this.contentTypeEnum,
   });
 
   @override
@@ -128,30 +133,15 @@ class _PremiumRestrictionScreenState extends ConsumerState<PremiumRestrictionScr
               child: Column(
                 children: [
                   const SizedBox(height: 20),
-                  
-                  // メインアイコンエリア
                   _buildMainIcon(),
-                  
                   const SizedBox(height: 32),
-                  
-                  // タイトルと説明
                   _buildTitleSection(),
-                  
                   const SizedBox(height: 32),
-                  
-                  // 制限内容カード
                   _buildRestrictionCard(),
-                  
                   const SizedBox(height: 32),
-                  
-                  // プレミアム機能紹介
                   _buildPremiumFeatures(),
-                  
                   const SizedBox(height: 32),
-                  
-                  // アクションボタン
                   _buildActionButtons(),
-                  
                   const SizedBox(height: 20),
                 ],
               ),
@@ -500,6 +490,7 @@ class _PremiumRestrictionScreenState extends ConsumerState<PremiumRestrictionScr
   Widget _buildActionButtons() {
     final themeState = ref.watch(themeProviderEnhanced);
     final isDark = themeState.isDarkMode;
+    final requiredPoints = AccessControlService.getRequiredPoints(widget.contentTypeEnum ?? ContentType.premiumContent);
     
     return Transform.translate(
       offset: Offset(0, _slideAnimation.value),
@@ -507,7 +498,45 @@ class _PremiumRestrictionScreenState extends ConsumerState<PremiumRestrictionScr
         opacity: _fadeAnimation,
         child: Column(
           children: [
-            // プレミアム登録ボタン
+            // ポイントで閲覧ボタン
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                icon: const Icon(Icons.stars),
+                label: Text('ポイントで閲覧（${requiredPoints}P）'),
+                onPressed: () async => _unlockWithPoints(requiredPoints),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Theme.of(context).primaryColor,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            // スターポイント購入ページへ
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                icon: const Icon(Icons.shopping_cart),
+                label: const Text('スターポイントを購入'),
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const StarPointsPurchaseScreen()),
+                  );
+                },
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            // プレミアム登録ボタン（従来）
             Container(
               width: double.infinity,
               decoration: BoxDecoration(
@@ -548,38 +577,30 @@ class _PremiumRestrictionScreenState extends ConsumerState<PremiumRestrictionScr
                 ),
               ),
             ),
-            
-            const SizedBox(height: 12),
-            
-            // 戻るボタン
-            SizedBox(
-              width: double.infinity,
-              child: TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                style: TextButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    side: BorderSide(
-                      color: isDark ? Colors.white24 : Colors.black26,
-                      width: 1,
-                    ),
-                  ),
-                ),
-                child: Text(
-                  '戻る',
-                  style: TextStyle(
-                    color: isDark ? Colors.white : Colors.black87,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ),
           ],
         ),
       ),
     );
+  }
+
+  Future<void> _unlockWithPoints(int requiredPoints) async {
+    HapticFeedback.lightImpact();
+    final user = ref.read(currentUserProvider);
+    final userId = user.id;
+    final repo = ref.read(votingRepositoryProvider);
+
+    final ok = await repo.spendSPointsGeneric(userId, requiredPoints, 'コンテンツ解放: ${widget.contentTitle}', 'content_unlock');
+    if (!mounted) return;
+    if (ok) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('ポイントを${requiredPoints}消費してコンテンツを解放しました')),
+      );
+      Navigator.of(context).pop();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('スターポイントが不足しています')),
+      );
+    }
   }
 
   void _upgradeToPremium() {
@@ -587,7 +608,7 @@ class _PremiumRestrictionScreenState extends ConsumerState<PremiumRestrictionScr
     
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
-        builder: (context) => const FanSubscriptionScreen(),
+        builder: (context) => const SubscriptionPlansScreen(),
       ),
     );
   }

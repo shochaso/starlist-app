@@ -53,7 +53,7 @@ abstract class GachaState {
   T when<T>({
     required T Function() initial,
     required T Function() loading,
-    required T Function(GachaResult result) success,
+    required T Function(GachaResult result, int previousBalance, int newBalance) success,
     required T Function(String message) error,
   });
 }
@@ -66,7 +66,7 @@ class _Initial extends GachaState {
   T when<T>({
     required T Function() initial,
     required T Function() loading,
-    required T Function(GachaResult result) success,
+    required T Function(GachaResult result, int previousBalance, int newBalance) success,
     required T Function(String message) error,
   }) {
     return initial();
@@ -81,7 +81,7 @@ class _Loading extends GachaState {
   T when<T>({
     required T Function() initial,
     required T Function() loading,
-    required T Function(GachaResult result) success,
+    required T Function(GachaResult result, int previousBalance, int newBalance) success,
     required T Function(String message) error,
   }) {
     return loading();
@@ -91,17 +91,19 @@ class _Loading extends GachaState {
 /// 成功状態
 class _Success extends GachaState {
   final GachaResult result;
+  final int previousBalance;
+  final int newBalance;
   
-  const _Success(this.result);
+  const _Success(this.result, this.previousBalance, this.newBalance);
   
   @override
   T when<T>({
     required T Function() initial,
     required T Function() loading,
-    required T Function(GachaResult result) success,
+    required T Function(GachaResult result, int previousBalance, int newBalance) success,
     required T Function(String message) error,
   }) {
-    return success(result);
+    return success(result, previousBalance, newBalance);
   }
 }
 
@@ -115,7 +117,7 @@ class _Error extends GachaState {
   T when<T>({
     required T Function() initial,
     required T Function() loading,
-    required T Function(GachaResult result) success,
+    required T Function(GachaResult result, int previousBalance, int newBalance) success,
     required T Function(String message) error,
   }) {
     return error(message);
@@ -126,6 +128,6 @@ class _Error extends GachaState {
 class GachaStateFactory {
   static const GachaState initial = _Initial();
   static const GachaState loading = _Loading();
-  static GachaState success(GachaResult result) => _Success(result);
+  static GachaState success(GachaResult result, int previousBalance, int newBalance) => _Success(result, previousBalance, newBalance);
   static GachaState error(String message) => _Error(message);
 }

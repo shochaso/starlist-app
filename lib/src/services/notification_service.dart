@@ -86,9 +86,9 @@ class NotificationService {
   final BehaviorSubject<NotificationModel?> _subject = BehaviorSubject<NotificationModel?>();
   Stream<NotificationModel?> get notificationStream => _subject.stream;
   NotificationService._internal();
-
+  
   Future<void> init() async {
-    if (kIsWeb) {
+      if (kIsWeb) {
       Future.delayed(const Duration(seconds: 1), () {
         _subject.add(NotificationModel(
           id: 'web-hello',

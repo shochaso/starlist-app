@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../data/models/star_point_models.dart';
+import '../../../data/models/voting_models.dart';
 import '../providers/voting_providers.dart';
+import '../../../../providers/user_provider.dart';
 
 /// スターポイント残高表示ウィジェット
 class StarPointBalanceWidget extends ConsumerWidget {
@@ -16,16 +17,20 @@ class StarPointBalanceWidget extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final balanceAsync = ref.watch(starPointBalanceProvider);
+    final user = ref.watch(currentUserProvider);
+    final userId = user.id;
+    final balanceAsync = ref.watch(userStarPointBalanceProvider(userId));
 
     return balanceAsync.when(
-      data: (balance) => _buildBalanceCard(context, ref, balance),
+      data: (balance) => _buildBalanceCard(context, ref, balance ?? StarPointBalance(
+        id: '', userId: '', balance: 0, totalEarned: 0, totalSpent: 0, createdAt: DateTime.fromMillisecondsSinceEpoch(0), updatedAt: DateTime.fromMillisecondsSinceEpoch(0))),
       loading: () => _buildLoadingCard(context),
       error: (error, stack) => _buildErrorCard(context, error),
     );
   }
 
   Widget _buildBalanceCard(BuildContext context, WidgetRef ref, StarPointBalance balance) {
+    String formatInt(int v) => v.toString();
     return Card(
       elevation: 2,
       child: InkWell(
@@ -57,8 +62,8 @@ class StarPointBalanceWidget extends ConsumerWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '${balance.balance.toStringAsFixed(0)} スターポイント',
-                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                    '${formatInt(balance.balance)} スターポイント',
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                       fontWeight: FontWeight.bold,
                       color: Theme.of(context).primaryColor,
                     ),
@@ -169,8 +174,10 @@ class StarPointBalanceWidget extends ConsumerWidget {
 class _TransactionHistorySheet extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final transactionsAsync = ref.watch(starPointTransactionsProvider);
-    final balanceAsync = ref.watch(starPointBalanceProvider);
+    final user = ref.watch(currentUserProvider);
+    final userId = user.id;
+    final transactionsAsync = ref.watch(starPointTransactionsProvider(userId));
+    final balanceAsync = ref.watch(userStarPointBalanceProvider(userId));
 
     return Container(
       height: MediaQuery.of(context).size.height * 0.7,
@@ -194,17 +201,12 @@ class _TransactionHistorySheet extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 16),
-          
-          // 残高サマリー
           balanceAsync.when(
-            data: (balance) => _buildBalanceSummary(context, balance),
+            data: (balance) => balance == null ? const SizedBox.shrink() : _buildBalanceSummary(context, balance),
             loading: () => const SizedBox.shrink(),
             error: (_, __) => const SizedBox.shrink(),
           ),
-          
           const SizedBox(height: 20),
-          
-          // 取引履歴リスト
           Expanded(
             child: transactionsAsync.when(
               data: (transactions) => _buildTransactionsList(context, transactions),

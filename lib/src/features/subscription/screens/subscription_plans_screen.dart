@@ -13,7 +13,7 @@ class SubscriptionPlansScreen extends ConsumerStatefulWidget {
 
 class _SubscriptionPlansScreenState extends ConsumerState<SubscriptionPlansScreen> {
   SubscriptionPlanType? selectedPlan;
-  bool isYearly = false;
+  bool isYearly = true; // デフォルトで年間プランを表示
 
   @override
   void initState() {

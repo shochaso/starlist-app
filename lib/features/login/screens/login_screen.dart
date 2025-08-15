@@ -21,6 +21,14 @@ class LoginScreen extends ConsumerWidget {
       }
     });
 
+    Future<void> submitLogin() async {
+      if (state.isLoading) return;
+      if (await notifier.login()) {
+        await ref.read(currentUserProvider.notifier).loginRefreshFromSupabase();
+        if (context.mounted) context.go('/home');
+      }
+    }
+
     return Scaffold(
       backgroundColor: const Color(0xFFF9F9F9),
       body: Center(
@@ -64,12 +72,16 @@ class LoginScreen extends ConsumerWidget {
                 // Form
                 _buildTextField(
                   placeholder: 'メールアドレスまたはユーザー名',
+                  textInputAction: TextInputAction.next,
+                  onSubmitted: (_) => FocusScope.of(context).nextFocus(),
                   onChanged: notifier.onEmailChanged,
                 ),
                 const SizedBox(height: 15),
                 _buildTextField(
                   placeholder: 'パスワード',
                   obscureText: true,
+                  textInputAction: TextInputAction.done,
+                  onSubmitted: (_) => submitLogin(),
                   onChanged: notifier.onPasswordChanged,
                 ),
                 const SizedBox(height: 20),
@@ -93,10 +105,7 @@ class LoginScreen extends ConsumerWidget {
                       onPressed: state.isLoading
                           ? null
                           : () async {
-                              if (await notifier.login()) {
-                                await ref.read(currentUserProvider.notifier).loginRefreshFromSupabase();
-                                context.go('/home');
-                              }
+                              await submitLogin();
                             },
                       style: ElevatedButton.styleFrom(
                         padding: EdgeInsets.zero,
@@ -167,9 +176,13 @@ class LoginScreen extends ConsumerWidget {
     required String placeholder,
     bool obscureText = false,
     required ValueChanged<String> onChanged,
+    TextInputAction? textInputAction,
+    void Function(String)? onSubmitted,
   }) {
     return TextField(
       onChanged: onChanged,
+      onSubmitted: onSubmitted,
+      textInputAction: textInputAction,
       obscureText: obscureText,
       decoration: InputDecoration(
         hintText: placeholder,

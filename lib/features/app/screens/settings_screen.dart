@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../src/providers/theme_provider_enhanced.dart';
 import '../../../providers/user_provider.dart';
-import '../../subscription/screens/fan_subscription_screen.dart';
 import '../../star/screens/star_dashboard_screen.dart';
 import '../../data_integration/screens/data_import_screen.dart';
 import '../../../src/features/auth/providers/auth_provider.dart';
@@ -15,6 +14,7 @@ import '../../profile/screens/profile_edit_screen.dart';
 import '../../../src/features/auth/services/profile_service.dart';
 import '../../../src/features/auth/presentation/pages/two_factor_setup_screen.dart';
 import '../../../screens/starlist_main_screen.dart';
+import '../../../src/features/subscription/screens/subscription_plans_screen.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -1521,7 +1521,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   void _navigateToPlanManagement() {
     Navigator.of(context).push(
-      MaterialPageRoute(builder: (context) => const FanSubscriptionScreen()),
+      MaterialPageRoute(builder: (context) => const SubscriptionPlansScreen()),
     );
   }
 

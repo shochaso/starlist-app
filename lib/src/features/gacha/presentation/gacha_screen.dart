@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lottie/lottie.dart';
 import '../models/gacha_models_simple.dart';
 import '../widgets/gacha_machine_widget.dart';
 import '../services/gacha_sound_service.dart';
 import 'providers/gacha_providers.dart';
+import '../../../features/voting/providers/voting_providers.dart';
+import '../../../../providers/user_provider.dart';
+import '../../voting/widgets/star_point_balance_widget.dart';
 
 /// ガチャメイン画面
 class GachaScreen extends ConsumerWidget {
@@ -12,154 +16,194 @@ class GachaScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final gachaState = ref.watch(gachaViewModelProvider);
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('ガチャ'),
         backgroundColor: Theme.of(context).primaryColor,
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Theme.of(context).primaryColor.withOpacity(0.1),
-              Theme.of(context).scaffoldBackgroundColor,
-            ],
-          ),
-        ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              // ヘッダー部分
-              const Padding(
-                padding: EdgeInsets.all(24.0),
-                child: Column(
-                  children: [
-                    Icon(
-                      Icons.auto_awesome,
-                      size: 64,
-                      color: Colors.amber,
-                    ),
-                    SizedBox(height: 16),
-                    Text(
-                      'ガチャを引いて\nスターポイントやチケットをゲット！',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+      // body部分を別のウィジェットとして呼び出す
+      body: const _GachaView(),
+    );
+  }
+}
 
-              // メインコンテンツエリア
-              Expanded(
+// Scaffoldの中身を定義する新しいウィジェット
+class _GachaView extends ConsumerWidget {
+  const _GachaView();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    // ref.listenをbuildメソッド直下に配置
+    ref.listen<GachaState>(gachaViewModelProvider, (previous, next) {
+      next.when(
+        initial: () {},
+        loading: () {},
+        success: (_, __, ___) {},
+        error: (message) {
+          // 前の状態がエラーでない場合のみSnackBarを表示
+          bool wasError = false;
+          previous?.when(
+            initial: () => wasError = false,
+            loading: () => wasError = false,
+            success: (_, __, ___) => wasError = false,
+            error: (_) => wasError = true,
+          );
+          
+          if (!wasError) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(message),
+                backgroundColor: Colors.redAccent,
+              ),
+            );
+          }
+        },
+      );
+    });
+
+    final gachaState = ref.watch(gachaViewModelProvider);
+
+    // ここからがUIの本体
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Theme.of(context).primaryColor.withOpacity(0.1),
+            Theme.of(context).scaffoldBackgroundColor,
+          ],
+        ),
+      ),
+      child: SafeArea(
+        child: Column(
+          children: [
+            // 1. ヘッダー部分
+            const Padding(
+              padding: EdgeInsets.all(20.0),
+              child: Column(
+                children: [
+                  Icon(
+                    Icons.auto_awesome,
+                    size: 56,
+                    color: Colors.amber,
+                  ),
+                  SizedBox(height: 12),
+                  Text(
+                    'ガチャを引いて\nスターポイントやチケットをゲット！',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // 2. 残高ウィジェット
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16),
+              child: StarPointBalanceWidget(showTransactionHistory: false),
+            ),
+            const SizedBox(height: 12),
+
+            // 3. メインコンテンツエリア (状態によって表示を切り替える)
+            Expanded(
+              child: Center(
                 child: gachaState.when(
                   initial: () => _buildInitialContent(context, ref),
                   loading: () => _buildLoadingContent(),
-                  success: (result) => _buildSuccessContent(context, ref, result),
+                  success: (result, previousBalance, newBalance) => _buildSuccessContent(
+                    context,
+                    ref,
+                    result,
+                    previousBalance,
+                    newBalance,
+                  ),
                   error: (message) => _buildErrorContent(context, ref, message),
                 ),
               ),
+            ),
 
-              // 底部のガチャボタン
-              Padding(
-                padding: const EdgeInsets.all(24.0),
-                child: _buildGachaButton(context, ref, gachaState),
-              ),
-            ],
-          ),
+            // 4. 底部のガチャボタン
+            Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: _buildGachaButton(context, ref, gachaState),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  /// 初期状態のコンテンツ
+  // 以下、各状態に対応するウィジェットを返すヘルパーメソッド
+  // (これらは元のGachaScreenから移動または再定義)
   Widget _buildInitialContent(BuildContext context, WidgetRef ref) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          // 待機状態のガチャマシン
-          GachaMachineWidget(
-            isActive: false,
+    // 初期状態のUI (例: ガチャマシンの画像など)
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        // 待機状態のガチャマシン
+        const GachaMachineWidget(
+          isActive: false,
+        ),
+        const SizedBox(height: 24),
+        const Text(
+          'ガチャを引く準備ができました',
+          style: TextStyle(
+            fontSize: 16,
+            color: Colors.grey,
           ),
-          const SizedBox(height: 24),
-          const Text(
-            'ガチャを引く準備ができました',
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey,
-            ),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
-  /// ローディング中のコンテンツ（ガチャポンマシンアニメーション）
   Widget _buildLoadingContent() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          // ガチャポンマシンアニメーション
-          GachaMachineWidget(
-            isActive: true,
-            onAnimationComplete: () {
-              // アニメーション完了後の処理は既存の状態管理で行う
-            },
+    // ローディング中のUI
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        // ガチャポンマシンアニメーション
+        const GachaMachineWidget(
+          isActive: true,
+          onAnimationComplete: null,
+        ),
+        const SizedBox(height: 24),
+        const Text(
+          'ガチャを実行中...',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
           ),
-          const SizedBox(height: 24),
-          const Text(
-            'ガチャを実行中...',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
-  /// 成功時のコンテンツ
-  Widget _buildSuccessContent(BuildContext context, WidgetRef ref, GachaResult result) {
-    // 結果表示後、自動的にダイアログを表示
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _showResultDialog(context, ref, result);
-    });
-
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(
-            Icons.celebration,
-            size: 120,
-            color: Colors.amber,
-          ),
-          const SizedBox(height: 24),
-          const Text(
-            'ガチャ完了！',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Colors.amber,
-            ),
-          ),
-          const SizedBox(height: 12),
-          _buildResultPreview(result),
-        ],
+  Widget _buildSuccessContent(
+    BuildContext context, 
+    WidgetRef ref, 
+    GachaResult result, 
+    int previousBalance, 
+    int newBalance
+  ) {
+    // resultのタイプに応じて表示を切り替える
+    return result.when(
+      point: (amount) => _PointCountAnimation(
+        startAmount: previousBalance,
+        endAmount: newBalance,
       ),
+      ticket: (ticketType, displayName, color) {
+        // チケット獲得時の表示（カウントアップはしない想定）
+        // 必要であれば、こちらもポイント換算してカウントアップ演出が可能
+        return _buildTicketDisplay(displayName, color);
+      },
     );
   }
 
-  /// エラー時のコンテンツ
   Widget _buildErrorContent(BuildContext context, WidgetRef ref, String message) {
     return Center(
       child: Column(
@@ -193,14 +237,28 @@ class GachaScreen extends ConsumerWidget {
     );
   }
 
-  /// ガチャボタン
   Widget _buildGachaButton(BuildContext context, WidgetRef ref, GachaState state) {
+    // 状態に基づいてボタンの表示と動作を決定
     bool isLoading = false;
+    bool isSuccess = false;
+    
     state.when(
-      initial: () => isLoading = false,
-      loading: () => isLoading = true,
-      success: (_) => isLoading = false,
-      error: (_) => isLoading = false,
+      initial: () {
+        isLoading = false;
+        isSuccess = false;
+      },
+      loading: () {
+        isLoading = true;
+        isSuccess = false;
+      },
+      success: (_, __, ___) {
+        isLoading = false;
+        isSuccess = true;
+      },
+      error: (_) {
+        isLoading = false;
+        isSuccess = false;
+      },
     );
     
     return SizedBox(
@@ -210,10 +268,12 @@ class GachaScreen extends ConsumerWidget {
         onPressed: isLoading 
           ? null 
           : () async {
-              // 音効果とハプティックフィードバックを再生
-              await GachaSoundService().playLeverPull();
-              // ガチャ実行
-              ref.read(gachaViewModelProvider.notifier).draw();
+              if (isSuccess) {
+                ref.read(gachaViewModelProvider.notifier).reset();
+              } else {
+                await GachaSoundService().playLeverPull();
+                ref.read(gachaViewModelProvider.notifier).draw();
+              }
             },
         style: ElevatedButton.styleFrom(
           backgroundColor: isLoading ? Colors.grey : Theme.of(context).primaryColor,
@@ -242,13 +302,13 @@ class GachaScreen extends ConsumerWidget {
                 ),
               ],
             )
-          : const Row(
+          : Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.casino, size: 24),
+                Icon(isSuccess ? Icons.refresh : Icons.casino, size: 24),
                 SizedBox(width: 8),
                 Text(
-                  'ガチャを引く',
+                  isSuccess ? 'もう一度引く' : 'ガチャを引く',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
               ],
@@ -257,42 +317,51 @@ class GachaScreen extends ConsumerWidget {
     );
   }
 
-  /// 結果のプレビュー表示
-  Widget _buildResultPreview(GachaResult result) {
-    return result.when(
-      point: (amount) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          color: Colors.blue.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.blue),
+  Widget _buildTicketDisplay(String displayName, Color color) {
+    return Column(
+      children: [
+        Icon(
+          Icons.card_giftcard,
+          size: 48,
+          color: color,
         ),
-        child: Text(
-          '$amount スターポイント獲得！',
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: Colors.blue,
-          ),
-        ),
-      ),
-      ticket: (ticketType, displayName, color) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: color),
-        ),
-        child: Text(
-          '$displayName獲得！',
+        const SizedBox(height: 8),
+        Text(
+          '$displayNameチケットを獲得しました！',
           style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
+            fontSize: 18,
             color: color,
           ),
         ),
-      ),
+      ],
     );
+  }
+
+  Future<void> _applyGachaReward(WidgetRef ref, GachaResult result) async {
+    // 一時的にデータベース処理を無効化（データベースエラー回避）
+    print('ガチャ報酬付与（モック）: ${result.toString()}');
+    
+    // 本来の実装（データベースが利用可能になったら有効化）
+    /*
+    final user = ref.read(currentUserProvider);
+    final userId = user.id;
+    final repo = ref.read(votingRepositoryProvider);
+
+    await result.when(
+      point: (amount) async {
+        await repo.grantSPointsWithSource(userId, amount, 'ガチャ獲得', 'purchase');
+        // 残高を即座に更新
+        ref.invalidate(userStarPointBalanceProvider(userId));
+      },
+      ticket: (ticketType, displayName, color) async {
+        // チケットは簡易にポイント換算（仮: シルバー=500、ゴールド=1200）
+        final amount = ticketType == 'gold' ? 1200 : 500;
+        await repo.grantSPointsWithSource(userId, amount, '$displayName（ガチャ）', 'purchase');
+        // 残高を即座に更新
+        ref.invalidate(userStarPointBalanceProvider(userId));
+      },
+    );
+    */
   }
 
   /// 結果表示ダイアログ
@@ -333,8 +402,8 @@ class GachaScreen extends ConsumerWidget {
             const SizedBox(height: 8),
             result.when(
               point: (amount) => Text(
-                '$amount スターポイント',
-                style: const TextStyle(
+                '+$amount スターポイント',
+                style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
                   color: Colors.blue,
@@ -378,6 +447,182 @@ class GachaScreen extends ConsumerWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// ポイントカウントアップアニメーション
+class _PointCountAnimation extends StatefulWidget {
+  final int startAmount;
+  final int endAmount;
+  final Duration duration;
+
+  const _PointCountAnimation({
+    required this.startAmount,
+    required this.endAmount,
+    this.duration = const Duration(milliseconds: 1500),
+    super.key,
+  });
+
+  @override
+  State<_PointCountAnimation> createState() => _PointCountAnimationState();
+}
+
+class _PointCountAnimationState extends State<_PointCountAnimation>
+    with TickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<int> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: widget.duration,
+      vsync: this,
+    );
+
+    // アニメーションの開始値と終了値を引数から設定
+    _animation = IntTween(
+      begin: widget.startAmount,
+      end: widget.endAmount,
+    ).animate(CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeOutCubic,
+    ));
+
+    // アニメーションの値を更新するためにsetStateを呼ぶ
+    _controller.addListener(() {
+      setState(() {});
+    });
+
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final gainedAmount = widget.endAmount - widget.startAmount;
+
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        // ガチャ完了アイコン
+        const Icon(
+          Icons.celebration,
+          size: 120,
+          color: Colors.amber,
+        ),
+        const SizedBox(height: 24),
+
+        // 獲得ポイントメッセージ
+        Text(
+          '$gainedAmount ポイント獲得！',
+          style: const TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: Colors.amber,
+          ),
+        ),
+        const SizedBox(height: 16),
+
+        // カウントアップする残高表示
+        Text(
+          '${_animation.value}', // アニメーションの現在の値を表示
+          style: TextStyle(
+            fontSize: 48,
+            fontWeight: FontWeight.bold,
+            color: Theme.of(context).colorScheme.primary,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// ダイアログ用ポイントカウントアップアニメーション
+class _DialogPointCountAnimation extends StatefulWidget {
+  final int startAmount;
+  final int endAmount;
+  final Duration duration;
+
+  const _DialogPointCountAnimation({
+    required this.startAmount,
+    required this.endAmount,
+    this.duration = const Duration(milliseconds: 2000),
+    super.key,
+  });
+
+  @override
+  State<_DialogPointCountAnimation> createState() => _DialogPointCountAnimationState();
+}
+
+class _DialogPointCountAnimationState extends State<_DialogPointCountAnimation>
+    with TickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<int> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: widget.duration,
+      vsync: this,
+    );
+
+    _animation = IntTween(
+      begin: widget.startAmount,
+      end: widget.endAmount,
+    ).animate(CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeOutCubic,
+    ));
+
+    _controller.addListener(() {
+      setState(() {});
+    });
+
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final gainedAmount = widget.endAmount - widget.startAmount;
+
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        // カウントアップする残高表示
+        Text(
+          '${_animation.value}',
+          style: TextStyle(
+            fontSize: 32,
+            fontWeight: FontWeight.bold,
+            color: Theme.of(context).colorScheme.primary,
+          ),
+        ),
+        const SizedBox(height: 8),
+        
+        // 獲得ポイントメッセージ
+        Text(
+          '+$gainedAmount スターポイント',
+          style: const TextStyle(
+            fontSize: 16,
+            color: Colors.grey,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
     );
   }
 }

@@ -7,7 +7,7 @@ import '../../../src/core/constants/service_definitions.dart';
 import '../../../src/providers/theme_provider_enhanced.dart';
 import '../../../providers/user_provider.dart';
 import '../../star/screens/star_dashboard_screen.dart';
-import '../../subscription/screens/fan_subscription_screen.dart';
+import '../../../src/features/subscription/screens/subscription_plans_screen.dart';
 import '../../app/screens/settings_screen.dart';
 import 'youtube_import_screen.dart';
 import 'music_import_screen.dart';
@@ -2477,7 +2477,7 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
                     Navigator.of(context).pop();
                     WidgetsBinding.instance.addPostFrameCallback((_) {
                       Navigator.of(context).push(
-                        MaterialPageRoute(builder: (context) => const FanSubscriptionScreen()),
+                        MaterialPageRoute(builder: (context) => const SubscriptionPlansScreen()),
                       );
                     });
                   }),

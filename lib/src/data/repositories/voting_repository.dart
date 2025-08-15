@@ -9,6 +9,22 @@ class VotingRepository {
     required SupabaseClient supabase,
   }) : _supabase = supabase;
 
+  /// s_pointsのレコードを確実に用意
+  Future<StarPointBalance> _ensureSPointsRow(String userId) async {
+    final existing = await getStarPointBalance(userId);
+    if (existing != null) return existing;
+    final now = DateTime.now().toIso8601String();
+    final inserted = await _supabase.from('s_points').insert({
+      'user_id': userId,
+      'balance': 0,
+      'total_earned': 0,
+      'total_spent': 0,
+      'created_at': now,
+      'updated_at': now,
+    }).select().single();
+    return StarPointBalance.fromJson(inserted);
+  }
+
   /// スターポイント残高を取得
   Future<StarPointBalance?> getStarPointBalance(String userId) async {
     try {
@@ -21,7 +37,23 @@ class VotingRepository {
       if (response == null) return null;
       return StarPointBalance.fromJson(response);
     } catch (e) {
-      throw Exception('Failed to get star point balance: $e');
+      // データが無かった場合(PostgrestException)やその他のエラーをここで捕捉
+      // データが無い場合は残高0として扱う
+      if (e is PostgrestException && e.code == 'PGRST116') {
+        final now = DateTime.now();
+        return StarPointBalance(
+          id: 'temp_${userId}_${now.millisecondsSinceEpoch}',
+          userId: userId, 
+          balance: 0,
+          totalEarned: 0,
+          totalSpent: 0,
+          createdAt: now,
+          updatedAt: now,
+        );
+      }
+      // その他のエラーはそのまま投げるか、ログに出力
+      print('fetchBalance error: $e');
+      rethrow;
     }
   }
 
@@ -261,20 +293,83 @@ class VotingRepository {
         'description': description,
       });
 
-      // 残高を更新
-      final currentBalance = await getStarPointBalance(userId);
-      if (currentBalance != null) {
-        await _supabase
-            .from('s_points')
-            .update({
-              'balance': currentBalance.balance + amount,
-              'total_earned': currentBalance.totalEarned + amount,
-              'updated_at': DateTime.now().toIso8601String(),
-            })
-            .eq('user_id', userId);
-      }
+      final currentBalance = await _ensureSPointsRow(userId);
+      await _supabase
+          .from('s_points')
+          .update({
+            'balance': currentBalance.balance + amount,
+            'total_earned': currentBalance.totalEarned + amount,
+            'updated_at': DateTime.now().toIso8601String(),
+          })
+          .eq('user_id', userId);
     } catch (e) {
       throw Exception('Failed to grant star points: $e');
+    }
+  }
+
+  /// 任意ソースでスターポイントを付与（購入/ガチャなど）
+  Future<void> grantSPointsWithSource(
+    String userId,
+    int amount,
+    String description,
+    String sourceType,
+  ) async {
+    try {
+      await _supabase.from('s_point_transactions').insert({
+        'user_id': userId,
+        'amount': amount,
+        'transaction_type': 'bonus',
+        'source_type': sourceType, // e.g. 'purchase' or 'admin'
+        'description': description,
+      });
+
+      final currentBalance = await _ensureSPointsRow(userId);
+      await _supabase
+          .from('s_points')
+          .update({
+            'balance': currentBalance.balance + amount,
+            'total_earned': currentBalance.totalEarned + amount,
+            'updated_at': DateTime.now().toIso8601String(),
+          })
+          .eq('user_id', userId);
+    } catch (e) {
+      throw Exception('Failed to grant star points with source: $e');
+    }
+  }
+
+  /// 任意用途でスターポイントを消費（コンテンツ解放など）
+  Future<bool> spendSPointsGeneric(
+    String userId,
+    int spendAmount,
+    String description,
+    String sourceType,
+  ) async {
+    try {
+      final currentBalance = await _ensureSPointsRow(userId);
+      if (currentBalance.balance < spendAmount) {
+        return false;
+      }
+
+      await _supabase.from('s_point_transactions').insert({
+        'user_id': userId,
+        'amount': -spendAmount,
+        'transaction_type': 'spent',
+        'source_type': sourceType,
+        'description': description,
+      });
+
+      await _supabase
+          .from('s_points')
+          .update({
+            'balance': currentBalance.balance - spendAmount,
+            'total_spent': currentBalance.totalSpent + spendAmount,
+            'updated_at': DateTime.now().toIso8601String(),
+          })
+          .eq('user_id', userId);
+
+      return true;
+    } catch (e) {
+      throw Exception('Failed to spend star points: $e');
     }
   }
 
@@ -299,7 +394,7 @@ class VotingRepository {
 
       // ボーナスを付与
       const bonusAmount = 10;
-      await grantSPoints(userId, bonusAmount, '日次ログインボーナス');
+      await grantSPointsWithSource(userId, bonusAmount, '日次ログインボーナス', 'daily_login');
       return true;
     } catch (e) {
       throw Exception('Failed to grant daily login bonus: $e');

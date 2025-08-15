@@ -1,8 +1,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../main.dart' show supabaseClientProvider;
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../data/repositories/voting_repository.dart';
 import '../../../data/models/voting_models.dart';
 import '../services/voting_service.dart';
+
+/// SupabaseClient プロバイダー
+final supabaseClientProvider = Provider<SupabaseClient>((ref) {
+  return Supabase.instance.client;
+});
 
 /// VotingRepositoryのプロバイダー
 final votingRepositoryProvider = Provider<VotingRepository>((ref) {

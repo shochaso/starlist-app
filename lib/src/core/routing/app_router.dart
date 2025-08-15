@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../features/home/screens/starlist_main_screen.dart';
+import '../../../screens/starlist_main_screen.dart';
 import '../../../features/auth/screens/star_signup_screen.dart';
 import '../../../features/auth/screens/star_email_signup_screen.dart';
 import '../../../features/star/screens/star_dashboard_screen.dart';
-import '../../../features/subscription/screens/fan_subscription_screen.dart';
-import '../../../features/settings/screens/settings_screen.dart';
+import '../../features/subscription/screens/subscription_plans_screen.dart';
+import '../../../features/app/screens/settings_screen.dart';
 import '../../../features/data_integration/screens/data_import_screen.dart';
 import '../../../features/search/screens/search_screen.dart';
 import '../../../features/mylist/screens/mylist_screen.dart';
@@ -47,7 +47,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/plan-management',
         name: 'plan-management',
-        builder: (context, state) => const FanSubscriptionScreen(),
+        builder: (context, state) => const SubscriptionPlansScreen(),
       ),
       
       // 設定
