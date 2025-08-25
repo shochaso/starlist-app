@@ -95,13 +95,7 @@ class FollowingScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: AppBar(
-        title: Text(
-          'フォロー中',
-          style: TextStyle(
-            color: textColor,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+        title: const SizedBox.shrink(),
         backgroundColor: backgroundColor,
         elevation: 0,
         actions: [

@@ -203,14 +203,7 @@ class HomeScreen extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          'スターリスト',
-                          style: TextStyle(
-                            fontSize: 28,
-                            fontWeight: FontWeight.bold,
-                            color: textColor,
-                          ),
-                        ),
+                        const SizedBox.shrink(),
                         Row(
                           children: [
                             // テーマ切り替えボタン
@@ -254,6 +247,26 @@ class HomeScreen extends StatelessWidget {
                               color: secondaryTextColor,
                             ),
                           ),
+                        ],
+                      ),
+                    ),
+                    
+                    // クイックフィルター（水平スクロール）
+                    const SizedBox(height: 12),
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.only(top: 4, bottom: 4),
+                      child: Row(
+                        children: const [
+                          _QuickFilterChip(label: '注目', icon: Icons.trending_up),
+                          SizedBox(width: 8),
+                          _QuickFilterChip(label: 'ミュージシャン', icon: Icons.music_note),
+                          SizedBox(width: 8),
+                          _QuickFilterChip(label: 'YouTube', icon: Icons.play_circle_fill),
+                          SizedBox(width: 8),
+                          _QuickFilterChip(label: 'アイドル', icon: Icons.star),
+                          SizedBox(width: 8),
+                          _QuickFilterChip(label: 'ゲーム', icon: Icons.sports_esports),
                         ],
                       ),
                     ),
@@ -416,94 +429,27 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
 
-            // スターリスト
-            SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (context, index) {
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: cardColor,
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: isDarkMode ? [] : [
-                          BoxShadow(
-                            color: Colors.grey.withOpacity(0.1),
-                            spreadRadius: 1,
-                            blurRadius: 2,
-                            offset: const Offset(0, 1),
-                          ),
-                        ],
-                      ),
-                      child: ListTile(
-                        contentPadding: const EdgeInsets.all(8),
-                        leading: ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          child: Container(
-                            width: 60,
-                            height: 60,
-                            color: isDarkMode ? Colors.grey.shade800 : Colors.grey.shade300,
-                            child: Image.network(
-                              stars[index].imageUrl,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) {
-                                return Center(
-                                  child: Text(
-                                    stars[index].name.substring(0, 1),
-                                    style: TextStyle(
-                                      color: textColor,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 24,
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
-                          ),
-                        ),
-                        title: Text(
-                          stars[index].name,
-                          style: TextStyle(
-                            color: textColor,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        subtitle: Text(
-                          stars[index].platforms.first,
-                          style: TextStyle(
-                            color: secondaryTextColor,
-                          ),
-                        ),
-                        trailing: ElevatedButton(
-                          onPressed: () {
-                            Navigator.pushNamed(
-                              context,
-                              AppRoutes.starDetail,
-                              arguments: stars[index],
-                            );
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: isDarkMode ? Colors.grey.shade800 : accentColor,
-                            foregroundColor: isDarkMode ? Colors.white : Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                          ),
-                          child: const Text('入手'),
-                        ),
-                        onTap: () {
-                          Navigator.pushNamed(
-                            context,
-                            AppRoutes.starDetail,
-                            arguments: stars[index],
-                          );
-                        },
-                      ),
-                    ),
+            // 注目のスター（横スクロール）
+            HorizontalSection(
+              title: '注目のスター',
+              seeMoreText: 'もっと見る',
+              onSeeMoreTap: () {
+                Navigator.pushNamed(
+                  context,
+                  AppRoutes.category,
+                  arguments: {'title': '注目のスター'},
+                );
+              },
+              children: stars.map((star) => StarCard(
+                star: star,
+                onTap: () {
+                  Navigator.pushNamed(
+                    context,
+                    AppRoutes.starDetail,
+                    arguments: star,
                   );
                 },
-                childCount: stars.length,
-              ),
+              )).toList(),
             ),
 
             // 検索履歴に基づくおすすめセクション
@@ -577,134 +523,18 @@ class HomeScreen extends StatelessWidget {
               )).toList(),
             ),
 
-            // 今日のアクティビティのタイトル
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      '今日のアクティビティ',
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: textColor,
-                      ),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        // すべて表示ボタンの処理
-                      },
-                      child: Text(
-                        'すべて表示',
-                        style: TextStyle(
-                          color: accentColor,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            // アクティビティリスト
-            SliverPadding(
-              padding: const EdgeInsets.all(16),
-              sliver: SliverToBoxAdapter(
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children: activities.map((activity) {
-                      return Container(
-                        width: 280,
-                        margin: const EdgeInsets.only(right: 16),
-                        child: isDarkMode
-                            ? ActivityCard(
-                                activity: activity,
-                                onTap: () {
-                                  // アクティビティタップ時の処理
-                                },
-                              )
-                            : Card(
-                                elevation: 2,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    // アクティビティ画像
-                                    ClipRRect(
-                                      borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-                                      child: AspectRatio(
-                                        aspectRatio: 16 / 9,
-                                        child: Image.network(
-                                          activity.imageUrl,
-                                          fit: BoxFit.cover,
-                                          errorBuilder: (context, error, stackTrace) {
-                                            return Container(
-                                              color: Colors.grey.shade300,
-                                              child: Center(
-                                                child: Icon(
-                                                  _getActivityIcon(activity.type),
-                                                  size: 40,
-                                                  color: Colors.grey.shade600,
-                                                ),
-                                              ),
-                                            );
-                                          },
-                                        ),
-                                      ),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.all(12),
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            activity.title,
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 16,
-                                              color: textColor,
-                                            ),
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                          const SizedBox(height: 4),
-                                          Text(
-                                            activity.content,
-                                            style: TextStyle(
-                                              fontSize: 14,
-                                              color: secondaryTextColor,
-                                            ),
-                                            maxLines: 2,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                          if (activity.price != null)
-                                            Padding(
-                                              padding: const EdgeInsets.only(top: 8),
-                                              child: Text(
-                                                '¥${activity.price}',
-                                                style: TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                  color: textColor,
-                                                ),
-                                              ),
-                                            ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                      );
-                    }).toList(),
-                  ),
-                ),
-              ),
+            // 今日のアクティビティ（横スクロール）
+            HorizontalSection(
+              title: '今日のアクティビティ',
+              seeMoreText: 'すべて表示',
+              itemWidth: 280,
+              itemHeight: 300,
+              children: activities.map((activity) => ActivityCard(
+                activity: activity,
+                onTap: () {
+                  // アクティビティタップ時の処理
+                },
+              )).toList(),
             ),
 
             // 余白
@@ -784,5 +614,37 @@ class HomeScreen extends StatelessWidget {
       default:
         return Icons.star_outline;
     }
+  }
+} 
+
+// クイックフィルター用の軽量Chipウィジェット
+class _QuickFilterChip extends StatelessWidget {
+  final String label;
+  final IconData icon;
+
+  const _QuickFilterChip({Key? key, required this.label, required this.icon}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final bgColor = isDarkMode ? Colors.grey.shade800 : Colors.grey.shade200;
+    final borderColor = isDarkMode ? Colors.grey.shade700 : Colors.grey.shade300;
+    final textColor = isDarkMode ? Colors.white : Colors.black87;
+
+    return Container(
+      decoration: ShapeDecoration(
+        color: bgColor,
+        shape: StadiumBorder(side: BorderSide(color: borderColor)),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16, color: textColor),
+          const SizedBox(width: 6),
+          Text(label, style: TextStyle(color: textColor, fontWeight: FontWeight.w600)),
+        ],
+      ),
+    );
   }
 } 

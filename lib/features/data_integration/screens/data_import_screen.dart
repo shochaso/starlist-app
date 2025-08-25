@@ -342,14 +342,7 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
             ),
             onPressed: () => _scaffoldKey.currentState?.openDrawer(),
           ),
-          title: Text(
-            'データ取り込み',
-            style: TextStyle(
-              color: isDark ? Colors.white : Colors.black87,
-              fontSize: 20,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
+          title: const SizedBox.shrink(),
         ),
         drawer: _buildDrawer(),
         body: SafeArea(

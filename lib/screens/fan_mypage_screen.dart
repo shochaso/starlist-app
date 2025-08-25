@@ -19,13 +19,7 @@ class FanMyPageScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: backgroundColor,
         elevation: 0,
-        title: Text(
-          'マイページ',
-          style: TextStyle(
-            color: textColor,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+        title: const SizedBox.shrink(),
         actions: [
           IconButton(
             icon: Icon(Icons.settings, color: textColor),
@@ -109,7 +103,7 @@ class FanMyPageScreen extends StatelessWidget {
             
             // フォロー中のスター
             Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
               child: Text(
                 'フォロー中のスター',
                 style: TextStyle(
@@ -124,7 +118,7 @@ class FanMyPageScreen extends StatelessWidget {
               height: 130,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.only(left: 16),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
                 itemCount: 5, // モック用。実際のデータを使用
                 itemBuilder: (context, index) {
                   return Container(
