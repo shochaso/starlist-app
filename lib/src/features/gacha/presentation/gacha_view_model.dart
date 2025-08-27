@@ -56,9 +56,21 @@ class GachaViewModel extends StateNotifier<GachaState> {
         ticket: (type, name, color) => 500, // 仮のポイント
       );
       
-      // 4. データベースにポイントを付与（失敗しても続行）
+      // 4. データベースにポイントを付与
       try {
         await _applyGachaReward(result, userId);
+        
+        // 新しい残高管理マネージャーを使用して残高を更新
+        final balanceManager = _ref.read(starPointBalanceManagerProvider(userId).notifier);
+        await balanceManager.refreshBalance();
+        
+        // デバッグ情報を出力
+        balanceManager.debugInfo();
+        
+        // 従来のプロバイダーも無効化（互換性のため）
+        _ref.invalidate(userStarPointBalanceProvider(userId));
+        _ref.invalidate(currentUserStarPointBalanceProvider(userId));
+        
       } catch (e) {
         // 付与失敗時はログだけ出して処理継続（オフライン/未設定環境想定）
         print('Gacha reward apply failed (fallback to local only): $e');
@@ -69,6 +81,13 @@ class GachaViewModel extends StateNotifier<GachaState> {
       
       // 6. 成功状態を更新
       state = GachaStateFactory.success(result, previousBalance, newBalance);
+      
+      // 成功状態更新後、確実に残高を更新
+      final balanceManager = _ref.read(starPointBalanceManagerProvider(userId).notifier);
+      await balanceManager.refreshBalance();
+      
+      // デバッグ情報を出力
+      balanceManager.debugInfo();
 
     } catch (e, stackTrace) { // stackTraceを追加するとデバッグに役立ちます
       // コンソールに詳細なエラー情報を出力する
@@ -93,15 +112,24 @@ class GachaViewModel extends StateNotifier<GachaState> {
       final repo = _ref.read(votingRepositoryProvider);
       await result.when(
         point: (amount) async {
-          await repo.grantSPointsWithSource(userId, amount, 'ガチャ獲得', 'purchase');
+          await repo.grantSPointsWithSource(userId, amount, 'ガチャ獲得', 'gacha');
         },
         ticket: (ticketType, displayName, color) async {
           final amount = ticketType == 'gold' ? 1200 : 500;
-          await repo.grantSPointsWithSource(userId, amount, '$displayName（ガチャ）', 'purchase');
+          await repo.grantSPointsWithSource(userId, amount, '$displayName（ガチャ）', 'gacha');
         },
       );
-      // データベース更新後、他のUIに反映させるためにプロバイダーを無効化
+      
+      // 新しい残高管理マネージャーを使用して残高を更新
+      final balanceManager = _ref.read(starPointBalanceManagerProvider(userId).notifier);
+      await balanceManager.refreshBalance();
+      
+      // デバッグ情報を出力
+      balanceManager.debugInfo();
+      
+      // 従来のプロバイダーも無効化（互換性のため）
       _ref.invalidate(userStarPointBalanceProvider(userId));
+      _ref.invalidate(currentUserStarPointBalanceProvider(userId));
     } catch (e) {
       // DB付与に失敗してもアプリの進行は止めない
       print('Failed to apply gacha reward to DB: $e');

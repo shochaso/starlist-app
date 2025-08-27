@@ -332,6 +332,15 @@ class VotingRepository {
             'updated_at': DateTime.now().toIso8601String(),
           })
           .eq('user_id', userId);
+      
+      // 更新後に少し待ってから確認（確実性のため）
+      await Future.delayed(const Duration(milliseconds: 100));
+      
+      // 更新が確実に行われたか確認
+      final updatedBalance = await getStarPointBalance(userId);
+      if (updatedBalance != null && updatedBalance.balance != currentBalance.balance + amount) {
+        print('Warning: Balance update may not have been applied correctly');
+      }
     } catch (e) {
       throw Exception('Failed to grant star points with source: $e');
     }

@@ -190,17 +190,75 @@ class _GachaView extends ConsumerWidget {
     int previousBalance, 
     int newBalance
   ) {
+    // 成功時に残高を強制更新
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      result.when(
+        point: (amount) {
+          // ポイント獲得時は確実に残高を更新
+          final user = ref.read(currentUserProvider);
+          if (user.id.isNotEmpty) {
+            final balanceManager = ref.read(starPointBalanceManagerProvider(user.id).notifier);
+            balanceManager.refreshBalance();
+            
+            // デバッグ情報を出力
+            balanceManager.debugInfo();
+            
+            // 従来のプロバイダーも無効化（互換性のため）
+            ref.invalidate(userStarPointBalanceProvider(user.id));
+            ref.invalidate(currentUserStarPointBalanceProvider(user.id));
+          }
+        },
+        ticket: (ticketType, displayName, color) {
+          // チケット獲得時も同様に残高を更新
+          final user = ref.read(currentUserProvider);
+          if (user.id.isNotEmpty) {
+            final balanceManager = ref.read(starPointBalanceManagerProvider(user.id).notifier);
+            balanceManager.refreshBalance();
+            
+            // デバッグ情報を出力
+            balanceManager.debugInfo();
+            
+            // 従来のプロバイダーも無効化（互換性のため）
+            ref.invalidate(userStarPointBalanceProvider(user.id));
+            ref.invalidate(currentUserStarPointBalanceProvider(user.id));
+          }
+        },
+      );
+    });
+    
     // resultのタイプに応じて表示を切り替える
     return result.when(
-      point: (amount) => _PointCountAnimation(
-        startAmount: previousBalance,
-        endAmount: newBalance,
-      ),
+      point: (amount) => _buildPointResult(context, amount, newBalance),
       ticket: (ticketType, displayName, color) {
         // チケット獲得時の表示（カウントアップはしない想定）
         // 必要であれば、こちらもポイント換算してカウントアップ演出が可能
         return _buildTicketDisplay(displayName, color);
       },
+    );
+  }
+
+  Widget _buildPointResult(BuildContext context, int amount, int newBalance) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        // ガチャ完了アイコン
+        const Icon(
+          Icons.celebration,
+          size: 120,
+          color: Colors.amber,
+        ),
+        const SizedBox(height: 24),
+
+        // 獲得ポイントメッセージ
+        Text(
+          '10ポイント獲得！',
+          style: const TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: Colors.amber,
+          ),
+        ),
+      ],
     );
   }
 
@@ -269,6 +327,19 @@ class _GachaView extends ConsumerWidget {
           ? null 
           : () async {
               if (isSuccess) {
+                // もう一度引く前に残高を強制更新
+                final user = ref.read(currentUserProvider);
+                if (user.id.isNotEmpty) {
+                  final balanceManager = ref.read(starPointBalanceManagerProvider(user.id).notifier);
+                  balanceManager.refreshBalance();
+                  
+                  // デバッグ情報を出力
+                  balanceManager.debugInfo();
+                  
+                  // 従来のプロバイダーも無効化（互換性のため）
+                  ref.invalidate(userStarPointBalanceProvider(user.id));
+                  ref.invalidate(currentUserStarPointBalanceProvider(user.id));
+                }
                 ref.read(gachaViewModelProvider.notifier).reset();
               } else {
                 await GachaSoundService().playLeverPull();
@@ -451,178 +522,3 @@ class _GachaView extends ConsumerWidget {
   }
 }
 
-/// ポイントカウントアップアニメーション
-class _PointCountAnimation extends StatefulWidget {
-  final int startAmount;
-  final int endAmount;
-  final Duration duration;
-
-  const _PointCountAnimation({
-    required this.startAmount,
-    required this.endAmount,
-    this.duration = const Duration(milliseconds: 1500),
-    super.key,
-  });
-
-  @override
-  State<_PointCountAnimation> createState() => _PointCountAnimationState();
-}
-
-class _PointCountAnimationState extends State<_PointCountAnimation>
-    with TickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<int> _animation;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      duration: widget.duration,
-      vsync: this,
-    );
-
-    // アニメーションの開始値と終了値を引数から設定
-    _animation = IntTween(
-      begin: widget.startAmount,
-      end: widget.endAmount,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeOutCubic,
-    ));
-
-    // アニメーションの値を更新するためにsetStateを呼ぶ
-    _controller.addListener(() {
-      setState(() {});
-    });
-
-    _controller.forward();
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final gainedAmount = widget.endAmount - widget.startAmount;
-
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        // ガチャ完了アイコン
-        const Icon(
-          Icons.celebration,
-          size: 120,
-          color: Colors.amber,
-        ),
-        const SizedBox(height: 24),
-
-        // 獲得ポイントメッセージ
-        Text(
-          '$gainedAmount ポイント獲得！',
-          style: const TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-            color: Colors.amber,
-          ),
-        ),
-        const SizedBox(height: 16),
-
-        // カウントアップする残高表示
-        Text(
-          '${_animation.value}', // アニメーションの現在の値を表示
-          style: TextStyle(
-            fontSize: 48,
-            fontWeight: FontWeight.bold,
-            color: Theme.of(context).colorScheme.primary,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-/// ダイアログ用ポイントカウントアップアニメーション
-class _DialogPointCountAnimation extends StatefulWidget {
-  final int startAmount;
-  final int endAmount;
-  final Duration duration;
-
-  const _DialogPointCountAnimation({
-    required this.startAmount,
-    required this.endAmount,
-    this.duration = const Duration(milliseconds: 2000),
-    super.key,
-  });
-
-  @override
-  State<_DialogPointCountAnimation> createState() => _DialogPointCountAnimationState();
-}
-
-class _DialogPointCountAnimationState extends State<_DialogPointCountAnimation>
-    with TickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<int> _animation;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      duration: widget.duration,
-      vsync: this,
-    );
-
-    _animation = IntTween(
-      begin: widget.startAmount,
-      end: widget.endAmount,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeOutCubic,
-    ));
-
-    _controller.addListener(() {
-      setState(() {});
-    });
-
-    _controller.forward();
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final gainedAmount = widget.endAmount - widget.startAmount;
-
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        // カウントアップする残高表示
-        Text(
-          '${_animation.value}',
-          style: TextStyle(
-            fontSize: 32,
-            fontWeight: FontWeight.bold,
-            color: Theme.of(context).colorScheme.primary,
-          ),
-        ),
-        const SizedBox(height: 8),
-        
-        // 獲得ポイントメッセージ
-        Text(
-          '+$gainedAmount スターポイント',
-          style: const TextStyle(
-            fontSize: 16,
-            color: Colors.grey,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ],
-    );
-  }
-}

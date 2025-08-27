@@ -13,7 +13,6 @@ import '../features/app/screens/settings_screen.dart';
 import '../providers/user_provider.dart';
 import '../src/providers/theme_provider_enhanced.dart';
 import '../src/core/components/service_icons.dart';
-import '../src/features/reactions/screens/reaction_demo_screen.dart';
 import '../src/features/gacha/presentation/gacha_screen.dart';
 import '../providers/youtube_history_provider.dart';
 import '../providers/posts_provider.dart';
@@ -789,7 +788,7 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
         if (mounted) context.go('/settings');
         return;
       case 'reaction_demo':
-        page = const ReactionDemoScreen();
+        page = Container();
         break;
       default:
         return;
@@ -831,7 +830,7 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
             child: ElevatedButton(
               onPressed: () {
                 Navigator.of(context).push(
-                  MaterialPageRoute(builder: (context) => const ReactionDemoScreen()),
+                  MaterialPageRoute(builder: (context) => Container()),
                 );
               },
               style: ElevatedButton.styleFrom(

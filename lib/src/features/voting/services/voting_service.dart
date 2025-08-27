@@ -10,6 +10,9 @@ class VotingService {
     required VotingRepository repository,
   }) : _repository = repository;
 
+  /// リポジトリへのアクセス
+  VotingRepository get repository => _repository;
+
   /// スターP残高を取得
   Future<StarPointBalance?> getStarPointBalance(String userId) async {
     return await _repository.getStarPointBalance(userId);

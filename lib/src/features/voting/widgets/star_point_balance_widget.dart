@@ -19,17 +19,57 @@ class StarPointBalanceWidget extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(currentUserProvider);
     final userId = user.id;
+    
+    // ユーザーIDが空の場合はローディング表示
+    if (userId.isEmpty) {
+      print('ユーザーIDが空のため、ローディング表示');
+      return _buildLoadingCard(context);
+    }
+    
+    print('残高表示ウィジェット構築開始: ユーザーID = $userId');
+    
+    // 新しい残高管理マネージャーを優先的に使用
+    final balanceState = ref.watch(starPointBalanceManagerProvider(userId));
+    
+    if (balanceState.isValid) {
+      print('残高管理マネージャーから残高を取得: ${balanceState.balanceValue} ポイント');
+      return _buildBalanceCard(context, ref, balanceState.balance!, user);
+    }
+    
+    if (balanceState.isLoading) {
+      print('残高管理マネージャーでローディング中');
+      return _buildLoadingCard(context);
+    }
+    
+    if (balanceState.error != null) {
+      print('残高管理マネージャーでエラーが発生: ${balanceState.error}');
+      // エラーが発生した場合は従来のプロバイダーを試行
+      final balanceAsync = ref.watch(userStarPointBalanceProvider(userId));
+      
+      return balanceAsync.when(
+        data: (balance) => _buildBalanceCard(context, ref, balance ?? StarPointBalance(
+          id: '', userId: '', balance: 0, totalEarned: 0, totalSpent: 0, createdAt: DateTime.fromMillisecondsSinceEpoch(0), updatedAt: DateTime.fromMillisecondsSinceEpoch(0)), user),
+        loading: () => _buildLoadingCard(context),
+        error: (error, stack) {
+          print('従来のプロバイダーでもエラーが発生: $error');
+          return _buildErrorCard(context, '残高の取得に失敗しました。再試行してください。');
+        },
+      );
+    }
+    
+    print('フォールバックとして従来のプロバイダーを使用');
+    // フォールバックとして従来のプロバイダーを使用
     final balanceAsync = ref.watch(userStarPointBalanceProvider(userId));
-
+    
     return balanceAsync.when(
       data: (balance) => _buildBalanceCard(context, ref, balance ?? StarPointBalance(
-        id: '', userId: '', balance: 0, totalEarned: 0, totalSpent: 0, createdAt: DateTime.fromMillisecondsSinceEpoch(0), updatedAt: DateTime.fromMillisecondsSinceEpoch(0))),
+        id: '', userId: '', balance: 0, totalEarned: 0, totalSpent: 0, createdAt: DateTime.fromMillisecondsSinceEpoch(0), updatedAt: DateTime.fromMillisecondsSinceEpoch(0)), user),
       loading: () => _buildLoadingCard(context),
       error: (error, stack) => _buildErrorCard(context, error),
     );
   }
 
-  Widget _buildBalanceCard(BuildContext context, WidgetRef ref, StarPointBalance balance) {
+  Widget _buildBalanceCard(BuildContext context, WidgetRef ref, StarPointBalance balance, UserInfo user) {
     String formatInt(int v) => v.toString();
     return Card(
       elevation: 2,
@@ -71,10 +111,23 @@ class StarPointBalanceWidget extends ConsumerWidget {
                 ],
               ),
               if (showTransactionHistory)
-                Icon(
-                  Icons.arrow_forward_ios,
-                  size: 16,
-                  color: Theme.of(context).disabledColor,
+                Row(
+                  children: [
+                    // デバッグボタン
+                    IconButton(
+                      icon: const Icon(Icons.bug_report, size: 16),
+                      onPressed: () {
+                        final balanceManager = ref.read(starPointBalanceManagerProvider(user.id).notifier);
+                        balanceManager.debugInfo();
+                      },
+                      tooltip: 'デバッグ情報',
+                    ),
+                    Icon(
+                      Icons.arrow_forward_ios,
+                      size: 16,
+                      color: Theme.of(context).disabledColor,
+                    ),
+                  ],
                 ),
             ],
           ),
