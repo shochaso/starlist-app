@@ -531,3 +531,144 @@ CREATE POLICY "ユーザーは自分の閲覧履歴を閲覧可能" ON public.vi
 
 CREATE POLICY "ユーザーは自分の閲覧履歴を管理可能" ON public.view_history
     FOR ALL USING (auth.uid() = user_id); 
+-- ガチャ回数管理テーブル
+CREATE TABLE IF NOT EXISTS public.gacha_attempts (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+  date DATE NOT NULL DEFAULT CURRENT_DATE,
+  base_attempts INTEGER NOT NULL DEFAULT 1, -- 基本ガチャ回数（1日1回）
+  bonus_attempts INTEGER NOT NULL DEFAULT 0, -- 広告視聴によるボーナス回数
+  used_attempts INTEGER NOT NULL DEFAULT 0, -- 使用済み回数
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  UNIQUE(user_id, date),
+  CHECK (base_attempts >= 0),
+  CHECK (bonus_attempts >= 0),
+  CHECK (used_attempts >= 0),
+  CHECK (used_attempts <= (base_attempts + bonus_attempts))
+);
+
+-- 広告視聴記録テーブル
+CREATE TABLE IF NOT EXISTS public.ad_views (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+  ad_type TEXT NOT NULL CHECK (ad_type IN ('video', 'banner', 'interstitial')),
+  ad_provider TEXT NOT NULL, -- 広告ネットワーク（Google AdMob, etc.）
+  ad_id TEXT NOT NULL, -- 広告ユニットID
+  view_duration INTEGER DEFAULT 0, -- 視聴時間（秒）
+  completed BOOLEAN DEFAULT FALSE, -- 視聴完了フラグ
+  reward_attempts INTEGER DEFAULT 1, -- 獲得するガチャ回数
+  viewed_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  CHECK (view_duration >= 0),
+  CHECK (reward_attempts >= 0)
+);
+
+-- ガチャ結果履歴テーブル
+CREATE TABLE IF NOT EXISTS public.gacha_history (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+  gacha_result JSONB NOT NULL, -- ガチャ結果（ポイント、チケット等）
+  attempts_used INTEGER NOT NULL DEFAULT 1, -- 使用した回数
+  source TEXT NOT NULL DEFAULT 'normal' CHECK (source IN ('normal', 'bonus')),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- ガチャ回数管理テーブルに行レベルセキュリティを有効化
+ALTER TABLE public.gacha_attempts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.ad_views ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.gacha_history ENABLE ROW LEVEL SECURITY;
+
+-- ガチャ回数管理のRLSポリシー
+CREATE POLICY "ユーザーは自分のガチャ回数を管理可能" ON public.gacha_attempts
+  FOR ALL USING (auth.uid() = user_id);
+
+-- 広告視聴記録のRLSポリシー
+CREATE POLICY "ユーザーは自分の広告視聴記録を管理可能" ON public.ad_views
+  FOR ALL USING (auth.uid() = user_id);
+
+-- ガチャ履歴のRLSポリシー
+CREATE POLICY "ユーザーは自分のガチャ履歴を閲覧可能" ON public.gacha_history
+  FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "ユーザーは自分のガチャ履歴を作成可能" ON public.gacha_history
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+-- ガチャ回数管理の初期化関数
+CREATE OR REPLACE FUNCTION public.initialize_daily_gacha_attempts(user_id_param UUID)
+RETURNS VOID AS $$
+BEGIN
+  INSERT INTO public.gacha_attempts (user_id, date, base_attempts)
+  VALUES (user_id_param, CURRENT_DATE, 1)
+  ON CONFLICT (user_id, date) DO NOTHING;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- 広告視聴によるボーナス回数追加関数
+CREATE OR REPLACE FUNCTION public.add_gacha_bonus_attempts(
+  user_id_param UUID,
+  bonus_count INTEGER
+)
+RETURNS VOID AS $$
+BEGIN
+  -- 今日の日付のレコードが存在しない場合は作成
+  PERFORM public.initialize_daily_gacha_attempts(user_id_param);
+  
+  -- ボーナス回数を追加
+  UPDATE public.gacha_attempts
+  SET bonus_attempts = bonus_attempts + bonus_count,
+      updated_at = NOW()
+  WHERE user_id = user_id_param AND date = CURRENT_DATE;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- ガチャ回数消費関数
+CREATE OR REPLACE FUNCTION public.consume_gacha_attempt(user_id_param UUID)
+RETURNS BOOLEAN AS $$
+DECLARE
+  available_attempts INTEGER;
+BEGIN
+  -- 今日の利用可能な回数を計算
+  SELECT (base_attempts + bonus_attempts - used_attempts)
+  INTO available_attempts
+  FROM public.gacha_attempts
+  WHERE user_id = user_id_param AND date = CURRENT_DATE;
+  
+  -- 回数が不足している場合はfalseを返す
+  IF available_attempts IS NULL OR available_attempts <= 0 THEN
+    RETURN FALSE;
+  END IF;
+  
+  -- 回数を消費
+  UPDATE public.gacha_attempts
+  SET used_attempts = used_attempts + 1,
+      updated_at = NOW()
+  WHERE user_id = user_id_param AND date = CURRENT_DATE;
+  
+  RETURN TRUE;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- ガチャ回数取得関数
+CREATE OR REPLACE FUNCTION public.get_available_gacha_attempts(user_id_param UUID)
+RETURNS JSONB AS $$
+DECLARE
+  result JSONB;
+BEGIN
+  -- 今日の日付のレコードが存在しない場合は作成
+  PERFORM public.initialize_daily_gacha_attempts(user_id_param);
+  
+  SELECT jsonb_build_object(
+    'base_attempts', base_attempts,
+    'bonus_attempts', bonus_attempts,
+    'used_attempts', used_attempts,
+    'available_attempts', (base_attempts + bonus_attempts - used_attempts),
+    'date', date
+  )
+  INTO result
+  FROM public.gacha_attempts
+  WHERE user_id = user_id_param AND date = CURRENT_DATE;
+  
+  RETURN result;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;

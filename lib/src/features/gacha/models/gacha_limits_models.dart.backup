@@ -1,0 +1,120 @@
+import 'package:flutter/material.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
+
+part 'gacha_limits_models.freezed.dart';
+part 'gacha_limits_models.g.dart';
+
+/// ガチャ回数情報
+@freezed
+class GachaAttempts with _$GachaAttempts {
+  const factory GachaAttempts({
+    required String id,
+    required String userId,
+    required DateTime date,
+    required int baseAttempts,      // 基本ガチャ回数（1日1回）
+    required int bonusAttempts,     // 広告視聴によるボーナス回数
+    required int usedAttempts,      // 使用済み回数
+    required DateTime createdAt,
+    required DateTime updatedAt,
+  }) = _GachaAttempts;
+
+  factory GachaAttempts.fromJson(Map<String, dynamic> json) => 
+    _$GachaAttemptsFromJson(json);
+}
+
+/// ガチャ回数の統計情報
+@freezed
+class GachaAttemptsStats with _$GachaAttemptsStats {
+  const factory GachaAttemptsStats({
+    required int baseAttempts,      // 基本ガチャ回数
+    required int bonusAttempts,     // ボーナス回数
+    required int usedAttempts,      // 使用済み回数
+    required int availableAttempts, // 利用可能な回数
+    required DateTime date,         // 対象日付
+  }) = _GachaAttemptsStats;
+
+  factory GachaAttemptsStats.fromJson(Map<String, dynamic> json) => 
+    _$GachaAttemptsStatsFromJson(json);
+
+  /// 利用可能な回数を計算
+  int get availableAttempts => baseAttempts + bonusAttempts - usedAttempts;
+  
+  /// ガチャが可能かどうか
+  bool get canDrawGacha => availableAttempts > 0;
+}
+
+/// 広告視聴記録
+@freezed
+class AdView with _$AdView {
+  const factory AdView({
+    required String id,
+    required String userId,
+    required String adType,         // 'video', 'banner', 'interstitial'
+    required String adProvider,     // 広告ネットワーク
+    required String adId,           // 広告ユニットID
+    required int viewDuration,      // 視聴時間（秒）
+    required bool completed,        // 視聴完了フラグ
+    required int rewardAttempts,    // 獲得するガチャ回数
+    required DateTime viewedAt,
+    required DateTime createdAt,
+  }) = _AdView;
+
+  factory AdView.fromJson(Map<String, dynamic> json) => 
+    _$AdViewFromJson(json);
+}
+
+/// 広告視聴の種類
+enum AdType {
+  video,
+  banner,
+  interstitial,
+}
+
+/// 広告視聴の状態
+@freezed
+class AdViewState with _$AdViewState {
+  const factory AdViewState.initial() = _AdViewInitial;
+  const factory AdViewState.loading() = _AdViewLoading;
+  const factory AdViewState.playing({required int currentDuration}) = _AdViewPlaying;
+  const factory AdViewState.completed({required int rewardedAttempts}) = _AdViewCompleted;
+  const factory AdViewState.error(String message) = _AdViewError;
+  const factory AdViewState.cancelled() = _AdViewCancelled;
+}
+
+/// ガチャ履歴
+@freezed
+class GachaHistory with _$GachaHistory {
+  const factory GachaHistory({
+    required String id,
+    required String userId,
+    required Map<String, dynamic> gachaResult, // ガチャ結果（JSON）
+    required int attemptsUsed,     // 使用した回数
+    required String source,        // 'normal' or 'bonus'
+    required DateTime createdAt,
+  }) = _GachaHistory;
+
+  factory GachaHistory.fromJson(Map<String, dynamic> json) => 
+    _$GachaHistoryFromJson(json);
+}
+
+/// ガチャ制限の状態
+@freezed
+class GachaLimitState with _$GachaLimitState {
+  const factory GachaLimitState({
+    required GachaAttemptsStats stats,
+    required List<AdView> recentAdViews,
+    required List<GachaHistory> recentHistory,
+    required AdViewState adViewState,
+  }) = _GachaLimitState;
+
+  const GachaLimitState._();
+
+  /// ガチャが可能かどうか
+  bool get canDrawGacha => stats.canDrawGacha;
+
+  /// 残り回数
+  int get remainingAttempts => stats.availableAttempts;
+
+  /// 今日のボーナス回数
+  int get bonusAttempts => stats.bonusAttempts;
+}

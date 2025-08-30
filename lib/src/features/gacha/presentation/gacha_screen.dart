@@ -1,14 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import '../models/gacha_limits_models.dart';import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lottie/lottie.dart';
 import '../models/gacha_models_simple.dart';
 import '../widgets/gacha_machine_widget.dart';
 import '../services/gacha_sound_service.dart';
 import 'providers/gacha_providers.dart';
+import '../providers/gacha_limits_providers.dart';
 import '../../../features/voting/providers/voting_providers.dart';
 import '../../../../providers/user_provider.dart';
 import '../../voting/widgets/star_point_balance_widget.dart';
+import '../services/ad_service.dart';
+import '../providers/gacha_attempts_manager.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'gacha_view_model.dart';
 
 /// ガチャメイン画面
 class GachaScreen extends ConsumerWidget {
@@ -33,37 +38,38 @@ class _GachaView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // ref.listenをbuildメソッド直下に配置
+    // MPパターンのガチャ回数マネージャーを監視
+    final user = Supabase.instance.client.auth.currentUser;
+    final userId = user?.id ?? '';
+    
+    if (userId.isEmpty) {
+      return const Center(
+        child: Text('ログインが必要です'),
+      );
+    }
+
+    final gachaAttemptsState = ref.watch(gachaAttemptsManagerProvider(userId));
+    final gachaState = ref.watch(gachaViewModelProvider);
+
+    // ガチャ状態の変更を監視
     ref.listen<GachaState>(gachaViewModelProvider, (previous, next) {
       next.when(
         initial: () {},
         loading: () {},
-        success: (_, __, ___) {},
+        success: (result, previousBalance, newBalance) {
+          _showResultSheet(context, result);
+        },
         error: (message) {
-          // 前の状態がエラーでない場合のみSnackBarを表示
-          bool wasError = false;
-          previous?.when(
-            initial: () => wasError = false,
-            loading: () => wasError = false,
-            success: (_, __, ___) => wasError = false,
-            error: (_) => wasError = true,
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(message),
+              backgroundColor: Colors.red,
+            ),
           );
-          
-          if (!wasError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(message),
-                backgroundColor: Colors.redAccent,
-              ),
-            );
-          }
         },
       );
     });
 
-    final gachaState = ref.watch(gachaViewModelProvider);
-
-    // ここからがUIの本体
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
@@ -80,24 +86,139 @@ class _GachaView extends ConsumerWidget {
         child: Column(
           children: [
             // 1. ヘッダー部分
-            const Padding(
-              padding: EdgeInsets.all(20.0),
+            Padding(
+              padding: const EdgeInsets.all(20.0),
               child: Column(
                 children: [
-                  Icon(
-                    Icons.auto_awesome,
-                    size: 56,
-                    color: Colors.amber,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(
+                        Icons.auto_awesome,
+                        size: 56,
+                        color: Colors.amber,
+                      ),
+                      const SizedBox(width: 12),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.92),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: Colors.amber),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.refresh, size: 18, color: Colors.amber),
+                            const SizedBox(width: 6),
+                            Text(
+                              '${gachaAttemptsState.stats.calculatedAvailableAttempts}回',
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black87,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: Colors.orange.withOpacity(0.12),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: Colors.orange),
+                              ),
+                              child: AnimatedSwitcher(
+                                duration: const Duration(milliseconds: 300),
+                                transitionBuilder: (child, anim) => ScaleTransition(scale: anim, child: child),
+                                child: Text(
+                                  '+${gachaAttemptsState.stats.bonusAttempts.clamp(0, 3)}/3',
+                                  key: ValueKey<int>(gachaAttemptsState.stats.bonusAttempts),
+                                  style: const TextStyle(fontSize: 12, color: Colors.orange, fontWeight: FontWeight.w600),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-                  SizedBox(height: 12),
-                  Text(
-                    'ガチャを引いて\nスターポイントやチケットをゲット！',
+                  const SizedBox(height: 12),
+                  const Text(
+                    '1日10回無料！広告視聴で+3回',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
+                  const SizedBox(height: 6),
+                  Text(
+                    'スターポイントやチケットをゲット！',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Colors.black.withOpacity(0.65),
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: gachaAttemptsState.stats.bonusAttempts >= 3 
+                        ? null
+                        : () async {
+                          final manager = ref.read(gachaAttemptsManagerProvider(userId).notifier);
+                          final success = await manager.addBonusAttempts(1);
+                          if (context.mounted) {
+                            if (success) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('回数 +1 追加されました')),
+                              );
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('広告視聴に失敗しました')),
+                              );
+                            }
+                          }
+                        },
+                      icon: const Icon(Icons.ondemand_video),
+                      label: Text(gachaAttemptsState.stats.bonusAttempts >= 3 ? '本日の上限に達しています' : '広告視聴で+1回'),
+                      style: OutlinedButton.styleFrom(
+                        side: BorderSide(color: gachaAttemptsState.stats.bonusAttempts >= 3 ? Colors.grey : Colors.orange),
+                        foregroundColor: gachaAttemptsState.stats.bonusAttempts >= 3 ? Colors.grey : Colors.orange,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                    ),
+                  ),
+                  if (gachaAttemptsState.error != null) ...[
+                    const SizedBox(height: 8),
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.orange.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.warning, color: Colors.orange, size: 16),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              gachaAttemptsState.error!,
+                              style: const TextStyle(fontSize: 12, color: Colors.orange),
+                            ),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              ref.read(gachaAttemptsManagerProvider(userId).notifier).clearError();
+                            },
+                            child: const Text('閉じる', style: TextStyle(fontSize: 12)),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -130,8 +251,36 @@ class _GachaView extends ConsumerWidget {
             // 4. 底部のガチャボタン
             Padding(
               padding: const EdgeInsets.all(20.0),
-              child: _buildGachaButton(context, ref, gachaState),
+              child: _buildGachaButton(context, ref, gachaState, gachaAttemptsState),
             ),
+
+            // 5. デバッグボタン（テスト用）
+            if (userId.isNotEmpty) ...[
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TextButton(
+                        onPressed: () {
+                          ref.read(gachaAttemptsManagerProvider(userId).notifier).debugInfo();
+                        },
+                        child: const Text('デバッグ情報', style: TextStyle(fontSize: 12)),
+                      ),
+                    ),
+                    Expanded(
+                      child: TextButton(
+                        onPressed: () async {
+                          await ref.read(gachaAttemptsManagerProvider(userId).notifier).resetToTenAttempts();
+                        },
+                        child: const Text('10回リセット', style: TextStyle(fontSize: 12)),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 10),
+            ],
           ],
         ),
       ),
@@ -190,41 +339,7 @@ class _GachaView extends ConsumerWidget {
     int previousBalance, 
     int newBalance
   ) {
-    // 成功時に残高を強制更新
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      result.when(
-        point: (amount) {
-          // ポイント獲得時は確実に残高を更新
-          final user = ref.read(currentUserProvider);
-          if (user.id.isNotEmpty) {
-            final balanceManager = ref.read(starPointBalanceManagerProvider(user.id).notifier);
-            balanceManager.refreshBalance();
-            
-            // デバッグ情報を出力
-            balanceManager.debugInfo();
-            
-            // 従来のプロバイダーも無効化（互換性のため）
-            ref.invalidate(userStarPointBalanceProvider(user.id));
-            ref.invalidate(currentUserStarPointBalanceProvider(user.id));
-          }
-        },
-        ticket: (ticketType, displayName, color) {
-          // チケット獲得時も同様に残高を更新
-          final user = ref.read(currentUserProvider);
-          if (user.id.isNotEmpty) {
-            final balanceManager = ref.read(starPointBalanceManagerProvider(user.id).notifier);
-            balanceManager.refreshBalance();
-            
-            // デバッグ情報を出力
-            balanceManager.debugInfo();
-            
-            // 従来のプロバイダーも無効化（互換性のため）
-            ref.invalidate(userStarPointBalanceProvider(user.id));
-            ref.invalidate(currentUserStarPointBalanceProvider(user.id));
-          }
-        },
-      );
-    });
+    // 成功直後の強制リフレッシュは行わない（DB応答の遅延による0上書きを防止）
     
     // resultのタイプに応じて表示を切り替える
     return result.when(
@@ -241,17 +356,14 @@ class _GachaView extends ConsumerWidget {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        // ガチャ完了アイコン
         const Icon(
           Icons.celebration,
           size: 120,
           color: Colors.amber,
         ),
         const SizedBox(height: 24),
-
-        // 獲得ポイントメッセージ
         Text(
-          '10ポイント獲得！',
+          '$amountポイント獲得！',
           style: const TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.bold,
@@ -295,95 +407,89 @@ class _GachaView extends ConsumerWidget {
     );
   }
 
-  Widget _buildGachaButton(BuildContext context, WidgetRef ref, GachaState state) {
-    // 状態に基づいてボタンの表示と動作を決定
+  Widget _buildGachaButton(BuildContext context, WidgetRef ref, GachaState state, GachaAttemptsState attemptsState) {
     bool isLoading = false;
     bool isSuccess = false;
-    
+
     state.when(
-      initial: () {
-        isLoading = false;
-        isSuccess = false;
-      },
-      loading: () {
-        isLoading = true;
-        isSuccess = false;
-      },
-      success: (_, __, ___) {
-        isLoading = false;
-        isSuccess = true;
-      },
-      error: (_) {
-        isLoading = false;
-        isSuccess = false;
-      },
+      initial: () { isLoading = false; isSuccess = false; },
+      loading: () { isLoading = true; isSuccess = false; },
+      success: (_, __, ___) { isLoading = false; isSuccess = true; },
+      error: (_) { isLoading = false; isSuccess = false; },
     );
-    
+
+    final noChance = attemptsState.stats.calculatedAvailableAttempts <= 0;
+    final user = Supabase.instance.client.auth.currentUser;
+    final userId = user?.id ?? '';
+
     return SizedBox(
       width: double.infinity,
       height: 56,
       child: ElevatedButton(
-        onPressed: isLoading 
-          ? null 
-          : () async {
-              if (isSuccess) {
-                // もう一度引く前に残高を強制更新
-                final user = ref.read(currentUserProvider);
-                if (user.id.isNotEmpty) {
-                  final balanceManager = ref.read(starPointBalanceManagerProvider(user.id).notifier);
-                  balanceManager.refreshBalance();
+        onPressed: (isLoading || noChance || userId.isEmpty)
+            ? null
+            : () async {
+                if (isSuccess) {
+                  ref.read(gachaViewModelProvider.notifier).reset();
+                } else {
+                  // MPマネージャーで回数を消費してからガチャ実行
+                  final manager = ref.read(gachaAttemptsManagerProvider(userId).notifier);
+                  final success = await manager.consumeAttempt();
                   
-                  // デバッグ情報を出力
-                  balanceManager.debugInfo();
-                  
-                  // 従来のプロバイダーも無効化（互換性のため）
-                  ref.invalidate(userStarPointBalanceProvider(user.id));
-                  ref.invalidate(currentUserStarPointBalanceProvider(user.id));
+                  if (success) {
+                    await GachaSoundService().playLeverPull();
+                    ref.read(gachaViewModelProvider.notifier).draw();
+                  } else {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('ガチャ回数が不足しています'),
+                          backgroundColor: Colors.orange,
+                        ),
+                      );
+                    }
+                  }
                 }
-                ref.read(gachaViewModelProvider.notifier).reset();
-              } else {
-                await GachaSoundService().playLeverPull();
-                ref.read(gachaViewModelProvider.notifier).draw();
-              }
-            },
+              },
         style: ElevatedButton.styleFrom(
-          backgroundColor: isLoading ? Colors.grey : Theme.of(context).primaryColor,
+          backgroundColor: isLoading || noChance ? Colors.grey : Theme.of(context).primaryColor,
           foregroundColor: Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(28),
           ),
-          elevation: isLoading ? 0 : 4,
+          elevation: isLoading || noChance ? 0 : 4,
         ),
         child: isLoading
-          ? const Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+            ? const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    ),
                   ),
-                ),
-                SizedBox(width: 12),
-                Text(
-                  '実行中...',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-              ],
-            )
-          : Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(isSuccess ? Icons.refresh : Icons.casino, size: 24),
-                SizedBox(width: 8),
-                Text(
-                  isSuccess ? 'もう一度引く' : 'ガチャを引く',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
+                  SizedBox(width: 12),
+                  Text('実行中...', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                ],
+              )
+            : Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(isSuccess ? Icons.refresh : Icons.casino, size: 24),
+                  const SizedBox(width: 8),
+                  Text(
+                    noChance 
+                      ? '回数不足'
+                      : isSuccess 
+                        ? 'もう一度引く' 
+                        : 'ガチャを引く',
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
       ),
     );
   }
@@ -520,5 +626,234 @@ class _GachaView extends ConsumerWidget {
       ),
     );
   }
+
+  void _showResultSheet(BuildContext context, GachaResult result) {
+    final rarity = _mapResultToRarity(result);
+    final rarityLabel = _rarityLabel(rarity);
+    final colors = _rarityColors(rarity);
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return Stack(
+          children: [
+            Container(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+              decoration: BoxDecoration(
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: colors,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.25),
+                    blurRadius: 16,
+                    offset: const Offset(0, -6),
+                  ),
+                ],
+              ),
+              child: SafeArea(
+                top: false,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 44,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.6),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    Text(
+                      rarityLabel,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 2,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    result.when(
+                      point: (amount) => Text(
+                        '+$amount スターポイント',
+                        style: const TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                      ticket: (type, name, color) => Text(
+                        name,
+                        style: const TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    AnimatedContainer(
+                      duration: const Duration(milliseconds: 600),
+                      curve: Curves.easeOutCubic,
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.14),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: Colors.white.withOpacity(0.4)),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.auto_awesome, color: Colors.white.withOpacity(0.9)),
+                          const SizedBox(width: 8),
+                          const Text(
+                            'おめでとう！',
+                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () => Navigator.of(ctx).pop(),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          foregroundColor: colors.last,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                        ),
+                        child: const Text('閉じる', style: TextStyle(fontWeight: FontWeight.bold)),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            if (rarity == 'SSR') Positioned.fill(child: _RarityShineOverlay()),
+          ],
+        );
+      },
+    );
+  }
+
+  String _mapResultToRarity(GachaResult result) {
+    return result.when(
+      point: (amount) {
+        if (amount >= 100) return 'SSR';
+        if (amount >= 50) return 'SR';
+        if (amount >= 30) return 'R';
+        return 'N';
+      },
+      ticket: (type, name, color) {
+        if (type == 'gold') return 'SSR';
+        return 'SR';
+      },
+    );
+  }
+
+  String _rarityLabel(String rarity) {
+    switch (rarity) {
+      case 'SSR':
+        return '超激レア';
+      case 'SR':
+        return '激レア';
+      case 'R':
+        return 'レア';
+      default:
+        return 'ノーマル';
+    }
+  }
+
+  List<Color> _rarityColors(String rarity) {
+    switch (rarity) {
+      case 'SSR':
+        return const [Color(0xFFFFD54F), Color(0xFFFF8F00)];
+      case 'SR':
+        return const [Color(0xFF7E57C2), Color(0xFF512DA8)];
+      case 'R':
+        return const [Color(0xFF42A5F5), Color(0xFF1E88E5)];
+      default:
+        return const [Color(0xFFBDBDBD), Color(0xFF9E9E9E)];
+    }
+  }
+}
+
+/// SSR専用のシャイン演出（放射状の光を回転させる）
+class _RarityShineOverlay extends StatefulWidget {
+  const _RarityShineOverlay();
+  @override
+  State<_RarityShineOverlay> createState() => _RarityShineOverlayState();
+}
+
+class _RarityShineOverlayState extends State<_RarityShineOverlay>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(vsync: this, duration: const Duration(seconds: 3))..repeat();
+  }
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+  @override
+  Widget build(BuildContext context) {
+    return IgnorePointer(
+      child: AnimatedBuilder(
+        animation: _ctrl,
+        builder: (context, _) {
+          return Opacity(
+            opacity: 0.5,
+            child: CustomPaint(
+              painter: _RaysPainter(angle: _ctrl.value * 6.28318),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _RaysPainter extends CustomPainter {
+  final double angle;
+  _RaysPainter({required this.angle});
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 4);
+    final radius = size.width * 0.9;
+    final paint = Paint()
+      ..shader = RadialGradient(
+        colors: [
+          const Color(0xFFFFF59D).withOpacity(0.8),
+          const Color(0x00FFFFFF),
+        ],
+        stops: const [0.0, 1.0],
+      ).createShader(Rect.fromCircle(center: center, radius: radius))
+      ..blendMode = BlendMode.plus;
+    canvas.save();
+    canvas.translate(center.dx, center.dy);
+    canvas.rotate(angle);
+    for (int i = 0; i < 12; i++) {
+      final path = Path();
+      path.moveTo(0, 0);
+      path.lineTo(radius, 14);
+      path.lineTo(radius * 0.6, -14);
+      path.close();
+      canvas.drawPath(path, paint);
+      canvas.rotate(6.28318 / 12);
+    }
+    canvas.restore();
+  }
+  @override
+  bool shouldRepaint(covariant _RaysPainter oldDelegate) => oldDelegate.angle != angle;
 }
 

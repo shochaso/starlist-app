@@ -473,14 +473,8 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
     final isDark = themeState.isDarkMode;
     final currentUser = ref.watch(currentUserProvider);
 
-    // ログイン状態をチェック
+    // ログイン状態をチェック（ルーターが遷移を管理するため、ここでは画面遷移しない）
     if (currentUser.id.isEmpty) {
-      // ログアウト状態の場合、即座にログイン画面を表示
-      // WidgetsBinding.instance.addPostFrameCallbackを使用して、ビルド完了後にナビゲーションを実行
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) context.go('/login');
-      });
-      // ログイン画面に遷移するまで一時的なプレースホルダーを表示
       return const Scaffold(
         body: Center(
           child: CircularProgressIndicator(),

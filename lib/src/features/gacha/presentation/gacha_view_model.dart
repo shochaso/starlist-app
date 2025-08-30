@@ -1,10 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../voting/providers/voting_providers.dart';
+import '../providers/gacha_limits_providers.dart';import '../../voting/providers/voting_providers.dart';
 import '../../../../providers/user_provider.dart';
 
 import '../models/gacha_models_simple.dart';
 import '../domain/draw_gacha_usecase.dart';
 import '../services/gacha_sound_service.dart';
+import '../providers/gacha_attempts_manager.dart';
 
 /// ガチャのビューモデル
 class GachaViewModel extends StateNotifier<GachaState> {
@@ -24,8 +25,9 @@ class GachaViewModel extends StateNotifier<GachaState> {
       success: (_, __, ___) => isLoading = false,
       error: (_) => isLoading = false,
     );
-    
-    if (isLoading) return; // 実行中は重複実行を防ぐ
+    if (isLoading) return;
+
+    // 事前チェックはUI側のMPマネージャーが実施するためここでは行わない
 
     state = GachaStateFactory.loading;
     _soundService.playGachaSequence();
@@ -49,53 +51,65 @@ class GachaViewModel extends StateNotifier<GachaState> {
       // 2. ガチャアニメーションの時間を考慮した実行
       await Future.delayed(const Duration(milliseconds: 3500));
       final result = await _drawGachaUsecase.execute();
-      
+
+      // 2.5 回数消費はUI側のマネージャーで既に実施済み。ここでは行わない。
+
       // 3. 獲得ポイントを計算
       final gainedAmount = result.when(
         point: (amount) => amount,
         ticket: (type, name, color) => 500, // 仮のポイント
       );
-      
-      // 4. データベースにポイントを付与
+
+      // 4. 残高マネージャーを介して即時加算（DB失敗でもUIは反映）
       try {
-        await _applyGachaReward(result, userId);
-        
-        // 新しい残高管理マネージャーを使用して残高を更新
         final balanceManager = _ref.read(starPointBalanceManagerProvider(userId).notifier);
-        await balanceManager.refreshBalance();
-        
-        // デバッグ情報を出力
+        await balanceManager.addPoints(gainedAmount, 'ガチャ獲得', 'gacha');
         balanceManager.debugInfo();
-        
+
         // 従来のプロバイダーも無効化（互換性のため）
         _ref.invalidate(userStarPointBalanceProvider(userId));
         _ref.invalidate(currentUserStarPointBalanceProvider(userId));
-        
       } catch (e) {
-        // 付与失敗時はログだけ出して処理継続（オフライン/未設定環境想定）
-        print('Gacha reward apply failed (fallback to local only): $e');
+        print('balanceManager.addPoints failed: $e');
       }
-      
-      // 5. 新しい残高を計算
+
+      // 5. 新しい残高を計算（UI用ローカル値）
       final newBalance = previousBalance + gainedAmount;
-      
+
       // 6. 成功状態を更新
       state = GachaStateFactory.success(result, previousBalance, newBalance);
-      
-      // 成功状態更新後、確実に残高を更新
-      final balanceManager = _ref.read(starPointBalanceManagerProvider(userId).notifier);
-      await balanceManager.refreshBalance();
-      
-      // デバッグ情報を出力
-      balanceManager.debugInfo();
 
-    } catch (e, stackTrace) { // stackTraceを追加するとデバッグに役立ちます
-      // コンソールに詳細なエラー情報を出力する
+      // 7. 成功後、回数/残高を同期（MPマネージャーに任せる）
+      try {
+        final manager = _ref.read(gachaAttemptsManagerProvider(userId).notifier);
+        await manager.refreshAttempts();
+      } catch (e) {}
+      _ref.invalidate(gachaAttemptsStatsProvider);
+
+      // 8. ガチャ履歴を記録（失敗は握り潰し）
+      try {
+        final limitsRepo = _ref.read(gachaLimitsRepositoryProvider);
+        final Map<String, dynamic> resultJson = result.when(
+          point: (amount) => {
+            'type': 'point',
+            'amount': amount,
+          },
+          ticket: (type, name, color) => {
+            'type': 'ticket',
+            'ticketType': type,
+            'displayName': name,
+          },
+        );
+        await limitsRepo.recordGachaResult(userId, resultJson, 1, 'normal');
+      } catch (e) {
+        print('recordGachaResult failed: $e');
+      }
+
+    } catch (e, stackTrace) {
       print('---------- GachaViewModel Error ----------');
       print(e);
       print(stackTrace);
       print('----------------------------------------');
-      
       state = GachaStateFactory.error('エラーが発生しました。時間をおいて再度お試しください。');
     }
   }

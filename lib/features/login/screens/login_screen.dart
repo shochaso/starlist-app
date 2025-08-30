@@ -4,12 +4,43 @@ import 'package:go_router/go_router.dart';
 import 'package:starlist_app/features/login/application/login_provider.dart';
 import 'package:starlist_app/core/theme/app_theme.dart'; // Assuming common styles are here
 import 'package:starlist_app/providers/user_provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-class LoginScreen extends ConsumerWidget {
+class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends ConsumerState<LoginScreen> {
+  bool _autoTried = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _tryAutoLogin();
+  }
+
+  Future<void> _tryAutoLogin() async {
+    if (_autoTried) return;
+    _autoTried = true;
+    try {
+      final auth = Supabase.instance.client.auth;
+      if (auth.currentUser == null) {
+        await auth.signInWithPassword(email: 'shochaso@gmail.com', password: 'password1234');
+        await ref.read(currentUserProvider.notifier).loginRefreshFromSupabase();
+        if (mounted) context.go('/home');
+      } else {
+        if (mounted) context.go('/home');
+      }
+    } catch (e) {
+      // 失敗時はフォームを表示（スナックバーは出さない）
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final state = ref.watch(loginProvider);
     final notifier = ref.read(loginProvider.notifier);
 

@@ -1,4 +1,7 @@
+import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:starlist_app/features/login/screens/login_screen.dart';
 import 'package:starlist_app/features/login/screens/password_reset_request_screen.dart';
 import 'package:starlist_app/features/login/screens/password_reset_screen.dart';
@@ -12,57 +15,78 @@ import 'package:starlist_app/features/registration/presentation/screens/registra
 import 'package:starlist_app/screens/starlist_main_screen.dart';
 import 'package:starlist_app/features/app/screens/settings_screen.dart';
 
+class _AuthStreamListenable extends ChangeNotifier {
+  _AuthStreamListenable(Stream<AuthState> stream) {
+    _sub = stream.listen((_) => notifyListeners());
+  }
+  late final StreamSubscription<AuthState> _sub;
+  @override
+  void dispose() {
+    _sub.cancel();
+    super.dispose();
+  }
+}
 
-final GoRouter appRouter = GoRouter(
-  initialLocation: '/login', // Set initial to login
-  routes: [
-    GoRoute(
-      path: '/login',
-      builder: (context, state) => const LoginScreen(),
-    ),
-    GoRoute(
-      path: '/home',
-      builder: (context, state) => const StarlistMainScreen(),
-    ),
-    GoRoute(
-      path: '/password-reset-request',
-      builder: (context, state) => const PasswordResetRequestScreen(),
-    ),
-    GoRoute(
-      path: '/password-reset', // Path for the actual password update screen
-      builder: (context, state) => const PasswordResetScreen(),
-    ),
-    GoRoute(
-      path: '/follower-check',
-      builder: (context, state) => const FollowerCheckScreen(),
-    ),
-    GoRoute(
-      path: '/basic-info',
-      builder: (context, state) => const BasicInfoScreen(),
-    ),
-    GoRoute(
-      path: '/profile-info',
-      builder: (context, state) => const ProfileInfoScreen(),
-    ),
-    GoRoute(
-      path: '/verification',
-      builder: (context, state) => const VerificationScreen(),
-    ),
-    GoRoute(
-      path: '/sns-link',
-      builder: (context, state) => const SnsLinkScreen(),
-    ),
-    GoRoute(
-      path: '/terms',
-      builder: (context, state) => const TermsScreen(),
-    ),
-    GoRoute(
-      path: '/registration-complete',
-      builder: (context, state) => const RegistrationCompleteScreen(),
-    ),
-    GoRoute(
-      path: '/settings',
-      builder: (context, state) => const SettingsScreen(),
-    ),
-  ],
-); 
+GoRouter createAppRouter() {
+  final auth = Supabase.instance.client.auth;
+  return GoRouter(
+    initialLocation: '/login',
+    refreshListenable: _AuthStreamListenable(auth.onAuthStateChange),
+    redirect: (context, state) {
+      final user = auth.currentUser;
+      final loggingIn = state.matchedLocation == '/login';
+      if (user == null) return loggingIn ? null : '/login';
+      return loggingIn ? '/home' : null;
+    },
+    routes: [
+      GoRoute(
+        path: '/login',
+        builder: (context, state) => const LoginScreen(),
+      ),
+      GoRoute(
+        path: '/home',
+        builder: (context, state) => const StarlistMainScreen(),
+      ),
+      GoRoute(
+        path: '/password-reset-request',
+        builder: (context, state) => const PasswordResetRequestScreen(),
+      ),
+      GoRoute(
+        path: '/password-reset',
+        builder: (context, state) => const PasswordResetScreen(),
+      ),
+      GoRoute(
+        path: '/follower-check',
+        builder: (context, state) => const FollowerCheckScreen(),
+      ),
+      GoRoute(
+        path: '/basic-info',
+        builder: (context, state) => const BasicInfoScreen(),
+      ),
+      GoRoute(
+        path: '/profile-info',
+        builder: (context, state) => const ProfileInfoScreen(),
+      ),
+      GoRoute(
+        path: '/verification',
+        builder: (context, state) => const VerificationScreen(),
+      ),
+      GoRoute(
+        path: '/sns-link',
+        builder: (context, state) => const SnsLinkScreen(),
+      ),
+      GoRoute(
+        path: '/terms',
+        builder: (context, state) => const TermsScreen(),
+      ),
+      GoRoute(
+        path: '/registration-complete',
+        builder: (context, state) => const RegistrationCompleteScreen(),
+      ),
+      GoRoute(
+        path: '/settings',
+        builder: (context, state) => const SettingsScreen(),
+      ),
+    ],
+  );
+} 
