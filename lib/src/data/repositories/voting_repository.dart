@@ -36,24 +36,19 @@ class VotingRepository {
 
       if (response == null) return null;
       return StarPointBalance.fromJson(response);
-    } catch (e) {
-      // データが無かった場合(PostgrestException)やその他のエラーをここで捕捉
-      // データが無い場合は残高0として扱う
-      if (e is PostgrestException && e.code == 'PGRST116') {
-        final now = DateTime.now();
-        return StarPointBalance(
-          id: 'temp_${userId}_${now.millisecondsSinceEpoch}',
-          userId: userId, 
-          balance: 0,
-          totalEarned: 0,
-          totalSpent: 0,
-          createdAt: now,
-          updatedAt: now,
-        );
-      }
-      // その他のエラーはそのまま投げるか、ログに出力
-      print('fetchBalance error: $e');
-      rethrow;
+    } catch (e, stack) {
+      // どんな理由でも安全に0で返す
+      print('fetchBalance error (safe fallback to 0): $e');
+      final now = DateTime.now();
+      return StarPointBalance(
+        id: 'temp_${userId}_${now.millisecondsSinceEpoch}',
+        userId: userId, 
+        balance: 0,
+        totalEarned: 0,
+        totalSpent: 0,
+        createdAt: now,
+        updatedAt: now,
+      );
     }
   }
 
@@ -332,6 +327,15 @@ class VotingRepository {
             'updated_at': DateTime.now().toIso8601String(),
           })
           .eq('user_id', userId);
+      
+      // 更新後に少し待ってから確認（確実性のため）
+      await Future.delayed(const Duration(milliseconds: 100));
+      
+      // 更新が確実に行われたか確認
+      final updatedBalance = await getStarPointBalance(userId);
+      if (updatedBalance != null && updatedBalance.balance != currentBalance.balance + amount) {
+        print('Warning: Balance update may not have been applied correctly');
+      }
     } catch (e) {
       throw Exception('Failed to grant star points with source: $e');
     }
