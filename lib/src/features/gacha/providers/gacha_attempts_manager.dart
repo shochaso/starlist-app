@@ -237,6 +237,7 @@ class GachaAttemptsManager extends StateNotifier<GachaAttemptsState> {
 
   /// 手動で10回にリセット（テスト用）
   Future<void> resetToTenAttempts() async {
+    state = state.copyWith(isLoading: true, error: null);
     try {
       print('GachaAttemptsManager: Resetting to 10 attempts for user $userId');
       
@@ -244,8 +245,16 @@ class GachaAttemptsManager extends StateNotifier<GachaAttemptsState> {
       await refreshAttempts();
       
       print('GachaAttemptsManager: Successfully reset to 10 attempts');
+      state = state.copyWith(isLoading: false);
+
     } catch (e) {
-      print('GachaAttemptsManager: Failed to reset attempts: $e');
+      final errorMessage = 'Failed to reset attempts: $e';
+      print('GachaAttemptsManager: $errorMessage');
+      state = state.copyWith(
+        isLoading: false,
+        isValid: false,
+        error: errorMessage,
+      );
     }
   }
 }

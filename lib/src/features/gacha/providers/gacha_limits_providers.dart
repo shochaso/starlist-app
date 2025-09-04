@@ -56,18 +56,3 @@ final consumeGachaAttemptProvider = FutureProvider.family<bool, String>((ref, us
   final repository = ref.watch(gachaLimitsRepositoryProvider);
   return repository.consumeGachaAttempt(userId);
 });
-
-/// テスト用：本日の基本回数を設定
-final setTodayBaseAttemptsProvider = FutureProvider.family<bool, int>((ref, base) async {
-  try {
-    final user = ref.watch(currentUserProvider);
-    if (user.id.isEmpty) return false;
-    final repo = ref.watch(gachaLimitsRepositoryProvider);
-    await repo.setTodayBaseAttempts(user.id, base);
-    // 表示更新
-    ref.invalidate(gachaAttemptsStatsProvider);
-    return true;
-  } catch (e) {
-    return false;
-  }
-});

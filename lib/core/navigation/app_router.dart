@@ -14,6 +14,7 @@ import 'package:starlist_app/features/registration/presentation/screens/6_terms_
 import 'package:starlist_app/features/registration/presentation/screens/registration_complete_screen.dart';
 import 'package:starlist_app/screens/starlist_main_screen.dart';
 import 'package:starlist_app/features/app/screens/settings_screen.dart';
+import 'package:starlist_app/screens/bootstrap_screen.dart';
 
 class _AuthStreamListenable extends ChangeNotifier {
   _AuthStreamListenable(Stream<AuthState> stream) {
@@ -28,17 +29,13 @@ class _AuthStreamListenable extends ChangeNotifier {
 }
 
 GoRouter createAppRouter() {
-  final auth = Supabase.instance.client.auth;
   return GoRouter(
-    initialLocation: '/login',
-    refreshListenable: _AuthStreamListenable(auth.onAuthStateChange),
-    redirect: (context, state) {
-      final user = auth.currentUser;
-      final loggingIn = state.matchedLocation == '/login';
-      if (user == null) return loggingIn ? null : '/login';
-      return loggingIn ? '/home' : null;
-    },
+    initialLocation: '/bootstrap',
     routes: [
+      GoRoute(
+        path: '/bootstrap',
+        builder: (context, state) => const BootstrapScreen(),
+      ),
       GoRoute(
         path: '/login',
         builder: (context, state) => const LoginScreen(),

@@ -1,5 +1,6 @@
 -- Starlistアプリケーションのデータベース設定スクリプト
 -- ER図設計書に基づいた実装: 2025-04-02
+-- 2025-09-04: s_points と s_point_transactions を追加
 
 -- ユーザーテーブルの作成
 CREATE TABLE IF NOT EXISTS public.users (
@@ -672,3 +673,120 @@ BEGIN
   RETURN result;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- ----------------------------------------------------------------
+-- スターポイント (s_points) と関連機能
+-- ----------------------------------------------------------------
+
+-- s_points: ユーザーのスターポイント残高を管理
+CREATE TABLE IF NOT EXISTS public.s_points (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+  balance INT NOT NULL DEFAULT 0,
+  total_earned INT NOT NULL DEFAULT 0,
+  total_spent INT NOT NULL DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(user_id),
+  CHECK (balance >= 0),
+  CHECK (total_earned >= 0),
+  CHECK (total_spent >= 0)
+);
+
+-- s_point_transactions: ポイントの増減履歴
+CREATE TABLE IF NOT EXISTS public.s_point_transactions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+  amount INT NOT NULL,
+  type TEXT NOT NULL CHECK (type IN ('earn', 'spend')),
+  source TEXT NOT NULL,
+  description TEXT,
+  metadata JSONB,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- RLS (Row Level Security) の有効化
+ALTER TABLE public.s_points ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.s_point_transactions ENABLE ROW LEVEL SECURITY;
+
+-- RLSポリシー: ユーザーは自分のポイント情報のみ操作・閲覧可能
+CREATE POLICY "ユーザーは自分のポイント残高を管理可能" ON public.s_points
+  FOR ALL USING (auth.uid() = user_id);
+
+CREATE POLICY "ユーザーは自分のポイント履歴を管理可能" ON public.s_point_transactions
+  FOR ALL USING (auth.uid() = user_id);
+
+-- RPC: ポイントを付与または消費する関数
+CREATE OR REPLACE FUNCTION public.grant_or_spend_s_points(
+  user_id_param UUID,
+  amount_param INT,
+  source_param TEXT,
+  description_param TEXT
+)
+RETURNS JSONB AS $$
+DECLARE
+  new_balance INT;
+  updated_record RECORD;
+BEGIN
+  -- ユーザーのポイントレコードがなければ作成
+  INSERT INTO public.s_points (user_id)
+  VALUES (user_id_param)
+  ON CONFLICT (user_id) DO NOTHING;
+
+  -- ポイントを加算または減算
+  UPDATE public.s_points
+  SET
+    balance = balance + amount_param,
+    total_earned = CASE WHEN amount_param > 0 THEN total_earned + amount_param ELSE total_earned END,
+    total_spent = CASE WHEN amount_param < 0 THEN total_spent - amount_param ELSE total_spent END,
+    updated_at = NOW()
+  WHERE user_id = user_id_param
+  RETURNING balance INTO new_balance;
+
+  -- トランザクション履歴を記録
+  INSERT INTO public.s_point_transactions (user_id, amount, type, source, description)
+  VALUES (user_id_param, amount_param, CASE WHEN amount_param >= 0 THEN 'earn' ELSE 'spend' END, source_param, description_param);
+
+  -- 更新後の残高情報を取得して返す
+  SELECT to_jsonb(s.*) INTO updated_record FROM public.s_points s WHERE s.user_id = user_id_param;
+
+  RETURN updated_record;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- =================================================================
+-- FINAL FIX SCRIPT: Apply Row Level Security (RLS) Policies
+-- This script grants permissions for users to access their own data.
+-- =================================================================
+
+-- Step 1: Enable Row Level Security on all user-data tables
+ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.s_points ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.s_point_transactions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.gacha_attempts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.gacha_history ENABLE ROW LEVEL SECURITY;
+
+-- Step 2: Create policies to allow access
+
+-- Policy for 'users' table: Users can see and update their own profile.
+DROP POLICY IF EXISTS "Allow individual read access" ON public.users;
+CREATE POLICY "Allow individual read access" ON public.users FOR SELECT USING (auth.uid() = id);
+
+DROP POLICY IF EXISTS "Allow individual update access" ON public.users;
+CREATE POLICY "Allow individual update access" ON public.users FOR UPDATE USING (auth.uid() = id) WITH CHECK (auth.uid() = id);
+
+-- Policy for 's_points' and 's_point_transactions': Users can only read their own point data.
+DROP POLICY IF EXISTS "Allow individual read access" ON public.s_points;
+CREATE POLICY "Allow individual read access" ON public.s_points FOR SELECT USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Allow individual read access" ON public.s_point_transactions;
+CREATE POLICY "Allow individual read access" ON public.s_point_transactions FOR SELECT USING (auth.uid() = user_id);
+
+-- Policy for 'gacha_attempts': Users have full control (select, insert, update, delete) over their own attempt records.
+-- This is necessary for the "upsert" operation used by the reset button.
+DROP POLICY IF EXISTS "Allow full access for own attempts" ON public.gacha_attempts;
+CREATE POLICY "Allow full access for own attempts" ON public.gacha_attempts FOR ALL USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+
+-- Policy for 'gacha_history': Users can only read their own gacha history.
+DROP POLICY IF EXISTS "Allow individual read access" ON public.gacha_history;
+CREATE POLICY "Allow individual read access" ON public.gacha_history FOR SELECT USING (auth.uid() = user_id);
