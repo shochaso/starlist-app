@@ -617,3 +617,11 @@
   * **キーホルダー/スマホケース/シールの購入履歴**  
     * 
 
+
+## テーマとトークンの使い方
+
+- `AppTheme` でライト/ダーク両テーマが提供されます。`MaterialApp` では `theme`, `darkTheme`, `themeMode` を指定して適用します。
+- 共通スタイル値は `AppTokens` (`lib/theme/tokens.dart`) に集約しています。`BuildContext` 拡張 `context.tokens` を介して `spacing`, `radius`, `elevations`, `motion` などのトークンにアクセスできます。
+- カラーは `Theme.of(context).colorScheme` を経由して取得してください。直接のマジックナンバー使用は避け、コンポーネント側で必要なアクセント色を選択します。
+- カスタム UI を組む際は、`AppButton`・`AppCard`・`AppTextField` (`lib/ui/`) をベースにすると Material 3 とトークン準拠のスタイルを再利用できます。
+- フォーカスリングはトークンで太さ・色・オフセットを制御しています。タッチ/キーボード操作を想定するウィジェットでは `Focus` / `InkWell` を用いて可視化を崩さないようにしてください。

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:starlist_app/core/navigation/app_router.dart';
-import 'package:starlist_app/core/theme/app_theme.dart';
+import 'package:starlist_app/theme/app_theme.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'src/services/notification_service.dart';
 import 'dart:ui';
@@ -35,6 +35,8 @@ class MyApp extends StatelessWidget {
     return MaterialApp.router(
       title: 'Starlist • HMR',
       theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: ThemeMode.system,
       routerConfig: createAppRouter(),
       debugShowCheckedModeBanner: false,
     );

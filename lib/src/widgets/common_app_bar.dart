@@ -1,15 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
 import '../providers/theme_provider_enhanced.dart';
+import '../../theme/tokens.dart';
 
 class CommonAppBar extends ConsumerWidget implements PreferredSizeWidget {
-  final String title;
-  final String? subtitle;
-  final List<Widget>? actions;
-  final bool showBackToHome;
-  final VoidCallback? onBackPressed;
-
   const CommonAppBar({
     super.key,
     required this.title,
@@ -19,49 +16,57 @@ class CommonAppBar extends ConsumerWidget implements PreferredSizeWidget {
     this.onBackPressed,
   });
 
+  final String title;
+  final String? subtitle;
+  final List<Widget>? actions;
+  final bool showBackToHome;
+  final VoidCallback? onBackPressed;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final themeState = ref.watch(themeProviderEnhanced);
-    final isDark = themeState.isDarkMode;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final tokens = context.tokens;
 
     return AppBar(
-      backgroundColor: isDark ? const Color(0xFF1A1A1A) : Colors.white,
+      backgroundColor: colorScheme.surface,
+      surfaceTintColor: colorScheme.surfaceTint,
       elevation: 0,
+      leadingWidth: showBackToHome ? 72 : null,
       leading: showBackToHome
-          ? IconButton(
-              icon: Icon(
-                Icons.home,
-                color: isDark ? Colors.white : Colors.black87,
+          ? Padding(
+              padding: EdgeInsets.only(left: tokens.spacing.sm),
+              child: _BackHomeButton(
+                onPressed: onBackPressed ?? () => _navigateToHome(context),
+                icon: Icons.home,
               ),
-              onPressed: onBackPressed ?? () => _navigateToHome(context),
             )
           : null,
+      titleSpacing: showBackToHome ? tokens.spacing.sm : null,
       title: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
             title,
-            style: TextStyle(
-              color: isDark ? Colors.white : Colors.black87,
-              fontSize: 20,
-              fontWeight: FontWeight.w700,
-            ),
+            style: theme.textTheme.titleLarge,
           ),
-          if (subtitle != null) ...[
-            const SizedBox(height: 2),
+          if (subtitle != null && subtitle!.isNotEmpty) ...[
+            SizedBox(height: tokens.spacing.xxxs),
             Text(
               subtitle!,
-              style: TextStyle(
-                color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
-                fontSize: 14,
-                fontWeight: FontWeight.normal,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurfaceVariant,
               ),
             ),
           ],
         ],
       ),
       actions: actions,
+      systemOverlayStyle: themeState.isDarkMode
+          ? SystemUiOverlayStyle.light
+          : SystemUiOverlayStyle.dark,
     );
   }
 
@@ -73,37 +78,67 @@ class CommonAppBar extends ConsumerWidget implements PreferredSizeWidget {
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 }
 
-class CommonBackButton extends ConsumerWidget {
-  final VoidCallback? onPressed;
-  final bool toHome;
+class _BackHomeButton extends StatelessWidget {
+  const _BackHomeButton({
+    required this.onPressed,
+    required this.icon,
+  });
 
+  final VoidCallback onPressed;
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = context.tokens;
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Material(
+      color: colorScheme.surfaceVariant.withOpacity(0.6),
+      borderRadius: tokens.radius.lgRadius,
+      child: InkWell(
+        borderRadius: tokens.radius.lgRadius,
+        onTap: onPressed,
+        child: Padding(
+          padding: EdgeInsets.all(tokens.spacing.xs),
+          child: Icon(icon, color: colorScheme.onSurface, size: 22),
+        ),
+      ),
+    );
+  }
+}
+
+class CommonBackButton extends ConsumerWidget {
   const CommonBackButton({
     super.key,
     this.onPressed,
     this.toHome = true,
   });
 
+  final VoidCallback? onPressed;
+  final bool toHome;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final themeState = ref.watch(themeProviderEnhanced);
-    final isDark = themeState.isDarkMode;
+    final tokens = context.tokens;
+    final colorScheme = Theme.of(context).colorScheme;
 
-    return GestureDetector(
-      onTap: onPressed ?? () => _handleBack(context),
-      child: Container(
-        width: 44,
-        height: 44,
-        decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF2A2A2A) : Colors.grey.shade100,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isDark ? const Color(0xFF333333) : Colors.grey.shade200,
+    return Semantics(
+      label: toHome ? 'Back to home' : 'Back',
+      button: true,
+      child: Material(
+        color: colorScheme.surfaceVariant.withOpacity(0.6),
+        borderRadius: tokens.radius.lgRadius,
+        child: InkWell(
+          borderRadius: tokens.radius.lgRadius,
+          onTap: onPressed ?? () => _handleBack(context),
+          child: Padding(
+            padding: EdgeInsets.all(tokens.spacing.xs),
+            child: Icon(
+              toHome ? Icons.home : Icons.arrow_back,
+              color: colorScheme.onSurface,
+              size: 22,
+            ),
           ),
-        ),
-        child: Icon(
-          toHome ? Icons.home : Icons.arrow_back,
-          color: isDark ? Colors.white : Colors.black87,
-          size: 20,
         ),
       ),
     );
@@ -113,8 +148,7 @@ class CommonBackButton extends ConsumerWidget {
     if (toHome) {
       context.go('/home');
     } else {
-      // 前のページに戻る
-      Navigator.of(context).pop();
+      Navigator.of(context).maybePop();
     }
   }
-} 
+}
