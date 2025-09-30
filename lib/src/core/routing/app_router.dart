@@ -11,6 +11,7 @@ import '../../../features/data_integration/screens/data_import_screen.dart';
 import '../../../features/search/screens/search_screen.dart';
 import '../../../features/mylist/screens/mylist_screen.dart';
 import '../../../features/profile/screens/profile_screen.dart';
+import '../../../screens/style_guide_page.dart';
 import '../../features/content/screens/category_content_list_screen.dart';
 import '../../features/content/screens/content_archive_search_screen.dart';
 import '../../features/content/models/content_consumption_model.dart';
@@ -106,6 +107,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/content-archive',
         name: 'content-archive',
         builder: (context, state) => const ContentArchiveSearchScreen(),
+      ),
+      
+      // スタイルガイド（開発用）
+      GoRoute(
+        path: '/style-guide',
+        name: 'style-guide',
+        builder: (context, state) => const StyleGuidePage(),
       ),
     ],
     

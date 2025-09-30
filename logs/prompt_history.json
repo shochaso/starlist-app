@@ -40,3 +40,5 @@
 {"timestamp":"2025-10-01T06:21:31.583453","summary":"Pushして"}
 {"timestamp":"2025-10-01T06:26:05.271677","summary":"tmux開発スクリプト追加: dev.sh (自動ホットリロード&Chrome自動リロード)"}
 {"timestamp":"2025-10-01T06:47:35.299456","summary":"テスト状況確認とflutter analyze実行、UI整合性チェック"}
+{"timestamp":"2025-10-01T06:48:57.374709","summary":"flutter analyze完了(4963件検出)、overflow修正、次はテーマリファクタ"}
+{"timestamp":"2025-10-01T06:50:25.472955","summary":"続けて: 主要画面テーマリファクタとスタイルガイドルーティング追加"}
