@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../../src/providers/theme_provider_enhanced.dart';
-import '../../../providers/user_provider.dart';
 import '../../../data/models/post_model.dart';
 import '../../../src/widgets/post_card.dart';
 

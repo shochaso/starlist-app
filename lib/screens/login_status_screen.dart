@@ -347,7 +347,7 @@ class LoginStatusScreen extends ConsumerWidget {
               context,
               ref,
               '花山瑞樹（スター）',
-              UserInfo(
+              const UserInfo(
                 id: 'star-1',
                 name: '花山瑞樹',
                 email: 'mizuki@starlist.com',
@@ -361,7 +361,7 @@ class LoginStatusScreen extends ConsumerWidget {
               context,
               ref,
               '無料ファン',
-              UserInfo(
+              const UserInfo(
                 id: 'fan-free',
                 name: '無料ファン',
                 email: 'free@example.com',
@@ -374,7 +374,7 @@ class LoginStatusScreen extends ConsumerWidget {
               context,
               ref,
               'プレミアムファン',
-              UserInfo(
+              const UserInfo(
                 id: 'fan-premium',
                 name: 'プレミアムファン',
                 email: 'premium@example.com',
@@ -425,7 +425,7 @@ class LoginStatusScreen extends ConsumerWidget {
 
   /// 認証状態リセット
   void _resetAuthState(WidgetRef ref) {
-    ref.read(currentUserProvider.notifier).state = UserInfo(
+    ref.read(currentUserProvider.notifier).state = const UserInfo(
       id: '',
       name: '',
       email: '',

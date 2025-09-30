@@ -7,11 +7,16 @@ import '../screens/following_screen.dart';
 import '../screens/fan_mypage_screen.dart';
 import '../screens/star_mypage_screen.dart';
 import '../screens/category_list_screen.dart';
+import '../src/features/content/models/content_consumption_model.dart';
+import '../src/features/content/screens/category_content_list_screen.dart';
+import '../src/features/content/screens/content_archive_search_screen.dart';
 
 class AppRoutes {
   static const String home = '/';
   static const String category = '/category';
   static const String categoryList = '/category_list';
+  static const String categoryContentList = '/category_contents';
+  static const String contentArchiveSearch = '/content_archive_search';
   static const String starDetail = '/star_detail';
   static const String following = '/following';
   static const String fanMypage = '/fan_mypage';
@@ -43,6 +48,36 @@ class AppRoutes {
       case categoryList:
         return MaterialPageRoute(
           builder: (context) => const CategoryListScreen(),
+        );
+
+      case categoryContentList:
+        final args = settings.arguments;
+        ContentCategory? initialCategory;
+        String? title;
+        if (args is Map<String, dynamic>) {
+          final categoryArg = args['category'];
+          if (categoryArg is ContentCategory) {
+            initialCategory = categoryArg;
+          } else if (categoryArg is String) {
+            for (final category in ContentCategory.values) {
+              if (category.name == categoryArg) {
+                initialCategory = category;
+                break;
+              }
+            }
+          }
+          title = args['title'] as String?;
+        }
+        return MaterialPageRoute(
+          builder: (context) => CategoryContentListScreen(
+            initialCategory: initialCategory,
+            title: title,
+          ),
+        );
+
+      case contentArchiveSearch:
+        return MaterialPageRoute(
+          builder: (context) => const ContentArchiveSearchScreen(),
         );
 
       case starDetail:

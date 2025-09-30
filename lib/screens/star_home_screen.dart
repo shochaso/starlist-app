@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../providers/user_provider.dart';
 import '../widgets/star_dashboard.dart';
 import '../widgets/star_content_management.dart';
 import '../widgets/star_fan_analytics.dart';

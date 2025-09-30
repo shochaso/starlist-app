@@ -7,9 +7,9 @@ class StarDetailScreen extends StatelessWidget {
   final Star star;
 
   const StarDetailScreen({
-    Key? key,
+    super.key,
     required this.star,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -275,7 +275,7 @@ class StarDetailScreen extends StatelessWidget {
                         textColor: textColor,
                         cardColor: cardColor,
                       ),
-                    ).toList(),
+                    ),
                   ],
                   
                   const SizedBox(height: 16),

@@ -103,7 +103,12 @@ class StarPointBalanceWidget extends ConsumerWidget {
                   const SizedBox(height: 4),
                   Text(
                     '${formatInt(balance.balance)} スターポイント',
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    style: (Theme.of(context).textTheme.headlineSmall ??
+                            const TextStyle(fontSize: 20))
+                        .copyWith(
+                      fontSize:
+                          ((Theme.of(context).textTheme.headlineSmall?.fontSize ?? 20) - 4)
+                              .clamp(12, double.infinity),
                       fontWeight: FontWeight.bold,
                       color: Theme.of(context).primaryColor,
                     ),

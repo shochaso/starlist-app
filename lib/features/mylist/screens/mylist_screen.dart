@@ -339,7 +339,7 @@ class _MylistScreenState extends ConsumerState<MylistScreen>
             ],
           ),
           const SizedBox(height: 16),
-          ..._favoriteStars.map((star) => _buildStarCard(star)).toList(),
+          ..._favoriteStars.map((star) => _buildStarCard(star)),
         ],
       ),
     );
@@ -384,7 +384,7 @@ class _MylistScreenState extends ConsumerState<MylistScreen>
             ],
           ),
           const SizedBox(height: 16),
-          ..._favoriteContents.map((content) => _buildContentCard(content)).toList(),
+          ..._favoriteContents.map((content) => _buildContentCard(content)),
         ],
       ),
     );
@@ -421,7 +421,7 @@ class _MylistScreenState extends ConsumerState<MylistScreen>
             ],
           ),
           const SizedBox(height: 16),
-          ..._playlists.map((playlist) => _buildPlaylistCard(playlist)).toList(),
+          ..._playlists.map((playlist) => _buildPlaylistCard(playlist)),
         ],
       ),
     );
@@ -980,7 +980,7 @@ class _MylistScreenState extends ConsumerState<MylistScreen>
             ),
           ),
           const SizedBox(height: 16),
-          ..._followingStars.map((star) => _buildFollowingStarCard(star)).toList(),
+          ..._followingStars.map((star) => _buildFollowingStarCard(star)),
         ],
       ),
     );

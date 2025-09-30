@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:starlist_app/core/navigation/app_router.dart';
 import 'package:starlist_app/core/theme/app_theme.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:sentry_flutter/sentry_flutter.dart';
 import 'src/services/notification_service.dart';
 import 'dart:ui';
 
@@ -34,7 +33,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
-      title: 'Starlist',
+      title: 'Starlist • HMR',
       theme: AppTheme.lightTheme,
       routerConfig: createAppRouter(),
       debugShowCheckedModeBanner: false,

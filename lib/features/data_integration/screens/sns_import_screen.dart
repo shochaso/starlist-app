@@ -154,7 +154,7 @@ class _SnsImportScreenState extends ConsumerState<SnsImportScreen> {
       }
       // シンプルなタイトル（コロンがない場合）
       else if (currentTitle == null && trimmedLine.length > 5 && !trimmedLine.contains(':')) {
-        currentTitle = trimmedLine.length > 50 ? trimmedLine.substring(0, 50) + '...' : trimmedLine;
+        currentTitle = trimmedLine.length > 50 ? '${trimmedLine.substring(0, 50)}...' : trimmedLine;
       }
       
       // アイテム作成
@@ -600,7 +600,7 @@ class _SnsImportScreenState extends ConsumerState<SnsImportScreen> {
                 ],
               ),
             );
-          }).toList(),
+          }),
           const SizedBox(height: 16),
           Row(
             children: [

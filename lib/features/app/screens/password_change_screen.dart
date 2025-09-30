@@ -82,9 +82,9 @@ class _PasswordChangeScreenState extends ConsumerState<PasswordChangeScreen> {
                     children: [
                       Row(
                         children: [
-                          Icon(
+                          const Icon(
                             Icons.security,
-                            color: const Color(0xFF4ECDC4),
+                            color: Color(0xFF4ECDC4),
                             size: 24,
                           ),
                           const SizedBox(width: 12),
@@ -408,7 +408,7 @@ class _PasswordChangeScreenState extends ConsumerState<PasswordChangeScreen> {
       //   newPassword: _newPasswordController.text,
       // );
       
-      final success = true; // シミュレーション
+      const success = true; // シミュレーション
       
       if (success) {
         HapticFeedback.lightImpact();
@@ -428,9 +428,9 @@ class _PasswordChangeScreenState extends ConsumerState<PasswordChangeScreen> {
               ),
               title: Row(
                 children: [
-                  Icon(
+                  const Icon(
                     Icons.check_circle,
-                    color: const Color(0xFF4ECDC4),
+                    color: Color(0xFF4ECDC4),
                     size: 24,
                   ),
                   const SizedBox(width: 12),

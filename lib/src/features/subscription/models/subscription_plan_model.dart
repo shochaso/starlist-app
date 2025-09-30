@@ -67,4 +67,33 @@ class SubscriptionPlanModel {
       return SubscriptionInterval.monthly;
     }
   }
-} 
+
+  String get billingCycle =>
+      interval == SubscriptionInterval.yearly ? 'yearly' : 'monthly';
+
+  SubscriptionPlanModel copyWith({
+    String? id,
+    String? name,
+    String? description,
+    double? price,
+    String? currency,
+    SubscriptionInterval? interval,
+    Map<String, dynamic>? features,
+    bool? isActive,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) {
+    return SubscriptionPlanModel(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      description: description ?? this.description,
+      price: price ?? this.price,
+      currency: currency ?? this.currency,
+      interval: interval ?? this.interval,
+      features: features ?? this.features,
+      isActive: isActive ?? this.isActive,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+}

@@ -85,7 +85,7 @@ final scheduleProvider = StateProvider<List<ScheduleItem>>((ref) {
 });
 
 class ScheduleManagementScreen extends ConsumerStatefulWidget {
-  const ScheduleManagementScreen({Key? key}) : super(key: key);
+  const ScheduleManagementScreen({super.key});
 
   @override
   ConsumerState<ScheduleManagementScreen> createState() => _ScheduleManagementScreenState();

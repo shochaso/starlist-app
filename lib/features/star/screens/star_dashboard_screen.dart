@@ -4,14 +4,8 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../src/providers/theme_provider_enhanced.dart';
 import '../../../providers/user_provider.dart';
-import '../../subscription/screens/fan_subscription_screen.dart';
-import '../../app/screens/settings_screen.dart';
 import '../../data_integration/screens/data_import_screen.dart';
 import '../../../src/features/youtube_easy/star_watch_history_widget.dart';
-import '../../../screens/starlist_main_screen.dart';
-import '../../search/screens/search_screen.dart';
-import '../../mylist/screens/mylist_screen.dart';
-import '../../profile/screens/profile_screen.dart';
 
 class StarDashboardScreen extends ConsumerStatefulWidget {
   const StarDashboardScreen({super.key});

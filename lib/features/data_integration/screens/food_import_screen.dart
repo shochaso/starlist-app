@@ -670,7 +670,7 @@ class _FoodImportScreenState extends ConsumerState<FoodImportScreen> {
                 ],
               ),
             );
-          }).toList(),
+          }),
           const SizedBox(height: 16),
           Row(
             children: [

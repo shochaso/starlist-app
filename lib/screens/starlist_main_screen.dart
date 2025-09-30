@@ -27,7 +27,7 @@ import '../services/access_control_service.dart';
 import '../data/models/post_model.dart';
 import '../models/user.dart';
 import '../features/premium/screens/premium_restriction_screen.dart';
-
+import '../routes/app_routes.dart';
 
 // データモデル
 class StarData {
@@ -72,7 +72,7 @@ final selectedDataTypeProvider = StateProvider<String?>((ref) => null);
 final selectedDrawerPageProvider = StateProvider<String?>((ref) => null);
 
 class StarlistMainScreen extends ConsumerStatefulWidget {
-  const StarlistMainScreen({Key? key}) : super(key: key);
+  const StarlistMainScreen({super.key});
 
   @override
   ConsumerState<StarlistMainScreen> createState() => _StarlistMainScreenState();
@@ -82,6 +82,7 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
     with TickerProviderStateMixin {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   late ScrollController _scrollController;
+  bool _isRedirectingToLogin = false;
 
   // サンプルデータ
   final List<StarData> recommendedStars = [
@@ -475,21 +476,28 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
 
     // ログイン状態をチェック（ルーターが遷移を管理するため、ここでは画面遷移しない）
     if (currentUser.id.isEmpty) {
+      if (!_isRedirectingToLogin) {
+        _isRedirectingToLogin = true;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          context.go('/login');
+        });
+      }
       return const Scaffold(
         body: Center(
           child: CircularProgressIndicator(),
         ),
       );
     }
-    
+
     return Scaffold(
       key: _scaffoldKey,
-      backgroundColor: isDark ? const Color(0xFF1A1A1A) : const Color(0xFFF8FAFC),
+      backgroundColor:
+          isDark ? const Color(0xFF1A1A1A) : const Color(0xFFF8FAFC),
       appBar: _buildAppBar(),
       drawer: _buildDrawer(),
       body: _buildBody(selectedTab),
       bottomNavigationBar: _buildBottomNavigationBar(selectedTab),
-      
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.of(context).push(
@@ -510,9 +518,9 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
     final themeState = ref.watch(themeProviderEnhanced);
     final titles = ['ホーム', '検索', 'データ取込み', 'マイリスト', 'マイページ'];
     final isDark = themeState.isDarkMode;
-    
+
     String title = titles[selectedTab];
-    
+
     return AppBar(
       backgroundColor: Colors.transparent,
       elevation: 0,
@@ -533,7 +541,8 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
         builder: (context) => Container(
           margin: const EdgeInsets.all(4), // MP適用
           child: IconButton(
-            icon: Icon(Icons.menu, color: isDark ? Colors.white54 : Colors.black54),
+            icon: Icon(Icons.menu,
+                color: isDark ? Colors.white54 : Colors.black54),
             onPressed: () => Scaffold.of(context).openDrawer(),
           ),
         ),
@@ -543,7 +552,7 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
         Container(
           margin: const EdgeInsets.all(4), // MP適用
           child: IconButton(
-            icon: Icon(Icons.casino, color: Colors.amber),
+            icon: const Icon(Icons.casino, color: Colors.amber),
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute(builder: (context) => const GachaScreen()),
@@ -554,14 +563,16 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
         Container(
           margin: const EdgeInsets.all(4), // MP適用
           child: IconButton(
-            icon: Icon(Icons.notifications_outlined, color: isDark ? Colors.white54 : Colors.black54),
+            icon: Icon(Icons.notifications_outlined,
+                color: isDark ? Colors.white54 : Colors.black54),
             onPressed: () {},
           ),
         ),
         Container(
           margin: const EdgeInsets.all(4), // MP適用
           child: IconButton(
-            icon: Icon(Icons.login, color: isDark ? Colors.white54 : Colors.black54),
+            icon: Icon(Icons.login,
+                color: isDark ? Colors.white54 : Colors.black54),
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
@@ -586,7 +597,8 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
         Container(
           margin: const EdgeInsets.all(4), // MP適用
           child: IconButton(
-            icon: Icon(Icons.settings_outlined, color: isDark ? Colors.white54 : Colors.black54),
+            icon: Icon(Icons.settings_outlined,
+                color: isDark ? Colors.white54 : Colors.black54),
             onPressed: () {},
           ),
         ),
@@ -594,12 +606,11 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
     );
   }
 
-
   Widget _buildDrawer() {
     final currentUser = ref.watch(currentUserProvider);
     final themeState = ref.watch(themeProviderEnhanced);
     final isDark = themeState.isDarkMode;
-    
+
     return Drawer(
       backgroundColor: isDark ? const Color(0xFF1A1A1A) : Colors.white,
       child: Column(
@@ -608,67 +619,69 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
             child: Container(
               margin: const EdgeInsets.only(top: 8),
               padding: const EdgeInsets.all(16),
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Color(0xFF4ECDC4),
-                  Color(0xFF44A08D),
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Color(0xFF4ECDC4),
+                    Color(0xFF44A08D),
+                  ],
+                ),
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(20),
+                  bottomRight: Radius.circular(20),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(
+                      Icons.star,
+                      color: Colors.white,
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text(
+                          'Starlist',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                            letterSpacing: -0.3,
+                          ),
+                        ),
+                        Text(
+                          currentUser.isStar ? 'スター' : 'ファン',
+                          style: const TextStyle(
+                            color: Colors.white70,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close,
+                        color: Colors.white70, size: 20),
+                    onPressed: () => Navigator.of(context).pop(),
+                    constraints:
+                        const BoxConstraints(minWidth: 32, minHeight: 32),
+                    padding: EdgeInsets.zero,
+                  ),
                 ],
               ),
-              borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(20),
-                bottomRight: Radius.circular(20),
-              ),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity( 0.2),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Icon(
-                    Icons.star,
-                    color: Colors.white,
-                    size: 20,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Text(
-                        'Starlist',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white,
-                          letterSpacing: -0.3,
-                        ),
-                      ),
-                      Text(
-                        currentUser.isStar ? 'スター' : 'ファン',
-                        style: const TextStyle(
-                          color: Colors.white70,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.close, color: Colors.white70, size: 20),
-                  onPressed: () => Navigator.of(context).pop(),
-                  constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-                  padding: EdgeInsets.zero,
-                ),
-              ],
-            ),
             ),
           ),
           Expanded(
@@ -678,6 +691,10 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
                 _buildDrawerItem(Icons.home, 'ホーム', 0, null),
                 _buildDrawerItem(Icons.search, '検索', 1, null),
                 _buildDrawerItem(Icons.star, 'マイリスト', 3, null),
+                _buildDrawerItem(
+                    Icons.view_list, 'カテゴリ別コンテンツ', -1, 'category_contents'),
+                _buildDrawerItem(
+                    Icons.archive, '投稿アーカイブ検索', -1, 'archive_search'),
                 // スターのみ表示
                 if (currentUser.isStar) ...[
                   _buildDrawerItem(Icons.camera_alt, 'データ取込み', 2, null),
@@ -686,7 +703,8 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
                 _buildDrawerItem(Icons.person, 'マイページ', 4, null),
                 // ファンのみ課金プラン表示
                 if (currentUser.isFan) ...[
-                  _buildDrawerItem(Icons.credit_card, '課金プラン', -1, 'subscription'),
+                  _buildDrawerItem(
+                      Icons.credit_card, '課金プラン', -1, 'subscription'),
                   _buildDrawerItem(Icons.stars, 'スターポイント購入', -1, 'buy_points'),
                 ],
                 _buildDrawerItem(Icons.settings, '設定', -1, 'settings'),
@@ -698,65 +716,72 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
     );
   }
 
-  Widget _buildDrawerItem(IconData icon, String title, int tabIndex, String? pageKey) {
+  Widget _buildDrawerItem(
+      IconData icon, String title, int tabIndex, String? pageKey) {
     final selectedTab = ref.watch(selectedTabProvider);
     final selectedDrawerPage = ref.watch(selectedDrawerPageProvider);
     final themeState = ref.watch(themeProviderEnhanced);
     final isDark = themeState.isDarkMode;
-    
+
     // 選択状態の判定を修正：現在選択されているページまたはタブのみアクティブ
-    final isTabActive = tabIndex != -1 && selectedTab == tabIndex && selectedDrawerPage == null;
+    final isTabActive =
+        tabIndex != -1 && selectedTab == tabIndex && selectedDrawerPage == null;
     final isPageActive = pageKey != null && selectedDrawerPage == pageKey;
     final isActive = isTabActive || isPageActive;
-    
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 3),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
-        color: isActive ? const Color(0xFF4ECDC4).withOpacity( 0.15) : null,
-        border: isActive ? Border.all(
-          color: const Color(0xFF4ECDC4).withOpacity( 0.3),
-          width: 1,
-        ) : null,
+        color: isActive ? const Color(0xFF4ECDC4).withOpacity(0.15) : null,
+        border: isActive
+            ? Border.all(
+                color: const Color(0xFF4ECDC4).withOpacity(0.3),
+                width: 1,
+              )
+            : null,
       ),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         leading: Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: isActive 
-              ? const Color(0xFF4ECDC4)
-              : (isDark ? Colors.white10 : Colors.grey.shade100),
+            color: isActive
+                ? const Color(0xFF4ECDC4)
+                : (isDark ? Colors.white10 : Colors.grey.shade100),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Icon(
             icon,
-            color: isActive 
-              ? Colors.white
-              : (isDark ? Colors.white54 : Colors.grey.shade600),
+            color: isActive
+                ? Colors.white
+                : (isDark ? Colors.white54 : Colors.grey.shade600),
             size: 18,
           ),
         ),
         title: Text(
           title,
           style: TextStyle(
-            color: isActive 
-              ? const Color(0xFF4ECDC4) 
-              : (isDark ? Colors.white : Colors.grey.shade800),
+            color: isActive
+                ? const Color(0xFF4ECDC4)
+                : (isDark ? Colors.white : Colors.grey.shade800),
             fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
             fontSize: 15,
           ),
         ),
-        trailing: isActive ? const Icon(
-          Icons.arrow_forward_ios,
-          color: Color(0xFF4ECDC4),
-          size: 14,
-        ) : null,
+        trailing: isActive
+            ? const Icon(
+                Icons.arrow_forward_ios,
+                color: Color(0xFF4ECDC4),
+                size: 14,
+              )
+            : null,
         onTap: () {
           Navigator.of(context).pop();
           if (tabIndex != -1) {
             ref.read(selectedTabProvider.notifier).state = tabIndex;
-            ref.read(selectedDrawerPageProvider.notifier).state = null; // ドロワー選択をリセット
+            ref.read(selectedDrawerPageProvider.notifier).state =
+                null; // ドロワー選択をリセット
           } else if (pageKey != null) {
             ref.read(selectedDrawerPageProvider.notifier).state = pageKey;
             _navigateToPage(pageKey);
@@ -767,31 +792,38 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
   }
 
   void _navigateToPage(String pageKey) {
-    Widget page;
     switch (pageKey) {
       case 'dashboard':
-        page = const StarDashboardScreen();
-        break;
+        Navigator.of(context).push(
+          MaterialPageRoute(builder: (context) => const StarDashboardScreen()),
+        );
+        return;
       case 'subscription':
-        page = const SubscriptionPlansScreen(); // ファン用も同じ課金プランページ
-        break;
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => const SubscriptionPlansScreen(),
+          ),
+        );
+        return;
       case 'buy_points':
-        page = const StarPointsPurchaseScreen();
-        break;
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => const StarPointsPurchaseScreen(),
+          ),
+        );
+        return;
+      case 'category_contents':
+        Navigator.of(context).pushNamed(AppRoutes.categoryContentList);
+        return;
+      case 'archive_search':
+        Navigator.of(context).pushNamed(AppRoutes.contentArchiveSearch);
+        return;
       case 'settings':
         if (mounted) context.go('/settings');
         return;
-      case 'reaction_demo':
-        page = Container();
-        break;
       default:
         return;
     }
-    
-    if (pageKey == 'settings') return; // settingsはGoRouter遷移済み
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (context) => page),
-    );
   }
 
   Widget _buildBody(int selectedTab) {
@@ -818,79 +850,46 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // リアクションシステムデモボタン
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(builder: (context) => Container()),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF8C52FF),
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              child: const Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text('👍', style: TextStyle(fontSize: 20)),
-                  SizedBox(width: 4),
-                  Text('❤️', style: TextStyle(fontSize: 20)),
-                  SizedBox(width: 8),
-                  Text(
-                    'リアクションシステムデモ',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 24),
-
           // 最新YouTube履歴セクション（一番上）
           _buildLatestYouTubeHistorySection(),
           const SizedBox(height: 24),
-          
+
           // 最新投稿セクション（花山瑞樹と他の投稿者を含む）
           _buildRecentPostsSection(),
           const SizedBox(height: 24),
-          
+
           // 通知セクション
           _buildNotificationsSection(),
           const SizedBox(height: 24),
-          
+
           // 自然な広告1（おすすめアプリ）
           _buildNativeAd1(),
           const SizedBox(height: 24),
-          
+
           // トレンドトピックセクション
           _buildTrendingTopicsSection(),
           const SizedBox(height: 24),
-          
+
+          // コンテンツツールへのショートカット
+          _buildContentToolsSection(),
+          const SizedBox(height: 24),
+
           // プレイリストセクション
           _buildFeaturedPlaylistsSection(),
           const SizedBox(height: 24),
-          
+
           // 自然な広告2（スポンサードコンテンツ）
           _buildNativeAd2(),
           const SizedBox(height: 24),
-          
+
           // おすすめスターセクション
           _buildRecommendedStarsSection(),
           const SizedBox(height: 24),
-          
+
           // 新しく参加したスターセクション
           _buildNewStarsSection(),
           const SizedBox(height: 24),
-          
+
           // 今日のピックアップセクション
           _buildTodayPickupSection(),
           const SizedBox(height: 100), // ボトムナビゲーション用の余白
@@ -899,12 +898,53 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
     );
   }
 
+  Widget _buildContentToolsSection() {
+    final themeState = ref.watch(themeProviderEnhanced);
+    final isDark = themeState.isDarkMode;
+
+    final cards = [
+      _ContentToolCard(
+        icon: Icons.view_list,
+        title: 'カテゴリ別一覧',
+        description: '公開済みコンテンツをカテゴリで探索',
+        color: const Color(0xFF4ECDC4),
+        onTap: () => Navigator.of(context).pushNamed(AppRoutes.categoryContentList),
+      ),
+      _ContentToolCard(
+        icon: Icons.manage_search,
+        title: 'アーカイブ検索',
+        description: '期間とカテゴリで過去の投稿を検索',
+        color: const Color(0xFF45AAF2),
+        onTap: () => Navigator.of(context).pushNamed(AppRoutes.contentArchiveSearch),
+      ),
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionTitle('コンテンツツール'),
+        const SizedBox(height: 12),
+        SizedBox(
+          height: 140,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemCount: cards.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 12),
+            itemBuilder: (context, index) {
+              return cards[index].build(context, isDark);
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildLatestYouTubeHistorySection() {
     final themeState = ref.watch(themeProviderEnhanced);
     final isDark = themeState.isDarkMode;
     final youtubeHistoryGroups = ref.watch(groupedYoutubeHistoryProvider);
     final youtubePosts = ref.watch(youtubePostsProvider);
-    
+
     // YouTube履歴とYouTube投稿の両方が空の場合は、デフォルトデータを表示
     if (youtubeHistoryGroups.isEmpty && youtubePosts.isEmpty) {
       return Column(
@@ -919,7 +959,10 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
             decoration: BoxDecoration(
               color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: isDark ? const Color(0xFF333333) : const Color(0xFFF3F4F6)),
+              border: Border.all(
+                  color: isDark
+                      ? const Color(0xFF333333)
+                      : const Color(0xFFF3F4F6)),
             ),
             child: Center(
               child: Text(
@@ -937,34 +980,36 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
 
     // YouTube投稿とYouTube履歴を組み合わせたリストを作成
     final combinedItems = <dynamic>[];
-    
+
     // YouTube投稿を追加
     for (final post in youtubePosts) {
       combinedItems.add({'type': 'post', 'data': post});
     }
-    
+
     // YouTube履歴を追加
     for (final group in youtubeHistoryGroups) {
       combinedItems.add({'type': 'history', 'data': group});
     }
-    
+
     // 作成日時でソート（新しい順）
     combinedItems.sort((a, b) {
       DateTime aTime;
       DateTime bTime;
-      
+
       if (a['type'] == 'post') {
         aTime = a['data'].createdAt;
       } else {
-        aTime = a['data'].createdAt;
+        final YouTubeHistoryGroup group = a['data'];
+        aTime = group.importedAt;
       }
-      
+
       if (b['type'] == 'post') {
         bTime = b['data'].createdAt;
       } else {
-        bTime = b['data'].createdAt;
+        final YouTubeHistoryGroup group = b['data'];
+        bTime = group.importedAt;
       }
-      
+
       return bTime.compareTo(aTime);
     });
 
@@ -982,7 +1027,7 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
             itemCount: combinedItems.length,
             itemBuilder: (context, index) {
               final item = combinedItems[index];
-              
+
               if (item['type'] == 'post') {
                 // YouTube投稿の表示
                 final post = item['data'];
@@ -1004,126 +1049,139 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
               } else {
                 // YouTube履歴の表示
                 final group = item['data'];
-              return GestureDetector(
-                onTap: () {
-                  // グループの詳細を表示するダイアログ
-                  showDialog(
-                    context: context,
-                    builder: (context) => _buildGroupDetailDialog(context, group, isDark),
-                  );
-                },
-                child: Container(
-                  width: MediaQuery.of(context).size.width * 0.85,
-                  margin: const EdgeInsets.only(right: 16),
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: (isDark ? Colors.black : Colors.black).withOpacity(0.08),
-                        blurRadius: 12,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                    border: Border.all(color: isDark ? const Color(0xFF333333) : const Color(0xFFF3F4F6)),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Container(
-                            width: 60,
-                            height: 45,
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFFF0000).withOpacity(0.2),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Stack(
-                              alignment: Alignment.center,
-                              children: [
-                                ServiceIcons.buildIcon(
-                                  serviceId: 'youtube',
-                                  size: 24,
-                                  isDark: false,
-                                ),
-                                if (group.itemCount > 1)
-                                  Positioned(
-                                    top: -2,
-                                    right: -2,
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xFF4ECDC4),
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                      child: Text(
-                                        '${group.itemCount}',
-                                        style: const TextStyle(
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.white,
+                return GestureDetector(
+                  onTap: () {
+                    // グループの詳細を表示するダイアログ
+                    showDialog(
+                      context: context,
+                      builder: (context) =>
+                          _buildGroupDetailDialog(context, group, isDark),
+                    );
+                  },
+                  child: Container(
+                    width: MediaQuery.of(context).size.width * 0.85,
+                    margin: const EdgeInsets.only(right: 16),
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: (isDark ? Colors.black : Colors.black)
+                              .withOpacity(0.08),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                      border: Border.all(
+                          color: isDark
+                              ? const Color(0xFF333333)
+                              : const Color(0xFFF3F4F6)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              width: 60,
+                              height: 45,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFF0000).withOpacity(0.2),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Stack(
+                                alignment: Alignment.center,
+                                children: [
+                                  ServiceIcons.buildIcon(
+                                    serviceId: 'youtube',
+                                    size: 24,
+                                    isDark: false,
+                                  ),
+                                  if (group.itemCount > 1)
+                                    Positioned(
+                                      top: -2,
+                                      right: -2,
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 6, vertical: 2),
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFF4ECDC4),
+                                          borderRadius:
+                                              BorderRadius.circular(10),
+                                        ),
+                                        child: Text(
+                                          '${group.itemCount}',
+                                          style: const TextStyle(
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.white,
+                                          ),
                                         ),
                                       ),
                                     ),
-                                  ),
-                              ],
+                                ],
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  group.itemCount > 1 
-                                    ? '${group.itemCount}件の動画をインポート' 
-                                    : group.items.first.title,
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w600,
-                                    color: isDark ? Colors.white : Colors.black87,
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    group.itemCount > 1
+                                        ? '${group.itemCount}件の動画をインポート'
+                                        : group.items.first.title,
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                      color: isDark
+                                          ? Colors.white
+                                          : Colors.black87,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
                                   ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  group.itemCount > 1
-                                    ? _formatImportTime(group.importedAt)
-                                    : group.items.first.channel,
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: isDark ? Colors.white70 : Colors.black54,
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    group.itemCount > 1
+                                        ? _formatImportTime(group.importedAt)
+                                        : group.items.first.channel,
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: isDark
+                                          ? Colors.white70
+                                          : Colors.black54,
+                                    ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        if (group.itemCount > 1) ...[
+                          const SizedBox(height: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: (isDark ? Colors.white : Colors.black)
+                                  .withOpacity(0.05),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              '${group.items.map((e) => e.channel).toSet().length}チャンネル',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: isDark ? Colors.white54 : Colors.black54,
+                              ),
                             ),
                           ),
                         ],
-                      ),
-                      if (group.itemCount > 1) ...[
-                        const SizedBox(height: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: (isDark ? Colors.white : Colors.black).withOpacity(0.05),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            '${group.items.map((e) => e.channel).toSet().length}チャンネル',
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: isDark ? Colors.white54 : Colors.black54,
-                            ),
-                          ),
-                        ),
                       ],
-                    ],
+                    ),
                   ),
-                ),
-              );
+                );
               }
             },
           ),
@@ -1135,7 +1193,7 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
   String _formatImportTime(DateTime time) {
     final now = DateTime.now();
     final difference = now.difference(time);
-    
+
     if (difference.inMinutes < 60) {
       return '${difference.inMinutes}分前';
     } else if (difference.inHours < 24) {
@@ -1145,7 +1203,8 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
     }
   }
 
-  Widget _buildGroupDetailDialog(BuildContext context, YouTubeHistoryGroup group, bool isDark) {
+  Widget _buildGroupDetailDialog(
+      BuildContext context, YouTubeHistoryGroup group, bool isDark) {
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Container(
@@ -1208,7 +1267,9 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
                     margin: const EdgeInsets.only(bottom: 12),
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: isDark ? const Color(0xFF333333) : const Color(0xFFF3F4F6),
+                      color: isDark
+                          ? const Color(0xFF333333)
+                          : const Color(0xFFF3F4F6),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Row(
@@ -1246,10 +1307,12 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
                                 item.channel,
                                 style: TextStyle(
                                   fontSize: 12,
-                                  color: isDark ? Colors.white70 : Colors.black54,
+                                  color:
+                                      isDark ? Colors.white70 : Colors.black54,
                                 ),
                               ),
-                              if (item.duration != null || item.viewCount != null) ...[
+                              if (item.duration != null ||
+                                  item.viewCount != null) ...[
                                 const SizedBox(height: 2),
                                 Row(
                                   children: [
@@ -1258,7 +1321,9 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
                                         item.duration!,
                                         style: TextStyle(
                                           fontSize: 10,
-                                          color: isDark ? Colors.white54 : Colors.black38,
+                                          color: isDark
+                                              ? Colors.white54
+                                              : Colors.black38,
                                         ),
                                       ),
                                       const SizedBox(width: 8),
@@ -1268,7 +1333,9 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
                                         '${item.viewCount}回視聴',
                                         style: TextStyle(
                                           fontSize: 10,
-                                          color: isDark ? Colors.white54 : Colors.black38,
+                                          color: isDark
+                                              ? Colors.white54
+                                              : Colors.black38,
                                         ),
                                       ),
                                   ],
@@ -1291,51 +1358,52 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
 
   Widget _buildNativeAd1() {
     return Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [Color(0xFFF8FAFC), Color(0xFFE2E8F0)],
         ),
-              borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: const Color(0xFFE2E8F0)),
-            ),
-            child: Row(
-              children: [
-                Container(
+      ),
+      child: Row(
+        children: [
+          Container(
             width: 50,
             height: 50,
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
                 colors: [Color(0xFF667EEA), Color(0xFF764BA2)],
-                    ),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Icon(
+              ),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(
               Icons.apps,
-                    color: Colors.white,
-                    size: 24,
-                  ),
-                ),
-                const SizedBox(width: 16),
+              color: Colors.white,
+              size: 24,
+            ),
+          ),
+          const SizedBox(width: 16),
           Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
                 Row(
                   children: [
                     const Text(
                       'おすすめアプリ',
-                        style: TextStyle(
+                      style: TextStyle(
                         fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.black87,
-                        ),
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black87,
                       ),
+                    ),
                     const SizedBox(width: 8),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
                         color: const Color(0xFF10B981).withOpacity(0.1),
                         borderRadius: BorderRadius.circular(4),
@@ -1346,18 +1414,18 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
                           fontSize: 10,
                           color: Color(0xFF10B981),
                           fontWeight: FontWeight.w600,
-                            ),
-                  ),
-                          ),
-                        ],
+                        ),
                       ),
+                    ),
+                  ],
+                ),
                 const SizedBox(height: 4),
-          const Text(
+                const Text(
                   'あなたの興味に合わせたアプリを発見',
-            style: TextStyle(
+                  style: TextStyle(
                     fontSize: 12,
                     color: Colors.black54,
-            ),
+                  ),
                 ),
               ],
             ),
@@ -1368,15 +1436,15 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
             decoration: BoxDecoration(
               color: const Color(0xFF667EEA),
               borderRadius: BorderRadius.circular(8),
-                    ),
+            ),
             child: const Text(
               '見る',
               style: TextStyle(
-              color: Colors.white,
+                color: Colors.white,
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
               ),
-                    ),
+            ),
           ),
         ],
       ),
@@ -1391,69 +1459,70 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [Color(0xFFFEF3C7), Color(0xFFFDE68A)],
-                    ),
-              borderRadius: BorderRadius.circular(16),
+        ),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: const Color(0xFFFDE68A)),
-            ),
-            child: Row(
-              children: [
-                Container(
+      ),
+      child: Row(
+        children: [
+          Container(
             width: 50,
             height: 50,
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
                 colors: [Color(0xFFFFE66D), Color(0xFFFF6B35)],
-                ),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Icon(
-              Icons.star,
-                    color: Colors.white,
-                    size: 24,
-                ),
-                ),
-                const SizedBox(width: 16),
-          Expanded(
-                  child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            const Text(
-                      'スポンサードコンテンツ',
-              style: TextStyle(
-                        fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                color: Colors.black87,
               ),
+              borderRadius: BorderRadius.circular(12),
             ),
+            child: const Icon(
+              Icons.star,
+              color: Colors.white,
+              size: 24,
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Text(
+                      'スポンサードコンテンツ',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black87,
+                      ),
+                    ),
                     const SizedBox(width: 8),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
                         color: const Color(0xFFF59E0B).withOpacity(0.1),
                         borderRadius: BorderRadius.circular(4),
                       ),
-              child: const Text(
+                      child: const Text(
                         'AD',
-                style: TextStyle(
+                        style: TextStyle(
                           fontSize: 10,
                           color: Color(0xFFF59E0B),
                           fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            ),
-          ],
-        ),
                 const SizedBox(height: 4),
                 const Text(
                   '新しいスターを発見して、特別なコンテンツを楽しもう',
                   style: TextStyle(
                     fontSize: 12,
-                          color: Colors.black54,
-          ),
-        ),
-      ],
+                    color: Colors.black54,
+                  ),
+                ),
+              ],
             ),
           ),
           const SizedBox(width: 8),
@@ -1463,24 +1532,24 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
               color: const Color(0xFFF59E0B),
               borderRadius: BorderRadius.circular(8),
             ),
-              child: const Text(
+            child: const Text(
               '詳細',
-                style: TextStyle(
+              style: TextStyle(
                 color: Colors.white,
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
-                ),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
+      ),
     );
   }
 
   Widget _buildNotificationsSection() {
     final themeState = ref.watch(themeProviderEnhanced);
     final isDark = themeState.isDarkMode;
-    
+
     final notifications = [
       {
         'type': 'upload',
@@ -1571,80 +1640,88 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
             itemBuilder: (context, index) {
               final notification = notifications[index];
               final isUnread = notification['isUnread'] as bool;
-              
-                  return Container(
+
+              return Container(
                 width: 280,
                 margin: const EdgeInsets.only(right: 16),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
                   color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: isUnread ? const Color(0xFF4ECDC4).withOpacity(0.3) : 
-                           (isDark ? const Color(0xFF333333) : const Color(0xFFF3F4F6)),
+                    color: isUnread
+                        ? const Color(0xFF4ECDC4).withOpacity(0.3)
+                        : (isDark
+                            ? const Color(0xFF333333)
+                            : const Color(0xFFF3F4F6)),
                     width: isUnread ? 2 : 1,
                   ),
-        boxShadow: [
-          BoxShadow(
-                      color: (isDark ? Colors.black : Colors.black).withOpacity(0.05),
+                  boxShadow: [
+                    BoxShadow(
+                      color: (isDark ? Colors.black : Colors.black)
+                          .withOpacity(0.05),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    Container(
                       width: 32,
                       height: 32,
-            decoration: BoxDecoration(
-                        color: (notification['iconColor'] as Color).withOpacity(0.2),
+                      decoration: BoxDecoration(
+                        color: (notification['iconColor'] as Color)
+                            .withOpacity(0.2),
                         borderRadius: BorderRadius.circular(8),
-            ),
+                      ),
                       child: Icon(
                         notification['icon'] as IconData,
                         color: notification['iconColor'] as Color,
                         size: 16,
-            ),
-          ),
+                      ),
+                    ),
                     const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
                             notification['title'] as String,
                             style: TextStyle(
                               fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                              color: isUnread ? (isDark ? Colors.white : Colors.black87) : 
-                                     (isDark ? Colors.white70 : Colors.grey[700]),
-                  ),
+                              fontWeight: FontWeight.w600,
+                              color: isUnread
+                                  ? (isDark ? Colors.white : Colors.black87)
+                                  : (isDark
+                                      ? Colors.white70
+                                      : Colors.grey[700]),
+                            ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                ),
+                          ),
                           const SizedBox(height: 2),
-                Text(
+                          Text(
                             notification['subtitle'] as String,
                             style: TextStyle(
                               fontSize: 12,
                               color: isDark ? Colors.white70 : Colors.grey[600],
-                  ),
+                            ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                ),
+                          ),
                           const SizedBox(height: 2),
-                Text(
+                          Text(
                             notification['time'] as String,
                             style: TextStyle(
                               fontSize: 10,
                               color: isDark ? Colors.white54 : Colors.grey[500],
-                  ),
-                ),
-              ],
-            ),
-          ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                     if (isUnread)
                       Container(
                         width: 8,
@@ -1653,14 +1730,14 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
                           color: Color(0xFF4ECDC4),
                           shape: BoxShape.circle,
                         ),
-            ),
+                      ),
                   ],
                 ),
               );
             },
-            ),
           ),
-        ],
+        ),
+      ],
     );
   }
 
@@ -1679,20 +1756,20 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
             itemCount: trendingTopics.length,
             itemBuilder: (context, index) {
               final topic = trendingTopics[index];
-    return Container(
+              return Container(
                 width: 160,
                 margin: const EdgeInsets.only(right: 16),
                 padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
+                decoration: BoxDecoration(
                   gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                     colors: [
                       topic['color'],
                       topic['color'].withOpacity(0.7),
                     ],
-        ),
-        borderRadius: BorderRadius.circular(16),
+                  ),
+                  borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
                       color: topic['color'].withOpacity(0.3),
@@ -1700,28 +1777,28 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
                       offset: const Offset(0, 4),
                     ),
                   ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.center,
-        children: [
+                  children: [
                     Text(
                       topic['title'],
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
-                    color: Colors.white,
+                        color: Colors.white,
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-              ),
-            ],
-          ),
+                    ),
+                  ],
+                ),
               );
             },
-            ),
           ),
-        ],
+        ),
+      ],
     );
   }
 
@@ -1740,11 +1817,11 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
             itemCount: featuredPlaylists.length,
             itemBuilder: (context, index) {
               final playlist = featuredPlaylists[index];
-    return Container(
+              return Container(
                 width: 180,
                 margin: const EdgeInsets.only(right: 16),
                 padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
+                decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
@@ -1753,54 +1830,54 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
                       playlist['thumbnail'].withOpacity(0.7),
                     ],
                   ),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
                       color: playlist['thumbnail'].withOpacity(0.3),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
+                  children: [
+                    Text(
                       playlist['title'],
-            style: const TextStyle(
+                      style: const TextStyle(
                         fontSize: 16,
-              fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.w600,
                         color: Colors.white,
-            ),
+                      ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-          ),
+                    ),
                     const SizedBox(height: 4),
-          Text(
+                    Text(
                       playlist['description'],
-            style: const TextStyle(
+                      style: const TextStyle(
                         fontSize: 12,
                         color: Colors.white,
                         fontWeight: FontWeight.w500,
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-              ),
+                    ),
                   ],
                 ),
               );
             },
           ),
-          ),
-        ],
+        ),
+      ],
     );
   }
 
   Widget _buildRecommendedStarsSection() {
     return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
         _buildSectionTitle('おすすめスター'),
         const SizedBox(height: 16),
         SizedBox(
@@ -1818,16 +1895,16 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
                 child: _buildStarCard(star, 180),
               );
             },
-                ),
-              ),
-            ],
+          ),
+        ),
+      ],
     );
   }
 
   Widget _buildNewStarsSection() {
     return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
         _buildSectionTitle('新しく参加したスター'),
         const SizedBox(height: 16),
         SizedBox(
@@ -1845,8 +1922,8 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
                 child: _buildStarCard(star, 180),
               );
             },
-                ),
-              ),
+          ),
+        ),
       ],
     );
   }
@@ -1854,7 +1931,7 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
   Widget _buildStarCard(StarData star, double height) {
     final themeState = ref.watch(themeProviderEnhanced);
     final isDark = themeState.isDarkMode;
-    
+
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -1867,7 +1944,8 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
             offset: const Offset(0, 2),
           ),
         ],
-        border: Border.all(color: isDark ? const Color(0xFF333333) : const Color(0xFFF3F4F6)),
+        border: Border.all(
+            color: isDark ? const Color(0xFF333333) : const Color(0xFFF3F4F6)),
       ),
       child: Row(
         children: [
@@ -1885,7 +1963,7 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
             child: Center(
               child: Text(
                 star.avatar,
-            style: const TextStyle(
+                style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
                   fontSize: 14,
@@ -1895,20 +1973,20 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
           ),
           const SizedBox(width: 12),
           Expanded(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-              Text(
+              children: [
+                Text(
                   star.name,
-            style: TextStyle(
+                  style: TextStyle(
                     fontSize: 14,
-              fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.w600,
                     color: isDark ? Colors.white : Colors.black87,
-            ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-          ),
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
                 const SizedBox(height: 2),
                 Text(
                   star.category,
@@ -1925,31 +2003,32 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
                   style: TextStyle(
                     fontSize: 10,
                     color: isDark ? Colors.white54 : Colors.black38,
+                  ),
                 ),
-              ),
-            ],
-          ),
+              ],
+            ),
           ),
           const SizedBox(width: 6),
           ElevatedButton(
-                  onPressed: () {},
-                  style: ElevatedButton.styleFrom(
-              backgroundColor: star.isFollowing ? Colors.grey : star.gradientColors.first,
-                    foregroundColor: Colors.white,
+            onPressed: () {},
+            style: ElevatedButton.styleFrom(
+              backgroundColor:
+                  star.isFollowing ? Colors.grey : star.gradientColors.first,
+              foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
               elevation: 0,
               minimumSize: const Size(50, 28),
-                  ),
+            ),
             child: Text(
               star.isFollowing ? 'フォロー中' : 'フォロー',
               style: const TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.w500,
-                ),
               ),
+            ),
           ),
         ],
       ),
@@ -1959,7 +2038,7 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
   Widget _buildTodayPickupSection() {
     final themeState = ref.watch(themeProviderEnhanced);
     final isDark = themeState.isDarkMode;
-    
+
     final todayPickup = [
       {
         'title': '今日のおすすめスター',
@@ -1989,99 +2068,106 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
           ),
         ),
         const SizedBox(height: 16),
-        ...todayPickup.map((item) => Container(
-          margin: const EdgeInsets.only(bottom: 16),
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: (isDark ? Colors.black : Colors.black).withOpacity(0.08),
-                blurRadius: 12,
-                offset: const Offset(0, 4),
-              ),
-            ],
-            border: Border.all(color: isDark ? const Color(0xFF333333) : const Color(0xFFF3F4F6)),
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 60,
-                height: 60,
-                decoration: BoxDecoration(
-                  color: item['color'] as Color,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(
-                  item['icon'] as IconData,
-                  color: Colors.white,
-                  size: 28,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      item['title'] as String,
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: isDark ? Colors.white : Colors.black87,
+        ...todayPickup
+            .map((item) => Container(
+                  margin: const EdgeInsets.only(bottom: 16),
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: (isDark ? Colors.black : Colors.black)
+                            .withOpacity(0.08),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      item['subtitle'] as String,
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: isDark ? Colors.white70 : Colors.black54,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                        Text(
-                      item['description'] as String,
-                      style: TextStyle(
-                            fontSize: 12,
-                        color: isDark ? Colors.white54 : Colors.black38,
-                          ),
+                    ],
+                    border: Border.all(
+                        color: isDark
+                            ? const Color(0xFF333333)
+                            : const Color(0xFFF3F4F6)),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 60,
+                        height: 60,
+                        decoration: BoxDecoration(
+                          color: item['color'] as Color,
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                      ],
-                    ),
-              ),
-              Icon(
-                Icons.arrow_forward_ios,
-                color: isDark ? Colors.white54 : Colors.black38,
-                size: 16,
-              ),
-            ],
-          ),
-        )).toList(),
+                        child: Icon(
+                          item['icon'] as IconData,
+                          color: Colors.white,
+                          size: 28,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              item['title'] as String,
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: isDark ? Colors.white : Colors.black87,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              item['subtitle'] as String,
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                                color: isDark ? Colors.white70 : Colors.black54,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              item['description'] as String,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: isDark ? Colors.white54 : Colors.black38,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Icon(
+                        Icons.arrow_forward_ios,
+                        color: isDark ? Colors.white54 : Colors.black38,
+                        size: 16,
+                      ),
+                    ],
+                  ),
+                ))
+            ,
       ],
     );
   }
-
 
   Widget _buildBottomNavigationBar(int selectedTab) {
     final currentUser = ref.watch(currentUserProvider);
     final themeState = ref.watch(themeProviderEnhanced);
     final isDark = themeState.isDarkMode;
-    
+
     // フォローページなど特別なページが表示されている場合、どのタブも選択状態にしない
     int currentSelectedTab = selectedTab;
-    
+
     return Container(
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1A1A1A) : Colors.white,
         border: Border(
-          top: BorderSide(color: isDark ? const Color(0xFF333333) : const Color(0xFFE5E7EB)),
+          top: BorderSide(
+              color:
+                  isDark ? const Color(0xFF333333) : const Color(0xFFE5E7EB)),
         ),
         boxShadow: [
           BoxShadow(
-            color: (isDark ? Colors.black : Colors.black).withOpacity( 0.1),
+            color: (isDark ? Colors.black : Colors.black).withOpacity(0.1),
             blurRadius: 10,
             offset: const Offset(0, -2),
           ),
@@ -2094,13 +2180,18 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _buildBottomNavItem(Icons.home, 'ホーム', 0, currentSelectedTab, isDark),
-              _buildBottomNavItem(Icons.search, '検索', 1, currentSelectedTab, isDark),
+              _buildBottomNavItem(
+                  Icons.home, 'ホーム', 0, currentSelectedTab, isDark),
+              _buildBottomNavItem(
+                  Icons.search, '検索', 1, currentSelectedTab, isDark),
               // スターのみ取込みタブを表示
               if (currentUser.isStar)
-                _buildBottomNavItem(Icons.camera_alt, '取込', 2, currentSelectedTab, isDark),
-              _buildBottomNavItem(Icons.star, 'マイリスト', 3, currentSelectedTab, isDark),
-              _buildBottomNavItem(Icons.person, 'マイページ', 4, currentSelectedTab, isDark),
+                _buildBottomNavItem(
+                    Icons.camera_alt, '取込', 2, currentSelectedTab, isDark),
+              _buildBottomNavItem(
+                  Icons.star, 'マイリスト', 3, currentSelectedTab, isDark),
+              _buildBottomNavItem(
+                  Icons.person, 'マイページ', 4, currentSelectedTab, isDark),
             ],
           ),
         ),
@@ -2108,39 +2199,45 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
     );
   }
 
-  Widget _buildBottomNavItem(IconData icon, String label, int index, int selectedTab, bool isDark) {
+  Widget _buildBottomNavItem(
+      IconData icon, String label, int index, int selectedTab, bool isDark) {
     final isSelected = selectedTab == index;
-    
+
     return Expanded(
       child: GestureDetector(
-      onTap: () {
-        ref.read(selectedTabProvider.notifier).state = index;
-          ref.read(selectedDrawerPageProvider.notifier).state = null; // ドロワー選択をリセット
-      },
-      child: Container(
+        onTap: () {
+          ref.read(selectedTabProvider.notifier).state = index;
+          ref.read(selectedDrawerPageProvider.notifier).state =
+              null; // ドロワー選択をリセット
+        },
+        child: Container(
           padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 2),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              icon,
+            children: [
+              Icon(
+                icon,
                 size: 22,
-                color: isSelected ? const Color(0xFF4ECDC4) : (isDark ? Colors.white54 : const Color(0xFF9CA3AF)),
-            ),
-              const SizedBox(height: 2),
-            Text(
-              label,
-              style: TextStyle(
-                  fontSize: 10,
-                fontWeight: FontWeight.w500,
-                  color: isSelected ? const Color(0xFF4ECDC4) : (isDark ? Colors.white54 : const Color(0xFF9CA3AF)),
+                color: isSelected
+                    ? const Color(0xFF4ECDC4)
+                    : (isDark ? Colors.white54 : const Color(0xFF9CA3AF)),
               ),
+              const SizedBox(height: 2),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w500,
+                  color: isSelected
+                      ? const Color(0xFF4ECDC4)
+                      : (isDark ? Colors.white54 : const Color(0xFF9CA3AF)),
+                ),
                 textAlign: TextAlign.center,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-            ),
-          ],
+              ),
+            ],
           ),
         ),
       ),
@@ -2152,24 +2249,24 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
     final themeState = ref.watch(themeProviderEnhanced);
     final currentUser = ref.watch(currentUserProvider);
     final isDark = themeState.isDarkMode;
-    
+
     // 花山瑞樹の投稿と他の投稿者の投稿を組み合わせ
     final allPosts = <dynamic>[];
-    
+
     // 花山瑞樹の投稿を追加（アクセス制御適用）
     final accessiblePosts = hanayamaPosts.where((post) {
       if (post.accessLevel == AccessLevel.public) return true;
       if (post.accessLevel == AccessLevel.light) {
         return AccessControlService.canViewContent(
-          currentUser?.fanPlanType,
+          currentUser.fanPlanType,
           ContentType.youtubeVideos,
         );
       }
       return false;
     }).toList();
-    
+
     allPosts.addAll(accessiblePosts);
-    
+
     // 他の投稿者のダミーデータを追加（無料プランでも概要表示）
     final otherPosts = [
       {
@@ -2197,22 +2294,22 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
         'accessLevel': AccessLevel.light,
       },
     ];
-    
+
     // 無料プランの場合は概要のみ表示
-    if (currentUser?.fanPlanType == FanPlanType.free) {
+    if (currentUser.fanPlanType == FanPlanType.free) {
       allPosts.addAll(otherPosts.map((post) => {
-        'title': post['title'], // 制限付きの表記を削除
-        'author': post['author'],
-        'time': post['time'],
-        'type': post['type'],
-        'thumbnail': post['thumbnail'],
-        'accessLevel': post['accessLevel'],
-        'isRestricted': true,
-      }));
+            'title': post['title'], // 制限付きの表記を削除
+            'author': post['author'],
+            'time': post['time'],
+            'type': post['type'],
+            'thumbnail': post['thumbnail'],
+            'accessLevel': post['accessLevel'],
+            'isRestricted': true,
+          }));
     } else {
       allPosts.addAll(otherPosts);
     }
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -2227,7 +2324,7 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
             itemCount: allPosts.length,
             itemBuilder: (context, index) {
               final post = allPosts[index];
-              
+
               // 花山瑞樹の投稿の場合
               if (post is PostModel) {
                 return Container(
@@ -2246,7 +2343,7 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
                   ),
                 );
               }
-              
+
               // その他の投稿の場合
               final isRestricted = post['isRestricted'] == true;
               return GestureDetector(
@@ -2259,7 +2356,9 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
                           contentTitle: post['title'] as String,
                           contentType: '投稿',
                           starName: post['author'] as String,
-                          requiredPlan: post['accessLevel'] == AccessLevel.light ? 'ライトプラン以上' : 'プレミアムプラン以上',
+                          requiredPlan: post['accessLevel'] == AccessLevel.light
+                              ? 'ライトプラン以上'
+                              : 'プレミアムプラン以上',
                           contentTypeEnum: ContentType.premiumContent,
                         ),
                       ),
@@ -2275,7 +2374,8 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
-                        color: (isDark ? Colors.black : Colors.black).withOpacity(0.08),
+                        color: (isDark ? Colors.black : Colors.black)
+                            .withOpacity(0.08),
                         blurRadius: 12,
                         offset: const Offset(0, 4),
                       ),
@@ -2284,33 +2384,36 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Container(
-                        height: 160,
-                        decoration: BoxDecoration(
-                          color: post['thumbnail'] as Color,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                isRestricted ? Icons.lock : Icons.play_arrow,
-                                color: Colors.white,
-                                size: 32, // 48から32に縮小
-                              ),
-                              if (isRestricted) ...[
-                                const SizedBox(height: 8),
-                                Text(
-                                  'プラン制限',
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 10, // 12から10に縮小
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                      Expanded(
+                        child: Container(
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            color: post['thumbnail'] as Color,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  isRestricted ? Icons.lock : Icons.play_arrow,
+                                  color: Colors.white,
+                                  size: 32,
                                 ),
+                                if (isRestricted) ...[
+                                  const SizedBox(height: 8),
+                                  const Text(
+                                    'プラン制限',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
                               ],
-                            ],
+                            ),
                           ),
                         ),
                       ),
@@ -2336,7 +2439,8 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
                       const SizedBox(height: 8),
                       if (isRestricted) ...[
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
                             color: Colors.blue.withOpacity(0.2), // オレンジから青に変更
                             borderRadius: BorderRadius.circular(12),
@@ -2378,56 +2482,56 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
     final hanayamaPosts = ref.watch(hanayamaMizukiPostsProvider);
     final currentUser = ref.watch(currentUserProvider);
     final themeState = ref.watch(themeProviderEnhanced);
-    
+
     if (hanayamaPosts.isEmpty) {
       return const SizedBox.shrink();
     }
-    
+
     // アクセス制御を適用
     final accessiblePosts = hanayamaPosts.where((post) {
       if (post.accessLevel == AccessLevel.public) return true;
       if (post.accessLevel == AccessLevel.light) {
         return AccessControlService.canViewContent(
-          currentUser?.fanPlanType,
+          currentUser.fanPlanType,
           ContentType.youtubeVideos,
         );
       }
       return false;
     }).toList();
-    
+
     // 制限された投稿も概要として表示
     final restrictedPosts = hanayamaPosts.where((post) {
       if (post.accessLevel == AccessLevel.public) return false;
       if (post.accessLevel == AccessLevel.light) {
         return !AccessControlService.canViewContent(
-          currentUser?.fanPlanType,
+          currentUser.fanPlanType,
           ContentType.youtubeVideos,
         );
       }
       return false;
     }).toList();
-    
+
     final allDisplayPosts = <dynamic>[];
     allDisplayPosts.addAll(accessiblePosts);
-    
+
     // 制限された投稿を概要として追加
     if (restrictedPosts.isNotEmpty) {
       allDisplayPosts.addAll(restrictedPosts.map((post) => {
-        'title': post.title, // 制限付きの表記を削除
-        'author': '花山瑞樹',
-        'time': '最近',
-        'type': 'restricted',
-        'thumbnail': const Color(0xFF9C27B0),
-        'accessLevel': post.accessLevel,
-        'isRestricted': true,
-        'originalPost': post,
-      }));
+            'title': post.title, // 制限付きの表記を削除
+            'author': '花山瑞樹',
+            'time': '最近',
+            'type': 'restricted',
+            'thumbnail': const Color(0xFF9C27B0),
+            'accessLevel': post.accessLevel,
+            'isRestricted': true,
+            'originalPost': post,
+          }));
     }
-    
+
     if (allDisplayPosts.isEmpty) {
       return const SizedBox.shrink();
     }
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -2442,12 +2546,14 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
             itemCount: allDisplayPosts.length,
             itemBuilder: (context, index) {
               final post = allDisplayPosts[index];
-              
+
               // 制限された投稿の場合
-              if (post is Map<String, dynamic> && post['isRestricted'] == true) {
-                return _buildRestrictedPostCard(post, context, themeState.isDarkMode);
+              if (post is Map<String, dynamic> &&
+                  post['isRestricted'] == true) {
+                return _buildRestrictedPostCard(
+                    post, context, themeState.isDarkMode);
               }
-              
+
               // 通常の投稿の場合
               return Container(
                 width: 320,
@@ -2458,7 +2564,8 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
                   onTap: () {
                     Navigator.of(context).push(
                       MaterialPageRoute(
-                        builder: (context) => PostDetailScreen(post: post as PostModel),
+                        builder: (context) =>
+                            PostDetailScreen(post: post),
                       ),
                     );
                   },
@@ -2474,7 +2581,7 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
   Widget _buildSectionTitle(String title) {
     final themeState = ref.watch(themeProviderEnhanced);
     final isDark = themeState.isDarkMode;
-    
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
@@ -2504,7 +2611,8 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
   }
 
   /// 制限された投稿のカードを表示
-  Widget _buildRestrictedPostCard(Map<String, dynamic> post, BuildContext context, bool isDark) {
+  Widget _buildRestrictedPostCard(
+      Map<String, dynamic> post, BuildContext context, bool isDark) {
     return GestureDetector(
       onTap: () {
         // 閲覧制限画面に遷移
@@ -2514,7 +2622,9 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
               contentTitle: post['title'] as String,
               contentType: '投稿',
               starName: post['author'] as String,
-              requiredPlan: post['accessLevel'] == AccessLevel.light ? 'ライトプラン以上' : 'プレミアムプラン以上',
+              requiredPlan: post['accessLevel'] == AccessLevel.light
+                  ? 'ライトプラン以上'
+                  : 'プレミアムプラン以上',
               contentTypeEnum: ContentType.premiumContent,
             ),
           ),
@@ -2544,17 +2654,17 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
                 color: post['thumbnail'] as Color,
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Center(
+              child: const Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.lock,
                       color: Colors.white,
                       size: 32, // 48から32に縮小
                     ),
-                    const SizedBox(height: 8),
-                    const Text(
+                    SizedBox(height: 8),
+                    Text(
                       'プラン制限',
                       style: TextStyle(
                         color: Colors.white,
@@ -2618,4 +2728,73 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
       ),
     );
   }
-} 
+}
+
+class _ContentToolCard {
+  final IconData icon;
+  final String title;
+  final String description;
+  final Color color;
+  final VoidCallback onTap;
+
+  const _ContentToolCard({
+    required this.icon,
+    required this.title,
+    required this.description,
+    required this.color,
+    required this.onTap,
+  });
+
+  Widget build(BuildContext context, bool isDark) {
+    final cardWidth = MediaQuery.of(context).size.width * 0.7;
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: cardWidth.clamp(220.0, 320.0),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF1F1F1F) : Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: isDark
+              ? []
+              : [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 12,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.12),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, color: color, size: 24),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              title,
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              description,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Theme.of(context).textTheme.bodySmall?.color,
+                  ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

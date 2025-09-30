@@ -9,6 +9,9 @@ import '../../features/content/screens/content_detail_screen.dart';
 import '../../features/content/screens/content_create_screen.dart';
 import '../../features/youtube/youtube_explore_screen.dart';
 import '../../features/star/screens/star_timeline_sample_screen.dart';
+import '../../features/content/screens/category_content_list_screen.dart';
+import '../../features/content/screens/content_archive_search_screen.dart';
+import '../../features/content/models/content_consumption_model.dart';
 import '../../../main.dart';  // HomeScreenをインポート
 import '../../../routes/app_routes.dart';
 import '../../../screens/home_screen.dart';
@@ -126,6 +129,24 @@ class AppRouter {
         },
       ),
       
+      GoRoute(
+        path: '/category-contents',
+        builder: (context, state) {
+          final categoryParam = state.uri.queryParameters['category'];
+          final title = state.uri.queryParameters['title'];
+          final initialCategory = _parseContentCategory(categoryParam);
+          return CategoryContentListScreen(
+            initialCategory: initialCategory,
+            title: title,
+          );
+        },
+      ),
+      
+      GoRoute(
+        path: '/content-archive',
+        builder: (context, state) => const ContentArchiveSearchScreen(),
+      ),
+      
       // スター
       GoRoute(
         path: '/star/:id',
@@ -142,7 +163,17 @@ class AppRouter {
       ),
     ),
   );
-} 
+}
+
+ContentCategory? _parseContentCategory(String? value) {
+  if (value == null) return null;
+  for (final category in ContentCategory.values) {
+    if (category.name == value) {
+      return category;
+    }
+  }
+  return null;
+}
 
 // コンテンツリポジトリのプロバイダー (app.dartでも定義されているが、ここでも定義しておく)
 final contentRepositoryProvider = Provider<ContentRepository>((ref) {

@@ -15,6 +15,9 @@ import 'package:starlist_app/features/registration/presentation/screens/registra
 import 'package:starlist_app/screens/starlist_main_screen.dart';
 import 'package:starlist_app/features/app/screens/settings_screen.dart';
 import 'package:starlist_app/screens/bootstrap_screen.dart';
+import 'package:starlist_app/src/features/content/screens/category_content_list_screen.dart';
+import 'package:starlist_app/src/features/content/screens/content_archive_search_screen.dart';
+import 'package:starlist_app/src/features/content/models/content_consumption_model.dart';
 
 class _AuthStreamListenable extends ChangeNotifier {
   _AuthStreamListenable(Stream<AuthState> stream) {
@@ -84,6 +87,32 @@ GoRouter createAppRouter() {
         path: '/settings',
         builder: (context, state) => const SettingsScreen(),
       ),
+      GoRoute(
+        path: '/category-contents',
+        builder: (context, state) {
+          final categoryParam = state.uri.queryParameters['category'];
+          final title = state.uri.queryParameters['title'];
+          final initialCategory = _parseContentCategory(categoryParam);
+          return CategoryContentListScreen(
+            initialCategory: initialCategory,
+            title: title,
+          );
+        },
+      ),
+      GoRoute(
+        path: '/content-archive',
+        builder: (context, state) => const ContentArchiveSearchScreen(),
+      ),
     ],
   );
-} 
+}
+
+ContentCategory? _parseContentCategory(String? value) {
+  if (value == null) return null;
+  for (final category in ContentCategory.values) {
+    if (category.name == value) {
+      return category;
+    }
+  }
+  return null;
+}

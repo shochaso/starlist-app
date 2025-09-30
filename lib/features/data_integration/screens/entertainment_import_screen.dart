@@ -671,7 +671,7 @@ class _EntertainmentImportScreenState extends ConsumerState<EntertainmentImportS
                 ],
               ),
             );
-          }).toList(),
+          }),
           const SizedBox(height: 16),
           Row(
             children: [

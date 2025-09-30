@@ -33,6 +33,7 @@ dependencies:
   # Connectivity and settings storage
   connectivity_plus: ^6.0.5
   shared_preferences: ^2.2.3
+  intl: ^0.20.2
 
 dev_dependencies:
   flutter_test:
@@ -44,7 +45,6 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
-    - .env
     - assets/images/
     - assets/icons/
     - assets/icons/services/

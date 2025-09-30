@@ -56,6 +56,8 @@ class ServiceIcons {
       'hulu': 'assets/icons/services/hulu.svg',
       'unext': 'assets/icons/services/unext.svg',
       'abema': 'assets/icons/services/abema.svg',
+      'dtv': 'assets/icons/services/dtv.svg',
+      'fod': 'assets/icons/services/fod.svg',
       'niconico': 'assets/icons/services/niconico.svg',
       
       // 配信サービス（公式アイコン）
@@ -68,6 +70,13 @@ class ServiceIcons {
       'mildom': 'assets/icons/services/mildom.svg',
       'pococha': 'assets/icons/services/pococha.svg',
       'palmu': 'assets/icons/services/palmu.svg',
+      'bigolive': 'assets/icons/services/bigolive.svg',
+      'openrec': 'assets/icons/services/openrec.svg',
+      'mirrativ': 'assets/icons/services/mirrativ.svg',
+      'reality': 'assets/icons/services/reality.svg',
+      'iriam': 'assets/icons/services/iriam.svg',
+      'spoon': 'assets/icons/services/spoon.svg',
+      'tangome': 'assets/icons/services/tangome.svg',
       
       // SNS（公式アイコン）
       'instagram': 'assets/icons/services/instagram.svg',
@@ -87,19 +96,27 @@ class ServiceIcons {
       'qoo10': 'assets/icons/services/qoo10.svg',
       'yahoo_shopping': 'assets/icons/services/yahoo_shopping.svg',
       'mercari': 'assets/icons/services/mercari.svg',
-      'other_ec': 'assets/icons/services/other_ec.svg',
+      'valuecommerce': 'assets/icons/services/valuecommerce.svg',
+      'other_ec': 'assets/icons/services/other.svg',
       'amazon_music': 'assets/icons/services/amazon_music.svg',
-      
+
       // エンタメ・その他（公式アイコン）
       'games': 'assets/icons/services/games.svg',
+      'game_apps': 'assets/icons/services/game_apps.svg',
       'books_manga': 'assets/icons/services/books_manga.svg',
+      'books': 'assets/icons/services/books.svg',
       'cinema': 'assets/icons/services/cinema.svg',
-      'restaurant': 'assets/icons/services/restaurant_cafe.svg',
+      'food': 'assets/icons/services/food.svg',
+      'restaurant': 'assets/icons/services/restaurant.svg',
       'delivery': 'assets/icons/services/delivery.svg',
       'cooking': 'assets/icons/services/cooking.svg',
       'credit_card': 'assets/icons/services/credit_card.svg',
       'electronic_money': 'assets/icons/services/electronic_money.svg',
       'live_concert': 'assets/icons/services/live_concert.svg',
+      'receipt': 'assets/icons/services/receipt.svg',
+      'smartphone_apps': 'assets/icons/services/smartphone_apps.svg',
+      'web_services': 'assets/icons/services/web_services.svg',
+      'other': 'assets/icons/services/other.svg',
     };
     final iconPath = iconPaths[id];
     if (preferRemote[id] == true) {

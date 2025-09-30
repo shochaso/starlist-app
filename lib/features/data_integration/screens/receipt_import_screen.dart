@@ -670,12 +670,12 @@ class _ReceiptImportScreenState extends ConsumerState<ReceiptImportScreen>
                         ),
                       ),
                     );
-                  }).toList(),
+                  }),
                   
                   const SizedBox(height: 16),
                 ],
               );
-            }).toList(),
+            }),
 
             // 確定ボタン
             Row(

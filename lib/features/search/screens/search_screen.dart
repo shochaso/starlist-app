@@ -1170,7 +1170,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
               margin: const EdgeInsets.only(bottom: 16),
               child: _buildContentResultItem(content, isDark, false),
             ),
-          ).toList(),
+          ),
         ],
       ),
     );
@@ -1633,7 +1633,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
                           activeColor: const Color(0xFF4ECDC4),
                           contentPadding: EdgeInsets.zero,
                         );
-                      }).toList(),
+                      }),
                       
                       const SizedBox(height: 24),
                       
@@ -1660,7 +1660,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
                             fontSize: 12,
                           ),
                         ),
-                        activeColor: const Color(0xFF4ECDC4),
+                        activeThumbColor: const Color(0xFF4ECDC4),
                         contentPadding: EdgeInsets.zero,
                       ),
                       

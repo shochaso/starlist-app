@@ -711,7 +711,7 @@ class _DigitalImportScreenState extends ConsumerState<DigitalImportScreen> {
                 ],
               ),
             );
-          }).toList(),
+          }),
           const SizedBox(height: 16),
           Row(
             children: [

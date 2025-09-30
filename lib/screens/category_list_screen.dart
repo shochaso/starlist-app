@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../routes/app_routes.dart';
 
 class CategoryListScreen extends StatefulWidget {
-  const CategoryListScreen({Key? key}) : super(key: key);
+  const CategoryListScreen({super.key});
 
   @override
   _CategoryListScreenState createState() => _CategoryListScreenState();

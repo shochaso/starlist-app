@@ -3,8 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../providers/user_provider.dart';
 import '../../../src/providers/theme_provider_enhanced.dart';
 // import '../../../src/widgets/profile_header.dart';
-import '../../../data/test_accounts_data.dart';
-import '../../star/screens/generic_star_detail_page.dart';
 import 'profile_edit_screen.dart';
 
 class ProfileScreen extends ConsumerWidget {

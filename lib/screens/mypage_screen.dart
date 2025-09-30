@@ -14,9 +14,9 @@ class MypageScreen extends ConsumerWidget {
   final Function? onThemeToggle;
 
   const MypageScreen({
-    Key? key,
+    super.key,
     this.onThemeToggle,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -131,7 +131,7 @@ class MypageScreen extends ConsumerWidget {
                     ),
                     trailing: Switch(
                       value: isDarkMode,
-                      activeColor: isDarkMode ? Colors.blue : Colors.black,
+                      activeThumbColor: isDarkMode ? Colors.blue : Colors.black,
                       onChanged: (value) {
                         if (onThemeToggle != null) {
                           onThemeToggle!();
@@ -458,7 +458,7 @@ class MypageScreen extends ConsumerWidget {
         ref.read(currentUserProvider.notifier).state = user;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('${title}アカウントに切り替えました。'),
+            content: Text('$titleアカウントに切り替えました。'),
             duration: const Duration(seconds: 2),
           ),
         );

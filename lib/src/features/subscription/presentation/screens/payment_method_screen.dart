@@ -1,60 +1,85 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
 import '../../models/subscription_plan.dart';
 import '../../providers/subscription_provider.dart';
-import '../widgets/payment_card_input.dart';
 
 class PaymentMethodScreen extends ConsumerStatefulWidget {
   final SubscriptionPlan plan;
+  final bool isYearly;
 
   const PaymentMethodScreen({
     Key? key,
     required this.plan,
+    this.isYearly = false,
   }) : super(key: key);
 
   @override
-  ConsumerState<PaymentMethodScreen> createState() => _PaymentMethodScreenState();
+  ConsumerState<PaymentMethodScreen> createState() =>
+      _PaymentMethodScreenState();
 }
 
 class _PaymentMethodScreenState extends ConsumerState<PaymentMethodScreen> {
   final _formKey = GlobalKey<FormState>();
   String _selectedPaymentMethod = 'credit_card';
-  
+
   // カード情報
   String _cardNumber = '';
   String _expiryDate = '';
   String _cvv = '';
   String _cardHolderName = '';
-  
+
   bool _isProcessing = false;
-  
+
   void _submitPayment() async {
-    if (_selectedPaymentMethod == 'credit_card' && !_formKey.currentState!.validate()) {
+    if (_selectedPaymentMethod == 'credit_card' &&
+        !_formKey.currentState!.validate()) {
       return;
     }
-    
+
     setState(() {
       _isProcessing = true;
     });
-    
+
     // 仮の処理遅延（実際はサーバー通信）
     await Future.delayed(const Duration(seconds: 2));
-    
-    // サブスクリプション登録（仮）
-    const userId = 'user123'; // 実際は認証済みユーザーIDを使用
-    final paymentMethodId = 'pm_${DateTime.now().millisecondsSinceEpoch}'; // 仮のID
-    
+
+    // サブスクリプション登録
+    final userId = Supabase.instance.client.auth.currentUser?.id ?? 'mock-user';
+
+    String? cardLast4;
+    if (_selectedPaymentMethod == 'credit_card') {
+      final sanitized = _cardNumber.replaceAll(RegExp(r'\s+'), '');
+      if (sanitized.length >= 4) {
+        cardLast4 = sanitized.substring(sanitized.length - 4);
+      }
+      final holder = _cardHolderName.trim();
+      final hasCvv = _cvv.trim().isNotEmpty;
+      debugPrint(
+          '[Payment] Card holder: ${holder.isEmpty ? '未入力' : holder}, expiry: $_expiryDate, cvvProvided: $hasCvv');
+    }
+
+    final paymentMethodId =
+        'pm_${DateTime.now().millisecondsSinceEpoch}_${cardLast4 ?? _selectedPaymentMethod}';
+
     try {
       await ref.read(subscriptionProvider).subscribe(
-        userId,
-        widget.plan.id,
-        paymentMethodId,
-      );
-      
+            userId,
+            widget.plan.id,
+            paymentMethodId,
+          );
+
       // 成功時の処理
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('サブスクリプションが開始されました！')),
+          SnackBar(
+            content: Text(
+              _selectedPaymentMethod == 'credit_card' && cardLast4 != null
+                  ? 'カード末尾$cardLast4でサブスクリプションが開始されました！'
+                  : 'サブスクリプションが開始されました！',
+            ),
+          ),
         );
         Navigator.of(context).popUntil((route) => route.isFirst);
       }
@@ -73,11 +98,19 @@ class _PaymentMethodScreenState extends ConsumerState<PaymentMethodScreen> {
       }
     }
   }
-  
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+    final isYearlyPlan =
+        widget.isYearly || widget.plan.billingPeriod.inDays >= 360;
+    final discountMonths = widget.plan.metadata['discount_months_free'] as int?;
+    final monthlyEquivalentValue =
+        widget.plan.metadata['yearly_monthly_equivalent'] as num?;
+    final monthlyEquivalent = isYearlyPlan
+        ? (monthlyEquivalentValue?.toDouble() ?? (widget.plan.price / 12))
+        : null;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('支払い方法'),
@@ -134,12 +167,25 @@ class _PaymentMethodScreenState extends ConsumerState<PaymentMethodScreen> {
                     Text(
                       widget.plan.price == 0
                           ? '無料'
-                          : '¥${widget.plan.price.toInt()} / ${widget.plan.billingPeriod.inDays == 30 ? '月' : '年'}',
+                          : '¥${widget.plan.price.toInt()} / ${isYearlyPlan ? '年' : '月'}',
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
+                    if (isYearlyPlan && widget.plan.price > 0)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: Text(
+                          discountMonths != null
+                              ? '月あたり ¥${monthlyEquivalent!.toStringAsFixed(0)}（${discountMonths}ヶ月分お得）'
+                              : '月あたり ¥${monthlyEquivalent!.toStringAsFixed(0)}',
+                          style: TextStyle(
+                            color: Colors.green.shade700,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
                     const SizedBox(height: 4),
                     Text(
                       widget.plan.description,
@@ -151,9 +197,9 @@ class _PaymentMethodScreenState extends ConsumerState<PaymentMethodScreen> {
                 ),
               ),
             ),
-            
+
             const SizedBox(height: 24),
-            
+
             const Text(
               '支払い方法を選択',
               style: TextStyle(
@@ -161,21 +207,21 @@ class _PaymentMethodScreenState extends ConsumerState<PaymentMethodScreen> {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             // 支払い方法選択
             _buildPaymentMethodSelector(theme),
-            
+
             const SizedBox(height: 24),
-            
+
             // 選択した支払い方法のフォーム
             _selectedPaymentMethod == 'credit_card'
                 ? _buildCreditCardForm()
                 : _buildQRPaymentUI(_selectedPaymentMethod),
-                
+
             const SizedBox(height: 32),
-            
+
             // 支払いボタン
             SizedBox(
               width: double.infinity,
@@ -207,9 +253,9 @@ class _PaymentMethodScreenState extends ConsumerState<PaymentMethodScreen> {
                       ),
               ),
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             // 注意事項
             Container(
               padding: const EdgeInsets.all(16),
@@ -230,7 +276,7 @@ class _PaymentMethodScreenState extends ConsumerState<PaymentMethodScreen> {
                   Text(
                     '• サブスクリプションは自動更新されます\n'
                     '• いつでもアカウント設定から解約できます\n'
-                    '• 選択した支払い方法で${widget.plan.billingPeriod.inDays == 30 ? '月' : '年'}額が自動的に請求されます',
+                    '• 選択した支払い方法で${isYearlyPlan ? '年' : '月'}額が自動的に請求されます',
                     style: TextStyle(
                       color: Colors.grey.shade700,
                       fontSize: 14,
@@ -244,7 +290,7 @@ class _PaymentMethodScreenState extends ConsumerState<PaymentMethodScreen> {
       ),
     );
   }
-  
+
   Widget _buildPaymentMethodSelector(ThemeData theme) {
     return Column(
       children: [
@@ -264,21 +310,29 @@ class _PaymentMethodScreenState extends ConsumerState<PaymentMethodScreen> {
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Image.asset('assets/images/visa.png', width: 40, height: 25,
-                errorBuilder: (context, error, stackTrace) => 
-                  const Icon(Icons.credit_card, size: 30, color: Colors.blue),
+              Image.asset(
+                'assets/images/visa.png',
+                width: 40,
+                height: 25,
+                errorBuilder: (context, error, stackTrace) =>
+                    const Icon(Icons.credit_card, size: 30, color: Colors.blue),
               ),
               const SizedBox(width: 8),
-              Image.asset('assets/images/jcb.png', width: 40, height: 25,
-                errorBuilder: (context, error, stackTrace) => 
-                  const Icon(Icons.credit_card, size: 30, color: Colors.green),
+              Image.asset(
+                'assets/images/jcb.png',
+                width: 40,
+                height: 25,
+                errorBuilder: (context, error, stackTrace) => const Icon(
+                    Icons.credit_card,
+                    size: 30,
+                    color: Colors.green),
               ),
             ],
           ),
         ),
-        
+
         const Divider(),
-        
+
         // PayPay
         ListTile(
           title: const Text('PayPay'),
@@ -292,14 +346,19 @@ class _PaymentMethodScreenState extends ConsumerState<PaymentMethodScreen> {
             },
             activeColor: theme.colorScheme.primary,
           ),
-          trailing: Image.asset('assets/images/paypay.png', width: 40, height: 40,
-            errorBuilder: (context, error, stackTrace) => 
-              const Icon(Icons.account_balance_wallet, size: 30, color: Colors.red),
+          trailing: Image.asset(
+            'assets/images/paypay.png',
+            width: 40,
+            height: 40,
+            errorBuilder: (context, error, stackTrace) => const Icon(
+                Icons.account_balance_wallet,
+                size: 30,
+                color: Colors.red),
           ),
         ),
-        
+
         const Divider(),
-        
+
         // メルペイ
         ListTile(
           title: const Text('メルペイ'),
@@ -313,14 +372,17 @@ class _PaymentMethodScreenState extends ConsumerState<PaymentMethodScreen> {
             },
             activeColor: theme.colorScheme.primary,
           ),
-          trailing: Image.asset('assets/images/merpay.png', width: 40, height: 40,
-            errorBuilder: (context, error, stackTrace) => 
-              const Icon(Icons.shopping_cart, size: 30, color: Colors.orange),
+          trailing: Image.asset(
+            'assets/images/merpay.png',
+            width: 40,
+            height: 40,
+            errorBuilder: (context, error, stackTrace) =>
+                const Icon(Icons.shopping_cart, size: 30, color: Colors.orange),
           ),
         ),
-        
+
         const Divider(),
-        
+
         // Apple Pay（iOSの場合）
         if (Theme.of(context).platform == TargetPlatform.iOS)
           ListTile(
@@ -335,12 +397,15 @@ class _PaymentMethodScreenState extends ConsumerState<PaymentMethodScreen> {
               },
               activeColor: theme.colorScheme.primary,
             ),
-            trailing: Image.asset('assets/images/apple_pay.png', width: 40, height: 40,
-              errorBuilder: (context, error, stackTrace) => 
-                const Icon(Icons.apple, size: 30),
+            trailing: Image.asset(
+              'assets/images/apple_pay.png',
+              width: 40,
+              height: 40,
+              errorBuilder: (context, error, stackTrace) =>
+                  const Icon(Icons.apple, size: 30),
             ),
           ),
-          
+
         // Google Pay（Androidの場合）
         if (Theme.of(context).platform == TargetPlatform.android)
           ListTile(
@@ -355,15 +420,18 @@ class _PaymentMethodScreenState extends ConsumerState<PaymentMethodScreen> {
               },
               activeColor: theme.colorScheme.primary,
             ),
-            trailing: Image.asset('assets/images/google_pay.png', width: 40, height: 40,
-              errorBuilder: (context, error, stackTrace) => 
-                const Icon(Icons.g_mobiledata, size: 30, color: Colors.blue),
+            trailing: Image.asset(
+              'assets/images/google_pay.png',
+              width: 40,
+              height: 40,
+              errorBuilder: (context, error, stackTrace) =>
+                  const Icon(Icons.g_mobiledata, size: 30, color: Colors.blue),
             ),
           ),
       ],
     );
   }
-  
+
   Widget _buildCreditCardForm() {
     return Form(
       key: _formKey,
@@ -378,7 +446,7 @@ class _PaymentMethodScreenState extends ConsumerState<PaymentMethodScreen> {
             ),
           ),
           const SizedBox(height: 16),
-          
+
           // カード番号
           TextFormField(
             decoration: const InputDecoration(
@@ -401,9 +469,9 @@ class _PaymentMethodScreenState extends ConsumerState<PaymentMethodScreen> {
               return null;
             },
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           // 有効期限とCVV
           Row(
             children: [
@@ -427,9 +495,9 @@ class _PaymentMethodScreenState extends ConsumerState<PaymentMethodScreen> {
                   },
                 ),
               ),
-              
+
               const SizedBox(width: 16),
-              
+
               // CVV
               Expanded(
                 child: TextFormField(
@@ -456,9 +524,9 @@ class _PaymentMethodScreenState extends ConsumerState<PaymentMethodScreen> {
               ),
             ],
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           // カード名義
           TextFormField(
             decoration: const InputDecoration(
@@ -481,12 +549,12 @@ class _PaymentMethodScreenState extends ConsumerState<PaymentMethodScreen> {
       ),
     );
   }
-  
+
   Widget _buildQRPaymentUI(String paymentMethod) {
     String methodName = '';
     Color methodColor = Colors.blue;
     IconData methodIcon = Icons.qr_code;
-    
+
     switch (paymentMethod) {
       case 'paypay':
         methodName = 'PayPay';
@@ -509,7 +577,7 @@ class _PaymentMethodScreenState extends ConsumerState<PaymentMethodScreen> {
         methodIcon = Icons.g_mobiledata;
         break;
     }
-    
+
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -540,4 +608,4 @@ class _PaymentMethodScreenState extends ConsumerState<PaymentMethodScreen> {
       ),
     );
   }
-} 
+}

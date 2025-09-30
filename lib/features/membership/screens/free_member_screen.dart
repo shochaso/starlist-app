@@ -79,7 +79,7 @@ class _FreeMemberScreenState extends ConsumerState<FreeMemberScreen> {
       ),
       child: Row(
         children: [
-          Icon(
+          const Icon(
             Icons.info_outline,
             color: Colors.orange,
             size: 24,

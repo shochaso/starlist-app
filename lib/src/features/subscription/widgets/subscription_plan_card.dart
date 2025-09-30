@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import '../models/subscription_models.dart';
+import '../models/subscription_models.dart' as plan_models;
 
 /// サブスクリプションプランカードウィジェット
 class SubscriptionPlanCard extends StatelessWidget {
-  final SubscriptionPlan plan;
+  final plan_models.SubscriptionPlan plan;
   final bool isSelected;
   final bool isYearly;
   final VoidCallback? onTap;
@@ -20,8 +20,8 @@ class SubscriptionPlanCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final price = isYearly ? plan.yearlyMonthlyEquivalent : plan.priceMonthlyJpy;
-    final originalPrice = isYearly ? plan.priceMonthlyJpy : null;
+    final price = isYearly ? plan.priceYearlyJpy : plan.priceMonthlyJpy;
+    final originalPrice = isYearly ? plan.priceMonthlyJpy * 12 : null;
 
     return GestureDetector(
       onTap: onTap,
@@ -30,12 +30,12 @@ class SubscriptionPlanCard extends StatelessWidget {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isSelected 
+            color: isSelected
                 ? Theme.of(context).primaryColor
                 : Colors.grey.shade300,
             width: isSelected ? 2 : 1,
           ),
-          color: isSelected 
+          color: isSelected
               ? Theme.of(context).primaryColor.withOpacity(0.05)
               : Colors.white,
           boxShadow: [
@@ -67,13 +67,13 @@ class SubscriptionPlanCard extends StatelessWidget {
                     '👑 人気No.1',
                     textAlign: TextAlign.center,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
                   ),
                 ),
               ),
-            
+
             // メインコンテンツ
             Padding(
               padding: const EdgeInsets.all(20).copyWith(
@@ -93,61 +93,67 @@ class SubscriptionPlanCard extends StatelessWidget {
                           children: [
                             Text(
                               plan.nameJa,
-                              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: isSelected 
-                                    ? Theme.of(context).primaryColor
-                                    : null,
-                              ),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .headlineSmall
+                                  ?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: isSelected
+                                        ? Theme.of(context).primaryColor
+                                        : null,
+                                  ),
                             ),
                             if (plan.description != null)
                               Text(
                                 plan.description!,
-                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                  color: Colors.grey.shade600,
-                                ),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall
+                                    ?.copyWith(
+                                      color: Colors.grey.shade600,
+                                    ),
                               ),
                           ],
                         ),
                       ),
                     ],
                   ),
-                  
+
                   const SizedBox(height: 16),
-                  
+
                   // 価格表示
                   _buildPriceSection(context, price, originalPrice),
-                  
+
                   const SizedBox(height: 20),
-                  
+
                   // スターP付与
                   _buildStarPointsSection(context),
-                  
+
                   const SizedBox(height: 16),
-                  
+
                   // 特典リスト
                   _buildBenefitsList(context),
-                  
+
                   // 削除された機能（デバッグ用）
-                  if (showRemovedFeatures && plan.removedFeatures.isNotEmpty) ...[
+                  if (showRemovedFeatures &&
+                      plan.removedFeatures.isNotEmpty) ...[
                     const SizedBox(height: 16),
                     _buildRemovedFeaturesList(context),
                   ],
-                  
+
                   const SizedBox(height: 20),
-                  
+
                   // 選択ボタン
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: onTap,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: isSelected 
+                        backgroundColor: isSelected
                             ? Theme.of(context).primaryColor
                             : Colors.grey.shade200,
-                        foregroundColor: isSelected 
-                            ? Colors.white 
-                            : Colors.grey.shade700,
+                        foregroundColor:
+                            isSelected ? Colors.white : Colors.grey.shade700,
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
@@ -175,21 +181,20 @@ class SubscriptionPlanCard extends StatelessWidget {
     Color iconColor;
 
     switch (plan.planType) {
-      case SubscriptionPlanType.free:
+      case plan_models.SubscriptionPlanType.free:
         iconData = Icons.star_outline;
         iconColor = Colors.grey;
         break;
-      case SubscriptionPlanType.light:
+      case plan_models.SubscriptionPlanType.light:
         iconData = Icons.star_outline;
         iconColor = Colors.green;
         break;
-      case SubscriptionPlanType.standard:
+      case plan_models.SubscriptionPlanType.standard:
         iconData = Icons.star_half;
         iconColor = Colors.blue;
         break;
-      case SubscriptionPlanType.premium:
+      case plan_models.SubscriptionPlanType.premium:
         iconData = Icons.star;
-        iconColor = Colors.purple;
         iconColor = Colors.red;
         break;
     }
@@ -208,7 +213,8 @@ class SubscriptionPlanCard extends StatelessWidget {
     );
   }
 
-  Widget _buildPriceSection(BuildContext context, int price, int? originalPrice) {
+  Widget _buildPriceSection(
+      BuildContext context, num price, num? originalPrice) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -217,26 +223,26 @@ class SubscriptionPlanCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.baseline,
           children: [
             Text(
-              '¥${price.toStringAsFixed(0)}',
+              '¥${price.toDouble().toStringAsFixed(0)}',
               style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: Theme.of(context).primaryColor,
-              ),
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).primaryColor,
+                  ),
             ),
             Text(
-              '/月',
+              isYearly ? '/年' : '/月',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Colors.grey.shade600,
-              ),
+                    color: Colors.grey.shade600,
+                  ),
             ),
             if (originalPrice != null && originalPrice > price) ...[
               const SizedBox(width: 8),
               Text(
-                '¥${originalPrice.toStringAsFixed(0)}',
+                '¥${originalPrice.toDouble().toStringAsFixed(0)}',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Colors.grey.shade500,
-                  decoration: TextDecoration.lineThrough,
-                ),
+                      color: Colors.grey.shade500,
+                      decoration: TextDecoration.lineThrough,
+                    ),
               ),
             ],
           ],
@@ -250,11 +256,11 @@ class SubscriptionPlanCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(4),
             ),
             child: Text(
-              '年払いで${((plan.yearlyDiscountRate * 100).round())}%オフ',
+              '年払いで${(plan.yearlyDiscountRate * 100).round()}%オフ（約¥${plan.yearlyDiscount}お得）',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Colors.green.shade700,
-                fontWeight: FontWeight.w500,
-              ),
+                    color: Colors.green.shade700,
+                    fontWeight: FontWeight.w500,
+                  ),
             ),
           ),
         ],
@@ -278,11 +284,11 @@ class SubscriptionPlanCard extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           Text(
-            '月間 ${plan.starPointsMonthly.toStringAsFixed(0)} スターP付与',
+            '月間 ${plan.starPointsMonthly} スターP付与',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              fontWeight: FontWeight.w500,
-              color: Theme.of(context).primaryColor,
-            ),
+                  fontWeight: FontWeight.w500,
+                  color: Theme.of(context).primaryColor,
+                ),
           ),
         ],
       ),
@@ -296,30 +302,30 @@ class SubscriptionPlanCard extends StatelessWidget {
         Text(
           '含まれる特典',
           style: Theme.of(context).textTheme.titleSmall?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
+                fontWeight: FontWeight.bold,
+              ),
         ),
         const SizedBox(height: 8),
         ...plan.benefits.map((benefit) => Padding(
-          padding: const EdgeInsets.only(bottom: 4),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Icon(
-                Icons.check_circle,
-                color: Colors.green,
-                size: 16,
+              padding: const EdgeInsets.only(bottom: 4),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Icon(
+                    Icons.check_circle,
+                    color: Colors.green,
+                    size: 16,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      benefit,
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  benefit,
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-              ),
-            ],
-          ),
-        )),
+            )),
       ],
     );
   }
@@ -331,34 +337,34 @@ class SubscriptionPlanCard extends StatelessWidget {
         Text(
           '削除された機能',
           style: Theme.of(context).textTheme.titleSmall?.copyWith(
-            fontWeight: FontWeight.bold,
-            color: Colors.red.shade700,
-          ),
+                fontWeight: FontWeight.bold,
+                color: Colors.red.shade700,
+              ),
         ),
         const SizedBox(height: 8),
         ...plan.removedFeatures.map((feature) => Padding(
-          padding: const EdgeInsets.only(bottom: 4),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Icon(
-                Icons.remove_circle,
-                color: Colors.red.shade400,
-                size: 16,
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  feature,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Colors.red.shade600,
-                    decoration: TextDecoration.lineThrough,
+              padding: const EdgeInsets.only(bottom: 4),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(
+                    Icons.remove_circle,
+                    color: Colors.red.shade400,
+                    size: 16,
                   ),
-                ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      feature,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: Colors.red.shade600,
+                            decoration: TextDecoration.lineThrough,
+                          ),
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
-        )),
+            )),
       ],
     );
   }

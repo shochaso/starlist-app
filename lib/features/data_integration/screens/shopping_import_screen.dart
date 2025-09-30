@@ -641,7 +641,7 @@ class _ShoppingImportScreenState extends ConsumerState<ShoppingImportScreen>
                 ],
               ),
             );
-          }).toList(),
+          }),
           const SizedBox(height: 16),
           Row(
             children: [

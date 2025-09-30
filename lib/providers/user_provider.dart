@@ -239,7 +239,7 @@ final userModeProvider = StateNotifierProvider<UserModeNotifier, UserMode>((ref)
 });
 
 class UserModeNotifier extends StateNotifier<UserMode> {
-  UserModeNotifier(UserMode initialMode) : super(initialMode);
+  UserModeNotifier(super.initialMode);
   void switchMode() { state = state == UserMode.star ? UserMode.fan : UserMode.star; }
   void setMode(UserMode mode) { state = mode; }
 }

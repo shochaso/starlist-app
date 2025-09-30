@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+run_chrome() {
+  echo "Chrome版Starlistを起動します..."
+  (cd "$ROOT_DIR" && flutter run -d chrome --web-port=8080)
+}
+
+show_help() {
+  cat <<'USAGE'
+Starlist CLI
+-------------
+利用可能なコマンド:
+  c/C : ChromeでStarlistアプリを実行
+  h : このヘルプを表示
+  q : 終了
+
+コマンドを入力してください。
+USAGE
+}
+
+handle_command() {
+  local cmd="$1"
+  case "$cmd" in
+    c|C)
+      run_chrome
+      ;;
+    h|help)
+      show_help
+      ;;
+    q|quit|exit)
+      echo "終了します。"
+      exit 0
+      ;;
+    "")
+      ;;
+    *)
+      echo "不明なコマンドです: $cmd"
+      ;;
+  esac
+}
+
+if [[ $# -gt 0 ]]; then
+  handle_command "$1"
+  exit 0
+fi
+
+show_help
+while true; do
+  read -rp "> " input
+  handle_command "$input"
+done

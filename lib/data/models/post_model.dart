@@ -136,9 +136,9 @@ class PostModel {
     if (totalMinutes >= 60) {
       final hours = totalMinutes ~/ 60;
       final minutes = totalMinutes % 60;
-      return '${hours}時間${minutes}分';
+      return '$hours時間$minutes分';
     }
-    return '${totalMinutes}分';
+    return '$totalMinutes分';
   }
 
   /// 総購入金額計算

@@ -78,13 +78,6 @@ class ParentalConsentService {
           .eq('id', consentId)
           .single();
 
-      if (consent == null) {
-        return ParentalConsentResult(
-          success: false,
-          error: '親権者同意情報が見つかりません',
-        );
-      }
-
       // eKYC認証を開始（外部サービス連携）
       // 実装時は実際のeKYCサービスAPIを呼び出し
       

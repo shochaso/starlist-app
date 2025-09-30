@@ -34,28 +34,28 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
       'id': 'following',
       'title': 'フォロー中',
       'icon': Icons.person_add_outlined,
-      'color': Color(0xFF4ECDC4),
+      'color': const Color(0xFF4ECDC4),
       'count': 15,
     },
     {
       'id': 'favorites',
       'title': 'お気に入り',
       'icon': Icons.favorite_outline,
-      'color': Color(0xFFFF6B6B),
+      'color': const Color(0xFFFF6B6B),
       'count': 42,
     },
     {
       'id': 'playlists',
       'title': 'プレイリスト',
       'icon': Icons.playlist_play_outlined,
-      'color': Color(0xFF8B5CF6),
+      'color': const Color(0xFF8B5CF6),
       'count': 6,
     },
     {
       'id': 'saved',
       'title': '保存済み',
       'icon': Icons.bookmark_outline,
-      'color': Color(0xFFFFE66D),
+      'color': const Color(0xFFFFE66D),
       'count': 28,
     },
   ];
@@ -213,7 +213,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
       'name': 'アーリーアダプター',
       'description': 'Starlistの初期ユーザー',
       'icon': Icons.star,
-      'color': Color(0xFFFFD700),
+      'color': const Color(0xFFFFD700),
       'earned': true,
       'earnedDate': '2023-08-15',
     },
@@ -222,7 +222,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
       'name': 'アクティブユーザー',
       'description': '30日連続でアプリを利用',
       'icon': Icons.local_fire_department,
-      'color': Color(0xFFFF6B6B),
+      'color': const Color(0xFFFF6B6B),
       'earned': true,
       'earnedDate': '2023-12-01',
     },
@@ -231,7 +231,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
       'name': 'キュレーター',
       'description': '50個以上のコンテンツをお気に入り',
       'icon': Icons.collections_bookmark,
-      'color': Color(0xFF4ECDC4),
+      'color': const Color(0xFF4ECDC4),
       'earned': false,
       'progress': 42,
       'target': 50,
@@ -596,7 +596,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
           ),
         ),
       ),
-    );
+    )
   }
 
   Widget _buildTabItem(String label, int index, int selectedIndex) {
@@ -728,7 +728,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
           const SizedBox(height: 24),
           
           // フォロー中のユーザーリスト
-          ...followingData.map((user) => _buildFollowUserCard(user, isDark)).toList(),
+          ...followingData.map((user) => _buildFollowUserCard(user, isDark)),
           
           const SizedBox(height: 100), // ボトムナビゲーション用の余白
         ],
@@ -945,7 +945,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
       padding: const EdgeInsets.all(20),
       child: Column(
         children: [
-          ..._recentActivities.map((activity) => _buildActivityCard(activity)).toList(),
+          ..._recentActivities.map((activity) => _buildActivityCard(activity)),
           const SizedBox(height: 100), // ボトムナビゲーション用の余白
         ],
       ),
@@ -967,7 +967,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
             ),
           ),
           const SizedBox(height: 16),
-          ..._badges.where((badge) => badge['earned']).map((badge) => _buildBadgeCard(badge)).toList(),
+          ..._badges.where((badge) => badge['earned']).map((badge) => _buildBadgeCard(badge)),
           const SizedBox(height: 24),
           const Text(
             '未獲得バッジ',
@@ -978,7 +978,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
             ),
           ),
           const SizedBox(height: 16),
-          ..._badges.where((badge) => !badge['earned']).map((badge) => _buildBadgeCard(badge)).toList(),
+          ..._badges.where((badge) => !badge['earned']).map((badge) => _buildBadgeCard(badge)),
           const SizedBox(height: 100), // ボトムナビゲーション用の余白
         ],
       ),
@@ -1891,8 +1891,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                   children: [
                     Text(
                       '${item['followers']} フォロワー',
-                      style: TextStyle(
-                        color: const Color(0xFF4ECDC4),
+                      style: const TextStyle(
+                        color: Color(0xFF4ECDC4),
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
                       ),
@@ -1964,8 +1964,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                 const SizedBox(height: 4),
                 Text(
                   item['star'],
-                  style: TextStyle(
-                    color: const Color(0xFF4ECDC4),
+                  style: const TextStyle(
+                    color: Color(0xFF4ECDC4),
                     fontSize: 12,
                   ),
                 ),
@@ -2073,8 +2073,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                   children: [
                     Text(
                       '${item['itemCount']}件のアイテム',
-                      style: TextStyle(
-                        color: const Color(0xFF8B5CF6),
+                      style: const TextStyle(
+                        color: Color(0xFF8B5CF6),
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
                       ),
@@ -2143,8 +2143,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                 const SizedBox(height: 4),
                 Text(
                   item['star'],
-                  style: TextStyle(
-                    color: const Color(0xFF4ECDC4),
+                  style: const TextStyle(
+                    color: Color(0xFF4ECDC4),
                     fontSize: 12,
                   ),
                 ),

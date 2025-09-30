@@ -5,8 +5,14 @@ import '../../../core/components/layouts/timeline_view.dart';
 import '../providers/star_activity_provider.dart';
 import '../models/star_activity.dart';
 
+enum TimelineSortOption {
+  newest,
+  oldest,
+  groupedByType,
+}
+
 /// スターのアクティビティタイムラインスクリーン
-class StarActivityTimelineScreen extends ConsumerWidget {
+class StarActivityTimelineScreen extends ConsumerStatefulWidget {
   /// スターのID
   final String starId;
   
@@ -24,32 +30,60 @@ class StarActivityTimelineScreen extends ConsumerWidget {
   }) : super(key: key);
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final activitiesAsync = ref.watch(starActivitiesProvider(starId));
+  ConsumerState<StarActivityTimelineScreen> createState() => _StarActivityTimelineScreenState();
+}
+
+class _StarActivityTimelineScreenState extends ConsumerState<StarActivityTimelineScreen> {
+  TimelineSortOption _sortOption = TimelineSortOption.newest;
+
+  @override
+  Widget build(BuildContext context) {
+    final activitiesAsync = ref.watch(starActivitiesProvider(widget.starId));
     
     return Scaffold(
       appBar: AppBar(
-        title: Text(title ?? 'アクティビティタイムライン'),
+        title: Text(widget.title ?? 'アクティビティタイムライン'),
         actions: [
           IconButton(
             icon: const Icon(Icons.filter_list),
-            onPressed: () => _showFilterDialog(context, ref),
+            onPressed: () => _showFilterDialog(context),
+          ),
+          PopupMenuButton<TimelineSortOption>(
+            tooltip: '並び替え',
+            initialValue: _sortOption,
+            onSelected: (value) => setState(() => _sortOption = value),
+            itemBuilder: (context) => const [
+              PopupMenuItem(
+                value: TimelineSortOption.newest,
+                child: Text('新しい順'),
+              ),
+              PopupMenuItem(
+                value: TimelineSortOption.oldest,
+                child: Text('古い順'),
+              ),
+              PopupMenuItem(
+                value: TimelineSortOption.groupedByType,
+                child: Text('タイプ別にまとめて表示'),
+              ),
+            ],
+            icon: const Icon(Icons.sort),
           ),
         ],
       ),
       body: activitiesAsync.when(
         data: (activities) {
           // 必要に応じてアクティビティをフィルタリング
-          final filteredActivities = activityType != null
+          final filteredActivities = widget.activityType != null
               ? activities
-                  .where((activity) => activity.type == activityType)
+                  .where((activity) => activity.type == widget.activityType)
                   .toList()
               : activities;
+          final sortedActivities = _applySort(filteredActivities);
           
           return Column(
             children: [
               // アクティビティタイプフィルターチップ
-              if (activityType != null)
+              if (widget.activityType != null)
                 Padding(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 16.0,
@@ -59,15 +93,15 @@ class StarActivityTimelineScreen extends ConsumerWidget {
                     spacing: 8.0,
                     children: [
                       FilterChip(
-                        label: Text(_getActivityTypeLabel(activityType!)),
+                        label: Text(_getActivityTypeLabel(widget.activityType!)),
                         selected: true,
                         onSelected: (_) {
                           // フィルターをクリア
                           Navigator.of(context).pushReplacement(
                             MaterialPageRoute(
                               builder: (context) => StarActivityTimelineScreen(
-                                starId: starId,
-                                title: title,
+                                starId: widget.starId,
+                                title: widget.title,
                               ),
                             ),
                           );
@@ -78,8 +112,8 @@ class StarActivityTimelineScreen extends ConsumerWidget {
                           Navigator.of(context).pushReplacement(
                             MaterialPageRoute(
                               builder: (context) => StarActivityTimelineScreen(
-                                starId: starId,
-                                title: title,
+                                starId: widget.starId,
+                                title: widget.title,
                               ),
                             ),
                           );
@@ -92,7 +126,7 @@ class StarActivityTimelineScreen extends ConsumerWidget {
               // タイムライン表示
               Expanded(
                 child: TimelineView(
-                  items: filteredActivities.map(_createTimelineItem).toList(),
+                  items: sortedActivities.map(_createTimelineItem).toList(),
                   isLoading: false,
                   emptyMessage: 'アクティビティがありません',
                   showDividers: true,
@@ -132,7 +166,7 @@ class StarActivityTimelineScreen extends ConsumerWidget {
               Text('データの読み込みに失敗しました: $error'),
               const SizedBox(height: 16.0),
               ElevatedButton(
-                onPressed: () => ref.refresh(starActivitiesProvider(starId)),
+                onPressed: () => ref.refresh(starActivitiesProvider(widget.starId)),
                 child: const Text('再読み込み'),
               ),
             ],
@@ -140,6 +174,30 @@ class StarActivityTimelineScreen extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  List<StarActivity> _applySort(List<StarActivity> activities) {
+    if (_sortOption == TimelineSortOption.groupedByType) {
+      final grouped = <ActivityType, List<StarActivity>>{};
+      for (final activity in activities) {
+        grouped.putIfAbsent(activity.type, () => []).add(activity);
+      }
+      final sortedTypes = grouped.keys.toList()
+        ..sort((a, b) => _getActivityTypeLabel(a).compareTo(_getActivityTypeLabel(b)));
+      final result = <StarActivity>[];
+      for (final type in sortedTypes) {
+        final items = [...grouped[type]!]
+          ..sort((a, b) => b.timestamp.compareTo(a.timestamp));
+        result.addAll(items);
+      }
+      return result;
+    }
+
+    final sorted = [...activities];
+    sorted.sort((a, b) => _sortOption == TimelineSortOption.newest
+        ? b.timestamp.compareTo(a.timestamp)
+        : a.timestamp.compareTo(b.timestamp));
+    return sorted;
   }
 
   /// アクティビティをTimelineItemに変換
@@ -463,7 +521,7 @@ class StarActivityTimelineScreen extends ConsumerWidget {
   }
 
   /// フィルターダイアログを表示
-  void _showFilterDialog(BuildContext context, WidgetRef ref) {
+  void _showFilterDialog(BuildContext context) {
     showDialog(
       context: context,
       builder: (context) {
@@ -487,9 +545,9 @@ class StarActivityTimelineScreen extends ConsumerWidget {
                     Navigator.of(context).pushReplacement(
                       MaterialPageRoute(
                         builder: (context) => StarActivityTimelineScreen(
-                          starId: starId,
+                          starId: widget.starId,
                           activityType: type,
-                          title: title,
+                          title: widget.title,
                         ),
                       ),
                     );
@@ -503,7 +561,7 @@ class StarActivityTimelineScreen extends ConsumerWidget {
               onPressed: () => Navigator.of(context).pop(),
               child: const Text('キャンセル'),
             ),
-            if (activityType != null)
+            if (widget.activityType != null)
               TextButton(
                 onPressed: () {
                   Navigator.of(context).pop();
@@ -512,8 +570,8 @@ class StarActivityTimelineScreen extends ConsumerWidget {
                   Navigator.of(context).pushReplacement(
                     MaterialPageRoute(
                       builder: (context) => StarActivityTimelineScreen(
-                        starId: starId,
-                        title: title,
+                        starId: widget.starId,
+                        title: widget.title,
                       ),
                     ),
                   );

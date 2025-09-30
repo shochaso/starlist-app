@@ -73,8 +73,8 @@ class _FollowerCheckScreenState extends ConsumerState<FollowerCheckScreen> {
           appBar: AppBar(
             title: const Text('スター登録'),
             centerTitle: true,
-            bottom: PreferredSize(
-              preferredSize: const Size.fromHeight(50.0),
+            bottom: const PreferredSize(
+              preferredSize: Size.fromHeight(50.0),
               child: RegistrationProgressIndicator(currentStep: 1),
             ),
           ),
@@ -217,7 +217,7 @@ class _SnsInputGrid extends StatelessWidget {
       crossAxisSpacing: 16,
       mainAxisSpacing: 16,
       childAspectRatio: 3.5,
-      children: [
+      children: const [
         _SnsInputField(snsType: SnsType.x, icon: FontAwesomeIcons.xTwitter),
         _SnsInputField(snsType: SnsType.instagram, icon: FontAwesomeIcons.instagram, iconColor: Colors.pink),
         _SnsInputField(snsType: SnsType.youtube, icon: FontAwesomeIcons.youtube, iconColor: Colors.red),
@@ -252,11 +252,11 @@ class _SnsInputField extends ConsumerWidget {
             onChanged: (value) {
               ref.read(followerCheckProvider.notifier).updateFollowerCount(snsType, int.tryParse(value) ?? 0);
             },
-            decoration: InputDecoration(
+            decoration: const InputDecoration(
               hintText: '0',
               filled: false,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 10),
-              border: const UnderlineInputBorder(),
+              contentPadding: EdgeInsets.symmetric(horizontal: 10),
+              border: UnderlineInputBorder(),
             ),
           ),
         ),

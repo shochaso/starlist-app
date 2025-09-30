@@ -248,7 +248,7 @@ class _PaymentInfoScreenState extends ConsumerState<PaymentInfoScreen> {
           ),
           const SizedBox(height: 16),
           
-          ..._savedPaymentMethods.map((method) => _buildPaymentMethodCard(method)).toList(),
+          ..._savedPaymentMethods.map((method) => _buildPaymentMethodCard(method)),
           
           const SizedBox(height: 20),
           
@@ -448,7 +448,7 @@ class _PaymentInfoScreenState extends ConsumerState<PaymentInfoScreen> {
             ),
           ),
           const SizedBox(height: 16),
-          ..._paymentHistory.map((payment) => _buildPaymentHistoryCard(payment)).toList(),
+          ..._paymentHistory.map((payment) => _buildPaymentHistoryCard(payment)),
         ],
       ),
     );

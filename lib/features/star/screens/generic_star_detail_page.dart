@@ -132,7 +132,7 @@ class _GenericStarDetailPageState extends ConsumerState<GenericStarDetailPage>
         ),
       ),
       leading: IconButton(
-        icon: Icon(
+        icon: const Icon(
           Icons.arrow_back,
           color: Colors.white,
         ),
@@ -598,7 +598,7 @@ class _GenericStarDetailPageState extends ConsumerState<GenericStarDetailPage>
                             children: [
                               Column(
                                 children: [
-                                  Icon(
+                                  const Icon(
                                     Icons.star,
                                     color: Colors.amber,
                                     size: 20,
@@ -623,7 +623,7 @@ class _GenericStarDetailPageState extends ConsumerState<GenericStarDetailPage>
                               ),
                               Column(
                                 children: [
-                                  Icon(
+                                  const Icon(
                                     Icons.confirmation_number,
                                     color: Colors.purple,
                                     size: 20,
@@ -689,11 +689,11 @@ class _GenericStarDetailPageState extends ConsumerState<GenericStarDetailPage>
                   const SizedBox(height: 16),
                   OutlinedButton(
                     onPressed: () => _showUpgradeDialog(),
-                    child: const Text('プランアップグレード'),
                     style: OutlinedButton.styleFrom(
-                      side: BorderSide(color: Colors.blue),
+                      side: const BorderSide(color: Colors.blue),
                       foregroundColor: Colors.blue,
                     ),
+                    child: const Text('プランアップグレード'),
                   ),
                 ],
               ),

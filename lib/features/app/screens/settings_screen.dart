@@ -642,7 +642,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           Switch(
             value: value,
             onChanged: onChanged,
-            activeColor: const Color(0xFF4ECDC4),
+            activeThumbColor: const Color(0xFF4ECDC4),
           ),
         ],
       ),
@@ -899,7 +899,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       }
                     },
                   );
-                }).toList(),
+                }),
                 const SizedBox(height: 16),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
@@ -945,7 +945,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const SizedBox(height: 60, child: Center(child: CircularProgressIndicator()));
             }
-            final data = snapshot.data as Map<String, dynamic>?;
+            final data = snapshot.data;
             final Map<String, dynamic>? sns = (data?['sns_links'] as Map?)?.cast<String, dynamic>();
             websiteCtrl.text = sns != null ? (sns['website'] as String? ?? '') : '';
             return TextField(

@@ -106,7 +106,7 @@ class _VideoImportScreenState extends ConsumerState<VideoImportScreen> {
         // Success message
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('画像が選択されました'),
+            content: const Text('画像が選択されました'),
             backgroundColor: widget.serviceColor,
             duration: const Duration(seconds: 2),
           ),
@@ -137,7 +137,7 @@ class _VideoImportScreenState extends ConsumerState<VideoImportScreen> {
         // Info message
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('画像を選択しました。手動でデータを入力してください。'),
+            content: const Text('画像を選択しました。手動でデータを入力してください。'),
             backgroundColor: widget.serviceColor,
             duration: const Duration(seconds: 3),
             action: SnackBarAction(
@@ -646,7 +646,7 @@ class _VideoImportScreenState extends ConsumerState<VideoImportScreen> {
                 ],
               ),
             );
-          }).toList(),
+          }),
           const SizedBox(height: 16),
           Row(
             children: [

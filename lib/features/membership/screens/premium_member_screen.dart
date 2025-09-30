@@ -451,7 +451,7 @@ class _PremiumMemberScreenState extends ConsumerState<PremiumMemberScreen>
         ),
         const SizedBox(height: 12),
         
-        Container(
+        SizedBox(
           height: 120,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,

@@ -1,30 +1,35 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../models/subscription_models.dart';
+
+import '../models/subscription_models.dart' as plan_models;
+import '../models/subscription_plan.dart' as payment_plan;
 import '../widgets/subscription_plan_card.dart';
+import '../presentation/screens/payment_method_screen.dart';
 
 /// 4プラン表示画面（更新版）
 class SubscriptionPlansScreen extends ConsumerStatefulWidget {
   const SubscriptionPlansScreen({Key? key}) : super(key: key);
 
   @override
-  ConsumerState<SubscriptionPlansScreen> createState() => _SubscriptionPlansScreenState();
+  ConsumerState<SubscriptionPlansScreen> createState() =>
+      _SubscriptionPlansScreenState();
 }
 
-class _SubscriptionPlansScreenState extends ConsumerState<SubscriptionPlansScreen> {
-  SubscriptionPlanType? selectedPlan;
+class _SubscriptionPlansScreenState
+    extends ConsumerState<SubscriptionPlansScreen> {
+  plan_models.SubscriptionPlanType? selectedPlan;
   bool isYearly = true; // デフォルトで年間プランを表示
 
   @override
   void initState() {
     super.initState();
     // デフォルトで人気プランを選択
-    selectedPlan = SubscriptionPlans.popularPlan.planType;
+    selectedPlan = plan_models.SubscriptionPlans.popularPlan.planType;
   }
 
   @override
   Widget build(BuildContext context) {
-    final plans = SubscriptionPlans.allPlans;
+    final plans = plan_models.SubscriptionPlans.allPlans;
     return Scaffold(
       appBar: AppBar(
         title: const Text('プラン選択'),
@@ -87,16 +92,16 @@ class _SubscriptionPlansScreenState extends ConsumerState<SubscriptionPlansScree
             'あなたにぴったりのプランを\n見つけてください',
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
+                  fontWeight: FontWeight.bold,
+                ),
           ),
           const SizedBox(height: 6),
           Text(
             'すべてのプランで毎日ピック機能をお楽しみいただけます',
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Colors.grey.shade600,
-            ),
+                  color: Colors.grey.shade600,
+                ),
           ),
           const SizedBox(height: 8),
           _buildRemovedFeaturesNotice(context),
@@ -125,9 +130,9 @@ class _SubscriptionPlansScreenState extends ConsumerState<SubscriptionPlansScree
             child: Text(
               '',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Colors.orange.shade700,
-                fontWeight: FontWeight.w500,
-              ),
+                    color: Colors.orange.shade700,
+                    fontWeight: FontWeight.w500,
+                  ),
             ),
           ),
         ],
@@ -204,7 +209,8 @@ class _SubscriptionPlansScreenState extends ConsumerState<SubscriptionPlansScree
                     ),
                     const SizedBox(width: 4),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
                         color: Colors.green.shade600,
                         borderRadius: BorderRadius.circular(4),
@@ -212,10 +218,10 @@ class _SubscriptionPlansScreenState extends ConsumerState<SubscriptionPlansScree
                       child: Text(
                         '2ヶ月無料',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 10,
-                        ),
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 10,
+                            ),
                       ),
                     ),
                   ],
@@ -232,7 +238,7 @@ class _SubscriptionPlansScreenState extends ConsumerState<SubscriptionPlansScree
 
   Widget _buildFooterSection(BuildContext context) {
     final selectedPlanData = selectedPlan != null
-        ? SubscriptionPlans.getPlan(selectedPlan!)
+        ? plan_models.SubscriptionPlans.getPlan(selectedPlan!)
         : null;
 
     return Container(
@@ -261,25 +267,25 @@ class _SubscriptionPlansScreenState extends ConsumerState<SubscriptionPlansScree
                     Text(
                       '${selectedPlanData.nameJa}プラン',
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                            fontWeight: FontWeight.bold,
+                          ),
                     ),
                     Text(
                       isYearly
-                          ? '年額 ¥${selectedPlanData.priceYearlyJpy}（月額換算 ¥${selectedPlanData.yearlyMonthlyEquivalent}）'
+                          ? '年額 ¥${selectedPlanData.priceYearlyJpy}（月あたり ¥${selectedPlanData.yearlyMonthlyEquivalent}）'
                           : '月額 ¥${selectedPlanData.priceMonthlyJpy}',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Colors.grey.shade600,
-                      ),
+                            color: Colors.grey.shade600,
+                          ),
                     ),
                   ],
                 ),
                 Text(
                   '${selectedPlanData.starPointsMonthly}P/月',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: Theme.of(context).primaryColor,
-                    fontWeight: FontWeight.bold,
-                  ),
+                        color: Theme.of(context).primaryColor,
+                        fontWeight: FontWeight.bold,
+                      ),
                 ),
               ],
             ),
@@ -289,7 +295,8 @@ class _SubscriptionPlansScreenState extends ConsumerState<SubscriptionPlansScree
             width: double.infinity,
             height: 48,
             child: ElevatedButton(
-              onPressed: selectedPlan != null ? () => _proceedToPayment() : null,
+              onPressed:
+                  selectedPlan != null ? () => _proceedToPayment() : null,
               style: ElevatedButton.styleFrom(
                 backgroundColor: Theme.of(context).primaryColor,
                 foregroundColor: Colors.white,
@@ -311,9 +318,9 @@ class _SubscriptionPlansScreenState extends ConsumerState<SubscriptionPlansScree
             '• いつでもキャンセル可能です\n• 初回7日間無料トライアル\n• 自動更新（設定で変更可能）',
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: Colors.grey.shade600,
-              height: 1.4,
-            ),
+                  color: Colors.grey.shade600,
+                  height: 1.4,
+                ),
           ),
         ],
       ),
@@ -322,21 +329,57 @@ class _SubscriptionPlansScreenState extends ConsumerState<SubscriptionPlansScree
 
   void _proceedToPayment() {
     // 支払い画面へ遷移
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('${SubscriptionPlans.getPlan(selectedPlan!)?.nameJa}プランの支払い処理に進みます'),
-        backgroundColor: Theme.of(context).primaryColor,
+    final planData = plan_models.SubscriptionPlans.getPlan(selectedPlan!);
+    if (planData == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('プラン情報の取得に失敗しました')),
+      );
+      return;
+    }
+
+    final paymentPlan = _mapToPaymentPlan(planData, isYearly: isYearly);
+
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => PaymentMethodScreen(
+          plan: paymentPlan,
+          isYearly: isYearly,
+        ),
       ),
     );
+  }
 
-    // TODO: 支払い画面への遷移実装
-    // Navigator.of(context).push(
-    //   MaterialPageRoute(
-    //     builder: (context) => PaymentScreen(
-    //       plan: selectedPlan!,
-    //       isYearly: isYearly,
-    //     ),
-    //   ),
-    // );
+  payment_plan.SubscriptionPlan _mapToPaymentPlan(
+      plan_models.SubscriptionPlan plan,
+      {required bool isYearly}) {
+    final isFree = plan.planType == plan_models.SubscriptionPlanType.free;
+    final double price = isFree
+        ? 0
+        : isYearly
+            ? plan.priceYearlyJpy.toDouble()
+            : plan.priceMonthlyJpy.toDouble();
+    final duration =
+        isYearly ? const Duration(days: 365) : const Duration(days: 30);
+
+    final idSuffix = isYearly ? 'yearly' : 'monthly';
+
+    return payment_plan.SubscriptionPlan(
+      id: '${plan.planType.name}_$idSuffix',
+      name: isYearly ? '${plan.nameJa}（年額）' : plan.nameJa,
+      description: plan.description ?? (isYearly ? '年額プラン' : '月額プラン'),
+      price: price,
+      currency: 'JPY',
+      billingPeriod: duration,
+      features: plan.benefits,
+      isPopular: plan.isPopular,
+      metadata: {
+        'interval': isYearly ? 'yearly' : 'monthly',
+        'plan_type': plan.planType.name,
+        'star_points_monthly': plan.starPointsMonthly,
+        'removed_features': plan.removedFeatures,
+        if (isYearly) 'discount_months_free': 2,
+        if (isYearly) 'yearly_monthly_equivalent': plan.yearlyMonthlyEquivalent,
+      },
+    );
   }
 }

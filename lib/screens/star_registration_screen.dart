@@ -4,7 +4,7 @@ import 'package:starlist_app/theme/app_theme.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class StarRegistrationScreen extends StatefulWidget {
-  const StarRegistrationScreen({Key? key}) : super(key: key);
+  const StarRegistrationScreen({super.key});
 
   @override
   State<StarRegistrationScreen> createState() => _StarRegistrationScreenState();

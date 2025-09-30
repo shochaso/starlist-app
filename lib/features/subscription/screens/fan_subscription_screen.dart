@@ -126,9 +126,9 @@ class _FanSubscriptionScreenState extends ConsumerState<FanSubscriptionScreen>
             size: 40,
           ),
           const SizedBox(height: 16),
-          Text(
+          const Text(
             '現在のプラン',
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 16,
               color: Colors.white70,
               fontWeight: FontWeight.w500,
@@ -357,7 +357,7 @@ class _FanSubscriptionScreenState extends ConsumerState<FanSubscriptionScreen>
                         ),
                       ],
                     ),
-                  )).toList(),
+                  )),
                 ],
                 
                 // 制限
@@ -394,7 +394,7 @@ class _FanSubscriptionScreenState extends ConsumerState<FanSubscriptionScreen>
                         ),
                       ],
                     ),
-                  )).toList(),
+                  )),
                 ],
                 
                 const SizedBox(height: 24),
@@ -494,7 +494,7 @@ class _FanSubscriptionScreenState extends ConsumerState<FanSubscriptionScreen>
             final isLast = index == features.length - 1;
             
             return _buildComparisonRow(feature, _getFeatureAccess(feature), isDark, isLast);
-          }).toList(),
+          }),
         ],
       ),
     );
@@ -536,7 +536,7 @@ class _FanSubscriptionScreenState extends ConsumerState<FanSubscriptionScreen>
                 ),
               ),
             );
-          }).toList(),
+          }),
         ],
       ),
     );
@@ -635,10 +635,10 @@ class _FanSubscriptionScreenState extends ConsumerState<FanSubscriptionScreen>
               size: 24,
             ),
             const SizedBox(width: 12),
-            Expanded(
+            const Expanded(
               child: Text(
                 'プラン変更確認',
-                style: const TextStyle(
+                style: TextStyle(
                   color: Colors.white,
                   fontSize: 18,
                   fontWeight: FontWeight.w600,

@@ -5,7 +5,7 @@ import 'star_registration_screen.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class LandingScreen extends StatefulWidget {
-  const LandingScreen({Key? key}) : super(key: key);
+  const LandingScreen({super.key});
 
   @override
   State<LandingScreen> createState() => _LandingScreenState();
@@ -432,7 +432,7 @@ class _LandingScreenState extends State<LandingScreen> {
 class DetailPage extends StatelessWidget {
   final String title;
   
-  const DetailPage({Key? key, required this.title}) : super(key: key);
+  const DetailPage({super.key, required this.title});
   
   @override
   Widget build(BuildContext context) {

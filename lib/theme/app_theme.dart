@@ -161,7 +161,7 @@ class AppTheme {
         onError: destructiveForeground,
       ),
       scaffoldBackgroundColor: backgroundColor,
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: cardBackgroundColor,
         elevation: 0,
         shape: RoundedRectangleBorder(

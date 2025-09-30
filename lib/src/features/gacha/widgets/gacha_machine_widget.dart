@@ -1,17 +1,15 @@
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'dart:math' as math;
 
-/// 洗練されたガチャポンマシンアニメーションWidget (Material Motion Principles)
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
+/// 洗練されたガチャマシンのビジュアルおよびアニメーション
 class GachaMachineWidget extends StatefulWidget {
+  const GachaMachineWidget(
+      {super.key, this.onAnimationComplete, this.isActive = false});
+
   final VoidCallback? onAnimationComplete;
   final bool isActive;
-  
-  const GachaMachineWidget({
-    super.key,
-    this.onAnimationComplete,
-    this.isActive = false,
-  });
 
   @override
   State<GachaMachineWidget> createState() => _GachaMachineWidgetState();
@@ -19,8 +17,10 @@ class GachaMachineWidget extends StatefulWidget {
 
 class _GachaMachineWidgetState extends State<GachaMachineWidget>
     with TickerProviderStateMixin {
-  
-  // アニメーションコントローラー
+  static const double _machineWidth = 280;
+  static const double _machineHeight = 360;
+  static const double _capsuleSize = 72;
+
   late AnimationController _leverController;
   late AnimationController _machineShakeController;
   late AnimationController _capsuleController;
@@ -28,8 +28,7 @@ class _GachaMachineWidgetState extends State<GachaMachineWidget>
   late AnimationController _resultController;
   late AnimationController _confettiController;
   late AnimationController _shineController;
-  
-  // アニメーション
+
   late Animation<double> _leverAnimation;
   late Animation<double> _machineShakeAnimation;
   late Animation<Offset> _capsulePositionAnimation;
@@ -38,175 +37,137 @@ class _GachaMachineWidgetState extends State<GachaMachineWidget>
   late Animation<double> _resultScaleAnimation;
   late Animation<double> _confettiAnimation;
   late Animation<double> _shineAnimation;
-  
-  // アニメーション段階
+
   int _currentPhase = 0;
   bool _showCapsule = false;
-  bool _showResult = false;
-  
+
   @override
   void initState() {
     super.initState();
     _setupAnimations();
   }
-  
+
   void _setupAnimations() {
-    // レバーアニメーション - Material Motion: 感応的な操作フィードバック
     _leverController = AnimationController(
-      duration: const Duration(milliseconds: 400),
-      reverseDuration: const Duration(milliseconds: 500),
+      duration: const Duration(milliseconds: 420),
+      reverseDuration: const Duration(milliseconds: 520),
       vsync: this,
     );
-    _leverAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
+    _leverAnimation = CurvedAnimation(
       parent: _leverController,
-      curve: Curves.easeOutQuart, // MD3推奨カーブ
+      curve: Curves.easeOutQuart,
       reverseCurve: Curves.elasticOut,
-    ));
-    
-    // マシン振動アニメーション - Material Motion: 自然な物理応答
+    );
+
     _machineShakeController = AnimationController(
-      duration: const Duration(milliseconds: 600),
+      duration: const Duration(milliseconds: 620),
       vsync: this,
     );
-    _machineShakeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
+    _machineShakeAnimation = CurvedAnimation(
       parent: _machineShakeController,
-      curve: Curves.easeInOutCubic, // スムーズな加減速
-    ));
-    
-    // カプセル落下アニメーション - Material Motion: 重力感のある落下（着地バウンス）
+      curve: Curves.easeInOutCubic,
+    );
+
     _capsuleController = AnimationController(
       duration: const Duration(milliseconds: 1000),
       vsync: this,
     );
     _capsulePositionAnimation = Tween<Offset>(
-      begin: const Offset(0, -2.5),
-      end: const Offset(0.06, 0.2), // ほんの少し右へ転がる
-    ).animate(CurvedAnimation(
-      parent: _capsuleController,
-      curve: Curves.bounceOut, // 自然な着地バウンス
-    ));
-    _capsuleRotationAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.5 * math.pi,
-    ).animate(CurvedAnimation(
+      begin: const Offset(0, -2.6),
+      end: const Offset(0.08, 0.24),
+    ).animate(
+        CurvedAnimation(parent: _capsuleController, curve: Curves.bounceOut));
+    _capsuleRotationAnimation = CurvedAnimation(
       parent: _capsuleController,
       curve: Curves.easeOutQuint,
-    ));
-    
-    // カプセル開封アニメーション - Material Motion: 段階的開示
+    );
+
     _capsuleOpenController = AnimationController(
-      duration: const Duration(milliseconds: 500),
+      duration: const Duration(milliseconds: 480),
       vsync: this,
     );
-    _capsuleOpenAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
+    _capsuleOpenAnimation = CurvedAnimation(
       parent: _capsuleOpenController,
-      curve: Curves.easeOutExpo, // 期待感のあるカーブ
-    ));
-    
-    // 結果表示アニメーション（光のリビールに利用）
+      curve: Curves.easeOutExpo,
+    );
+
     _resultController = AnimationController(
-      duration: const Duration(milliseconds: 800),
+      duration: const Duration(milliseconds: 780),
       vsync: this,
     );
-    _resultScaleAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
+    _resultScaleAnimation = CurvedAnimation(
       parent: _resultController,
       curve: Curves.easeOutCubic,
-    ));
-    
-    // 紙吹雪アニメーション - Material Motion: 祝祭感のある動き
+    );
+
     _confettiController = AnimationController(
       duration: const Duration(milliseconds: 2200),
       vsync: this,
     );
-    _confettiAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
+    _confettiAnimation = CurvedAnimation(
       parent: _confettiController,
       curve: Curves.easeOutCirc,
-    ));
+    );
 
-    // マシンのガラス面に走るシャイン
     _shineController = AnimationController(
-      duration: const Duration(milliseconds: 1200),
+      duration: const Duration(milliseconds: 1300),
       vsync: this,
     );
-    _shineAnimation = Tween<double>(
-      begin: -0.4,
-      end: 1.4,
-    ).animate(CurvedAnimation(
+    _shineAnimation = CurvedAnimation(
       parent: _shineController,
       curve: Curves.easeInOutSine,
-    ));
-    
-    // リスナー設定
+    );
+
     _setupAnimationListeners();
   }
-  
+
   void _setupAnimationListeners() {
     _leverController.addStatusListener((status) {
       if (status == AnimationStatus.completed && _currentPhase == 0) {
         _triggerHapticFeedback(HapticFeedback.lightImpact);
-        // レバーをバウンスさせながら戻す
         _leverController.reverse();
         _nextPhase();
       }
     });
-    
+
     _machineShakeController.addStatusListener((status) {
-      if (status == AnimationStatus.forward) return;
       if (status == AnimationStatus.completed && _currentPhase == 1) {
-        // シャインを停止
         _shineController.stop();
         _triggerHapticFeedback(HapticFeedback.mediumImpact);
         _nextPhase();
       }
     });
-    
+
     _capsuleController.addStatusListener((status) {
       if (status == AnimationStatus.completed && _currentPhase == 2) {
         _triggerHapticFeedback(HapticFeedback.lightImpact);
         _nextPhase();
       }
     });
-    
+
     _capsuleOpenController.addStatusListener((status) {
       if (status == AnimationStatus.completed && _currentPhase == 3) {
         _triggerHapticFeedback(HapticFeedback.heavyImpact);
-        // リビール光＆紙吹雪
         _resultController.forward();
         _confettiController.forward();
-        Future.delayed(const Duration(milliseconds: 300), () {
+        Future.delayed(const Duration(milliseconds: 320), () {
           widget.onAnimationComplete?.call();
         });
       }
     });
   }
-  
+
   void _triggerHapticFeedback(Future<void> Function() feedback) {
     feedback();
   }
-  
+
   void _nextPhase() {
     setState(() {
       _currentPhase++;
     });
-    
+
     switch (_currentPhase) {
       case 1:
-        // 振動と同時にシャイン開始
         _shineController.repeat();
         _machineShakeController.forward();
         break;
@@ -221,7 +182,7 @@ class _GachaMachineWidgetState extends State<GachaMachineWidget>
         break;
     }
   }
-  
+
   @override
   void didUpdateWidget(GachaMachineWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
@@ -229,12 +190,12 @@ class _GachaMachineWidgetState extends State<GachaMachineWidget>
       _startAnimation();
     }
   }
-  
+
   void _startAnimation() {
     _resetAnimations();
     _leverController.forward();
   }
-  
+
   void _resetAnimations() {
     _leverController.reset();
     _machineShakeController.reset();
@@ -243,45 +204,52 @@ class _GachaMachineWidgetState extends State<GachaMachineWidget>
     _resultController.reset();
     _confettiController.reset();
     _shineController.reset();
-    
+
     setState(() {
       _currentPhase = 0;
       _showCapsule = false;
     });
   }
-  
+
   @override
   Widget build(BuildContext context) {
+    final scale = widget.isActive ? 1.05 : 1.0;
+
     return Center(
-      child: SizedBox(
-        width: 300, // 320から300に縮小
-        height: 380, // 420から380に縮小
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            // 紙吹雪エフェクト
-            if (_confettiController.status == AnimationStatus.forward)
-              _buildConfetti(),
-            
-            // リビールの光
-            if (_resultController.status == AnimationStatus.forward)
-              _buildRevealGlow(),
-            
-            // ガチャマシン本体
-            _buildMachine(),
-            
-            // カプセル
-            if (_showCapsule)
-              _buildCapsule(),
-          ],
+      child: AnimatedScale(
+        scale: scale,
+        duration: const Duration(milliseconds: 480),
+        curve: Curves.easeOutBack,
+        child: SizedBox(
+          width: _machineWidth + 72,
+          height: _machineHeight + 96,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              Positioned(
+                bottom: 10,
+                child: _buildMachineBase(),
+              ),
+              if (_confettiController.status == AnimationStatus.forward)
+                _buildConfetti(),
+              if (_resultController.status == AnimationStatus.forward)
+                _buildRevealGlow(),
+              _buildMachine(),
+              if (_showCapsule) _buildCapsule(),
+            ],
+          ),
         ),
       ),
     );
   }
-  
+
   Widget _buildMachine() {
     return AnimatedBuilder(
-      animation: Listenable.merge([_machineShakeAnimation, _leverAnimation, _shineAnimation]),
+      animation: Listenable.merge([
+        _machineShakeAnimation,
+        _leverAnimation,
+        _shineAnimation,
+      ]),
       builder: (context, child) {
         final shakeIntensity = 1 + (_machineShakeAnimation.value * 0.6);
         return Transform.translate(
@@ -290,48 +258,48 @@ class _GachaMachineWidgetState extends State<GachaMachineWidget>
             math.cos(_machineShakeAnimation.value * 12) * 1,
           ),
           child: Container(
-            width: 280,
-            height: 370,
+            width: _machineWidth,
+            height: _machineHeight,
             decoration: BoxDecoration(
-              gradient: LinearGradient(
+              gradient: const LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  const Color(0xFF4ECDC4).withOpacity(0.9),
-                  const Color(0xFF44A08D),
+                  Color(0xFF4ECDC4),
+                  Color(0xFF44A08D),
                 ],
               ),
-              borderRadius: BorderRadius.circular(24),
+              borderRadius: BorderRadius.circular(26),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.15 * shakeIntensity),
-                  blurRadius: 20,
-                  offset: const Offset(0, 8),
+                  color: Colors.black.withOpacity(0.16 * shakeIntensity),
+                  blurRadius: 26,
+                  offset: const Offset(0, 10),
                 ),
                 BoxShadow(
-                  color: const Color(0xFF4ECDC4).withOpacity(0.3 * shakeIntensity),
-                  blurRadius: 40,
+                  color: const Color(0xFF4ECDC4)
+                      .withOpacity(0.28 * shakeIntensity),
+                  blurRadius: 42,
                   offset: const Offset(0, 0),
                 ),
               ],
             ),
             child: Stack(
               children: [
-                // ガラス窓 - Material Design 3のGlass morphism
                 Positioned(
-                  top: 50,
-                  left: 24,
-                  right: 24,
-                  height: 160,
+                  top: 46,
+                  left: 26,
+                  right: 26,
+                  height: 156,
                   child: Stack(
                     children: [
                       Container(
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.25),
-                          borderRadius: BorderRadius.circular(20),
+                          color: Colors.white.withOpacity(0.22),
+                          borderRadius: BorderRadius.circular(22),
                           border: Border.all(
-                            color: Colors.white.withOpacity(0.3),
-                            width: 1.5,
+                            color: Colors.white.withOpacity(0.26),
+                            width: 1.4,
                           ),
                           boxShadow: [
                             BoxShadow(
@@ -342,38 +310,37 @@ class _GachaMachineWidgetState extends State<GachaMachineWidget>
                           ],
                         ),
                         child: ClipRRect(
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(22),
                           child: Container(
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
                                 colors: [
-                                  Colors.white.withOpacity(0.1),
-                                  Colors.white.withOpacity(0.05),
+                                  Colors.white.withOpacity(0.18),
+                                  Colors.white.withOpacity(0.06),
                                 ],
                               ),
                             ),
                           ),
                         ),
                       ),
-                      // シャイン（斜めの光が走る）
                       Positioned.fill(
                         child: IgnorePointer(
                           child: Transform(
                             transform: Matrix4.identity()
-                              ..translate(_shineAnimation.value * 260)
-                              ..rotateZ(-0.6),
+                              ..translate(_shineAnimation.value * 280)
+                              ..rotateZ(-0.58),
                             alignment: Alignment.center,
                             child: Container(
-                              width: 60,
+                              width: 62,
                               decoration: BoxDecoration(
                                 gradient: LinearGradient(
                                   begin: Alignment.centerLeft,
                                   end: Alignment.centerRight,
                                   colors: [
                                     Colors.white.withOpacity(0.0),
-                                    Colors.white.withOpacity(0.35),
+                                    Colors.white.withOpacity(0.38),
                                     Colors.white.withOpacity(0.0),
                                   ],
                                 ),
@@ -385,35 +352,30 @@ class _GachaMachineWidgetState extends State<GachaMachineWidget>
                     ],
                   ),
                 ),
-                
-                // レバー - Material Motion: 感応的フィードバック
                 Positioned(
-                  right: 16,
-                  top: 220,
+                  right: 18,
+                  top: _machineHeight * 0.68,
                   child: Transform.rotate(
-                    angle: _leverAnimation.value * 0.6,
+                    angle: _leverAnimation.value * 0.58,
                     child: Container(
-                      width: 36,
-                      height: 90,
+                      width: 38,
+                      height: 94,
                       decoration: BoxDecoration(
-                        gradient: LinearGradient(
+                        gradient: const LinearGradient(
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
-                          colors: [
-                            const Color(0xFFFFC107),
-                            const Color(0xFFFF8F00),
-                          ],
+                          colors: [Color(0xFFFFC107), Color(0xFFFF8F00)],
                         ),
-                        borderRadius: BorderRadius.circular(18),
+                        borderRadius: BorderRadius.circular(20),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.2),
-                            blurRadius: 8,
+                            color: Colors.black.withOpacity(0.22),
+                            blurRadius: 10,
                             offset: const Offset(0, 4),
                           ),
                           BoxShadow(
-                            color: const Color(0xFFFFC107).withOpacity(0.4),
-                            blurRadius: 12,
+                            color: const Color(0xFFFFC107).withOpacity(0.42),
+                            blurRadius: 16,
                             offset: const Offset(0, 0),
                           ),
                         ],
@@ -426,42 +388,35 @@ class _GachaMachineWidgetState extends State<GachaMachineWidget>
                     ),
                   ),
                 ),
-                
-                // 取り出し口 - Material Design: 機能的な形状
                 Positioned(
-                  bottom: 40,
-                  left: 70,
-                  right: 70,
+                  bottom: 32,
+                  left: _machineWidth * 0.24,
+                  right: _machineWidth * 0.24,
                   child: Container(
-                    height: 48,
+                    height: 46,
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(
+                      gradient: const LinearGradient(
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
-                        colors: [
-                          const Color(0xFF37474F),
-                          const Color(0xFF263238),
-                        ],
+                        colors: [Color(0xFF455A64), Color(0xFF263238)],
                       ),
                       borderRadius: BorderRadius.circular(24),
                       border: Border.all(
-                        color: const Color(0xFF546E7A).withOpacity(0.6),
-                        width: 1.5,
+                        color: const Color(0xFF607D8B).withOpacity(0.55),
+                        width: 1.4,
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.3),
-                          blurRadius: 8,
-                          offset: const Offset(0, 4),
+                          color: Colors.black.withOpacity(0.32),
+                          blurRadius: 10,
+                          offset: const Offset(0, 6),
                         ),
                       ],
                     ),
                   ),
                 ),
-                
-                // ロゴ - Material Design: タイポグラフィ
                 Positioned(
-                  top: 16,
+                  top: 18,
                   left: 0,
                   right: 0,
                   child: Center(
@@ -471,10 +426,10 @@ class _GachaMachineWidgetState extends State<GachaMachineWidget>
                         color: Colors.white,
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
-                        letterSpacing: 2.0,
+                        letterSpacing: 2,
                         shadows: [
                           Shadow(
-                            color: Colors.black.withOpacity(0.3),
+                            color: Colors.black.withOpacity(0.28),
                             blurRadius: 4,
                             offset: const Offset(0, 2),
                           ),
@@ -490,166 +445,111 @@ class _GachaMachineWidgetState extends State<GachaMachineWidget>
       },
     );
   }
-  
+
   Widget _buildCapsule() {
     return AnimatedBuilder(
-      animation: Listenable.merge([_capsulePositionAnimation, _capsuleRotationAnimation, _capsuleOpenAnimation]),
+      animation: Listenable.merge([
+        _capsulePositionAnimation,
+        _capsuleRotationAnimation,
+        _capsuleOpenAnimation,
+      ]),
       builder: (context, child) {
         return Transform.translate(
           offset: Offset(
-            _capsulePositionAnimation.value.dx * 100,
-            _capsulePositionAnimation.value.dy * 200,
+            _capsulePositionAnimation.value.dx * (_machineWidth * 0.34),
+            _capsulePositionAnimation.value.dy * (_machineHeight * 0.55),
           ),
           child: Transform.rotate(
-            angle: _capsuleRotationAnimation.value,
+            angle: _capsuleRotationAnimation.value * math.pi,
             child: Stack(
               alignment: Alignment.center,
               children: [
-                // カプセル下半分 - 超高品質なグラデーションと光沢効果
                 Container(
-                  width: 70,
-                  height: 70,
+                  width: _capsuleSize,
+                  height: _capsuleSize,
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(
+                    gradient: const LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                       colors: [
-                        const Color(0xFFE91E63),
-                        const Color(0xFFC2185B),
-                        const Color(0xFF9C27B0),
-                        const Color(0xFF673AB7),
-                        const Color(0xFF3F51B5),
+                        Color(0xFFE91E63),
+                        Color(0xFFC2185B),
+                        Color(0xFF9C27B0),
+                        Color(0xFF673AB7),
+                        Color(0xFF3F51B5),
                       ],
-                      stops: const [0.0, 0.25, 0.5, 0.75, 1.0],
                     ),
-                    borderRadius: BorderRadius.circular(35),
+                    borderRadius: BorderRadius.circular(_capsuleSize / 2),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.4),
-                        blurRadius: 20,
+                        color: Colors.black.withOpacity(0.38),
+                        blurRadius: 22,
                         offset: const Offset(0, 10),
-                        spreadRadius: 2,
                       ),
                       BoxShadow(
-                        color: const Color(0xFFE91E63).withOpacity(0.8),
+                        color: const Color(0xFFE91E63).withOpacity(0.65),
                         blurRadius: 30,
                         offset: const Offset(0, 0),
-                        spreadRadius: 5,
-                      ),
-                      BoxShadow(
-                        color: Colors.white.withOpacity(0.4),
-                        blurRadius: 15,
-                        offset: const Offset(-3, -3),
-                        spreadRadius: 1,
-                      ),
-                      BoxShadow(
-                        color: const Color(0xFF9C27B0).withOpacity(0.6),
-                        blurRadius: 25,
-                        offset: const Offset(3, 3),
-                        spreadRadius: 2,
                       ),
                     ],
                   ),
                   child: Container(
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(35),
+                      borderRadius: BorderRadius.circular(_capsuleSize / 2),
                       gradient: RadialGradient(
                         center: Alignment.topLeft,
                         radius: 0.8,
                         colors: [
-                          Colors.white.withOpacity(0.6),
-                          Colors.white.withOpacity(0.3),
+                          Colors.white.withOpacity(0.55),
+                          Colors.white.withOpacity(0.28),
                           Colors.transparent,
                         ],
-                        stops: const [0.0, 0.6, 1.0],
                       ),
                     ),
                   ),
                 ),
-                
-                // カプセル上半分 - 超高品質な開封アニメーション
                 Transform.translate(
                   offset: Offset(0, -_capsuleOpenAnimation.value * 50),
                   child: Transform.scale(
-                    scale: 1.0 + (_capsuleOpenAnimation.value * 0.2),
+                    scale: 1.0 + (_capsuleOpenAnimation.value * 0.18),
                     child: Container(
-                      width: 70,
-                      height: 35,
+                      width: _capsuleSize,
+                      height: _capsuleSize / 2,
                       decoration: BoxDecoration(
-                        gradient: LinearGradient(
+                        gradient: const LinearGradient(
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                           colors: [
-                            const Color(0xFF4ECDC4),
-                            const Color(0xFF44A08D),
-                            const Color(0xFF26A69A),
-                            const Color(0xFF00BCD4),
-                            const Color(0xFF0097A7),
+                            Color(0xFF4ECDC4),
+                            Color(0xFF44A08D),
+                            Color(0xFF26A69A),
+                            Color(0xFF00BCD4),
+                            Color(0xFF0097A7),
                           ],
-                          stops: const [0.0, 0.25, 0.5, 0.75, 1.0],
                         ),
                         borderRadius: const BorderRadius.only(
-                          topLeft: Radius.circular(35),
-                          topRight: Radius.circular(35),
+                          topLeft: Radius.circular(36),
+                          topRight: Radius.circular(36),
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.4),
+                            color: Colors.black.withOpacity(0.36),
                             blurRadius: 20,
                             offset: const Offset(0, 10),
-                            spreadRadius: 2,
-                          ),
-                          BoxShadow(
-                            color: const Color(0xFF4ECDC4).withOpacity(0.8),
-                            blurRadius: 30,
-                            offset: const Offset(0, 0),
-                            spreadRadius: 5,
-                          ),
-                          BoxShadow(
-                            color: Colors.white.withOpacity(0.5),
-                            blurRadius: 20,
-                            offset: const Offset(-4, -4),
-                            spreadRadius: 2,
-                          ),
-                          BoxShadow(
-                            color: const Color(0xFF00BCD4).withOpacity(0.7),
-                            blurRadius: 25,
-                            offset: const Offset(4, 4),
-                            spreadRadius: 2,
                           ),
                         ],
-                      ),
-                      child: Container(
-                        decoration: const BoxDecoration(
-                          borderRadius: BorderRadius.only(
-                            topLeft: Radius.circular(35),
-                            topRight: Radius.circular(35),
-                          ),
-                          gradient: RadialGradient(
-                            center: Alignment.topLeft,
-                            radius: 0.7,
-                            colors: [
-                              Color(0xFFFFFFFF),
-                              Color(0xCCFFFFFF),
-                              Color(0x00FFFFFF),
-                            ],
-                            stops: [0.0, 0.4, 1.0],
-                          ),
-                        ),
                       ),
                     ),
                   ),
                 ),
-                
-                // 追加の光沢効果レイヤー
                 Container(
-                  width: 70,
-                  height: 70,
+                  width: _capsuleSize,
+                  height: _capsuleSize,
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(35),
+                    borderRadius: BorderRadius.circular(_capsuleSize / 2),
                     gradient: RadialGradient(
                       center: Alignment.topLeft,
-                      radius: 0.6,
+                      radius: 0.55,
                       colors: [
                         Colors.white.withOpacity(0.3),
                         Colors.transparent,
@@ -657,18 +557,16 @@ class _GachaMachineWidgetState extends State<GachaMachineWidget>
                     ),
                   ),
                 ),
-                
-                // 反射光のアニメーション
                 AnimatedBuilder(
                   animation: _capsuleRotationAnimation,
                   builder: (context, child) {
                     return Transform.rotate(
                       angle: _capsuleRotationAnimation.value * 2,
                       child: Container(
-                        width: 70,
-                        height: 70,
+                        width: _capsuleSize,
+                        height: _capsuleSize,
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(35),
+                          borderRadius: BorderRadius.circular(_capsuleSize / 2),
                           gradient: LinearGradient(
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
@@ -678,12 +576,25 @@ class _GachaMachineWidgetState extends State<GachaMachineWidget>
                               Colors.transparent,
                               Colors.white.withOpacity(0.2),
                             ],
-                            stops: const [0.0, 0.3, 0.7, 1.0],
                           ),
                         ),
                       ),
                     );
                   },
+                ),
+                Container(
+                  width: 26 + (_capsuleOpenAnimation.value * 16),
+                  height: 26 + (_capsuleOpenAnimation.value * 16),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: RadialGradient(
+                      colors: [
+                        Colors.white.withOpacity(0.9),
+                        Colors.white.withOpacity(0.0),
+                      ],
+                      stops: const [0.0, 1.0],
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -692,8 +603,7 @@ class _GachaMachineWidgetState extends State<GachaMachineWidget>
       },
     );
   }
-  
-  // リビールの光（結果UIではなく、演出用の発光）
+
   Widget _buildRevealGlow() {
     return AnimatedBuilder(
       animation: _resultScaleAnimation,
@@ -701,18 +611,18 @@ class _GachaMachineWidgetState extends State<GachaMachineWidget>
         final scale = _resultScaleAnimation.value;
         return IgnorePointer(
           child: Opacity(
-            opacity: 0.8 * (1.0 - (scale * 0.6)),
+            opacity: 0.85 * (1.0 - (scale * 0.6)),
             child: Transform.scale(
               scale: 0.8 + scale * 0.6,
               child: Container(
-                width: 240,
-                height: 240,
+                width: 260,
+                height: 260,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   gradient: RadialGradient(
                     colors: [
-                      Colors.white.withOpacity(0.9),
-                      const Color(0xFF4ECDC4).withOpacity(0.35),
+                      Colors.white.withOpacity(0.85),
+                      const Color(0xFF4ECDC4).withOpacity(0.38),
                       Colors.transparent,
                     ],
                     stops: const [0.0, 0.4, 1.0],
@@ -725,12 +635,85 @@ class _GachaMachineWidgetState extends State<GachaMachineWidget>
       },
     );
   }
-  
-  // あたり表示は削除（演出のみ）
-  Widget _buildResult() {
-    return const SizedBox.shrink();
+
+  Widget _buildMachineBase() {
+    return SizedBox(
+      width: _machineWidth * 1.18,
+      height: 44,
+      child: Stack(
+        clipBehavior: Clip.none,
+        alignment: Alignment.center,
+        children: [
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: 6),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(24),
+              gradient: const LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Color(0xFF1F3A5F),
+                  Color(0xFF102337),
+                ],
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.28),
+                  blurRadius: 26,
+                  offset: const Offset(0, 14),
+                ),
+                BoxShadow(
+                  color: const Color(0xFF4ECDC4).withOpacity(0.24),
+                  blurRadius: 32,
+                  offset: const Offset(0, 6),
+                ),
+              ],
+            ),
+          ),
+          Positioned.fill(
+            child: Align(
+              alignment: Alignment.topCenter,
+              child: Container(
+                height: 16,
+                margin: const EdgeInsets.symmetric(horizontal: 18),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(18),
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.white.withOpacity(0.32),
+                      Colors.white.withOpacity(0.0),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: -10,
+            left: 28,
+            right: 28,
+            child: Container(
+              height: 18,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.black.withOpacity(0.28),
+                    Colors.black.withOpacity(0.0),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
-  
+
   Widget _buildConfetti() {
     return AnimatedBuilder(
       animation: _confettiAnimation,
@@ -739,101 +722,41 @@ class _GachaMachineWidgetState extends State<GachaMachineWidget>
         return IgnorePointer(
           child: Stack(
             children: List.generate(60, (index) {
-              final random = math.Random(index * 997);
+              final random = math.Random(index * 977);
               final baseX = random.nextDouble() * 320;
-              final drift = math.sin((t * 6 + index) * 0.8) * (6 + random.nextDouble() * 10);
+              final drift = math.sin((t * 6 + index) * 0.8) *
+                  (6 + random.nextDouble() * 10);
               final x = baseX + drift;
               final y = t * 420 + random.nextDouble() * 80;
-              final rotation = t * 8 * math.pi + random.nextDouble() * 2 * math.pi;
+              final rotation =
+                  t * 8 * math.pi + random.nextDouble() * 2 * math.pi;
               final scale = 0.5 + random.nextDouble() * 0.9;
               final opacity = (1.0 - t).clamp(0.0, 1.0);
-              
-              // Material Design 3のカラーパレット
+
               final colors = [
                 const Color(0xFF4ECDC4),
                 const Color(0xFF44A08D),
+                const Color(0xFF9575CD),
                 const Color(0xFFFFC107),
-                const Color(0xFFFF8F00),
-                const Color(0xFFE91E63),
-                const Color(0xFFC2185B),
+                const Color(0xFFFF8A65),
               ];
-              final color = colors[index % colors.length];
-
-              // 形状のバリエーション: 円/角/バー
-              final shapeType = index % 3;
-              Widget shard;
-              if (shapeType == 0) {
-                shard = Container(
-                  width: 12,
-                  height: 12,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [color, color.withOpacity(0.8)],
-                    ),
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: color.withOpacity(0.3),
-                        blurRadius: 4,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                );
-              } else if (shapeType == 1) {
-                shard = Container(
-                  width: 10,
-                  height: 14,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [color, color.withOpacity(0.75)],
-                    ),
-                    borderRadius: BorderRadius.circular(2),
-                    boxShadow: [
-                      BoxShadow(
-                        color: color.withOpacity(0.25),
-                        blurRadius: 3,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                );
-              } else {
-                shard = Container(
-                  width: 6,
-                  height: 18,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [color.withOpacity(0.9), color.withOpacity(0.6)],
-                    ),
-                    borderRadius: BorderRadius.circular(2),
-                    boxShadow: [
-                      BoxShadow(
-                        color: color.withOpacity(0.2),
-                        blurRadius: 3,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                );
-              }
-              
               return Positioned(
                 left: x,
                 top: y,
                 child: Opacity(
                   opacity: opacity,
-                  child: Transform.rotate(
-                    angle: rotation,
-                    child: Transform.scale(
-                      scale: scale,
-                      child: shard,
+                  child: Transform.scale(
+                    scale: scale,
+                    child: Transform.rotate(
+                      angle: rotation,
+                      child: Container(
+                        width: 8,
+                        height: 16,
+                        decoration: BoxDecoration(
+                          color: colors[index % colors.length],
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -843,17 +766,5 @@ class _GachaMachineWidgetState extends State<GachaMachineWidget>
         );
       },
     );
-  }
-  
-  @override
-  void dispose() {
-    _leverController.dispose();
-    _machineShakeController.dispose();
-    _capsuleController.dispose();
-    _capsuleOpenController.dispose();
-    _resultController.dispose();
-    _confettiController.dispose();
-    _shineController.dispose();
-    super.dispose();
   }
 }

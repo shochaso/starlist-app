@@ -7,10 +7,10 @@ class StarProfileScreen extends ConsumerStatefulWidget {
   final String starName;
   
   const StarProfileScreen({
-    Key? key,
+    super.key,
     required this.starId,
     required this.starName,
-  }) : super(key: key);
+  });
 
   @override
   ConsumerState<StarProfileScreen> createState() => _StarProfileScreenState();
@@ -303,7 +303,7 @@ class _StarProfileScreenState extends ConsumerState<StarProfileScreen>
             ),
           ),
           const SizedBox(height: 16),
-          ..._recentContents.take(3).map((content) => _buildContentCard(content)).toList(),
+          ..._recentContents.take(3).map((content) => _buildContentCard(content)),
         ],
       ),
     );
@@ -352,7 +352,7 @@ class _StarProfileScreenState extends ConsumerState<StarProfileScreen>
               ),
             )
           else
-            ...upcomingSchedules.map((schedule) => _buildPublicScheduleCard(schedule)).toList(),
+            ...upcomingSchedules.map((schedule) => _buildPublicScheduleCard(schedule)),
         ],
       ),
     );

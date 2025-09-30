@@ -12,9 +12,9 @@ class HomeScreen extends StatelessWidget {
   final VoidCallback? onThemeToggle;
 
   const HomeScreen({
-    Key? key, 
+    super.key, 
     this.onThemeToggle,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -253,11 +253,11 @@ class HomeScreen extends StatelessWidget {
                     
                     // クイックフィルター（水平スクロール）
                     const SizedBox(height: 12),
-                    SingleChildScrollView(
+                    const SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
-                      padding: const EdgeInsets.only(top: 4, bottom: 4),
+                      padding: EdgeInsets.only(top: 4, bottom: 4),
                       child: Row(
-                        children: const [
+                        children: [
                           _QuickFilterChip(label: '注目', icon: Icons.trending_up),
                           SizedBox(width: 8),
                           _QuickFilterChip(label: 'ミュージシャン', icon: Icons.music_note),
@@ -622,7 +622,7 @@ class _QuickFilterChip extends StatelessWidget {
   final String label;
   final IconData icon;
 
-  const _QuickFilterChip({Key? key, required this.label, required this.icon}) : super(key: key);
+  const _QuickFilterChip({super.key, required this.label, required this.icon});
 
   @override
   Widget build(BuildContext context) {

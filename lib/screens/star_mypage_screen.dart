@@ -4,7 +4,7 @@ import '../features/profile/screens/profile_edit_screen.dart';
 import '../features/app/screens/settings_screen.dart';
 
 class StarMyPageScreen extends StatelessWidget {
-  const StarMyPageScreen({Key? key}) : super(key: key);
+  const StarMyPageScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

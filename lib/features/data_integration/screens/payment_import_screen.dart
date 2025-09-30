@@ -685,7 +685,7 @@ class _PaymentImportScreenState extends ConsumerState<PaymentImportScreen> {
                 ],
               ),
             );
-          }).toList(),
+          }),
           const SizedBox(height: 16),
           Row(
             children: [

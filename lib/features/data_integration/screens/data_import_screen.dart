@@ -564,9 +564,9 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
                 ),
                 child: Column(
                 children: [
-                    Icon(
+                    const Icon(
                       Icons.info_outline,
-                      color: const Color(0xFF4ECDC4),
+                      color: Color(0xFF4ECDC4),
                       size: 24,
                     ),
                     const SizedBox(height: 8),
@@ -690,7 +690,7 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
               ],
             ),
           );
-        }).toList(),
+        }),
       ],
     );
   }
@@ -725,7 +725,7 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
             padding: const EdgeInsets.only(bottom: 12),
             child: _buildApiServiceCard(service, serviceData, isDark),
           );
-        }).toList(),
+        }),
       ],
     );
   }
@@ -822,15 +822,15 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: isImplemented 
-                    ? [Color(0xFF2A2A2A), Color(0xFF1F1F1F)]
-                    : [Color(0xFF2A2A2A).withOpacity(0.6), Color(0xFF1F1F1F).withOpacity(0.6)],
+                    ? [const Color(0xFF2A2A2A), const Color(0xFF1F1F1F)]
+                    : [const Color(0xFF2A2A2A).withOpacity(0.6), const Color(0xFF1F1F1F).withOpacity(0.6)],
                 )
               : LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: isImplemented 
-                    ? [Colors.white, Color(0xFFFAFBFC)]
-                    : [Colors.grey[100]!, Color(0xFFF5F5F5)],
+                    ? [Colors.white, const Color(0xFFFAFBFC)]
+                    : [Colors.grey[100]!, const Color(0xFFF5F5F5)],
                 ),
                         borderRadius: BorderRadius.circular(16),
           border: Border.all(
@@ -1504,18 +1504,18 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
+                  const Row(
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.lightbulb_outline,
                         color: Color(0xFF4ECDC4),
                         size: 20,
                       ),
-                      const SizedBox(width: 8),
+                      SizedBox(width: 8),
                       Text(
                         '代替手段',
                         style: TextStyle(
-                          color: const Color(0xFF4ECDC4),
+                          color: Color(0xFF4ECDC4),
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
                         ),
@@ -1768,7 +1768,7 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
             isConnected: serviceData['isConnected'],
             isDark: isDark,
           );
-        }).toList(),
+        }),
       ],
     );
   }
@@ -1862,7 +1862,7 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
               _buildPublicationToggle(item),
             ],
           ),
-        )).toList(),
+        )),
       ],
     );
   }

@@ -182,27 +182,15 @@ class ReceiptOCRParser {
       final line = lines[i];
       final priceMatch = RegExp(r'¥?(\d{1,3}(?:,\d{3})*)\s*
 $').firstMatch(line);
-      if (priceMatch != null) {
-        final priceText = priceMatch.group(1)!.replaceAll(',', '');
-        final price = double.tryParse(priceText);
-        if (price != null && price > 0 && price < 100000) {
-          final itemName = line.substring(0, priceMatch.start).trim();
-          if (itemName.isNotEmpty && !_isSystemText(itemName) && !_isTotalLine(line)) {
-            items.add({'name': itemName, 'price': price, 'quantity': 1, 'confidence': 0.8});
-          }
-        }
-      } else if (!_isPriceLine(line) && !_isDateLine(line) && !_isSystemText(line) && i + 1 < lines.length) {
-        final nextLine = lines[i + 1];
-        final nextPriceMatch = RegExp(r'¥?(\d{1,3}(?:,\d{3})*)\s*$').firstMatch(nextLine);
-        if (nextPriceMatch != null) {
-          final priceText = nextPriceMatch.group(1)!.replaceAll(',', '');
-          final price = double.tryParse(priceText);
-          if (price != null && price > 0 && price < 100000) {
-            items.add({'name': line, 'price': price, 'quantity': 1, 'confidence': 0.9});
-          }
+      final priceText = priceMatch.group(1)!.replaceAll(',', '');
+      final price = double.tryParse(priceText);
+      if (price != null && price > 0 && price < 100000) {
+        final itemName = line.substring(0, priceMatch.start).trim();
+        if (itemName.isNotEmpty && !_isSystemText(itemName) && !_isTotalLine(line)) {
+          items.add({'name': itemName, 'price': price, 'quantity': 1, 'confidence': 0.8});
         }
       }
-    }
+        }
     return items;
   }
 

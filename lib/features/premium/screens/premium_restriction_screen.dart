@@ -170,10 +170,10 @@ class _PremiumRestrictionScreenState extends ConsumerState<PremiumRestrictionScr
                 height: 120,
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [
-                      const Color(0xFFFFD700),
-                      const Color(0xFFFFA500),
-                      const Color(0xFFFFD700),
+                    colors: const [
+                      Color(0xFFFFD700),
+                      Color(0xFFFFA500),
+                      Color(0xFFFFD700),
                     ],
                     stops: [
                       0.0,
@@ -341,8 +341,8 @@ class _PremiumRestrictionScreenState extends ConsumerState<PremiumRestrictionScr
               const SizedBox(height: 8),
               Text(
                 'by ${widget.starName}',
-                style: TextStyle(
-                  color: const Color(0xFF4ECDC4),
+                style: const TextStyle(
+                  color: Color(0xFF4ECDC4),
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
                 ),
@@ -593,7 +593,7 @@ class _PremiumRestrictionScreenState extends ConsumerState<PremiumRestrictionScr
     if (!mounted) return;
     if (ok) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('ポイントを${requiredPoints}消費してコンテンツを解放しました')),
+        SnackBar(content: Text('ポイントを$requiredPoints消費してコンテンツを解放しました')),
       );
       Navigator.of(context).pop();
     } else {

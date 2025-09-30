@@ -4,7 +4,10 @@ import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter/foundation.dart';
-import 'package:url_launcher/url_launcher.dart';
+
+const String _kStripeSecretKey = String.fromEnvironment('STRIPE_SECRET_KEY');
+const String _kStripeWebhookSecret =
+    String.fromEnvironment('STRIPE_WEBHOOK_SECRET');
 
 abstract class PaymentService {
   Future<PaymentModel> createPayment({
@@ -30,9 +33,9 @@ abstract class PaymentService {
 
 class PaymentServiceImpl implements PaymentService {
   final SupabaseClient _supabase = Supabase.instance.client;
-  final String _stripeSecretKey = const String.fromEnvironment('STRIPE_SECRET_KEY');
-  final String _stripeWebhookSecret = const String.fromEnvironment('STRIPE_WEBHOOK_SECRET');
-  
+  final String _stripeSecretKey = _kStripeSecretKey;
+  final String _stripeWebhookSecret = _kStripeWebhookSecret;
+
   static const String _stripeApiUrl = 'https://api.stripe.com/v1';
 
   @override
@@ -95,7 +98,8 @@ class PaymentServiceImpl implements PaymentService {
           'customer': customerId,
           'automatic_payment_methods[enabled]': 'true',
           if (metadata != null)
-            ...metadata.map((key, value) => MapEntry('metadata[$key]', value.toString())),
+            ...metadata.map(
+                (key, value) => MapEntry('metadata[$key]', value.toString())),
         },
       );
 
@@ -134,7 +138,9 @@ class PaymentServiceImpl implements PaymentService {
           .eq('user_id', userId)
           .order('created_at', ascending: false);
 
-      return response.map<PaymentModel>((json) => PaymentModel.fromJson(json)).toList();
+      return response
+          .map<PaymentModel>((json) => PaymentModel.fromJson(json))
+          .toList();
     } catch (e) {
       throw PaymentException('ユーザーの決済履歴取得に失敗しました: $e');
     }
@@ -176,10 +182,10 @@ class PaymentServiceImpl implements PaymentService {
   Future<PaymentModel> refundPayment(String paymentId, {double? amount}) async {
     try {
       final payment = await getPayment(paymentId);
-      
-      if (payment.status != 'succeeded') {
+
+      if (payment.status != PaymentStatus.completed) {
         throw PaymentException('成功した決済のみ返金可能です');
-        }
+      }
 
       final refundData = {
         'payment_intent': paymentId,
@@ -250,52 +256,152 @@ class PaymentServiceImpl implements PaymentService {
     return signature.isNotEmpty && _stripeWebhookSecret.isNotEmpty;
   }
 
-  Future<void> _handlePaymentSucceeded(Map<String, dynamic> paymentIntent) async {
+  Future<void> _handlePaymentSucceeded(
+      Map<String, dynamic> paymentIntent) async {
     final paymentId = paymentIntent['id'];
-    
-    await _supabase
-        .from('payments')
-        .update({
-          'status': 'succeeded',
-          'updated_at': DateTime.now().toIso8601String(),
-        })
-        .eq('id', paymentId);
+
+    await _supabase.from('payments').update({
+      'status': 'succeeded',
+      'updated_at': DateTime.now().toIso8601String(),
+    }).eq('id', paymentId);
   }
 
   Future<void> _handlePaymentFailed(Map<String, dynamic> paymentIntent) async {
     final paymentId = paymentIntent['id'];
-    
-    await _supabase
-        .from('payments')
-        .update({
-          'status': 'failed',
-          'failure_reason': paymentIntent['last_payment_error']?['message'],
-          'updated_at': DateTime.now().toIso8601String(),
-        })
-        .eq('id', paymentId);
+
+    await _supabase.from('payments').update({
+      'status': 'failed',
+      'failure_reason': paymentIntent['last_payment_error']?['message'],
+      'updated_at': DateTime.now().toIso8601String(),
+    }).eq('id', paymentId);
   }
 
-  Future<void> _handlePaymentCanceled(Map<String, dynamic> paymentIntent) async {
+  Future<void> _handlePaymentCanceled(
+      Map<String, dynamic> paymentIntent) async {
     final paymentId = paymentIntent['id'];
-    
-    await _supabase
-        .from('payments')
-        .update({
-          'status': 'cancelled',
-          'updated_at': DateTime.now().toIso8601String(),
-        })
-        .eq('id', paymentId);
+
+    await _supabase.from('payments').update({
+      'status': 'cancelled',
+      'updated_at': DateTime.now().toIso8601String(),
+    }).eq('id', paymentId);
   }
 }
 
 class PaymentException implements Exception {
   final String message;
   PaymentException(this.message);
-  
+
   @override
   String toString() => 'PaymentException: $message';
 }
 
+class MockPaymentService implements PaymentService {
+  final Map<String, PaymentModel> _payments = {};
+
+  @override
+  Future<PaymentModel> createPayment({
+    required String userId,
+    required double amount,
+    required String currency,
+    required String paymentMethodId,
+    Map<String, dynamic>? metadata,
+  }) async {
+    final now = DateTime.now();
+    final id = 'mock_pay_${now.microsecondsSinceEpoch}';
+    final payment = PaymentModel(
+      id: id,
+      userId: userId,
+      amount: amount,
+      currency: currency.toUpperCase(),
+      status: PaymentStatus.completed,
+      method: PaymentMethod.creditCard,
+      createdAt: now,
+      completedAt: now,
+      transactionId: 'mock_txn_$id',
+      metadata: metadata ?? <String, dynamic>{},
+    );
+    _payments[id] = payment;
+    return payment;
+  }
+
+  @override
+  Future<String> createPaymentIntent({
+    required double amount,
+    required String currency,
+    required String customerId,
+    Map<String, dynamic>? metadata,
+  }) async {
+    return 'mock_intent_${DateTime.now().microsecondsSinceEpoch}';
+  }
+
+  @override
+  Future<PaymentModel> getPayment(String paymentId) async {
+    final payment = _payments[paymentId];
+    if (payment == null) {
+      throw PaymentException('支払いが見つかりません: $paymentId');
+    }
+    return payment;
+  }
+
+  @override
+  Future<List<PaymentModel>> getUserPayments(String userId) async {
+    return _payments.values
+        .where((payment) => payment.userId == userId)
+        .toList()
+      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+  }
+
+  @override
+  Future<PaymentModel> cancelPayment(String paymentId) async {
+    final payment = await getPayment(paymentId);
+    final updated = PaymentModel(
+      id: payment.id,
+      userId: payment.userId,
+      amount: payment.amount,
+      currency: payment.currency,
+      status: PaymentStatus.canceled,
+      method: payment.method,
+      createdAt: payment.createdAt,
+      completedAt: payment.completedAt,
+      transactionId: payment.transactionId,
+      metadata: payment.metadata,
+    );
+    _payments[paymentId] = updated;
+    return updated;
+  }
+
+  @override
+  Future<PaymentModel> refundPayment(String paymentId, {double? amount}) async {
+    final payment = await getPayment(paymentId);
+    final updated = PaymentModel(
+      id: payment.id,
+      userId: payment.userId,
+      amount: payment.amount,
+      currency: payment.currency,
+      status: PaymentStatus.refunded,
+      method: payment.method,
+      createdAt: payment.createdAt,
+      completedAt: DateTime.now(),
+      transactionId: payment.transactionId,
+      metadata: {
+        ...payment.metadata,
+        if (amount != null) 'refund_amount': amount,
+      },
+    );
+    _payments[paymentId] = updated;
+    return updated;
+  }
+
+  @override
+  Future<void> handleWebhook(String payload, String signature) async {
+    // モック環境では特に処理しない
+  }
+}
+
 final paymentServiceProvider = Provider<PaymentService>((ref) {
+  if (_kStripeSecretKey.isEmpty) {
+    debugPrint('[PaymentService] Stripeキーが設定されていないため、モックサービスを利用します。');
+    return MockPaymentService();
+  }
   return PaymentServiceImpl();
 });

@@ -72,13 +72,6 @@ class SNSVerificationService {
           .eq('id', verificationId)
           .single();
 
-      if (verification == null) {
-        return SNSVerificationResult(
-          success: false,
-          error: '認証記録が見つかりません',
-        );
-      }
-
       final platform = SNSPlatform.fromString(verification['platform']);
       final accountHandle = verification['account_handle'];
       final verificationCode = verification['verification_code'];

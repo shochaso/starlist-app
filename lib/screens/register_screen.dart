@@ -4,7 +4,7 @@ import 'package:starlist_app/theme/app_theme.dart';
 class RegisterScreen extends StatefulWidget {
   final bool isStar; // スターとして登録かファンとして登録かの区別
 
-  const RegisterScreen({Key? key, required this.isStar}) : super(key: key);
+  const RegisterScreen({super.key, required this.isStar});
 
   @override
   State<RegisterScreen> createState() => _RegisterScreenState();

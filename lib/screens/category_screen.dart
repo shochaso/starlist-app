@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import '../models/star.dart';
 import '../routes/app_routes.dart';
+import '../src/features/content/models/content_consumption_model.dart';
 
 class CategoryScreen extends StatelessWidget {
   final String category;
 
   const CategoryScreen({
-    Key? key,
+    super.key,
     required this.category,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -94,6 +95,8 @@ class CategoryScreen extends StatelessWidget {
       }
     }
 
+    final inferredCategory = _inferContentCategory(category);
+
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: AppBar(
@@ -155,6 +158,27 @@ class CategoryScreen extends StatelessWidget {
                 fontWeight: FontWeight.bold,
                 color: textColor,
               ),
+            ),
+          ),
+
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: OutlinedButton.icon(
+              icon: const Icon(Icons.view_list),
+              label: const Text('このカテゴリの公開コンテンツを表示'),
+              onPressed: () {
+                final args = <String, dynamic>{
+                  'title': '$categoryのコンテンツ',
+                };
+                if (inferredCategory != null) {
+                  args['category'] = inferredCategory;
+                }
+                Navigator.pushNamed(
+                  context,
+                  AppRoutes.categoryContentList,
+                  arguments: args,
+                );
+              },
             ),
           ),
 
@@ -282,4 +306,29 @@ class CategoryScreen extends StatelessWidget {
       ),
     );
   }
-} 
+
+  ContentCategory? _inferContentCategory(String category) {
+    if (category.contains('YouTube')) {
+      return ContentCategory.youtube;
+    }
+    if (category.contains('音楽') || category.contains('ミュージック') ||
+        category.contains('ミュージシャン')) {
+      return ContentCategory.music;
+    }
+    if (category.contains('料理') || category.contains('グルメ') ||
+        category.contains('フード')) {
+      return ContentCategory.food;
+    }
+    if (category.contains('旅行') || category.contains('ロケーション')) {
+      return ContentCategory.location;
+    }
+    if (category.contains('本') || category.contains('書籍') ||
+        category.contains('読書')) {
+      return ContentCategory.book;
+    }
+    if (category.contains('購入') || category.contains('ショッピング')) {
+      return ContentCategory.purchase;
+    }
+    return null;
+  }
+}
