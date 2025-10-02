@@ -691,10 +691,6 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
                 _buildDrawerItem(Icons.home, 'ホーム', 0, null),
                 _buildDrawerItem(Icons.search, '検索', 1, null),
                 _buildDrawerItem(Icons.star, 'マイリスト', 3, null),
-                _buildDrawerItem(
-                    Icons.view_list, 'カテゴリ別コンテンツ', -1, 'category_contents'),
-                _buildDrawerItem(
-                    Icons.archive, '投稿アーカイブ検索', -1, 'archive_search'),
                 // スターのみ表示
                 if (currentUser.isStar) ...[
                   _buildDrawerItem(Icons.camera_alt, 'データ取込み', 2, null),
@@ -812,12 +808,6 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
           ),
         );
         return;
-      case 'category_contents':
-        Navigator.of(context).pushNamed(AppRoutes.categoryContentList);
-        return;
-      case 'archive_search':
-        Navigator.of(context).pushNamed(AppRoutes.contentArchiveSearch);
-        return;
       case 'settings':
         if (mounted) context.go('/settings');
         return;
@@ -870,10 +860,6 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
           _buildTrendingTopicsSection(),
           const SizedBox(height: 24),
 
-          // コンテンツツールへのショートカット
-          _buildContentToolsSection(),
-          const SizedBox(height: 24),
-
           // プレイリストセクション
           _buildFeaturedPlaylistsSection(),
           const SizedBox(height: 24),
@@ -895,47 +881,6 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
           const SizedBox(height: 100), // ボトムナビゲーション用の余白
         ],
       ),
-    );
-  }
-
-  Widget _buildContentToolsSection() {
-    final themeState = ref.watch(themeProviderEnhanced);
-    final isDark = themeState.isDarkMode;
-
-    final cards = [
-      _ContentToolCard(
-        icon: Icons.view_list,
-        title: 'カテゴリ別一覧',
-        description: '公開済みコンテンツをカテゴリで探索',
-        color: const Color(0xFF4ECDC4),
-        onTap: () => Navigator.of(context).pushNamed(AppRoutes.categoryContentList),
-      ),
-      _ContentToolCard(
-        icon: Icons.manage_search,
-        title: 'アーカイブ検索',
-        description: '期間とカテゴリで過去の投稿を検索',
-        color: const Color(0xFF45AAF2),
-        onTap: () => Navigator.of(context).pushNamed(AppRoutes.contentArchiveSearch),
-      ),
-    ];
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildSectionTitle('コンテンツツール'),
-        const SizedBox(height: 12),
-        SizedBox(
-          height: 140,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            itemCount: cards.length,
-            separatorBuilder: (_, __) => const SizedBox(width: 12),
-            itemBuilder: (context, index) {
-              return cards[index].build(context, isDark);
-            },
-          ),
-        ),
-      ],
     );
   }
 
@@ -2721,78 +2666,6 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
               style: TextStyle(
                 fontSize: 12,
                 color: isDark ? Colors.white54 : Colors.black38,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _ContentToolCard {
-  final IconData icon;
-  final String title;
-  final String description;
-  final Color color;
-  final VoidCallback onTap;
-
-  const _ContentToolCard({
-    required this.icon,
-    required this.title,
-    required this.description,
-    required this.color,
-    required this.onTap,
-  });
-
-  Widget build(BuildContext context, bool isDark) {
-    final cardWidth = MediaQuery.of(context).size.width * 0.7;
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: cardWidth.clamp(220.0, 320.0),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF1F1F1F) : Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: isDark
-              ? []
-              : [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 12,
-                    offset: const Offset(0, 6),
-                  ),
-                ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: color.withOpacity(0.12),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(icon, color: color, size: 24),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              title,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-            ),
-            const SizedBox(height: 6),
-            Flexible(
-              child: Text(
-                description,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Theme.of(context).textTheme.bodySmall?.color,
-                    ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
               ),
             ),
           ],

@@ -322,11 +322,3 @@ class AppZIndex {
 }
 
 double lerpDouble(double a, double b, double t) => a + (b - a) * t;
-
-extension BuildContextTokens on BuildContext {
-  AppTokens get tokens {
-    final tokens = Theme.of(this).extension<AppTokens>();
-    assert(tokens != null, 'AppTokens not found on Theme');
-    return tokens!;
-  }
-}

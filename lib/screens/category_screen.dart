@@ -161,27 +161,6 @@ class CategoryScreen extends StatelessWidget {
             ),
           ),
 
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: OutlinedButton.icon(
-              icon: const Icon(Icons.view_list),
-              label: const Text('このカテゴリの公開コンテンツを表示'),
-              onPressed: () {
-                final args = <String, dynamic>{
-                  'title': '$categoryのコンテンツ',
-                };
-                if (inferredCategory != null) {
-                  args['category'] = inferredCategory;
-                }
-                Navigator.pushNamed(
-                  context,
-                  AppRoutes.categoryContentList,
-                  arguments: args,
-                );
-              },
-            ),
-          ),
-
           // スターリスト
           Expanded(
             child: ListView.builder(

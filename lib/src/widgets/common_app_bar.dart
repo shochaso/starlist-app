@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../providers/theme_provider_enhanced.dart';
-import '../../theme/tokens.dart';
+import '../../theme/context_ext.dart';
 
 class CommonAppBar extends ConsumerWidget implements PreferredSizeWidget {
   const CommonAppBar({

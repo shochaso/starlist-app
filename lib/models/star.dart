@@ -9,6 +9,7 @@ class Star {
   final Map<String, GenreRating> genreRatings; // 各ジャンルでの評価
   final bool isVerified; // 認証済みかどうか
   final List<SocialAccount> socialAccounts; // 連携済みSNSアカウント
+  final String? description; // スターの自己紹介やキャッチフレーズ
 
   Star({
     required this.id,
@@ -21,6 +22,7 @@ class Star {
     this.genreRatings = const {},
     this.isVerified = false,
     this.socialAccounts = const [],
+    this.description, // descriptionをコンストラクタに追加
   });
 
   factory Star.fromJson(Map<String, dynamic> json) {
@@ -51,6 +53,7 @@ class Star {
       genreRatings: ratings,
       isVerified: json['is_verified'] ?? false,
       socialAccounts: accounts,
+      description: json['description'], // descriptionをデシリアライズに追加
     );
   }
 
@@ -78,6 +81,7 @@ class Star {
       'genre_ratings': ratingsJson,
       'is_verified': isVerified,
       'social_accounts': accountsJson,
+      'description': description, // descriptionをシリアライズに追加
     };
   }
   

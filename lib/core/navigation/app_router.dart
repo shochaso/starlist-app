@@ -5,6 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:starlist_app/features/login/screens/login_screen.dart';
 import 'package:starlist_app/features/login/screens/password_reset_request_screen.dart';
 import 'package:starlist_app/features/login/screens/password_reset_screen.dart';
+import 'package:starlist_app/screens/style_guide_page.dart';
 import 'package:starlist_app/features/registration/presentation/screens/1_follower_check_screen.dart';
 import 'package:starlist_app/features/registration/presentation/screens/2_basic_info_screen.dart';
 import 'package:starlist_app/features/registration/presentation/screens/3_profile_info_screen.dart';
@@ -15,9 +16,6 @@ import 'package:starlist_app/features/registration/presentation/screens/registra
 import 'package:starlist_app/screens/starlist_main_screen.dart';
 import 'package:starlist_app/features/app/screens/settings_screen.dart';
 import 'package:starlist_app/screens/bootstrap_screen.dart';
-import 'package:starlist_app/src/features/content/screens/category_content_list_screen.dart';
-import 'package:starlist_app/src/features/content/screens/content_archive_search_screen.dart';
-import 'package:starlist_app/src/features/content/models/content_consumption_model.dart';
 
 class _AuthStreamListenable extends ChangeNotifier {
   _AuthStreamListenable(Stream<AuthState> stream) {
@@ -88,31 +86,9 @@ GoRouter createAppRouter() {
         builder: (context, state) => const SettingsScreen(),
       ),
       GoRoute(
-        path: '/category-contents',
-        builder: (context, state) {
-          final categoryParam = state.uri.queryParameters['category'];
-          final title = state.uri.queryParameters['title'];
-          final initialCategory = _parseContentCategory(categoryParam);
-          return CategoryContentListScreen(
-            initialCategory: initialCategory,
-            title: title,
-          );
-        },
-      ),
-      GoRoute(
-        path: '/content-archive',
-        builder: (context, state) => const ContentArchiveSearchScreen(),
+        path: '/style-guide',
+        builder: (context, state) => const StyleGuidePage(),
       ),
     ],
   );
-}
-
-ContentCategory? _parseContentCategory(String? value) {
-  if (value == null) return null;
-  for (final category in ContentCategory.values) {
-    if (category.name == value) {
-      return category;
-    }
-  }
-  return null;
 }

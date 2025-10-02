@@ -618,7 +618,17 @@
     * 
 
 
-## テーマとトークンの使い方
+## Theming (Material 3 + Tokens)
+
+- Tokens: `lib/theme/tokens.dart` (radius/spacing/elevation/motion)
+- Colors: `lib/theme/color_schemes.dart` (light/dark)
+- Theme: `lib/theme/app_theme.dart` (ThemeData builder)
+
+### Usage
+```dart
+final cs = Theme.of(context).colorScheme;
+final tokens = Theme.of(context).extension<AppTokens>()!;
+```
 
 - `AppTheme` でライト/ダーク両テーマが提供されます。`MaterialApp` では `theme`, `darkTheme`, `themeMode` を指定して適用します。
 - 共通スタイル値は `AppTokens` (`lib/theme/tokens.dart`) に集約しています。`BuildContext` 拡張 `context.tokens` を介して `spacing`, `radius`, `elevations`, `motion` などのトークンにアクセスできます。

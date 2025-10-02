@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../ui/app_button.dart';
 import '../ui/app_card.dart';
-import '../theme/tokens.dart';
+import '../theme/context_ext.dart';
 import 'login_screen.dart';
 import 'star_registration_screen.dart';
 

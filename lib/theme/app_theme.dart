@@ -164,7 +164,7 @@ class AppTheme {
 
     final filledFieldColor = colorScheme.surface;
     final errorColor = colorScheme.error;
-
+    
     return ThemeData(
       useMaterial3: true,
       brightness: colorScheme.brightness,
@@ -201,7 +201,7 @@ class AppTheme {
         helperStyle: textTheme.bodySmall,
         errorStyle: textTheme.bodySmall?.copyWith(color: errorColor),
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: colorScheme.surface,
         surfaceTintColor: colorScheme.surfaceTint,
         elevation: tokens.elevations.sm,
@@ -232,7 +232,7 @@ class AppTheme {
         secondaryLabelStyle:
             textTheme.labelLarge?.copyWith(color: colorScheme.primary),
       ),
-      tabBarTheme: TabBarTheme(
+      tabBarTheme: TabBarThemeData(
         indicator: BoxDecoration(
           color: colorScheme.primary.withOpacity(0.14),
           borderRadius: tokens.radius.lgRadius,
@@ -362,4 +362,4 @@ class AppTheme {
       ),
     );
   }
-}
+} 

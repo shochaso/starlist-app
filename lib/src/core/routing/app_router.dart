@@ -12,9 +12,6 @@ import '../../../features/search/screens/search_screen.dart';
 import '../../../features/mylist/screens/mylist_screen.dart';
 import '../../../features/profile/screens/profile_screen.dart';
 import '../../../screens/style_guide_page.dart';
-import '../../features/content/screens/category_content_list_screen.dart';
-import '../../features/content/screens/content_archive_search_screen.dart';
-import '../../features/content/models/content_consumption_model.dart';
 
 /// 軽量化されたアプリルーター
 final appRouterProvider = Provider<GoRouter>((ref) {
@@ -88,27 +85,6 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         name: 'profile',
         builder: (context, state) => const ProfileScreen(),
       ),
-      
-      GoRoute(
-        path: '/category-contents',
-        name: 'category-contents',
-        builder: (context, state) {
-          final categoryParam = state.uri.queryParameters['category'];
-          final title = state.uri.queryParameters['title'];
-          final initialCategory = _parseContentCategory(categoryParam);
-          return CategoryContentListScreen(
-            initialCategory: initialCategory,
-            title: title,
-          );
-        },
-      ),
-      
-      GoRoute(
-        path: '/content-archive',
-        name: 'content-archive',
-        builder: (context, state) => const ContentArchiveSearchScreen(),
-      ),
-      
       // スタイルガイド（開発用）
       GoRoute(
         path: '/style-guide',
@@ -153,13 +129,3 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     ),
   );
 });
-
-ContentCategory? _parseContentCategory(String? value) {
-  if (value == null) return null;
-  for (final category in ContentCategory.values) {
-    if (category.name == value) {
-      return category;
-    }
-  }
-  return null;
-}
