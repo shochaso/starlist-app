@@ -433,7 +433,7 @@ class _MylistScreenState extends ConsumerState<MylistScreen>
     
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -530,7 +530,7 @@ class _MylistScreenState extends ConsumerState<MylistScreen>
     
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -662,7 +662,7 @@ class _MylistScreenState extends ConsumerState<MylistScreen>
     
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -970,7 +970,7 @@ class _MylistScreenState extends ConsumerState<MylistScreen>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildFollowingStats(),
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
           Text(
             'フォロー中のスター',
             style: TextStyle(
@@ -1077,7 +1077,7 @@ class _MylistScreenState extends ConsumerState<MylistScreen>
       borderRadius: BorderRadius.circular(16),
       child: Container(
         margin: const EdgeInsets.only(bottom: 16),
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
           color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
           borderRadius: BorderRadius.circular(16),
@@ -1291,7 +1291,7 @@ class _MylistScreenState extends ConsumerState<MylistScreen>
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -1528,7 +1528,7 @@ class _MylistScreenState extends ConsumerState<MylistScreen>
                 ),
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 16),
             Row(
               children: [
                 Expanded(

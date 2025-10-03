@@ -392,7 +392,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
         // メインコンテンツ
         Expanded(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -401,21 +401,21 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
                 const SizedBox(height: 16),
                 _buildHorizontalStarList(_popularStars, isDark),
                 
-                const SizedBox(height: 32),
+                const SizedBox(height: 20),
                 
                 // スター
                 _buildSectionHeader('スター', '全て見る', isDark),
                 const SizedBox(height: 16),
                 _buildHorizontalStarList(_popularStars.reversed.toList(), isDark),
                 
-                const SizedBox(height: 32),
+                const SizedBox(height: 20),
                 
                 // カテゴリ
                 _buildSectionHeader('カテゴリ', '全て見る', isDark),
                 const SizedBox(height: 16),
                 _buildHorizontalCategoryList(isDark),
                 
-                const SizedBox(height: 32),
+                const SizedBox(height: 20),
                 
                 // トレンドキーワード
                 _buildSectionHeader('トレンドキーワード', null, isDark),
@@ -431,7 +431,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
 
   Widget _buildSearchBar(bool isDark) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Column(
         children: [
           Row(
@@ -584,7 +584,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
               ],
             ),
             child: Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               child: Column(
                 children: [
                   Container(
@@ -729,7 +729,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
                 ],
               ),
               child: Padding(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -833,7 +833,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
     final isDark = themeState.isDarkMode;
     
     return ListView.builder(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       itemCount: _searchResults.length,
       itemBuilder: (context, index) {
         final result = _searchResults[index];
@@ -1076,7 +1076,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
     final isDark = themeState.isDarkMode;
     
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1154,7 +1154,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
               );
             }).toList(),
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: 20),
           Text(
             '注目のコンテンツ',
             style: TextStyle(
@@ -1181,7 +1181,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
     final isDark = themeState.isDarkMode;
     
     return ListView.builder(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       itemCount: _popularStars.length,
       itemBuilder: (context, index) {
         final star = _popularStars[index];
@@ -1317,7 +1317,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
     final isDark = themeState.isDarkMode;
     
     return GridView.builder(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
         crossAxisSpacing: 12,
@@ -1635,7 +1635,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
                         );
                       }),
                       
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 16),
                       
                       // 認証済みのみ
                       SwitchListTile(
@@ -1664,7 +1664,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
                         contentPadding: EdgeInsets.zero,
                       ),
                       
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 16),
                       
                       // フォロワー数範囲
                       Text(
@@ -1778,7 +1778,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
           SafeArea(
             child: Container(
               margin: const EdgeInsets.only(top: 8),
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,

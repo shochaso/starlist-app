@@ -85,7 +85,7 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
     },
   ];
 
-  // メインサービス（実際のロゴを使用）
+  // メインサービス（MVP版 - 主要サービスのみ表示）
   final List<Map<String, dynamic>> mainServices = [
     {
       'id': 'youtube',
@@ -106,100 +106,110 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
       'priority': 3,
     },
     {
-      'id': 'prime_video',
-      'title': 'Amazon Prime',
-      'subtitle': '',
-      'priority': 4,
-    },
-    {
-      'id': 'netflix',
-      'title': 'Netflix',
-      'subtitle': '',
-      'priority': 5,
-    },
-    {
       'id': 'receipt',
       'title': 'レシート',
       'subtitle': '',
-      'priority': 6,
+      'priority': 4,
     },
+    // MVP版では以下のサービスを非表示
+    // {
+    //   'id': 'prime_video',
+    //   'title': 'Amazon Prime',
+    //   'subtitle': '',
+    //   'priority': 5,
+    // },
+    // {
+    //   'id': 'netflix',
+    //   'title': 'Netflix',
+    //   'subtitle': '',
+    //   'priority': 6,
+    // },
   ];
 
-  // ジャンル別サービス（実際のロゴを使用）
+  // ジャンル別サービス（MVP版 - 主要サービスのみ表示）
   final Map<String, List<Map<String, dynamic>>> serviceCategories = {
     '動画': [
       {'id': 'youtube', 'title': 'YouTube', 'subtitle': '動画共有・ライブ配信'},
-      {'id': 'netflix', 'title': 'Netflix', 'subtitle': '映画・ドラマストリーミング'},
-      {'id': 'prime_video', 'title': 'Amazon Prime', 'subtitle': '映画・ドラマ・オリジナル作品'},
-      {'id': 'disney_plus', 'title': 'Disney+', 'subtitle': 'ディズニー・マーベル・スター・ウォーズ'},
-      {'id': 'niconico', 'title': 'ニコニコ動画', 'subtitle': '動画共有・生放送'},
-      {'id': 'abema', 'title': 'ABEMA', 'subtitle': 'アニメ・バラエティ・ニュース'},
-      {'id': 'hulu', 'title': 'Hulu', 'subtitle': '海外ドラマ・アニメ'},
-      {'id': 'unext', 'title': 'U-NEXT', 'subtitle': '映画・アニメ・雑誌'},
+      // MVP版では他の動画サービスを非表示
+      // {'id': 'netflix', 'title': 'Netflix', 'subtitle': '映画・ドラマストリーミング'},
+      // {'id': 'prime_video', 'title': 'Amazon Prime', 'subtitle': '映画・ドラマ・オリジナル作品'},
+      // {'id': 'disney_plus', 'title': 'Disney+', 'subtitle': 'ディズニー・マーベル・スター・ウォーズ'},
+      // {'id': 'niconico', 'title': 'ニコニコ動画', 'subtitle': '動画共有・生放送'},
+      // {'id': 'abema', 'title': 'ABEMA', 'subtitle': 'アニメ・バラエティ・ニュース'},
+      // {'id': 'hulu', 'title': 'Hulu', 'subtitle': '海外ドラマ・アニメ'},
+      // {'id': 'unext', 'title': 'U-NEXT', 'subtitle': '映画・アニメ・雑誌'},
     ],
-    '配信': [
-      {'id': 'twitch', 'title': 'Twitch', 'subtitle': 'ゲーム配信・ライブストリーミング'},
-      {'id': 'twitcasting', 'title': 'ツイキャス', 'subtitle': 'ライブ配信'},
-      {'id': 'furatch', 'title': 'ふわっち', 'subtitle': 'ライブ配信'},
-      {'id': 'palmu', 'title': 'Palmu', 'subtitle': 'ライブ配信'},
-      {'id': 'showroom', 'title': 'SHOWROOM', 'subtitle': 'ライブ配信・応援'},
-      {'id': '17live', 'title': '17LIVE', 'subtitle': 'ライブ配信'},
-      {'id': 'line_live', 'title': 'LINE LIVE', 'subtitle': 'ライブ配信'},
-      {'id': 'mildom', 'title': 'Mildom', 'subtitle': 'ゲーム配信'},
-      {'id': 'openrec', 'title': 'OPENREC', 'subtitle': 'ゲーム配信'},
-      {'id': 'mirrativ', 'title': 'Mirrativ', 'subtitle': 'スマホゲーム配信'},
-      {'id': 'reality', 'title': 'REALITY', 'subtitle': 'バーチャル配信'},
-      {'id': 'iriam', 'title': 'IRIAM', 'subtitle': 'バーチャル配信'},
-      {'id': 'bigolive', 'title': 'BIGO LIVE', 'subtitle': 'グローバル配信'},
-      {'id': 'spoon', 'title': 'Spoon', 'subtitle': '音声配信'},
-      {'id': 'pococha', 'title': 'Pococha', 'subtitle': 'ライブコミュニケーション'},
-      {'id': 'tangome', 'title': 'TangoMe', 'subtitle': 'ライブ配信'},
-    ],
+    // MVP版では配信カテゴリを非表示
+    // '配信': [
+    //   {'id': 'twitch', 'title': 'Twitch', 'subtitle': 'ゲーム配信・ライブストリーミング'},
+    //   {'id': 'twitcasting', 'title': 'ツイキャス', 'subtitle': 'ライブ配信'},
+    //   {'id': 'furatch', 'title': 'ふわっち', 'subtitle': 'ライブ配信'},
+    //   {'id': 'palmu', 'title': 'Palmu', 'subtitle': 'ライブ配信'},
+    //   {'id': 'showroom', 'title': 'SHOWROOM', 'subtitle': 'ライブ配信・応援'},
+    //   {'id': '17live', 'title': '17LIVE', 'subtitle': 'ライブ配信'},
+    //   {'id': 'line_live', 'title': 'LINE LIVE', 'subtitle': 'ライブ配信'},
+    //   {'id': 'mildom', 'title': 'Mildom', 'subtitle': 'ゲーム配信'},
+    //   {'id': 'openrec', 'title': 'OPENREC', 'subtitle': 'ゲーム配信'},
+    //   {'id': 'mirrativ', 'title': 'Mirrativ', 'subtitle': 'スマホゲーム配信'},
+    //   {'id': 'reality', 'title': 'REALITY', 'subtitle': 'バーチャル配信'},
+    //   {'id': 'iriam', 'title': 'IRIAM', 'subtitle': 'バーチャル配信'},
+    //   {'id': 'bigolive', 'title': 'BIGO LIVE', 'subtitle': 'グローバル配信'},
+    //   {'id': 'spoon', 'title': 'Spoon', 'subtitle': '音声配信'},
+    //   {'id': 'pococha', 'title': 'Pococha', 'subtitle': 'ライブコミュニケーション'},
+    //   {'id': 'tangome', 'title': 'TangoMe', 'subtitle': 'ライブ配信'},
+    // ],
     '音楽': [
       {'id': 'spotify', 'title': 'Spotify', 'subtitle': '音楽ストリーミング'},
-      {'id': 'youtube_music', 'title': 'YouTube Music', 'subtitle': '音楽再生サービス'},
-      {'id': 'amazon_music', 'title': 'Amazon Music', 'subtitle': '音楽ストリーミング・プレイリスト'},
-      {'id': 'apple_music', 'title': 'Apple Music', 'subtitle': '再生履歴'},
-      {'id': 'live_concert', 'title': 'ライブ・コンサート', 'subtitle': '参加したライブ記録'},
+      // MVP版では他の音楽サービスを非表示
+      // {'id': 'youtube_music', 'title': 'YouTube Music', 'subtitle': '音楽再生サービス'},
+      // {'id': 'amazon_music', 'title': 'Amazon Music', 'subtitle': '音楽ストリーミング・プレイリスト'},
+      // {'id': 'apple_music', 'title': 'Apple Music', 'subtitle': '再生履歴'},
+      // {'id': 'live_concert', 'title': 'ライブ・コンサート', 'subtitle': '参加したライブ記録'},
     ],
     'ショッピング': [
       {'id': 'amazon', 'title': 'Amazon', 'subtitle': '購入履歴・お気に入り'},
-      {'id': 'rakuten', 'title': '楽天市場', 'subtitle': '購入履歴・お気に入り'},
-      {'id': 'zozotown', 'title': 'ZOZOTOWN', 'subtitle': 'ファッション購入履歴'},
-      {'id': 'qoo10', 'title': 'Qoo10', 'subtitle': '韓国コスメ・ファッション'},
-      {'id': 'yahoo_shopping', 'title': 'Yahoo!ショッピング', 'subtitle': '購入履歴'},
-      {'id': 'mercari', 'title': 'メルカリ', 'subtitle': 'フリマ取引履歴'},
-      {'id': 'other_ec', 'title': 'その他EC', 'subtitle': 'オンラインショップ'},
+      // MVP版では他のショッピングサービスを非表示
+      // {'id': 'rakuten', 'title': '楽天市場', 'subtitle': '購入履歴・お気に入り'},
+      // {'id': 'zozotown', 'title': 'ZOZOTOWN', 'subtitle': 'ファッション購入履歴'},
+      // {'id': 'qoo10', 'title': 'Qoo10', 'subtitle': '韓国コスメ・ファッション'},
+      // {'id': 'yahoo_shopping', 'title': 'Yahoo!ショッピング', 'subtitle': '購入履歴'},
+      // {'id': 'mercari', 'title': 'メルカリ', 'subtitle': 'フリマ取引履歴'},
+      // {'id': 'other_ec', 'title': 'その他EC', 'subtitle': 'オンラインショップ'},
     ],
-    'SNS': [
-      {'id': 'instagram', 'title': 'Instagram', 'subtitle': '投稿・ストーリー'},
-      {'id': 'tiktok', 'title': 'TikTok', 'subtitle': 'ショート動画'},
-      {'id': 'x', 'title': 'X (Twitter)', 'subtitle': 'ツイート・フォロー'},
-      {'id': 'facebook', 'title': 'Facebook', 'subtitle': '投稿・いいね'},
-      {'id': 'bereal', 'title': 'BeReal', 'subtitle': 'リアルタイム写真共有'},
-      {'id': 'threads', 'title': 'Threads', 'subtitle': 'テキスト共有SNS'},
-      {'id': 'snapchat', 'title': 'Snapchat', 'subtitle': 'スナップ・ストーリー'},
-      {'id': 'linkedin', 'title': 'LinkedIn', 'subtitle': 'ビジネスネットワーク'},
-    ],
-    '購入・決済': [
-      {'id': 'credit_card', 'title': 'クレジットカード', 'subtitle': '決済履歴', 'icon': Icons.credit_card, 'color': const Color(0xFF1976D2)},
-      {'id': 'electronic_money', 'title': '電子マネー', 'subtitle': '交通系IC・QR決済', 'icon': Icons.contactless, 'color': const Color(0xFF4CAF50)},
-    ],
-    'エンタメ': [
-      {'id': 'games', 'title': 'ゲーム', 'subtitle': 'プレイ履歴・実績', 'icon': Icons.sports_esports, 'color': const Color(0xFF9C27B0)},
-      {'id': 'books_manga', 'title': '書籍・漫画', 'subtitle': '読書履歴・電子書籍', 'icon': Icons.book, 'color': const Color(0xFF8D6E63)},
-      {'id': 'cinema', 'title': '映画館', 'subtitle': '鑑賞履歴', 'icon': Icons.local_movies, 'color': const Color(0xFF795548)},
-    ],
-    '飲食・グルメ': [
-      {'id': 'restaurant', 'title': 'レストラン・カフェ', 'subtitle': '外食記録', 'icon': Icons.restaurant, 'color': const Color(0xFFFF5722)},
-      {'id': 'delivery', 'title': 'デリバリー', 'subtitle': 'Uber Eats、出前館等', 'icon': Icons.delivery_dining, 'color': const Color(0xFF4CAF50)},
-      {'id': 'cooking', 'title': '自炊', 'subtitle': '料理記録', 'icon': Icons.kitchen, 'color': const Color(0xFFFFC107)},
-    ],
-    'アプリ・デジタル': [
-      {'id': 'smartphone_apps', 'title': 'スマホアプリ', 'subtitle': '使用時間・頻度', 'icon': Icons.phone_android, 'color': const Color(0xFF2196F3)},
-      {'id': 'web_services', 'title': 'ウェブサービス', 'subtitle': '利用履歴', 'icon': Icons.web, 'color': const Color(0xFF3F51B5)},
-      {'id': 'game_apps', 'title': 'ゲームアプリ', 'subtitle': 'プレイ時間・課金', 'icon': Icons.games, 'color': const Color(0xFFE91E63)},
-    ],
+    // MVP版ではSNSカテゴリを非表示
+    // 'SNS': [
+    //   {'id': 'instagram', 'title': 'Instagram', 'subtitle': '投稿・ストーリー'},
+    //   {'id': 'tiktok', 'title': 'TikTok', 'subtitle': 'ショート動画'},
+    //   {'id': 'x', 'title': 'X (Twitter)', 'subtitle': 'ツイート・フォロー'},
+    //   {'id': 'facebook', 'title': 'Facebook', 'subtitle': '投稿・いいね'},
+    //   {'id': 'bereal', 'title': 'BeReal', 'subtitle': 'リアルタイム写真共有'},
+    //   {'id': 'threads', 'title': 'Threads', 'subtitle': 'テキスト共有SNS'},
+    //   {'id': 'snapchat', 'title': 'Snapchat', 'subtitle': 'スナップ・ストーリー'},
+    //   {'id': 'linkedin', 'title': 'LinkedIn', 'subtitle': 'ビジネスネットワーク'},
+    // ],
+    // MVP版では購入・決済カテゴリを非表示
+    // '購入・決済': [
+    //   {'id': 'credit_card', 'title': 'クレジットカード', 'subtitle': '決済履歴', 'icon': Icons.credit_card, 'color': const Color(0xFF1976D2)},
+    //   {'id': 'electronic_money', 'title': '電子マネー', 'subtitle': '交通系IC・QR決済', 'icon': Icons.contactless, 'color': const Color(0xFF4CAF50)},
+    // ],
+    // MVP版ではエンタメカテゴリを非表示
+    // 'エンタメ': [
+    //   {'id': 'games', 'title': 'ゲーム', 'subtitle': 'プレイ履歴・実績', 'icon': Icons.sports_esports, 'color': const Color(0xFF9C27B0)},
+    //   {'id': 'books_manga', 'title': '書籍・漫画', 'subtitle': '読書履歴・電子書籍', 'icon': Icons.book, 'color': const Color(0xFF8D6E63)},
+    //   {'id': 'cinema', 'title': '映画館', 'subtitle': '鑑賞履歴', 'icon': Icons.local_movies, 'color': const Color(0xFF795548)},
+    // ],
+    // MVP版では飲食・グルメカテゴリを非表示
+    // '飲食・グルメ': [
+    //   {'id': 'restaurant', 'title': 'レストラン・カフェ', 'subtitle': '外食記録', 'icon': Icons.restaurant, 'color': const Color(0xFFFF5722)},
+    //   {'id': 'delivery', 'title': 'デリバリー', 'subtitle': 'Uber Eats、出前館等', 'icon': Icons.delivery_dining, 'color': const Color(0xFF4CAF50)},
+    //   {'id': 'cooking', 'title': '自炊', 'subtitle': '料理記録', 'icon': Icons.kitchen, 'color': const Color(0xFFFFC107)},
+    // ],
+    // MVP版ではアプリ・デジタルカテゴリを非表示
+    // 'アプリ・デジタル': [
+    //   {'id': 'smartphone_apps', 'title': 'スマホアプリ', 'subtitle': '使用時間・頻度', 'icon': Icons.phone_android, 'color': const Color(0xFF2196F3)},
+    //   {'id': 'web_services', 'title': 'ウェブサービス', 'subtitle': '利用履歴', 'icon': Icons.web, 'color': const Color(0xFF3F51B5)},
+    //   {'id': 'game_apps', 'title': 'ゲームアプリ', 'subtitle': 'プレイ時間・課金', 'icon': Icons.games, 'color': const Color(0xFFE91E63)},
+    // ],
   };
 
   // レガシーデータカテゴリ（互換性のため残しておく）

@@ -11,18 +11,10 @@ fi
 
 # Kill any previous flutter web runs on 8080
 pkill -f "flutter_tools\.snapshot run -d chrome" || true
+sleep 1
 
-# Run Flutter web on Chrome at port 8080 with auto-reload
-flutter run -d chrome --web-port 8080 &
-RUN_PID=$!
-
-# Wait for server
-until curl -sS -I http://127.0.0.1:8080 >/dev/null 2>&1; do
-  sleep 1
-done
-
-echo "[Run OK]"
-
-wait $RUN_PID || true
+# Run Flutter web on Chrome at port 8080 with hot reload
+echo "🚀 Starting Flutter Web on Chrome (port 8080)..."
+flutter run -d chrome --web-port 8080
 
 

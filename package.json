@@ -1,0 +1,16 @@
+{
+  "name": "starlist-app",
+  "version": "1.0.0",
+  "description": "Flutter Web with BrowserSync for instant reload",
+  "scripts": {
+    "start:bs": "browser-sync start --config bs-config.js",
+    "dev": "echo 'Run: npm run start:bs in separate terminal, then ./scripts/c.sh'"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "browser-sync": "^2.29.3"
+  }
+}
+

@@ -232,3 +232,4 @@ SUPABASE_ANON_KEY=your_anon_key
 - [Riverpodドキュメント](https://riverpod.dev)
 - [GoRouterドキュメント](https://pub.dev/packages/go_router)
 - [Supabaseドキュメント](https://supabase.com/docs)
+

@@ -525,21 +525,18 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
       backgroundColor: Colors.transparent,
       elevation: 0,
       shadowColor: Colors.transparent,
-      title: Container(
-        padding: const EdgeInsets.all(4), // MP適用
-        child: Text(
-          title,
-          style: TextStyle(
-            color: isDark ? Colors.white : Colors.black87,
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-          ),
+      title: Text(
+        title,
+        style: TextStyle(
+          color: isDark ? Colors.white : Colors.black87,
+          fontSize: 18,
+          fontWeight: FontWeight.w600,
         ),
       ),
       centerTitle: true,
       leading: Builder(
         builder: (context) => Container(
-          margin: const EdgeInsets.all(4), // MP適用
+          margin: const EdgeInsets.symmetric(horizontal: 4),
           child: IconButton(
             icon: Icon(Icons.menu,
                 color: isDark ? Colors.white54 : Colors.black54),
@@ -549,58 +546,22 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
       ),
       automaticallyImplyLeading: false, // 戻るボタンを無効化
       actions: [
-        Container(
-          margin: const EdgeInsets.all(4), // MP適用
-          child: IconButton(
-            icon: const Icon(Icons.casino, color: Colors.amber),
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => const GachaScreen()),
-              );
-            },
-          ),
+        IconButton(
+          icon: const Icon(Icons.casino, color: Colors.amber),
+          tooltip: 'ガチャ',
+          onPressed: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (context) => const GachaScreen()),
+            );
+          },
         ),
-        Container(
-          margin: const EdgeInsets.all(4), // MP適用
-          child: IconButton(
-            icon: Icon(Icons.notifications_outlined,
-                color: isDark ? Colors.white54 : Colors.black54),
-            onPressed: () {},
+        IconButton(
+          icon: Icon(
+            Icons.notifications_outlined,
+            color: isDark ? Colors.white54 : Colors.black54,
           ),
-        ),
-        Container(
-          margin: const EdgeInsets.all(4), // MP適用
-          child: IconButton(
-            icon: Icon(Icons.login,
-                color: isDark ? Colors.white54 : Colors.black54),
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => const LoginStatusScreen(),
-                ),
-              );
-            },
-          ),
-        ),
-        Container(
-          margin: const EdgeInsets.all(4), // MP適用
-          child: IconButton(
-            icon: Icon(
-              isDark ? Icons.light_mode : Icons.dark_mode,
-              color: isDark ? Colors.white54 : Colors.black54,
-            ),
-            onPressed: () {
-              ref.read(themeProviderEnhanced.notifier).toggleLightDark();
-            },
-          ),
-        ),
-        Container(
-          margin: const EdgeInsets.all(4), // MP適用
-          child: IconButton(
-            icon: Icon(Icons.settings_outlined,
-                color: isDark ? Colors.white54 : Colors.black54),
-            onPressed: () {},
-          ),
+          tooltip: '通知',
+          onPressed: () {},
         ),
       ],
     );
@@ -618,7 +579,7 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
           SafeArea(
             child: Container(
               margin: const EdgeInsets.only(top: 8),
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
@@ -704,6 +665,38 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
                   _buildDrawerItem(Icons.stars, 'スターポイント購入', -1, 'buy_points'),
                 ],
                 _buildDrawerItem(Icons.settings, '設定', -1, 'settings'),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 18, 16, 6),
+                  child: Text(
+                    'クイック操作',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: isDark ? Colors.white54 : Colors.grey.shade600,
+                    ),
+                  ),
+                ),
+                SwitchListTile.adaptive(
+                  value: isDark,
+                  onChanged: (_) {
+                    ref.read(themeProviderEnhanced.notifier).toggleLightDark();
+                  },
+                  dense: true,
+                  activeColor: const Color(0xFF4ECDC4),
+                  title: const Text('ダークモード'),
+                ),
+                ListTile(
+                  dense: true,
+                  leading: const Icon(Icons.login),
+                  title: const Text('ログイン状態'),
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => const LoginStatusScreen(),
+                      ),
+                    );
+                  },
+                ),
               ],
             ),
           ),
@@ -836,45 +829,53 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
   Widget _buildHomeView() {
     return SingleChildScrollView(
       controller: _scrollController,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // 最新YouTube履歴セクション（一番上）
           _buildLatestYouTubeHistorySection(),
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
 
-          // 最新投稿セクション（花山瑞樹と他の投稿者を含む）
+          // 新着投稿ダイジェスト（YouTube投稿除外）
           _buildRecentPostsSection(),
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
+
+          // 有料フォローコンテンツ
+          _buildPaidFollowContentSection(),
+          const SizedBox(height: 16),
+
+          // フォローユーザーの登録状況
+          _buildFollowingUsersRegistrationSection(),
+          const SizedBox(height: 16),
 
           // 通知セクション
           _buildNotificationsSection(),
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
 
           // 自然な広告1（おすすめアプリ）
           _buildNativeAd1(),
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
 
           // トレンドトピックセクション
           _buildTrendingTopicsSection(),
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
 
           // プレイリストセクション
           _buildFeaturedPlaylistsSection(),
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
 
           // 自然な広告2（スポンサードコンテンツ）
           _buildNativeAd2(),
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
 
           // おすすめスターセクション
           _buildRecommendedStarsSection(),
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
 
           // 新しく参加したスターセクション
           _buildNewStarsSection(),
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
 
           // 今日のピックアップセクション
           _buildTodayPickupSection(),
@@ -900,7 +901,7 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
           Container(
             height: 120,
             margin: const EdgeInsets.symmetric(horizontal: 16),
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
               color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
               borderRadius: BorderRadius.circular(16),
@@ -1006,7 +1007,7 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
                   child: Container(
                     width: MediaQuery.of(context).size.width * 0.85,
                     margin: const EdgeInsets.only(right: 16),
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                     decoration: BoxDecoration(
                       color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
                       borderRadius: BorderRadius.circular(16),
@@ -1165,7 +1166,7 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
                 color: const Color(0xFF4ECDC4).withOpacity(0.1),
                 borderRadius: const BorderRadius.only(
@@ -1204,7 +1205,7 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
             Flexible(
               child: ListView.builder(
                 shrinkWrap: true,
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 itemCount: group.items.length,
                 itemBuilder: (context, index) {
                   final item = group.items[index];
@@ -1303,7 +1304,7 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
 
   Widget _buildNativeAd1() {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
@@ -1398,7 +1399,7 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
 
   Widget _buildNativeAd2() {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
@@ -1589,7 +1590,7 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
               return Container(
                 width: 280,
                 margin: const EdgeInsets.only(right: 16),
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 decoration: BoxDecoration(
                   color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
                   borderRadius: BorderRadius.circular(12),
@@ -1704,7 +1705,7 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
               return Container(
                 width: 160,
                 margin: const EdgeInsets.only(right: 16),
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
@@ -1765,7 +1766,7 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
               return Container(
                 width: 180,
                 margin: const EdgeInsets.only(right: 16),
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
@@ -2190,237 +2191,303 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
   }
 
   Widget _buildRecentPostsSection() {
-    final hanayamaPosts = ref.watch(hanayamaMizukiPostsProvider);
-    final themeState = ref.watch(themeProviderEnhanced);
+    final posts = ref.watch(hanayamaMizukiPostsProvider);
     final currentUser = ref.watch(currentUserProvider);
-    final isDark = themeState.isDarkMode;
+    final isFreePlan = currentUser.fanPlanType == FanPlanType.free;
 
-    // 花山瑞樹の投稿と他の投稿者の投稿を組み合わせ
-    final allPosts = <dynamic>[];
+    final nonYouTubePosts =
+        posts.where((post) => post.type != PostType.youtube).toList();
+    final otherPosts = _mockOtherPosts();
 
-    // 花山瑞樹の投稿を追加（アクセス制御適用）
-    final accessiblePosts = hanayamaPosts.where((post) {
-      if (post.accessLevel == AccessLevel.public) return true;
-      if (post.accessLevel == AccessLevel.light) {
-        return AccessControlService.canViewContent(
-          currentUser.fanPlanType,
-          ContentType.youtubeVideos,
-        );
-      }
-      return false;
-    }).toList();
+    final Map<String, int> categoryCounts = {};
 
-    allPosts.addAll(accessiblePosts);
+    void addCount(String label) {
+      categoryCounts[label] = (categoryCounts[label] ?? 0) + 1;
+    }
 
-    // 他の投稿者のダミーデータを追加（無料プランでも概要表示）
-    final otherPosts = [
-      {
-        'title': 'iPhone 15 Pro Max レビュー',
-        'author': 'テックレビューアー田中',
-        'time': '2時間前',
-        'type': 'video',
-        'thumbnail': const Color(0xFF4ECDC4),
-        'accessLevel': AccessLevel.light,
-      },
-      {
-        'title': '簡単チキンカレーの作り方',
-        'author': '料理研究家佐藤',
-        'time': '4時間前',
-        'type': 'recipe',
-        'thumbnail': const Color(0xFFFF6B6B),
-        'accessLevel': AccessLevel.light,
-      },
-      {
-        'title': 'Flutter開発のコツ',
-        'author': 'プログラミング講師伊藤',
-        'time': '6時間前',
-        'type': 'tutorial',
-        'thumbnail': const Color(0xFF00B894),
-        'accessLevel': AccessLevel.light,
-      },
-    ];
+    for (final post in nonYouTubePosts) {
+      addCount(post.type.displayName);
+    }
 
-    // 無料プランの場合は概要のみ表示
-    if (currentUser.fanPlanType == FanPlanType.free) {
-      allPosts.addAll(otherPosts.map((post) => {
-            'title': post['title'], // 制限付きの表記を削除
-            'author': post['author'],
-            'time': post['time'],
-            'type': post['type'],
-            'thumbnail': post['thumbnail'],
-            'accessLevel': post['accessLevel'],
-            'isRestricted': true,
-          }));
-    } else {
-      allPosts.addAll(otherPosts);
+    for (final post in otherPosts) {
+      addCount(_mapOtherPostTypeToLabel(post['type'] as String));
+    }
+
+    if (categoryCounts.isEmpty) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildSectionTitle('新着投稿'),
+          const SizedBox(height: 12),
+          _buildMutedInfoCard('まだ投稿がありません。'),
+        ],
+      );
     }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildSectionTitle('最新投稿'),
-        const SizedBox(height: 16),
-        SizedBox(
-          height: 280,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            physics: const BouncingScrollPhysics(),
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            itemCount: allPosts.length,
-            itemBuilder: (context, index) {
-              final post = allPosts[index];
-
-              // 花山瑞樹の投稿の場合
-              if (post is PostModel) {
-                return Container(
-                  width: 320,
-                  margin: const EdgeInsets.only(right: 16),
-                  child: PostCard(
-                    post: post,
-                    isCompact: true,
-                    onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) => PostDetailScreen(post: post),
-                        ),
-                      );
-                    },
-                  ),
-                );
-              }
-
-              // その他の投稿の場合
-              final isRestricted = post['isRestricted'] == true;
-              return GestureDetector(
-                onTap: () {
-                  if (isRestricted) {
-                    // 閲覧制限画面に遷移
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => PremiumRestrictionScreen(
-                          contentTitle: post['title'] as String,
-                          contentType: '投稿',
-                          starName: post['author'] as String,
-                          requiredPlan: post['accessLevel'] == AccessLevel.light
-                              ? 'ライトプラン以上'
-                              : 'プレミアムプラン以上',
-                          contentTypeEnum: ContentType.premiumContent,
-                        ),
-                      ),
-                    );
-                  }
-                },
-                child: Container(
-                  width: 320,
-                  margin: const EdgeInsets.only(right: 16),
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: (isDark ? Colors.black : Colors.black)
-                            .withOpacity(0.08),
-                        blurRadius: 12,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: Container(
-                          width: double.infinity,
-                          decoration: BoxDecoration(
-                            color: post['thumbnail'] as Color,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  isRestricted ? Icons.lock : Icons.play_arrow,
-                                  color: Colors.white,
-                                  size: 32,
-                                ),
-                                if (isRestricted) ...[
-                                  const SizedBox(height: 8),
-                                  const Text(
-                                    'プラン制限',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        post['title'] as String,
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: isDark ? Colors.white : Colors.black87,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        post['author'] as String,
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: isDark ? Colors.white70 : Colors.black54,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      if (isRestricted) ...[
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: Colors.blue.withOpacity(0.2), // オレンジから青に変更
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: Colors.blue.withOpacity(0.5), // オレンジから青に変更
-                              width: 1,
-                            ),
-                          ),
-                          child: Text(
-                            '${post['accessLevel'] == AccessLevel.light ? 'ライトプラン以上' : 'プレミアムプラン以上'}で閲覧可能',
-                            style: TextStyle(
-                              fontSize: 10,
-                              color: Colors.blue.shade700, // オレンジから青に変更
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ),
-                      ],
-                      const SizedBox(height: 4),
-                      Text(
-                        post['time'] as String,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: isDark ? Colors.white54 : Colors.black38,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
-          ),
+        _buildSectionTitle('新着投稿'),
+        const SizedBox(height: 12),
+        Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          children: categoryCounts.entries.map((entry) {
+            return _buildLockedSummaryBadge(
+              title: entry.key,
+              count: entry.value,
+              showLock: isFreePlan,
+            );
+          }).toList(),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'カテゴリと件数のみ表示しています。詳細はプランアップグレードで解放されます。',
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
         ),
       ],
     );
+  }
+
+  Widget _buildPaidFollowContentSection() {
+    final posts = ref.watch(hanayamaMizukiPostsProvider);
+    final currentUser = ref.watch(currentUserProvider);
+    final isDark = ref.watch(themeProviderEnhanced).isDarkMode;
+
+    final paidPosts = posts.where((post) {
+      if (post.accessLevel == AccessLevel.public) {
+        return false;
+      }
+      final contentType = _mapAccessLevelToContentType(post.accessLevel);
+      return AccessControlService.canViewContent(
+        currentUser.fanPlanType,
+        contentType,
+      );
+    }).toList();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionTitle('プレミアムコンテンツ'),
+        const SizedBox(height: 12),
+        if (paidPosts.isEmpty)
+          _buildMutedInfoCard('現在アクセス可能な有料コンテンツはありません。')
+        else
+          Column(
+            children: paidPosts.take(3).map((post) {
+              return Container(
+                margin: const EdgeInsets.only(bottom: 12),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: (isDark ? Colors.black : Colors.black26)
+                          .withOpacity(0.05),
+                      blurRadius: 18,
+                      offset: const Offset(0, 12),
+                      spreadRadius: -12,
+                    ),
+                  ],
+                ),
+                child: PostCard(
+                  post: post,
+                  isCompact: true,
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => PostDetailScreen(post: post),
+                      ),
+                    );
+                  },
+                ),
+              );
+            }).toList(),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildFollowingUsersRegistrationSection() {
+    final otherPosts = _mockOtherPosts();
+
+    if (otherPosts.isEmpty) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildSectionTitle('フォローユーザーの登録内容'),
+          const SizedBox(height: 12),
+          _buildMutedInfoCard('フォロー中のユーザーによる新規登録はまだありません。'),
+        ],
+      );
+    }
+
+    final Map<String, int> categoryCounts = {};
+    void addCount(String label) {
+      categoryCounts[label] = (categoryCounts[label] ?? 0) + 1;
+    }
+
+    for (final post in otherPosts) {
+      addCount(_mapOtherPostTypeToLabel(post['type'] as String));
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionTitle('フォローユーザーの登録内容'),
+        const SizedBox(height: 12),
+        Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          children: categoryCounts.entries.map((entry) {
+            return _buildLockedSummaryBadge(
+              title: entry.key,
+              count: entry.value,
+              showLock: true,
+            );
+          }).toList(),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'フォロー中のユーザーが登録したカテゴリ件数のみ表示しています。詳細はアップグレード後に閲覧できます。',
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLockedSummaryBadge({
+    required String title,
+    required int count,
+    bool showLock = false,
+  }) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: scheme.surfaceVariant.withOpacity(0.35),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: scheme.outline.withOpacity(0.2)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                title,
+                style: theme.textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: scheme.onSurface,
+                ),
+              ),
+              if (showLock) ...[
+                const SizedBox(width: 6),
+                Icon(Icons.lock_outline, size: 16, color: scheme.primary),
+              ],
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            '$count件',
+            style: theme.textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.w700,
+              color: scheme.primary,
+            ),
+          ),
+          if (showLock) ...[
+            const SizedBox(height: 4),
+            Text(
+              '詳細は未開放',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: scheme.onSurfaceVariant,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMutedInfoCard(String message) {
+    final scheme = Theme.of(context).colorScheme;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: BoxDecoration(
+        color: scheme.surfaceVariant.withOpacity(0.25),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.info_outline, color: scheme.onSurfaceVariant, size: 18),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              message,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: scheme.onSurfaceVariant,
+                  ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  List<Map<String, dynamic>> _mockOtherPosts() {
+    return [
+      {
+        'type': 'video',
+        'author': 'テックレビューアー田中',
+      },
+      {
+        'type': 'recipe',
+        'author': '料理研究家佐藤',
+      },
+      {
+        'type': 'tutorial',
+        'author': 'プログラミング講師伊藤',
+      },
+      {
+        'type': 'lifestyle',
+        'author': 'ライフスタイルコーチ高橋',
+      },
+    ];
+  }
+
+  String _mapOtherPostTypeToLabel(String type) {
+    switch (type) {
+      case 'video':
+        return '動画レビュー';
+      case 'recipe':
+        return 'レシピ';
+      case 'tutorial':
+        return '学習ノート';
+      case 'lifestyle':
+        return 'ライフログ';
+      default:
+        return 'その他';
+    }
+  }
+
+  ContentType _mapAccessLevelToContentType(AccessLevel level) {
+    switch (level) {
+      case AccessLevel.public:
+        return ContentType.basicProfile;
+      case AccessLevel.light:
+        return ContentType.purchaseHistory;
+      case AccessLevel.standard:
+        return ContentType.activities;
+      case AccessLevel.premium:
+        return ContentType.premiumContent;
+    }
   }
 
   Widget _buildHanayamaMizukiPostsSection() {
@@ -2535,7 +2602,7 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
           Text(
             title,
             style: TextStyle(
-              fontSize: 20,
+              fontSize: 18,
               fontWeight: FontWeight.bold,
               color: isDark ? Colors.white : Colors.black87,
             ),
@@ -2578,7 +2645,7 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
       child: Container(
         width: 320,
         margin: const EdgeInsets.only(right: 16),
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
           color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
           borderRadius: BorderRadius.circular(16),

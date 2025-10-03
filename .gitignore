@@ -68,3 +68,4 @@ coverage/
 
 # Claud関連
 claude_desktop_config.json
+node_modules/
