@@ -77,24 +77,24 @@ class PostCard extends ConsumerWidget {
         child: ClipRRect(
           borderRadius: BorderRadius.circular(cardRadius),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
-            children: [
-              // ヘッダー
-              _buildHeader(isDark, canAccess),
-              
-              // コンテンツ
+          children: [
+            // ヘッダー
+            _buildHeader(isDark, canAccess),
+            
+            // コンテンツ
               Flexible(
                 child: canAccess 
                   ? _buildContent(isDark)
                   : _buildRestrictedContent(isDark),
               ),
-              
-              _buildSectionDivider(isDark),
+            
+            _buildSectionDivider(isDark),
 
-              // フッター
-              _buildFooter(ref, isDark, canAccess),
-            ],
+            // フッター
+            _buildFooter(ref, isDark, canAccess),
+          ],
           ),
         ),
       ),
@@ -297,8 +297,8 @@ class PostCard extends ConsumerWidget {
               color: isDark ? Colors.white : const Color(0xFF0F172A),
               height: 1.35,
             ),
-            maxLines: isCompact ? 2 : null,
-            overflow: isCompact ? TextOverflow.ellipsis : null,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
           ),
           
           if (!isCompact && post.description != null) ...[
@@ -310,8 +310,8 @@ class PostCard extends ConsumerWidget {
                 color: isDark ? Colors.white70 : const Color(0xFF475569),
                 height: 1.5,
               ),
-              maxLines: isCompact ? 2 : null,
-              overflow: isCompact ? TextOverflow.ellipsis : null,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
           ],
           
@@ -410,32 +410,131 @@ class PostCard extends ConsumerWidget {
     final mainVideo = videos.isNotEmpty ? videos.first : null;
     final otherVideos = videos.length > 1 ? videos.skip(1).take(2).toList() : [];
 
+    if (isCompact && mainVideo != null) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          color: isDark ? const Color(0xFF26262A) : const Color(0xFFFFF1F1),
+          border: Border.all(
+            color: accent.withOpacity(isDark ? 0.25 : 0.18),
+          ),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 52,
+              height: 38,
+              decoration: BoxDecoration(
+                color: accent.withOpacity(0.18),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(
+                FontAwesomeIcons.youtube,
+                color: accent,
+                size: 18,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    mainVideo['title'] ?? '',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: isDark ? Colors.white : const Color(0xFF111827),
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Icon(FontAwesomeIcons.youtube,
+                          size: 11, color: accent.withOpacity(0.9)),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          mainVideo['channel'] ?? '',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color:
+                                isDark ? Colors.white70 : const Color(0xFF64748B),
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      if (videos.length > 1)
+                        Container(
+                          margin: const EdgeInsets.only(left: 6),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: accent.withOpacity(0.12),
+                            borderRadius: BorderRadius.circular(999),
+                          ),
+                          child: Text(
+                            '+${videos.length - 1}',
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w600,
+                              color: accent.withOpacity(0.9),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                  if (mainVideo['duration'] != null) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      mainVideo['duration'],
+                      style: TextStyle(
+                        fontSize: 11,
+                        color:
+                            isDark ? Colors.white54 : const Color(0xFF94A3B8),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // メイン動画（大きく表示）
         if (mainVideo != null) ...[
-          Container(
+        Container(
             padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(18),
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  accent.withOpacity(isDark ? 0.25 : 0.16),
-                  accent.withOpacity(isDark ? 0.12 : 0.08),
-                ],
-              ),
-              border: Border.all(color: accent.withOpacity(0.2)),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(18),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                accent.withOpacity(isDark ? 0.25 : 0.16),
+                accent.withOpacity(isDark ? 0.12 : 0.08),
+              ],
             ),
-            child: Row(
-              children: [
+            border: Border.all(color: accent.withOpacity(0.2)),
+          ),
+          child: Row(
+            children: [
                 // サムネイル風のアイコン
-                Container(
+              Container(
                   width: 76,
                   height: 52,
-                  decoration: BoxDecoration(
+                decoration: BoxDecoration(
                     color: accent.withOpacity(0.18),
                     borderRadius: BorderRadius.circular(10),
                   ),
@@ -465,38 +564,38 @@ class PostCard extends ConsumerWidget {
                       Row(
                         children: [
                           Icon(
-                            FontAwesomeIcons.youtube,
-                            color: accent,
+                  FontAwesomeIcons.youtube,
+                  color: accent,
                             size: 12,
-                          ),
+                ),
                           const SizedBox(width: 5),
-                          Expanded(
-                            child: Text(
+              Expanded(
+                child: Text(
                               mainVideo['channel'] ?? '',
-                              style: TextStyle(
+                  style: TextStyle(
                                 fontSize: 13,
-                                fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.w600,
                                 color: isDark ? Colors.white70 : const Color(0xFF64748B),
-                              ),
+                  ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
+                ),
+              ),
                         ],
                       ),
                       if (mainVideo['duration'] != null) ...[
                         const SizedBox(height: 3),
-                        Text(
+                Text(
                           mainVideo['duration'],
-                          style: TextStyle(
+                  style: TextStyle(
                             fontSize: 11,
                             color: isDark ? Colors.white54 : const Color(0xFF94A3B8),
-                          ),
-                        ),
-                      ],
-                    ],
                   ),
                 ),
+                      ],
+            ],
+          ),
+        ),
               ],
             ),
           ),

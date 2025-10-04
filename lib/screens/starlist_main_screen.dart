@@ -2193,27 +2193,49 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
   Widget _buildRecentPostsSection() {
     final posts = ref.watch(hanayamaMizukiPostsProvider);
     final currentUser = ref.watch(currentUserProvider);
+    final isDark = ref.watch(themeProviderEnhanced).isDarkMode;
+
+    final cards = <Widget>[];
+
+    for (final post in posts.take(3)) {
+      cards.add(
+        _wrapCardWidth(
+          Container(
+            margin: const EdgeInsets.only(bottom: 12),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color:
+                      (isDark ? Colors.black : Colors.black12).withOpacity(0.06),
+                  blurRadius: 18,
+                  offset: const Offset(0, 10),
+                  spreadRadius: -12,
+                ),
+              ],
+            ),
+            child: PostCard(
+              post: post,
+              isCompact: true,
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => PostDetailScreen(post: post),
+                  ),
+                );
+              },
+            ),
+          ),
+        ),
+      );
+    }
+
     final isFreePlan = currentUser.fanPlanType == FanPlanType.free;
-
-    final nonYouTubePosts =
-        posts.where((post) => post.type != PostType.youtube).toList();
-    final otherPosts = _mockOtherPosts();
-
-    final Map<String, int> categoryCounts = {};
-
-    void addCount(String label) {
-      categoryCounts[label] = (categoryCounts[label] ?? 0) + 1;
+    for (final data in _mockOtherPosts().take(3)) {
+      cards.add(_buildSummaryContentCard(data, isDark, isFreePlan));
     }
 
-    for (final post in nonYouTubePosts) {
-      addCount(post.type.displayName);
-    }
-
-    for (final post in otherPosts) {
-      addCount(_mapOtherPostTypeToLabel(post['type'] as String));
-    }
-
-    if (categoryCounts.isEmpty) {
+    if (cards.isEmpty) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -2229,24 +2251,7 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
       children: [
         _buildSectionTitle('新着投稿'),
         const SizedBox(height: 12),
-        Wrap(
-          spacing: 12,
-          runSpacing: 12,
-          children: categoryCounts.entries.map((entry) {
-            return _buildLockedSummaryBadge(
-              title: entry.key,
-              count: entry.value,
-              showLock: isFreePlan,
-            );
-          }).toList(),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          'カテゴリと件数のみ表示しています。詳細はプランアップグレードで解放されます。',
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-        ),
+        ...cards,
       ],
     );
   }
@@ -2270,7 +2275,7 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildSectionTitle('プレミアムコンテンツ'),
+        _buildSectionTitle('有料フォローしている内容'),
         const SizedBox(height: 12),
         if (paidPosts.isEmpty)
           _buildMutedInfoCard('現在アクセス可能な有料コンテンツはありません。')
@@ -2283,10 +2288,9 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: (isDark ? Colors.black : Colors.black26)
-                          .withOpacity(0.05),
-                      blurRadius: 18,
-                      offset: const Offset(0, 12),
+                      color: (isDark ? Colors.black : Colors.black12).withOpacity(0.06),
+                      blurRadius: 20,
+                      offset: const Offset(0, 10),
                       spreadRadius: -12,
                     ),
                   ],
@@ -2310,9 +2314,12 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
   }
 
   Widget _buildFollowingUsersRegistrationSection() {
-    final otherPosts = _mockOtherPosts();
+    final registrations = _mockFollowingRegistrations();
+    final currentUser = ref.watch(currentUserProvider);
+    final isDark = ref.watch(themeProviderEnhanced).isDarkMode;
+    final isFreePlan = currentUser.fanPlanType == FanPlanType.free;
 
-    if (otherPosts.isEmpty) {
+    if (registrations.isEmpty) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -2323,96 +2330,277 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
       );
     }
 
-    final Map<String, int> categoryCounts = {};
-    void addCount(String label) {
-      categoryCounts[label] = (categoryCounts[label] ?? 0) + 1;
-    }
-
-    for (final post in otherPosts) {
-      addCount(_mapOtherPostTypeToLabel(post['type'] as String));
-    }
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildSectionTitle('フォローユーザーの登録内容'),
         const SizedBox(height: 12),
-        Wrap(
-          spacing: 12,
-          runSpacing: 12,
-          children: categoryCounts.entries.map((entry) {
-            return _buildLockedSummaryBadge(
-              title: entry.key,
-              count: entry.value,
-              showLock: true,
-            );
-          }).toList(),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          'フォロー中のユーザーが登録したカテゴリ件数のみ表示しています。詳細はアップグレード後に閲覧できます。',
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
+        ...registrations.take(4).map(
+          (item) => _buildFollowingRegistrationCard(item, isDark, isFreePlan),
         ),
       ],
     );
   }
 
-  Widget _buildLockedSummaryBadge({
-    required String title,
-    required int count,
-    bool showLock = false,
-  }) {
-    final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
+  Widget _buildSummaryContentCard(
+    Map<String, dynamic> post,
+    bool isDark,
+    bool isFreePlan,
+  ) {
+    final restricted =
+        isFreePlan && (post['accessLevel'] as AccessLevel) != AccessLevel.public;
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        color: scheme.surfaceVariant.withOpacity(0.35),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: scheme.outline.withOpacity(0.2)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                title,
-                style: theme.textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: scheme.onSurface,
-                ),
-              ),
-              if (showLock) ...[
-                const SizedBox(width: 6),
-                Icon(Icons.lock_outline, size: 16, color: scheme.primary),
-              ],
-            ],
+    return _wrapCardWidth(
+      Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF1F1F23) : Colors.white,
+          borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: isDark
+              ? Colors.white.withOpacity(0.05)
+              : const Color(0xFFE2E8F0),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: (isDark ? Colors.black : Colors.black12).withOpacity(0.05),
+            blurRadius: 18,
+            offset: const Offset(0, 10),
+            spreadRadius: -12,
           ),
-          const SizedBox(height: 6),
-          Text(
-            '$count件',
-            style: theme.textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.w700,
-              color: scheme.primary,
-            ),
-          ),
-          if (showLock) ...[
-            const SizedBox(height: 4),
-            Text(
-              '詳細は未開放',
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: scheme.onSurfaceVariant,
-              ),
-            ),
-          ],
         ],
       ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: post['color'] as Color,
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Icon(
+                    post['icon'] as IconData,
+                    color: Colors.white,
+                    size: 22,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              post['title'] as String,
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                                color: isDark ? Colors.white : Colors.black87,
+                              ),
+                            ),
+                          ),
+                          if (restricted)
+                            Icon(Icons.lock_outline,
+                                size: 16,
+                                color: isDark
+                                    ? Colors.white54
+                                    : const Color(0xFF475569)),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        post['author'] as String,
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: isDark ? Colors.white70 : Colors.black54,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        post['summary'] as String,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: isDark ? Colors.white60 : Colors.black45,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                Icon(Icons.access_time,
+                    size: 14,
+                    color: isDark ? Colors.white38 : const Color(0xFF94A3B8)),
+                const SizedBox(width: 4),
+                Text(
+                  post['time'] as String,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: isDark ? Colors.white54 : const Color(0xFF64748B),
+                  ),
+                ),
+                const Spacer(),
+                Text(
+                  (post['accessLevel'] as AccessLevel).displayName,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: restricted
+                        ? (isDark ? Colors.redAccent : const Color(0xFFDC2626))
+                        : (isDark ? Colors.white70 : const Color(0xFF0F766E)),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
+  }
+
+  Widget _buildFollowingRegistrationCard(
+    Map<String, dynamic> item,
+    bool isDark,
+    bool isFreePlan,
+  ) {
+    final restricted =
+        isFreePlan && (item['accessLevel'] as AccessLevel) != AccessLevel.public;
+
+    return _wrapCardWidth(
+      Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF1F1F23) : Colors.white,
+          borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: isDark
+              ? Colors.white.withOpacity(0.05)
+              : const Color(0xFFE2E8F0),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: (isDark ? Colors.black : Colors.black12).withOpacity(0.05),
+            blurRadius: 18,
+            offset: const Offset(0, 10),
+            spreadRadius: -12,
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          CircleAvatar(
+            radius: 20,
+            backgroundColor: item['color'] as Color,
+            child: Text(
+              (item['initial'] as String?) ??
+                  (item['starName'] as String).substring(0, 1),
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        item['starName'] as String,
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          color: isDark ? Colors.white : Colors.black87,
+                        ),
+                      ),
+                    ),
+                    if (item['isNew'] as bool)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF4ECDC4).withOpacity(0.18),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Text(
+                          'NEW',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF159F91),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  item['category'] as String,
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: isDark ? Colors.white70 : Colors.black54,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  item['summary'] as String,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: isDark ? Colors.white60 : Colors.black45,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    Icon(Icons.access_time,
+                        size: 14,
+                        color: isDark ? Colors.white38 : const Color(0xFF94A3B8)),
+                    const SizedBox(width: 4),
+                    Text(
+                      item['time'] as String,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: isDark ? Colors.white54 : const Color(0xFF64748B),
+                      ),
+                    ),
+                    const Spacer(),
+                    Text(
+                      (item['accessLevel'] as AccessLevel).displayName,
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: restricted
+                            ? (isDark
+                                ? Colors.redAccent
+                                : const Color(0xFFDC2626))
+                            : (isDark
+                                ? Colors.white70
+                                : const Color(0xFF0F766E)),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    ));
   }
 
   Widget _buildMutedInfoCard(String message) {
@@ -2441,40 +2629,104 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
     );
   }
 
+  Widget _wrapCardWidth(Widget child) {
+    final width = MediaQuery.of(context).size.width;
+    if (width > 640) {
+      return Align(
+        alignment: Alignment.centerLeft,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 520),
+          child: child,
+        ),
+      );
+    }
+    return child;
+  }
+
   List<Map<String, dynamic>> _mockOtherPosts() {
     return [
       {
-        'type': 'video',
+        'title': 'iPhone 15 Pro Max レビュー',
         'author': 'テックレビューアー田中',
+        'summary': '最新機能とカメラ性能を徹底チェック。',
+        'time': '2時間前',
+        'icon': Icons.devices,
+        'color': const Color(0xFF4ECDC4),
+        'accessLevel': AccessLevel.light,
       },
       {
-        'type': 'recipe',
+        'title': '簡単チキンカレーの作り方',
         'author': '料理研究家佐藤',
+        'summary': '15分でできるスパイシーな本格カレー。',
+        'time': '4時間前',
+        'icon': Icons.restaurant,
+        'color': const Color(0xFFFF6B6B),
+        'accessLevel': AccessLevel.light,
       },
       {
-        'type': 'tutorial',
+        'title': 'Flutter開発のコツ',
         'author': 'プログラミング講師伊藤',
+        'summary': '状態管理とテストのベストプラクティスを紹介。',
+        'time': '6時間前',
+        'icon': Icons.code,
+        'color': const Color(0xFF00B894),
+        'accessLevel': AccessLevel.standard,
       },
       {
-        'type': 'lifestyle',
+        'title': '週末リフレッシュ術',
         'author': 'ライフスタイルコーチ高橋',
+        'summary': '心と体を整えるセルフケアの習慣。',
+        'time': '8時間前',
+        'icon': Icons.self_improvement,
+        'color': const Color(0xFF6366F1),
+        'accessLevel': AccessLevel.public,
       },
     ];
   }
 
-  String _mapOtherPostTypeToLabel(String type) {
-    switch (type) {
-      case 'video':
-        return '動画レビュー';
-      case 'recipe':
-        return 'レシピ';
-      case 'tutorial':
-        return '学習ノート';
-      case 'lifestyle':
-        return 'ライフログ';
-      default:
-        return 'その他';
-    }
+  List<Map<String, dynamic>> _mockFollowingRegistrations() {
+    return [
+      {
+        'starName': '花山瑞樹',
+        'initial': '花',
+        'category': '日常Blog・ファッション',
+        'summary': '朝のルーティン動画とコスメレビューを公開。',
+        'time': '30分前',
+        'isNew': true,
+        'accessLevel': AccessLevel.light,
+        'color': const Color(0xFFFFB6C1),
+      },
+      {
+        'starName': 'テックレビューアー田中',
+        'initial': 'テ',
+        'category': 'テクノロジー',
+        'summary': '最新スマートウォッチの比較レビューを投稿。',
+        'time': '2時間前',
+        'isNew': false,
+        'accessLevel': AccessLevel.standard,
+        'color': const Color(0xFF4ECDC4),
+      },
+      {
+        'starName': '料理研究家佐藤',
+        'initial': '料',
+        'category': 'グルメ',
+        'summary': '春野菜を使ったレシピコレクションを追加。',
+        'time': '5時間前',
+        'isNew': true,
+        'accessLevel': AccessLevel.light,
+        'color': const Color(0xFFFF6B6B),
+      },
+      {
+        'starName': '旅写真家中村',
+        'initial': '旅',
+        'category': '旅行・写真',
+        'summary': '北海道の絶景スポットをフォトログで公開。',
+        'time': '昨日',
+        'isNew': false,
+        'accessLevel': AccessLevel.public,
+        'color': const Color(0xFF74B9FF),
+      },
+    ];
   }
 
   ContentType _mapAccessLevelToContentType(AccessLevel level) {
