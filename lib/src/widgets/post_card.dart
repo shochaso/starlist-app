@@ -286,6 +286,7 @@ class PostCard extends ConsumerWidget {
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
           // タイトル
           Text(
