@@ -412,9 +412,9 @@ class PostCard extends ConsumerWidget {
 
     if (isCompact && mainVideo != null) {
       return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(14),
           color: isDark ? const Color(0xFF26262A) : const Color(0xFFFFF1F1),
           border: Border.all(
             color: accent.withOpacity(isDark ? 0.25 : 0.18),
@@ -424,8 +424,8 @@ class PostCard extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
-              width: 52,
-              height: 38,
+              width: 48,
+              height: 34,
               decoration: BoxDecoration(
                 color: accent.withOpacity(0.18),
                 borderRadius: BorderRadius.circular(10),
@@ -433,10 +433,10 @@ class PostCard extends ConsumerWidget {
               child: const Icon(
                 FontAwesomeIcons.youtube,
                 color: accent,
-                size: 18,
+                size: 16,
               ),
             ),
-            const SizedBox(width: 10),
+            const SizedBox(width: 8),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -445,14 +445,15 @@ class PostCard extends ConsumerWidget {
                   Text(
                     mainVideo['title'] ?? '',
                     style: TextStyle(
-                      fontSize: 13,
+                      fontSize: 12,
                       fontWeight: FontWeight.w600,
                       color: isDark ? Colors.white : const Color(0xFF111827),
+                      height: 1.3,
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 3),
                   Row(
                     children: [
                       Icon(FontAwesomeIcons.youtube,
