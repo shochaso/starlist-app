@@ -283,7 +283,7 @@ class PostCard extends ConsumerWidget {
 
   Widget _buildContent(bool isDark) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 10),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
@@ -292,30 +292,30 @@ class PostCard extends ConsumerWidget {
           Text(
             post.title,
             style: TextStyle(
-              fontSize: 18,
+              fontSize: 16,
               fontWeight: FontWeight.w700,
               color: isDark ? Colors.white : const Color(0xFF0F172A),
-              height: 1.35,
+              height: 1.3,
             ),
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
           
           if (!isCompact && post.description != null) ...[
-            const SizedBox(height: 6),
+            const SizedBox(height: 4),
             Text(
               post.description!,
               style: TextStyle(
-                fontSize: 14,
+                fontSize: 13,
                 color: isDark ? Colors.white70 : const Color(0xFF475569),
-                height: 1.5,
+                height: 1.4,
               ),
-              maxLines: 2,
+              maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
           ],
           
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           
           // コンテンツタイプ別表示
           _buildTypeSpecificContent(isDark),
