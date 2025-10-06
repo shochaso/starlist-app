@@ -7,6 +7,7 @@ import '../screens/following_screen.dart';
 import '../screens/fan_mypage_screen.dart';
 import '../screens/star_mypage_screen.dart';
 import '../screens/category_list_screen.dart';
+import '../features/star/screens/star_data_view_page.dart';
 
 class AppRoutes {
   static const String home = '/';
@@ -16,6 +17,7 @@ class AppRoutes {
   static const String following = '/following';
   static const String fanMypage = '/fan_mypage';
   static const String starMypage = '/star_mypage';
+  static const String starData = '/star_data';
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -66,6 +68,11 @@ class AppRoutes {
       case starMypage:
         return MaterialPageRoute(
           builder: (context) => const StarMyPageScreen(),
+        );
+
+      case starData:
+        return MaterialPageRoute(
+          builder: (context) => const StarDataViewPage(),
         );
 
       default:

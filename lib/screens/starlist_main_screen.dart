@@ -664,6 +664,8 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
                       Icons.credit_card, '課金プラン', -1, 'subscription'),
                   _buildDrawerItem(Icons.stars, 'スターポイント購入', -1, 'buy_points'),
                 ],
+                _buildDrawerItem(
+                    Icons.grid_view_rounded, 'スターリスト', -1, 'star_data'),
                 _buildDrawerItem(Icons.settings, '設定', -1, 'settings'),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 18, 16, 6),
@@ -800,6 +802,9 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
             builder: (context) => const StarPointsPurchaseScreen(),
           ),
         );
+        return;
+      case 'star_data':
+        Navigator.of(context).pushNamed(AppRoutes.starData);
         return;
       case 'settings':
         if (mounted) context.go('/settings');
