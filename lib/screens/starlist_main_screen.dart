@@ -8,6 +8,7 @@ import '../features/mylist/screens/mylist_screen.dart';
 import '../features/profile/screens/profile_screen.dart';
 import '../features/data_integration/screens/data_import_screen.dart';
 import '../features/star/screens/star_dashboard_screen.dart';
+import '../features/star/screens/star_data_view_page.dart';
 import '../src/features/subscription/screens/subscription_plans_screen.dart';
 import '../features/app/screens/settings_screen.dart';
 import '../providers/user_provider.dart';
@@ -664,6 +665,8 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
                       Icons.credit_card, '課金プラン', -1, 'subscription'),
                   _buildDrawerItem(Icons.stars, 'スターポイント購入', -1, 'buy_points'),
                 ],
+                _buildDrawerItem(
+                    Icons.grid_view_rounded, 'スターリスト', -1, 'star_data'),
                 _buildDrawerItem(Icons.settings, '設定', -1, 'settings'),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 18, 16, 6),
@@ -800,6 +803,9 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
             builder: (context) => const StarPointsPurchaseScreen(),
           ),
         );
+        return;
+      case 'star_data':
+        Navigator.of(context).pushNamed(AppRoutes.starData);
         return;
       case 'settings':
         if (mounted) context.go('/settings');
