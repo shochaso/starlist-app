@@ -86,7 +86,7 @@ class SupabaseSearchRepository implements SearchRepository {
       }
     } catch (e) {
       throw AppError(
-        message: '検索に失敗しました',
+        '検索に失敗しました',
         code: 'SEARCH_ERROR',
         details: e.toString(),
       );
@@ -196,7 +196,7 @@ class SupabaseSearchRepository implements SearchRepository {
           );
     } catch (e) {
       throw AppError(
-        message: 'タグデータの保存に失敗しました',
+        'タグデータの保存に失敗しました',
         code: 'INSERT_TAG_ONLY_ERROR',
         details: e.toString(),
       );

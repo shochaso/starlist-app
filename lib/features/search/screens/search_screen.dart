@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../src/providers/theme_provider_enhanced.dart';
 import '../../../providers/user_provider.dart';
+import '../providers/search_providers.dart';
+import '../controllers/search_controller.dart';
 import '../../app/screens/settings_screen.dart';
 import '../../star/screens/star_dashboard_screen.dart';
 import '../../data_integration/screens/data_import_screen.dart';
@@ -1523,11 +1525,18 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
       _searchQuery = query;
     });
     
-    // 検索の擬似処理（実際はAPIコール）
-    Future.delayed(const Duration(milliseconds: 500), () {
+    // 新しいSearchControllerを使用した実際の検索
+    final searchController = ref.read(searchControllerProvider.notifier);
+    searchController.searchMixed(query: query).then((_) {
       setState(() {
         _isSearching = false;
       });
+    }).catchError((error) {
+      setState(() {
+        _isSearching = false;
+      });
+      // エラーハンドリング
+      print('検索エラー: $error');
     });
   }
   

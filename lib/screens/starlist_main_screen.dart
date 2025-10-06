@@ -8,6 +8,7 @@ import '../features/mylist/screens/mylist_screen.dart';
 import '../features/profile/screens/profile_screen.dart';
 import '../features/data_integration/screens/data_import_screen.dart';
 import '../features/star/screens/star_dashboard_screen.dart';
+import '../features/star/screens/star_data_view_page.dart';
 import '../src/features/subscription/screens/subscription_plans_screen.dart';
 import '../features/app/screens/settings_screen.dart';
 import '../providers/user_provider.dart';
