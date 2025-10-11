@@ -7,6 +7,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'core/navigation/app_router.dart';
 import 'theme/app_theme.dart';
 import 'src/services/notification_service.dart';
+import 'services/service_icon_registry.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -19,13 +20,27 @@ Future<void> main() async {
     return true;
   };
 
-  await Supabase.initialize(
-    url: 'https://zjwvmoxpacbpwawlwbrd.supabase.co',
-    anonKey:
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpqd3Ztb3hwYWNicHdhd2x3YnJkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDEzNTQwMzMsImV4cCI6MjA1NjkzMDAzM30.37KDj4QhQmv6crotphR9GnPTM_0zv0PCCnKfXvsZx_g',
-  );
+  try {
+    await Supabase.initialize(
+      url: 'https://zjwvmoxpacbpwawlwbrd.supabase.co',
+      anonKey:
+          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpqd3Ztb3hwYWNicHdhd2x3YnJkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDEzNTQwMzMsImV4cCI6MjA1NjkzMDAzM30.37KDj4QhQmv6crotphR9GnPTM_0zv0PCCnKfXvsZx_g',
+    );
+  } catch (error, stackTrace) {
+    debugPrint('[Supabase] Initialization skipped: $error');
+    debugPrintStack(stackTrace: stackTrace);
+  }
 
   await NotificationService().init();
+  await ServiceIconRegistry.init();
+  assert(() {
+    final map = ServiceIconRegistryDebug.readMap();
+    if (map.isEmpty) {
+      // ignore: avoid_print
+      print('[icon] service_icons.json が空です');
+    }
+    return true;
+  }());
 
   runApp(const ProviderScope(child: MyApp()));
 }

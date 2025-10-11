@@ -1,0 +1,42 @@
+{
+  "youtube": "assets/icons/services/youtube.svg",
+  "unext": "assets/icons/services/u-next.jpg",
+  "amazon": "assets/icons/services/amazon.png",
+
+  "nintendo": "assets/icons/services/nintendo.jpg",
+  "playstation": "assets/icons/services/playstation.png",
+  "steam": "assets/icons/services/steam.jpeg",
+
+  "daily_yamazaki": "assets/icons/services/daily_yamazaki.jpeg",
+  "familymart": "assets/icons/services/family_mart.jpg",
+  "lawson": "assets/icons/services/lawson.jpg",
+  "ministop": "assets/icons/services/ministop.jpeg",
+  "seven_eleven": "assets/icons/services/seven_eleven.png",
+
+  "app_store": "assets/icons/services/app_store.png",
+  "google_play": "assets/icons/services/google_play.png",
+
+  "rakuten_ichiba": "assets/icons/services/rakuten_ichiba.png",
+  "shein": "assets/icons/services/shein.png",
+  "yahoo_shopping": "assets/icons/services/yahoo_shopping.jpg",
+
+  "gu": "assets/icons/services/gu.jpg",
+  "uniqlo": "assets/icons/services/uniqlo.png",
+  "zozotown": "assets/icons/services/zozotown.jpg",
+
+  "demaecan": "assets/icons/services/demaecan.jpg",
+  "uber_eats": "assets/icons/services/uber_eats.jpg",
+
+  "amazon_music": "assets/icons/services/amazon_music.jpg",
+  "apple_music": "assets/icons/services/apple_music.png",
+  "spotify": "assets/icons/services/spotify.png",
+
+  "abema": "assets/icons/services/abema.jpg",
+  "amazon_prime_video": "assets/icons/services/amazon_prime_video.png",
+  "hulu": "assets/icons/services/hulu.jpg",
+  "netflix": "assets/icons/services/netflix.png",
+
+  "audible": "assets/icons/services/audible.png",
+  "kindle": "assets/icons/services/kindle.png",
+  "rakuten_books": "assets/icons/services/rakuten_books.png"
+}
