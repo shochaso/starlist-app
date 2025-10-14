@@ -15,11 +15,11 @@ class _BootstrapScreenState extends State<BootstrapScreen> {
   @override
   void initState() {
     super.initState();
-    // 最小実装: フレーム確定後に /home へ遷移
+    // 最小実装: フレーム確定後に /login へ遷移
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!mounted) return;
       // ここで認証チェック等を実施可能（Supabaseのセッション確認など）
-      context.go('/home');
+      context.go('/login');
     });
   }
 

@@ -10,10 +10,10 @@ class StarPointBalanceWidget extends ConsumerWidget {
   final VoidCallback? onTap;
 
   const StarPointBalanceWidget({
-    Key? key,
+    super.key,
     this.showTransactionHistory = true,
     this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

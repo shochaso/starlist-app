@@ -258,7 +258,7 @@ class RakutenPurchaseParser {
           productCandidate = beforePrice;
         }
         
-        if (productCandidate != null && priceCandidate != null) {
+        if (productCandidate != null) {
           final confidence = _calculateConfidence({
             'hasProduct': productCandidate.length > 10,
             'hasPrice': true,

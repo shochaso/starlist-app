@@ -13,7 +13,7 @@ import '../../../data/models/netflix_models.dart';
 
 /// Netflix視聴履歴ホーム画面
 class NetflixHomeScreen extends ConsumerStatefulWidget {
-  const NetflixHomeScreen({Key? key}) : super(key: key);
+  const NetflixHomeScreen({super.key});
 
   @override
   ConsumerState<NetflixHomeScreen> createState() => _NetflixHomeScreenState();

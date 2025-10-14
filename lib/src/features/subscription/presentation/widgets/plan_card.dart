@@ -7,11 +7,11 @@ class PlanCard extends StatelessWidget {
   final VoidCallback onTap;
 
   const PlanCard({
-    Key? key,
+    super.key,
     required this.plan,
     required this.isSelected,
     required this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

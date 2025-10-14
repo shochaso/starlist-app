@@ -18,10 +18,8 @@ class FavoriteRepository {
           .order('created_at', ascending: false)
           .range(offset, offset + limit - 1);
       
-      if (response != null && response is List) {
-        return response.map((json) => FavoriteItemModel.fromJson(json)).toList();
-      }
-      return [];
+      return response.map((json) => FavoriteItemModel.fromJson(json)).toList();
+          return [];
     } catch (e) {
       print('Error getting favorites by user ID: $e');
       return [];
@@ -37,10 +35,8 @@ class FavoriteRepository {
           .eq('id', favoriteId)
           .single();
       
-      if (response != null) {
-        return FavoriteItemModel.fromJson(response);
-      }
-      return null;
+      return FavoriteItemModel.fromJson(response);
+          return null;
     } catch (e) {
       print('Error getting favorite by ID: $e');
       return null;
@@ -58,7 +54,7 @@ class FavoriteRepository {
           .eq('item_id', itemId)
           .limit(1);
       
-      return response != null && response is List && response.isNotEmpty;
+      return response.isNotEmpty;
     } catch (e) {
       print('Error checking if item is favorite: $e');
       return false;
@@ -74,10 +70,8 @@ class FavoriteRepository {
           .select()
           .single();
       
-      if (response != null) {
-        return FavoriteItemModel.fromJson(response);
-      }
-      return null;
+      return FavoriteItemModel.fromJson(response);
+          return null;
     } catch (e) {
       print('Error adding favorite: $e');
       return null;
@@ -94,10 +88,8 @@ class FavoriteRepository {
           .select()
           .single();
       
-      if (response != null) {
-        return FavoriteItemModel.fromJson(response);
-      }
-      return null;
+      return FavoriteItemModel.fromJson(response);
+          return null;
     } catch (e) {
       print('Error updating favorite: $e');
       return null;
@@ -147,10 +139,8 @@ class FavoriteRepository {
           .order('created_at', ascending: false)
           .range(offset, offset + limit - 1);
       
-      if (response != null && response is List) {
-        return response.map((json) => FavoriteItemModel.fromJson(json)).toList();
-      }
-      return [];
+      return response.map((json) => FavoriteItemModel.fromJson(json)).toList();
+          return [];
     } catch (e) {
       print('Error getting favorites by type: $e');
       return [];

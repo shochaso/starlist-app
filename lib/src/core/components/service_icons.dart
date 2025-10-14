@@ -9,7 +9,7 @@ import 'package:flutter/services.dart' show rootBundle;
 /// Material Policy (MP) ライセンスに準拠した実装
 class ServiceIcons {
   // MP準拠: 各サービスの公式ブランドガイドラインに従ったアイコン実装
-  
+
   static String _normalizeServiceId(String rawId) {
     final id = rawId.toLowerCase();
     switch (id) {
@@ -36,7 +36,11 @@ class ServiceIcons {
 
     // ユーザー要望: SimpleIcons を優先採用（安定表示 & ブランド一貫性）
     const preferSimpleIcon = <String>{
-      'youtube', 'prime_video', 'amazon', 'spotify', 'netflix',
+      'youtube',
+      'prime_video',
+      'amazon',
+      'spotify',
+      'netflix',
       'apple_music'
     };
     if (preferSimpleIcon.contains(id)) {
@@ -59,7 +63,7 @@ class ServiceIcons {
       'dtv': 'assets/icons/services/dtv.svg',
       'fod': 'assets/icons/services/fod.svg',
       'niconico': 'assets/icons/services/niconico.svg',
-      
+
       // 配信サービス（公式アイコン）
       'twitch': 'assets/icons/services/twitch.svg',
       'twitcasting': 'assets/icons/services/twitcasting.svg',
@@ -77,7 +81,7 @@ class ServiceIcons {
       'iriam': 'assets/icons/services/iriam.svg',
       'spoon': 'assets/icons/services/spoon.svg',
       'tangome': 'assets/icons/services/tangome.svg',
-      
+
       // SNS（公式アイコン）
       'instagram': 'assets/icons/services/instagram.svg',
       'tiktok': 'assets/icons/services/tiktok.svg',
@@ -88,7 +92,7 @@ class ServiceIcons {
       'snapchat': 'assets/icons/services/snapchat.svg',
       'linkedin': 'assets/icons/services/linkedin.svg',
       'linktree': 'assets/icons/services/linktree.svg',
-      
+
       // ショッピング（公式アイコン）
       'amazon': 'assets/icons/services/amazon.svg',
       'rakuten': 'assets/icons/services/rakuten.svg',
@@ -123,13 +127,41 @@ class ServiceIcons {
       // 公式CDNのベクターロゴを強制使用
       return _buildRemoteLogo(serviceId: id, size: size, isDark: isDark);
     }
-    
+
     // 1) アセットが存在する場合はそれを使用
     if (iconPath != null) {
-      return _buildSvgWithFallback(iconPath: iconPath, serviceId: id, size: size, isDark: isDark);
+      return _buildSvgWithFallback(
+          iconPath: iconPath, serviceId: id, size: size, isDark: isDark);
     }
-    // 2) アセット未定義のサービスはリモートロゴ(CDN/Clearbit)にフォールバック
-    return _buildRemoteLogo(serviceId: id, size: size, isDark: isDark);
+    // 2) ローカルassets/iconsフォルダから動的に解決
+    return FutureBuilder<String?>(
+      future: _resolveLocalIconPath(id),
+      builder: (context, snapshot) {
+        final path = snapshot.data;
+        if (path == null) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return SizedBox(
+              width: size,
+              height: size,
+              child: const SizedBox.shrink(),
+            );
+          }
+          return _buildFallbackIcon(id, size, isDark);
+        }
+        if (path.toLowerCase().endsWith('.svg')) {
+          return _buildSvgWithFallback(
+            iconPath: path,
+            serviceId: id,
+            size: size,
+            isDark: isDark,
+          );
+        }
+        return _buildRasterIcon(
+          assetPath: path,
+          size: size,
+        );
+      },
+    );
   }
 
   static Widget _buildSimpleIcon({
@@ -180,8 +212,8 @@ class ServiceIcons {
       builder: (context, snapshot) {
         final exists = snapshot.data == true;
         final borderRadius = BorderRadius.circular(size * 0.15);
-        final bg = Colors.transparent; // 背景色は透明にしてロゴの可視性を担保
-        
+        const bg = Colors.transparent; // 背景色は透明にしてロゴの可視性を担保
+
         if (exists) {
           return Container(
             width: size,
@@ -211,6 +243,51 @@ class ServiceIcons {
     required bool isDark,
   }) {
     return _buildFallbackIcon(serviceId, size, isDark);
+  }
+
+  static final Map<String, Future<String?>> _iconPathCache = {};
+
+  static Future<String?> _resolveLocalIconPath(String id) {
+    const searchDirectories = [
+      'assets/icons/services',
+      'assets/icons',
+    ];
+    const extensions = ['svg', 'png', 'webp', 'jpg', 'jpeg'];
+
+    return _iconPathCache.putIfAbsent(id, () async {
+      for (final dir in searchDirectories) {
+        for (final ext in extensions) {
+          final candidate = '$dir/$id.$ext';
+          try {
+            await rootBundle.load(candidate);
+            return candidate;
+          } catch (_) {
+            continue;
+          }
+        }
+      }
+      return null;
+    });
+  }
+
+  static Widget _buildRasterIcon({
+    required String assetPath,
+    required double size,
+  }) {
+    final borderRadius = BorderRadius.circular(size * 0.15);
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(borderRadius: borderRadius),
+      clipBehavior: Clip.antiAlias,
+      child: Image.asset(
+        assetPath,
+        width: size,
+        height: size,
+        fit: BoxFit.contain,
+        errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+      ),
+    );
   }
 
   static Future<bool> _assetIsValidSvg(String assetPath) async {
@@ -245,7 +322,7 @@ class ServiceIcons {
         return null;
       case 'niconico':
         return null;
-      
+
       // SNS
       case 'instagram':
         return null;
@@ -259,7 +336,7 @@ class ServiceIcons {
         return null;
       case 'linkedin':
         return null;
-      
+
       // 配信サービス
       case 'twitch':
         return null;
@@ -267,7 +344,7 @@ class ServiceIcons {
         return null;
       case 'pococha':
         return null;
-      
+
       // ショッピング
       case 'amazon':
         return null;
@@ -275,7 +352,7 @@ class ServiceIcons {
         return null;
       case 'mercari':
         return null;
-      
+
       default:
         return null;
     }
@@ -340,7 +417,8 @@ class ServiceIcons {
         child: Icon(
           service.icon,
           size: size * 0.6,
-          color: service.primaryColor == Colors.white || service.primaryColor == const Color(0xFFFFFC00)
+          color: service.primaryColor == Colors.white ||
+                  service.primaryColor == const Color(0xFFFFFC00)
               ? (isDark ? Colors.black : service.primaryColor)
               : service.primaryColor,
         ),
@@ -379,22 +457,22 @@ class ServiceIcons {
 
   /// 利用可能なサービス一覧
   static List<String> get availableServices => [
-    // 動画サービス
-    'netflix', 'spotify', 'apple_music', 'youtube', 'youtube_music',
-    'disney_plus', 'prime_video', 'hulu', 'unext', 'abema', 'niconico',
-    // 配信サービス
-    'twitch', 'twitcasting', 'furatch', 'showroom', '17live', 'line_live',
-    'mildom', 'pococha', 'palmu',
-    // SNS
-    'instagram', 'tiktok', 'x', 'facebook', 'bereal', 'threads',
-    'snapchat', 'linkedin', 'linktree',
-    // ショッピング
-    'amazon', 'rakuten', 'zozotown', 'qoo10', 'yahoo_shopping',
-    'mercari', 'other_ec',
-    // エンタメ・その他
-    'games', 'books_manga', 'cinema', 'restaurant', 'delivery',
-    'cooking', 'credit_card', 'electronic_money', 'live_concert',
-  ];
+        // 動画サービス
+        'netflix', 'spotify', 'apple_music', 'youtube', 'youtube_music',
+        'disney_plus', 'prime_video', 'hulu', 'unext', 'abema', 'niconico',
+        // 配信サービス
+        'twitch', 'twitcasting', 'furatch', 'showroom', '17live', 'line_live',
+        'mildom', 'pococha', 'palmu',
+        // SNS
+        'instagram', 'tiktok', 'x', 'facebook', 'bereal', 'threads',
+        'snapchat', 'linkedin', 'linktree',
+        // ショッピング
+        'amazon', 'rakuten', 'zozotown', 'qoo10', 'yahoo_shopping',
+        'mercari', 'other_ec',
+        // エンタメ・その他
+        'games', 'books_manga', 'cinema', 'restaurant', 'delivery',
+        'cooking', 'credit_card', 'electronic_money', 'live_concert',
+      ];
 
   /// サービス名取得
   static String getServiceName(String serviceId) {
@@ -473,4 +551,4 @@ class ServiceInfo {
     required this.name,
     required this.color,
   });
-} 
+}

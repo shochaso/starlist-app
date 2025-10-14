@@ -5,7 +5,6 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../../src/providers/theme_provider_enhanced.dart';
 import '../../../src/providers/membership_provider.dart';
 import '../../payment/screens/payment_info_screen.dart';
-import '../../../src/features/payment/services/payment_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'dart:convert';

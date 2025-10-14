@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../providers/user_provider.dart';
 import '../../../src/providers/theme_provider_enhanced.dart';
@@ -8,10 +7,6 @@ import 'profile_edit_screen.dart';
 import '../../app/screens/settings_screen.dart';
 import '../../star/screens/star_dashboard_screen.dart';
 import '../../star/screens/schedule_management_screen.dart';
-import '../../data_integration/screens/data_import_screen.dart';
-import '../../subscription/screens/fan_subscription_screen.dart';
-import '../../search/screens/search_screen.dart';
-import '../../mylist/screens/mylist_screen.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   final bool showAppBar;

@@ -17,10 +17,8 @@ class UserRepository {
           .eq('id', userId)
           .single();
       
-      if (response != null) {
-        return UserModel.fromJson(response);
-      }
-      return null;
+      return UserModel.fromJson(response);
+          return null;
     } catch (e) {
       print('Error getting user: $e');
       return null;
@@ -36,10 +34,8 @@ class UserRepository {
           .eq('username', username)
           .single();
       
-      if (response != null) {
-        return UserModel.fromJson(response);
-      }
-      return null;
+      return UserModel.fromJson(response);
+          return null;
     } catch (e) {
       print('Error getting user by username: $e');
       return null;
@@ -55,10 +51,8 @@ class UserRepository {
           .select()
           .single();
       
-      if (response != null) {
-        return UserModel.fromJson(response);
-      }
-      return null;
+      return UserModel.fromJson(response);
+          return null;
     } catch (e) {
       print('Error creating user: $e');
       return null;
@@ -75,10 +69,8 @@ class UserRepository {
           .select()
           .single();
       
-      if (response != null) {
-        return UserModel.fromJson(response);
-      }
-      return null;
+      return UserModel.fromJson(response);
+          return null;
     } catch (e) {
       print('Error updating user: $e');
       return null;
@@ -110,10 +102,8 @@ class UserRepository {
           .order('follower_count', ascending: false)
           .range(offset, offset + limit - 1);
       
-      if (response != null && response is List) {
-        return response.map((json) => UserModel.fromJson(json)).toList();
-      }
-      return [];
+      return response.map((json) => UserModel.fromJson(json)).toList();
+          return [];
     } catch (e) {
       print('Error getting star creators: $e');
       return [];
@@ -129,10 +119,8 @@ class UserRepository {
           .order('follower_count', ascending: false)
           .limit(limit);
       
-      if (response != null && response is List) {
-        return response.map((json) => UserModel.fromJson(json)).toList();
-      }
-      return [];
+      return response.map((json) => UserModel.fromJson(json)).toList();
+          return [];
     } catch (e) {
       print('Error getting top users by followers: $e');
       return [];

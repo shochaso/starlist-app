@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 
 /// ガチャ回数情報
 class GachaAttempts {

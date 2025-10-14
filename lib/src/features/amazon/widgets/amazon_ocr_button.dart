@@ -8,9 +8,9 @@ class AmazonOcrButton extends ConsumerStatefulWidget {
   final Function(List<AmazonPurchase>)? onOcrComplete;
 
   const AmazonOcrButton({
-    Key? key,
+    super.key,
     this.onOcrComplete,
-  }) : super(key: key);
+  });
 
   @override
   ConsumerState<AmazonOcrButton> createState() => _AmazonOcrButtonState();

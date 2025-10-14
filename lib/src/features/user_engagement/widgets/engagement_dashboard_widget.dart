@@ -13,11 +13,11 @@ class EngagementDashboardWidget extends StatelessWidget {
   final List<String> recentActivity;
 
   const EngagementDashboardWidget({
-    Key? key,
+    super.key,
     required this.userId,
     required this.userPreferences,
     required this.recentActivity,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

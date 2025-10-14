@@ -1,4 +1,3 @@
-import '../../auth/supabase_provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide Provider;import '../models/gacha_limits_models.dart';
 
 /// ガチャ回数管理のリポジトリ
@@ -64,8 +63,8 @@ class GachaLimitsRepository {
         .eq('date', today)
         .limit(1);
 
-    if (rows is List && rows.isNotEmpty) {
-      final r = rows.first as Map<String, dynamic>;
+    if (rows.isNotEmpty) {
+      final r = rows.first;
       final base = (r['base_attempts'] as int?) ?? 0;
       final bonus = (r['bonus_attempts'] as int?) ?? 0;
       final used = (r['used_attempts'] as int?) ?? 0;
@@ -88,8 +87,8 @@ class GachaLimitsRepository {
         .eq('date', today)
         .limit(1);
 
-    if (retryRows is List && retryRows.isNotEmpty) {
-      final r = retryRows.first as Map<String, dynamic>;
+    if (retryRows.isNotEmpty) {
+      final r = retryRows.first;
       final base = (r['base_attempts'] as int?) ?? 10;
       final bonus = (r['bonus_attempts'] as int?) ?? 0;
       final used = (r['used_attempts'] as int?) ?? 0;
@@ -147,11 +146,11 @@ class GachaLimitsRepository {
           .eq('date', today)
           .limit(1);
 
-      if (rows is! List || rows.isEmpty) {
+      if (rows.isEmpty) {
         return false;
       }
 
-      final r = rows.first as Map<String, dynamic>;
+      final r = rows.first;
       final base = (r['base_attempts'] as int?) ?? 0;
       final bonus = (r['bonus_attempts'] as int?) ?? 0;
       final used = (r['used_attempts'] as int?) ?? 0;

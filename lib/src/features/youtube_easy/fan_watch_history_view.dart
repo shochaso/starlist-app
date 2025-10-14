@@ -9,10 +9,10 @@ class FanWatchHistoryView extends ConsumerStatefulWidget {
   final String starName;
   
   const FanWatchHistoryView({
-    Key? key,
+    super.key,
     required this.starId,
     required this.starName,
-  }) : super(key: key);
+  });
 
   @override
   ConsumerState<FanWatchHistoryView> createState() => _FanWatchHistoryViewState();

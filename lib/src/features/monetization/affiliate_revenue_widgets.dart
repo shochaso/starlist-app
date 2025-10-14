@@ -45,9 +45,9 @@ class AffiliateRevenueDashboard extends ConsumerWidget {
   final String starId;
 
   const AffiliateRevenueDashboard({
-    Key? key,
+    super.key,
     required this.starId,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -282,9 +282,9 @@ class RevenueHistoryWidget extends ConsumerWidget {
   final String starId;
 
   const RevenueHistoryWidget({
-    Key? key,
+    super.key,
     required this.starId,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

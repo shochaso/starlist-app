@@ -59,7 +59,7 @@ class _StarCardState extends State<StarCard> {
     final colorScheme = theme.colorScheme;
     final tokens = context.tokens;
 
-    final placeholderColor = colorScheme.surfaceVariant;
+    final placeholderColor = colorScheme.surfaceContainerHighest;
     final textColor = colorScheme.onSurface;
     final secondaryText = colorScheme.onSurfaceVariant;
     final subtitleStyle = theme.textTheme.bodySmall?.copyWith(

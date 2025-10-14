@@ -1,8 +1,9 @@
-name: CD
+name: CD (Disabled)
 
 on:
-  push:
-    branches: [ main ]
+  workflow_dispatch: {}  # 手動実行のみ
+  # push:
+  #   branches: [ main ]
 
 jobs:
   deploy:

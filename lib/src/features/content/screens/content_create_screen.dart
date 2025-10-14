@@ -100,10 +100,10 @@ class ContentCreateScreen extends ConsumerStatefulWidget {
   final bool isEditing;
 
   const ContentCreateScreen({
-    Key? key,
+    super.key,
     this.initialContent,
     this.isEditing = false,
-  }) : super(key: key);
+  });
 
   @override
   ConsumerState<ContentCreateScreen> createState() => _ContentCreateScreenState();
@@ -210,7 +210,7 @@ class _ContentCreateScreenState extends ConsumerState<ContentCreateScreen> {
 
                     // コンテンツタイプ
                     DropdownButtonFormField<ContentTypeModel>(
-                      value: _selectedType,
+                      initialValue: _selectedType,
                       decoration: const InputDecoration(
                         labelText: 'コンテンツタイプ *',
                         border: OutlineInputBorder(),

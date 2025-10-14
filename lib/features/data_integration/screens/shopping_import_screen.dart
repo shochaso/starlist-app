@@ -7,15 +7,42 @@ import '../../../src/providers/theme_provider_enhanced.dart';
 import '../../../src/services/amazon_purchase_parser.dart';
 
 class ShoppingImportScreen extends ConsumerStatefulWidget {
-  const ShoppingImportScreen({super.key});
+  final String initialImportType;
+  final bool allowTypeSwitch;
+  final String? customServiceName;
+
+  const ShoppingImportScreen({
+    super.key,
+    this.initialImportType = 'amazon',
+    this.allowTypeSwitch = true,
+    this.customServiceName,
+  });
 
   @override
-  ConsumerState<ShoppingImportScreen> createState() => _ShoppingImportScreenState();
+  ConsumerState<ShoppingImportScreen> createState() =>
+      _ShoppingImportScreenState();
 }
 
 class _ShoppingImportScreenState extends ConsumerState<ShoppingImportScreen>
     with TickerProviderStateMixin {
-  String selectedImportType = 'amazon'; // amazon, rakuten, yahoo, other
+  static const Set<String> _supportedImportTypes = {
+    'amazon',
+    'rakuten',
+    'yahoo_shopping',
+    'shein',
+    'other',
+  };
+
+  Map<String, dynamic> get _activeImportType {
+    return importTypes.firstWhere(
+      (type) => type['id'] == selectedImportType,
+      orElse: () => importTypes.first,
+    );
+  }
+
+  late String
+      selectedImportType; // amazon, rakuten, yahoo_shopping, shein, other
+  late bool _allowTypeSwitch;
   final TextEditingController _textController = TextEditingController();
   final TextEditingController _urlController = TextEditingController();
   late AnimationController _animationController;
@@ -36,46 +63,52 @@ class _ShoppingImportScreenState extends ConsumerState<ShoppingImportScreen>
       'title': 'Amazon',
       'subtitle': 'Amazon購入履歴・注文履歴',
       'icon': Icons.shopping_bag,
-      'color': const Color(0xFFFF9900), // Amazon orange
+      'color': const Color(0xFFFF9900),
       'description': 'Amazonでの購入履歴、注文履歴、欲しいものリストを記録します',
     },
     {
       'id': 'rakuten',
       'title': '楽天市場',
-      'subtitle': '楽天での購入履歴',
+      'subtitle': '楽天市場での購入履歴',
       'icon': Icons.store,
-      'color': const Color(0xFFBF0000), // Rakuten red
-      'description': '楽天市場での購入履歴、お気に入り商品を記録します',
+      'color': const Color(0xFFBF0000),
+      'description': '楽天市場での購入履歴やお気に入り商品の整理に対応します',
     },
     {
-      'id': 'yahoo',
+      'id': 'yahoo_shopping',
       'title': 'Yahoo!ショッピング',
-      'subtitle': 'Yahoo!での購入履歴',
+      'subtitle': 'Yahoo!ショッピングの購入履歴',
       'icon': Icons.shopping_cart,
-      'color': const Color(0xFF7B0099), // Yahoo purple
-      'description': 'Yahoo!ショッピングでの購入履歴を記録します',
+      'color': const Color(0xFF7B0099),
+      'description': 'Yahoo!ショッピングでの注文履歴を取り込みます',
     },
     {
-      'id': 'mercari',
-      'title': 'メルカリ',
-      'subtitle': 'フリマアプリでの取引',
-      'icon': Icons.handshake,
-      'color': const Color(0xFFFF5722), // Mercari orange
-      'description': 'メルカリでの購入・販売履歴を記録します',
+      'id': 'shein',
+      'title': 'SHEIN',
+      'subtitle': 'SHEINの注文履歴',
+      'icon': Icons.style,
+      'color': const Color(0xFFF54785),
+      'description': 'SHEINで購入したファッションや雑貨の履歴を記録します',
     },
     {
       'id': 'other',
       'title': 'その他のEC',
       'subtitle': 'その他のオンラインショップ',
       'icon': Icons.language,
-      'color': const Color(0xFF607D8B), // Blue grey
-      'description': 'その他のECサイトでの購入履歴を記録します',
+      'color': const Color(0xFF607D8B),
+      'description': 'その他のECサイトの購入履歴を自由に記録します',
     },
   ];
 
   @override
   void initState() {
     super.initState();
+    selectedImportType =
+        _supportedImportTypes.contains(widget.initialImportType)
+            ? widget.initialImportType
+            : 'amazon';
+    _allowTypeSwitch = widget.allowTypeSwitch;
+
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 300),
       vsync: this,
@@ -104,7 +137,8 @@ class _ShoppingImportScreenState extends ConsumerState<ShoppingImportScreen>
     final isDark = themeState.isDarkMode;
 
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF1A1A1A) : const Color(0xFFF8FAFC),
+      backgroundColor:
+          isDark ? const Color(0xFF1A1A1A) : const Color(0xFFF8FAFC),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -124,7 +158,8 @@ class _ShoppingImportScreenState extends ConsumerState<ShoppingImportScreen>
           ),
         ),
         centerTitle: true,
-        systemOverlayStyle: isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
+        systemOverlayStyle:
+            isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
       ),
       body: FadeTransition(
         opacity: _fadeAnimation,
@@ -152,11 +187,15 @@ class _ShoppingImportScreenState extends ConsumerState<ShoppingImportScreen>
   }
 
   Widget _buildHeader(bool isDark) {
+    final activeType = _activeImportType;
+    final Color accentColor =
+        activeType['color'] as Color? ?? const Color(0xFFFF9900);
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFFFF9900), Color(0xFFFF7700)],
+        gradient: LinearGradient(
+          colors: [accentColor, accentColor.withOpacity(0.85)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -170,32 +209,32 @@ class _ShoppingImportScreenState extends ConsumerState<ShoppingImportScreen>
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity( 0.2),
+                  color: Colors.white.withOpacity(0.2),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(
-                  Icons.shopping_bag,
+                child: Icon(
+                  activeType['icon'] as IconData? ?? Icons.shopping_bag,
                   color: Colors.white,
                   size: 24,
                 ),
               ),
               const SizedBox(width: 16),
-              const Expanded(
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'ショッピングデータ取り込み',
-                      style: TextStyle(
+                      '${widget.customServiceName ?? activeType['title']} データ取り込み',
+                      style: const TextStyle(
                         color: Colors.white,
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    SizedBox(height: 4),
+                    const SizedBox(height: 4),
                     Text(
-                      'ECサイトでの購入履歴を記録',
-                      style: TextStyle(
+                      activeType['description'] as String? ?? 'ECサイトでの購入履歴を記録',
+                      style: const TextStyle(
                         color: Colors.white70,
                         fontSize: 14,
                       ),
@@ -211,6 +250,40 @@ class _ShoppingImportScreenState extends ConsumerState<ShoppingImportScreen>
   }
 
   Widget _buildImportTypeSelector(bool isDark) {
+    final currentType = _activeImportType;
+
+    if (!_allowTypeSwitch) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '取り込みサービスを選択',
+            style: TextStyle(
+              color: isDark ? Colors.white : Colors.black87,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 16),
+          _buildLockedImportTypeCard(currentType, isDark),
+          const SizedBox(height: 12),
+          TextButton.icon(
+            onPressed: () {
+              setState(() {
+                _allowTypeSwitch = true;
+              });
+            },
+            icon: const Icon(Icons.swap_horiz),
+            label: const Text('他のサービスを選ぶ'),
+            style: TextButton.styleFrom(
+              foregroundColor:
+                  isDark ? const Color(0xFF4ECDC4) : const Color(0xFF0EA5E9),
+            ),
+          ),
+        ],
+      );
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -228,44 +301,102 @@ class _ShoppingImportScreenState extends ConsumerState<ShoppingImportScreen>
     );
   }
 
+  Widget _buildLockedImportTypeCard(Map<String, dynamic> type, bool isDark) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: type['color'], width: 1.6),
+        boxShadow: [
+          BoxShadow(
+            color: type['color'].withOpacity(0.18),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: type['color'].withOpacity(0.12),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(type['icon'], color: type['color'], size: 20),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  widget.customServiceName ?? type['title'],
+                  style: TextStyle(
+                    color: isDark ? Colors.white : Colors.black87,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  type['description'],
+                  style: TextStyle(
+                    color: isDark ? Colors.white60 : Colors.black54,
+                    fontSize: 14,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildImportTypeCard(Map<String, dynamic> type, bool isDark) {
     final isSelected = selectedImportType == type['id'];
-    
+
     return GestureDetector(
-      onTap: () {
-        setState(() {
-          selectedImportType = type['id'];
-        });
-      },
+      onTap: _allowTypeSwitch
+          ? () {
+              setState(() {
+                selectedImportType = type['id'];
+              });
+            }
+          : null,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: isSelected 
-            ? (isDark ? const Color(0xFF2A2A2A) : Colors.white)
-            : (isDark ? const Color(0xFF262626) : const Color(0xFFF8FAFC)),
+          color: isSelected
+              ? (isDark ? const Color(0xFF2A2A2A) : Colors.white)
+              : (isDark ? const Color(0xFF262626) : const Color(0xFFF8FAFC)),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected 
-              ? type['color'] 
-              : (isDark ? const Color(0xFF404040) : const Color(0xFFE2E8F0)),
+            color: isSelected
+                ? type['color']
+                : (isDark ? const Color(0xFF404040) : const Color(0xFFE2E8F0)),
             width: isSelected ? 2 : 1,
           ),
-          boxShadow: isSelected ? [
-            BoxShadow(
-              color: type['color'].withOpacity( 0.2),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ] : null,
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: type['color'].withOpacity(0.2),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
+              : null,
         ),
         child: Row(
           children: [
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: type['color'].withOpacity( 0.1),
+                color: type['color'].withOpacity(0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Icon(
@@ -340,7 +471,7 @@ class _ShoppingImportScreenState extends ConsumerState<ShoppingImportScreen>
             ),
           ),
           const SizedBox(height: 16),
-          
+
           // タブ切り替え
           Row(
             children: [
@@ -351,14 +482,14 @@ class _ShoppingImportScreenState extends ConsumerState<ShoppingImportScreen>
               _buildInputMethodTab('URL取得', Icons.link, isDark, false),
             ],
           ),
-          
+
           const SizedBox(height: 20),
-          
+
           // 入力フィールド
           _buildTextInputField(isDark),
-          
+
           const SizedBox(height: 16),
-          
+
           // アクションボタン
           Row(
             children: [
@@ -386,13 +517,14 @@ class _ShoppingImportScreenState extends ConsumerState<ShoppingImportScreen>
     );
   }
 
-  Widget _buildInputMethodTab(String title, IconData icon, bool isDark, bool isActive) {
+  Widget _buildInputMethodTab(
+      String title, IconData icon, bool isDark, bool isActive) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: isActive 
-          ? const Color(0xFFFF9900)
-          : (isDark ? const Color(0xFF404040) : const Color(0xFFF1F5F9)),
+        color: isActive
+            ? const Color(0xFFFF9900)
+            : (isDark ? const Color(0xFF404040) : const Color(0xFFF1F5F9)),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
@@ -401,13 +533,17 @@ class _ShoppingImportScreenState extends ConsumerState<ShoppingImportScreen>
           Icon(
             icon,
             size: 16,
-            color: isActive ? Colors.white : (isDark ? Colors.white60 : Colors.black54),
+            color: isActive
+                ? Colors.white
+                : (isDark ? Colors.white60 : Colors.black54),
           ),
           const SizedBox(width: 6),
           Text(
             title,
             style: TextStyle(
-              color: isActive ? Colors.white : (isDark ? Colors.white60 : Colors.black54),
+              color: isActive
+                  ? Colors.white
+                  : (isDark ? Colors.white60 : Colors.black54),
               fontSize: 12,
               fontWeight: FontWeight.w500,
             ),
@@ -419,7 +555,7 @@ class _ShoppingImportScreenState extends ConsumerState<ShoppingImportScreen>
 
   Widget _buildTextInputField(bool isDark) {
     String placeholder = _getPlaceholderText();
-    
+
     return Container(
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1A1A1A) : const Color(0xFFF8FAFC),
@@ -454,18 +590,20 @@ class _ShoppingImportScreenState extends ConsumerState<ShoppingImportScreen>
         return '例：\n注文番号: 123-4567890-1234567\n商品名: iPhone 15 Pro Max 256GB\n価格: ¥159,800\n注文日: 2024/01/15\n配送状況: 配送済み\n\nまたはAmazonの注文履歴をOCRで読み取ったテキストをペーストしてください';
       case 'rakuten':
         return '例：\n注文番号: 202401150001\n商品名: Nintendo Switch 本体\n価格: ¥32,978\n注文日: 2024/01/15\nショップ: 楽天ブックス\n\nまたは楽天市場の購入履歴をOCRで読み取ったテキストをペーストしてください';
-      case 'yahoo':
+      case 'yahoo_shopping':
         return '例：\n注文番号: Y2024011500001\n商品名: ワイヤレスイヤホン\n価格: ¥12,800\n注文日: 2024/01/15\nストア: Yahoo!ショッピング\n\nまたはYahoo!ショッピングの注文履歴をOCRで読み取ったテキストをペーストしてください';
-      case 'mercari':
-        return '例：\n取引タイプ: 購入\n商品名: ヴィンテージTシャツ\n価格: ¥3,500\n取引日: 2024/01/15\n出品者: メルカリユーザー123\n\nまたはメルカリの取引履歴をOCRで読み取ったテキストをペーストしてください';
+      case 'shein':
+        return '例：\n注文番号: S123456789\n商品名: フローラルワンピース Mサイズ\n価格: ¥3,280\n注文日: 2024/01/15\n配送状況: 発送済み\n\nまたはSHEINの注文履歴ページをOCRで読み取ったテキストをペーストしてください';
       case 'other':
-        return '例：\nサイト名: 公式オンラインストア\n商品名: スニーカー\n価格: ¥15,400\n注文日: 2024/01/15\n注文番号: ORD-2024-001\n\nまたは他のECサイトの注文履歴をOCRで読み取ったテキストをペーストしてください';
+        final serviceName = widget.customServiceName ?? '対象サイト';
+        return '例：\nサイト名: $serviceName\n商品名: サンプルアイテム\n価格: ¥15,400\n注文日: 2024/01/15\n注文番号: ORD-2024-001\n\nまたは$serviceNameの注文履歴をOCRで読み取ったテキストをペーストしてください';
       default:
         return 'ショッピング関連のデータを入力してください';
     }
   }
 
-  Widget _buildActionButton(String title, IconData icon, VoidCallback onTap, bool isDark) {
+  Widget _buildActionButton(
+      String title, IconData icon, VoidCallback onTap, bool isDark) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -533,8 +671,9 @@ class _ShoppingImportScreenState extends ConsumerState<ShoppingImportScreen>
               Text(
                 '検出率: ${((extractedPurchases.length / _estimateOriginalItemCount()) * 100).toStringAsFixed(1)}%',
                 style: TextStyle(
-                  color: extractedPurchases.length >= (_estimateOriginalItemCount() * 0.9) 
-                      ? Colors.green 
+                  color: extractedPurchases.length >=
+                          (_estimateOriginalItemCount() * 0.9)
+                      ? Colors.green
                       : Colors.orange,
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
@@ -555,19 +694,25 @@ class _ShoppingImportScreenState extends ConsumerState<ShoppingImportScreen>
             final index = entry.key;
             final item = entry.value;
             final isSelected = selectedItems[index];
-            
+
             return Container(
               margin: const EdgeInsets.only(bottom: 12),
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: isSelected 
-                    ? (isDark ? const Color(0xFF1A1A1A) : const Color(0xFFF8FAFC))
-                    : (isDark ? const Color(0xFF404040) : const Color(0xFFF1F5F9)),
+                color: isSelected
+                    ? (isDark
+                        ? const Color(0xFF1A1A1A)
+                        : const Color(0xFFF8FAFC))
+                    : (isDark
+                        ? const Color(0xFF404040)
+                        : const Color(0xFFF1F5F9)),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: isSelected 
+                  color: isSelected
                       ? const Color(0xFFFF9900)
-                      : (isDark ? const Color(0xFF525252) : const Color(0xFFE2E8F0)),
+                      : (isDark
+                          ? const Color(0xFF525252)
+                          : const Color(0xFFE2E8F0)),
                 ),
               ),
               child: Row(
@@ -612,16 +757,19 @@ class _ShoppingImportScreenState extends ConsumerState<ShoppingImportScreen>
                               Text(
                                 item.orderDate,
                                 style: TextStyle(
-                                  color: isDark ? Colors.white60 : Colors.black54,
+                                  color:
+                                      isDark ? Colors.white60 : Colors.black54,
                                   fontSize: 12,
                                 ),
                               ),
                             ],
                             const Spacer(),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 6, vertical: 2),
                               decoration: BoxDecoration(
-                                color: _getConfidenceColor(item.confidence).withOpacity( 0.1),
+                                color: _getConfidenceColor(item.confidence)
+                                    .withOpacity(0.1),
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: Text(
@@ -656,7 +804,8 @@ class _ShoppingImportScreenState extends ConsumerState<ShoppingImportScreen>
                   },
                   style: OutlinedButton.styleFrom(
                     foregroundColor: isDark ? Colors.white54 : Colors.black54,
-                    side: BorderSide(color: isDark ? Colors.white54 : Colors.black54),
+                    side: BorderSide(
+                        color: isDark ? Colors.white54 : Colors.black54),
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
@@ -668,7 +817,9 @@ class _ShoppingImportScreenState extends ConsumerState<ShoppingImportScreen>
               const SizedBox(width: 12),
               Expanded(
                 child: ElevatedButton(
-                  onPressed: selectedItems.any((selected) => selected) ? _confirmImport : null,
+                  onPressed: selectedItems.any((selected) => selected)
+                      ? _confirmImport
+                      : null,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFFF9900),
                     foregroundColor: Colors.white,
@@ -829,7 +980,7 @@ class _ShoppingImportScreenState extends ConsumerState<ShoppingImportScreen>
           ? Colors.white
           : (isDark ? Colors.white38 : Colors.black38),
       label: const Text('データを取り込む'),
-      icon: isProcessing 
+      icon: isProcessing
           ? const SizedBox(
               width: 16,
               height: 16,
@@ -843,7 +994,8 @@ class _ShoppingImportScreenState extends ConsumerState<ShoppingImportScreen>
   }
 
   void _selectImage() async {
-    final XFile? image = await _imagePicker.pickImage(source: ImageSource.gallery);
+    final XFile? image =
+        await _imagePicker.pickImage(source: ImageSource.gallery);
     if (image != null) {
       setState(() {
         selectedImage = File(image.path);
@@ -853,7 +1005,8 @@ class _ShoppingImportScreenState extends ConsumerState<ShoppingImportScreen>
   }
 
   void _takePhoto() async {
-    final XFile? image = await _imagePicker.pickImage(source: ImageSource.camera);
+    final XFile? image =
+        await _imagePicker.pickImage(source: ImageSource.camera);
     if (image != null) {
       setState(() {
         selectedImage = File(image.path);
@@ -875,7 +1028,7 @@ class _ShoppingImportScreenState extends ConsumerState<ShoppingImportScreen>
     try {
       // Amazon購入データをパース
       final parsedItems = AmazonPurchaseParser.parseText(_textController.text);
-      
+
       setState(() {
         extractedPurchases = parsedItems;
         selectedItems = List.filled(parsedItems.length, true); // デフォルトで全選択
@@ -886,7 +1039,8 @@ class _ShoppingImportScreenState extends ConsumerState<ShoppingImportScreen>
       if (parsedItems.isEmpty) {
         _showErrorSnackBar('商品データを検出できませんでした。\n形式を確認してください。');
       } else {
-        final detectionRate = (parsedItems.length / _estimateOriginalItemCount()) * 100;
+        final detectionRate =
+            (parsedItems.length / _estimateOriginalItemCount()) * 100;
         debugPrint('検出率: ${detectionRate.toStringAsFixed(1)}%');
       }
     } catch (e) {
@@ -899,8 +1053,12 @@ class _ShoppingImportScreenState extends ConsumerState<ShoppingImportScreen>
 
   int _estimateOriginalItemCount() {
     // 行数や「お届け済み」の出現回数から推定
-    final lines = _textController.text.split('\n').where((line) => line.trim().isNotEmpty).length;
-    final deliveryCount = RegExp(r'お?届け済み|受取済み').allMatches(_textController.text).length;
+    final lines = _textController.text
+        .split('\n')
+        .where((line) => line.trim().isNotEmpty)
+        .length;
+    final deliveryCount =
+        RegExp(r'お?届け済み|受取済み').allMatches(_textController.text).length;
     return deliveryCount > 0 ? deliveryCount : (lines / 3).ceil();
   }
 

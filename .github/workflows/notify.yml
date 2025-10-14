@@ -1,0 +1,292 @@
+name: Slack Notification with Debounce
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+  issue_comment:
+    types: [created]
+  pull_request_review_comment:
+    types: [created]
+  workflow_dispatch: {}  # 手動テスト用
+
+# 60秒デバウンス: 同一PRへの連続更新は最後の1回のみ通知
+concurrency:
+  group: pr-${{ github.event.pull_request.number || github.event.issue.number }}-notify
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: read
+  issues: read
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    # Draft PRは通知しない（workflow_dispatchは常に実行）
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'pull_request' && github.event.pull_request.draft != true) ||
+      (github.event_name == 'issue_comment' && github.event.issue.pull_request) ||
+      github.event_name == 'pull_request_review_comment'
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # 差分取得のため全履歴を取得
+
+      - name: Wait for debounce
+        run: sleep 60
+
+      - name: Get PR information
+        id: pr_info
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            PR_NUMBER=${{ github.event.pull_request.number }}
+            PR_TITLE="${{ github.event.pull_request.title }}"
+            PR_AUTHOR="${{ github.event.pull_request.user.login }}"
+            PR_HEAD="${{ github.event.pull_request.head.ref }}"
+            PR_BASE="${{ github.event.pull_request.base.ref }}"
+            PR_URL="${{ github.event.pull_request.html_url }}"
+            PR_BODY="${{ github.event.pull_request.body }}"
+          else
+            PR_NUMBER=${{ github.event.issue.number }}
+            PR_TITLE="${{ github.event.issue.title }}"
+            PR_AUTHOR="${{ github.event.comment.user.login }}"
+            PR_URL="${{ github.event.issue.html_url }}"
+            PR_BODY="${{ github.event.comment.body }}"
+            PR_HEAD="N/A"
+            PR_BASE="N/A"
+          fi
+          
+          echo "number=$PR_NUMBER" >> $GITHUB_OUTPUT
+          echo "title=$PR_TITLE" >> $GITHUB_OUTPUT
+          echo "author=$PR_AUTHOR" >> $GITHUB_OUTPUT
+          echo "head=$PR_HEAD" >> $GITHUB_OUTPUT
+          echo "base=$PR_BASE" >> $GITHUB_OUTPUT
+          echo "url=$PR_URL" >> $GITHUB_OUTPUT
+          
+          # PR本文を一時ファイルに保存（改行対応）
+          echo "$PR_BODY" > /tmp/pr_body.txt
+
+      - name: Get PR labels
+        id: labels
+        continue-on-error: true
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ] || [ "${{ github.event_name }}" = "issue_comment" ]; then
+            LABELS=$(gh pr view ${{ steps.pr_info.outputs.number }} --json labels --jq '.labels | map(.name) | join(", ")' 2>/dev/null || echo "")
+          else
+            LABELS=""
+          fi
+          echo "labels=$LABELS" >> $GITHUB_OUTPUT
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Get PR stats
+        id: stats
+        continue-on-error: true
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            FILES_CHANGED=$(gh pr view ${{ steps.pr_info.outputs.number }} --json files --jq '.files | length' 2>/dev/null || echo "0")
+            ADDITIONS=$(gh pr view ${{ steps.pr_info.outputs.number }} --json additions --jq '.additions' 2>/dev/null || echo "0")
+            DELETIONS=$(gh pr view ${{ steps.pr_info.outputs.number }} --json deletions --jq '.deletions' 2>/dev/null || echo "0")
+            
+            echo "files_changed=$FILES_CHANGED" >> $GITHUB_OUTPUT
+            echo "additions=$ADDITIONS" >> $GITHUB_OUTPUT
+            echo "deletions=$DELETIONS" >> $GITHUB_OUTPUT
+          else
+            echo "files_changed=0" >> $GITHUB_OUTPUT
+            echo "additions=0" >> $GITHUB_OUTPUT
+            echo "deletions=0" >> $GITHUB_OUTPUT
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract main diff
+        id: diff
+        continue-on-error: true
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ] && [ "${{ steps.pr_info.outputs.base }}" != "N/A" ]; then
+            # 差分を取得（最大3ファイル、200行以内）
+            git diff origin/${{ steps.pr_info.outputs.base }}...${{ steps.pr_info.outputs.head }} > /tmp/full_diff.txt 2>/dev/null || echo "" > /tmp/full_diff.txt
+            
+            # ファイル優先度順にソート
+            # 1. /docs/** (仕様)
+            # 2. /lib/src/** (コア)
+            # 3. /lib/features/** (機能)
+            # 4. /lib/screens/** (UI)
+            # 5. その他
+            
+            DIFF_FILES=$(git diff --name-only origin/${{ steps.pr_info.outputs.base }}...${{ steps.pr_info.outputs.head }} 2>/dev/null | \
+              grep -E '\.(dart|md|yaml|yml)$' | \
+              sort -t/ -k1,1 -k2,2 | \
+              head -n 3 || echo "")
+            
+            DIFF_CONTENT=""
+            TOTAL_LINES=0
+            FILE_COUNT=0
+            
+            for file in $DIFF_FILES; do
+              if [ $TOTAL_LINES -ge 200 ]; then
+                break
+              fi
+              
+              FILE_DIFF=$(git diff origin/${{ steps.pr_info.outputs.base }}...${{ steps.pr_info.outputs.head }} -- "$file" 2>/dev/null | head -n 70 || echo "")
+              FILE_LINES=$(echo "$FILE_DIFF" | wc -l)
+              
+              if [ $((TOTAL_LINES + FILE_LINES)) -le 200 ]; then
+                DIFF_CONTENT="$DIFF_CONTENT\n\n### $file\n\`\`\`diff\n$FILE_DIFF\n\`\`\`"
+                TOTAL_LINES=$((TOTAL_LINES + FILE_LINES))
+                FILE_COUNT=$((FILE_COUNT + 1))
+              fi
+            done
+            
+            # メールアドレスとシークレットをマスク
+            DIFF_CONTENT=$(echo "$DIFF_CONTENT" | sed -E 's/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/***@***.***/g')
+            DIFF_CONTENT=$(echo "$DIFF_CONTENT" | sed -E 's/.*(token|key|secret|password|api_key).*\=.*/[MASKED]/gi')
+            
+            # 差分が大きい場合はArtifact化
+            if [ -f /tmp/full_diff.txt ] && [ $(cat /tmp/full_diff.txt | wc -l) -gt 200 ]; then
+              echo "large_diff=true" >> $GITHUB_OUTPUT
+              cp /tmp/full_diff.txt /tmp/pr-diff-${{ steps.pr_info.outputs.number }}.txt
+            else
+              echo "large_diff=false" >> $GITHUB_OUTPUT
+            fi
+            
+            # 差分を一時ファイルに保存
+            echo -e "$DIFF_CONTENT" > /tmp/diff_content.txt
+            echo "file_count=$FILE_COUNT" >> $GITHUB_OUTPUT
+          else
+            echo "large_diff=false" >> $GITHUB_OUTPUT
+            echo "file_count=0" >> $GITHUB_OUTPUT
+            echo "コメント通知のため差分なし" > /tmp/diff_content.txt
+          fi
+
+      - name: Upload large diff as artifact
+        if: steps.diff.outputs.large_diff == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-diff-${{ steps.pr_info.outputs.number }}
+          path: /tmp/pr-diff-${{ steps.pr_info.outputs.number }}.txt
+          retention-days: 30
+
+      - name: Determine webhook URL
+        id: webhook
+        run: |
+          LABELS="${{ steps.labels.outputs.labels }}"
+          WEBHOOK_URL=""
+          
+          # ラベル別にWebhook振り分け
+          if echo "$LABELS" | grep -q "area:spec" && [ -n "$SLACK_WEBHOOK_SPEC" ]; then
+            WEBHOOK_URL="$SLACK_WEBHOOK_SPEC"
+          elif echo "$LABELS" | grep -q "area:ui" && [ -n "$SLACK_WEBHOOK_UI" ]; then
+            WEBHOOK_URL="$SLACK_WEBHOOK_UI"
+          elif echo "$LABELS" | grep -q "area:api" && [ -n "$SLACK_WEBHOOK_API" ]; then
+            WEBHOOK_URL="$SLACK_WEBHOOK_API"
+          elif [ -n "$SLACK_WEBHOOK_DEFAULT" ]; then
+            WEBHOOK_URL="$SLACK_WEBHOOK_DEFAULT"
+          fi
+          
+          echo "url=$WEBHOOK_URL" >> $GITHUB_OUTPUT
+        env:
+          SLACK_WEBHOOK_DEFAULT: ${{ secrets.SLACK_WEBHOOK_DEFAULT }}
+          SLACK_WEBHOOK_SPEC: ${{ secrets.SLACK_WEBHOOK_SPEC }}
+          SLACK_WEBHOOK_UI: ${{ secrets.SLACK_WEBHOOK_UI }}
+          SLACK_WEBHOOK_API: ${{ secrets.SLACK_WEBHOOK_API }}
+
+      - name: Build Slack message
+        id: message
+        run: |
+          EVENT_TYPE="${{ github.event_name }}"
+          LABELS="${{ steps.labels.outputs.labels }}"
+          
+          # イベントタイプに応じたアイコン
+          if [ "$EVENT_TYPE" = "pull_request" ]; then
+            ICON="🔔"
+            TITLE="PR #${{ steps.pr_info.outputs.number }}: ${{ steps.pr_info.outputs.title }}"
+          else
+            ICON="💬"
+            TITLE="新規コメント on PR #${{ steps.pr_info.outputs.number }}"
+          fi
+          
+          # ラベルに応じた追加情報
+          EXTRA_INFO=""
+          if echo "$LABELS" | grep -q "area:spec"; then
+            EXTRA_INFO="\n\n⚠️ **仕様変更**: 既存実装との整合性を確認してください"
+          elif echo "$LABELS" | grep -q "area:ui"; then
+            EXTRA_INFO="\n\n🎨 **UI変更**: レスポンシブデザインとアクセシビリティを確認してください"
+          elif echo "$LABELS" | grep -q "area:api"; then
+            EXTRA_INFO="\n\n🔌 **API変更**: 破壊的変更がないか確認してください"
+          fi
+          
+          # 基本情報
+          MESSAGE="$ICON **$TITLE**\n\n"
+          MESSAGE="${MESSAGE}👤 **作成者**: ${{ steps.pr_info.outputs.author }}\n"
+          
+          if [ "$EVENT_TYPE" = "pull_request" ]; then
+            MESSAGE="${MESSAGE}🌿 **ブランチ**: \`${{ steps.pr_info.outputs.head }}\` → \`${{ steps.pr_info.outputs.base }}\`\n"
+            MESSAGE="${MESSAGE}🏷️ **ラベル**: $LABELS\n\n"
+            MESSAGE="${MESSAGE}📊 **変更サマリー**\n"
+            MESSAGE="${MESSAGE}- ファイル数: ${{ steps.stats.outputs.files_changed }}\n"
+            MESSAGE="${MESSAGE}- 追加: +${{ steps.stats.outputs.additions }} 行\n"
+            MESSAGE="${MESSAGE}- 削除: -${{ steps.stats.outputs.deletions }} 行\n"
+          fi
+          
+          MESSAGE="${MESSAGE}$EXTRA_INFO\n\n"
+          
+          # 差分情報
+          if [ "$EVENT_TYPE" = "pull_request" ]; then
+            if [ "${{ steps.diff.outputs.large_diff }}" = "true" ]; then
+              MESSAGE="${MESSAGE}📦 **差分が大きいためArtifactに保存しました**\n\n"
+              MESSAGE="${MESSAGE}🔗 [GitHub Actions Run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})\n"
+              MESSAGE="${MESSAGE}→ Artifacts タブから \`pr-diff-${{ steps.pr_info.outputs.number }}.txt\` をダウンロード\n\n"
+              MESSAGE="${MESSAGE}💡 **Cursor での使い方**:\n"
+              MESSAGE="${MESSAGE}1. Artifactをダウンロード\n"
+              MESSAGE="${MESSAGE}2. Cursorで開く\n"
+              MESSAGE="${MESSAGE}3. 全選択してコンテキストに追加\n"
+            else
+              MESSAGE="${MESSAGE}📝 **主要差分** (最大3ファイル、200行以内)\n"
+              MESSAGE="${MESSAGE}$(cat /tmp/diff_content.txt)\n\n"
+              MESSAGE="${MESSAGE}---\n\n"
+              MESSAGE="${MESSAGE}📋 **Cursor貼り付け用**\n"
+              MESSAGE="${MESSAGE}上記の差分をCursorのチャットにコピーして、以下のように指示してください:\n\n"
+              MESSAGE="${MESSAGE}\`\`\`\n"
+              MESSAGE="${MESSAGE}@codebase この変更をレビューしてください\n"
+              MESSAGE="${MESSAGE}\`\`\`\n"
+            fi
+          else
+            MESSAGE="${MESSAGE}📝 **コメント内容**:\n"
+            MESSAGE="${MESSAGE}$(cat /tmp/pr_body.txt)\n\n"
+            MESSAGE="${MESSAGE}🔗 [コメントを見る](${{ steps.pr_info.outputs.url }})\n"
+          fi
+          
+          MESSAGE="${MESSAGE}\n\n🔗 [PRを見る](${{ steps.pr_info.outputs.url }})"
+          
+          # メッセージを一時ファイルに保存
+          echo -e "$MESSAGE" > /tmp/slack_message.txt
+
+      - name: Send to Slack
+        if: steps.webhook.outputs.url != ''
+        continue-on-error: true
+        run: |
+          MESSAGE=$(cat /tmp/slack_message.txt | jq -Rs .)
+          
+          curl -fsS -X POST "${{ steps.webhook.outputs.url }}" \
+            -H "Content-Type: application/json" \
+            -d "{\"text\": $MESSAGE}" \
+          || echo "::warning::Slack post failed (non-blocking)"
+
+      - name: Notify on failure
+        if: failure() && secrets.SLACK_WEBHOOK_DEFAULT != ''
+        continue-on-error: true
+        run: |
+          curl -fsS -X POST "${{ secrets.SLACK_WEBHOOK_DEFAULT }}" \
+            -H "Content-Type: application/json" \
+            -d "{\"text\": \"❌ **自動化ワークフロー失敗**\n\n🔧 **ワークフロー**: ${{ github.workflow }}\n📝 **エラー**: ワークフローが失敗しました\n\n🔗 [ログを確認](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})\n\n💡 **対処方法**:\n1. GitHub Actions のログを確認\n2. Secrets の設定を確認\n3. 必要に応じて再実行\"}" \
+          || echo "::warning::Failure notification to Slack failed (non-blocking)"
+      
+      - name: Workflow completion
+        run: |
+          echo "✅ Notification workflow completed successfully"
+          echo "Event: ${{ github.event_name }}"
+          echo "Webhook configured: ${{ steps.webhook.outputs.url != '' }}"

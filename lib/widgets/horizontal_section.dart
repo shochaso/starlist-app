@@ -12,7 +12,7 @@ class HorizontalSection extends StatelessWidget {
   final double spacing;
 
   const HorizontalSection({
-    Key? key,
+    super.key,
     required this.title,
     required this.children,
     this.onSeeMorePressed,
@@ -22,7 +22,7 @@ class HorizontalSection extends StatelessWidget {
     this.itemWidth = 150,
     this.itemHeight = 200,
     this.spacing = 12,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

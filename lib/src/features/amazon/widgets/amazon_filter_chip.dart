@@ -6,10 +6,10 @@ class AmazonFilterChip extends StatelessWidget {
   final VoidCallback? onDeleted;
 
   const AmazonFilterChip({
-    Key? key,
+    super.key,
     required this.label,
     this.onDeleted,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

@@ -69,7 +69,7 @@ class TimelineView extends StatelessWidget {
   final EdgeInsetsGeometry? padding;
 
   const TimelineView({
-    Key? key,
+    super.key,
     required this.items,
     this.isLoading = false,
     this.loadingWidget,
@@ -78,7 +78,7 @@ class TimelineView extends StatelessWidget {
     this.showDividers = true,
     this.groupByDate = false,
     this.padding,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

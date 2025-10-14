@@ -1,11 +1,10 @@
-import 'dart:convert';
 import 'lib/src/services/youtube_ocr_parser_unified.dart';
 
 void main() {
   print('=== 統合YouTubeOCRパーサー - Amazonデータ処理テスト ===\n');
 
   // AmazonのOCRデータ
-  final String amazonOcrData = '''	アズマ商事【今治タオル付き】馬
+  const String amazonOcrData = '''	アズマ商事【今治タオル付き】馬
 油シャンプー 詰替え用1000・
 6月22日に受取済み	>
 	ミネラルウォーター彩水 あやみず
@@ -114,7 +113,7 @@ List<Map<String, String>> _parseAmazonData(String data) {
       if (currentProduct == null) {
         currentProduct = line;
       } else {
-        currentProduct += ' ' + line;
+        currentProduct += ' $line';
       }
     }
   }

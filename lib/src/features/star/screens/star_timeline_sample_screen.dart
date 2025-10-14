@@ -15,7 +15,7 @@ void main() {
 
 // サンプルアプリ
 class TimelineSampleApp extends StatelessWidget {
-  const TimelineSampleApp({Key? key}) : super(key: key);
+  const TimelineSampleApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -100,7 +100,7 @@ final recentActivitiesProvider = FutureProvider<List<StarActivity>>((ref) async 
 
 /// スタータイムラインのサンプル画面
 class StarTimelineSampleScreen extends ConsumerWidget {
-  const StarTimelineSampleScreen({Key? key}) : super(key: key);
+  const StarTimelineSampleScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

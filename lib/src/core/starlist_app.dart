@@ -20,7 +20,7 @@ import 'package:starlist_implementation/src/features/data_integration/services/y
 
 /// Starlistアプリケーションのメインクラス
 class StarlistApp extends ConsumerWidget {
-  const StarlistApp({Key? key}) : super(key: key);
+  const StarlistApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -46,7 +46,7 @@ class StarlistApp extends ConsumerWidget {
 
 /// ホーム画面
 class StarlistHomePage extends ConsumerStatefulWidget {
-  const StarlistHomePage({Key? key}) : super(key: key);
+  const StarlistHomePage({super.key});
 
   @override
   ConsumerState<StarlistHomePage> createState() => _StarlistHomePageState();
@@ -142,7 +142,7 @@ class _StarlistHomePageState extends ConsumerState<StarlistHomePage> {
 
 /// ホームタブ
 class HomeTab extends ConsumerWidget {
-  const HomeTab({Key? key}) : super(key: key);
+  const HomeTab({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -223,7 +223,7 @@ class HomeTab extends ConsumerWidget {
 
 /// 探索タブ
 class ExploreTab extends ConsumerWidget {
-  const ExploreTab({Key? key}) : super(key: key);
+  const ExploreTab({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -305,7 +305,7 @@ class ExploreTab extends ConsumerWidget {
 class StarTab extends ConsumerWidget {
   final String starId;
 
-  const StarTab({Key? key, required this.starId}) : super(key: key);
+  const StarTab({super.key, required this.starId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

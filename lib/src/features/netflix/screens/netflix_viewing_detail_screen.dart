@@ -9,9 +9,9 @@ class NetflixViewingDetailScreen extends ConsumerStatefulWidget {
   final NetflixViewingHistory viewingHistory;
 
   const NetflixViewingDetailScreen({
-    Key? key,
+    super.key,
     required this.viewingHistory,
-  }) : super(key: key);
+  });
 
   @override
   ConsumerState<NetflixViewingDetailScreen> createState() => _NetflixViewingDetailScreenState();

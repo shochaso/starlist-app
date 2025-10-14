@@ -9,7 +9,7 @@ import '../../../widgets/upload_progress_widget.dart';
 import '../../../providers/image_upload_provider.dart';
 
 class ProfileEditScreen extends ConsumerStatefulWidget {
-  const ProfileEditScreen({Key? key}) : super(key: key);
+  const ProfileEditScreen({super.key});
 
   @override
   _ProfileEditScreenState createState() => _ProfileEditScreenState();

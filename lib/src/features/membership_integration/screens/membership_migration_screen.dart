@@ -5,7 +5,7 @@ import '../../subscription/models/subscription_models.dart';
 
 /// 既存会員サービス移行画面
 class MembershipMigrationScreen extends ConsumerStatefulWidget {
-  const MembershipMigrationScreen({Key? key}) : super(key: key);
+  const MembershipMigrationScreen({super.key});
 
   @override
   ConsumerState<MembershipMigrationScreen> createState() => _MembershipMigrationScreenState();

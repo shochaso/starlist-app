@@ -16,7 +16,7 @@ void main() {
 }
 
 class StarlistApp extends StatelessWidget {
-  const StarlistApp({Key? key}) : super(key: key);
+  const StarlistApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +32,7 @@ class StarlistApp extends StatelessWidget {
 }
 
 class StarlistHomePage extends ConsumerStatefulWidget {
-  const StarlistHomePage({Key? key}) : super(key: key);
+  const StarlistHomePage({super.key});
 
   @override
   ConsumerState<StarlistHomePage> createState() => _StarlistHomePageState();

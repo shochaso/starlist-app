@@ -10,10 +10,10 @@ class PaymentMethodScreen extends ConsumerStatefulWidget {
   final bool isYearly;
 
   const PaymentMethodScreen({
-    Key? key,
+    super.key,
     required this.plan,
     this.isYearly = false,
-  }) : super(key: key);
+  });
 
   @override
   ConsumerState<PaymentMethodScreen> createState() =>
@@ -178,7 +178,7 @@ class _PaymentMethodScreenState extends ConsumerState<PaymentMethodScreen> {
                         padding: const EdgeInsets.only(top: 4),
                         child: Text(
                           discountMonths != null
-                              ? '月あたり ¥${monthlyEquivalent!.toStringAsFixed(0)}（${discountMonths}ヶ月分お得）'
+                              ? '月あたり ¥${monthlyEquivalent!.toStringAsFixed(0)}（$discountMonthsヶ月分お得）'
                               : '月あたり ¥${monthlyEquivalent!.toStringAsFixed(0)}',
                           style: TextStyle(
                             color: Colors.green.shade700,

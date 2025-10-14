@@ -1,20 +1,12 @@
 import 'package:flutter/material.dart';
-import '../models/gacha_limits_models.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lottie/lottie.dart';
 import '../models/gacha_models_simple.dart';
 import '../widgets/gacha_machine_widget.dart';
 import '../services/gacha_sound_service.dart';
 import 'providers/gacha_providers.dart';
-import '../providers/gacha_limits_providers.dart';
-import '../../../features/voting/providers/voting_providers.dart';
-import '../../../../providers/user_provider.dart';
 import '../../voting/widgets/star_point_balance_widget.dart';
-import '../services/ad_service.dart';
 import '../providers/gacha_attempts_manager.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'gacha_view_model.dart';
 
 /// ガチャメイン画面
 class GachaScreen extends ConsumerWidget {
@@ -126,10 +118,10 @@ class _GachaView extends ConsumerWidget {
                     child: Stack(
                       alignment: Alignment.center,
                       children: [
-                        Row(
+                        const Row(
                           mainAxisSize: MainAxisSize.min,
                           mainAxisAlignment: MainAxisAlignment.center,
-                          children: const [
+                          children: [
                             Icon(
                               Icons.auto_awesome,
                               size: 46,
@@ -412,10 +404,10 @@ class _GachaView extends ConsumerWidget {
   // 以下、各状態に対応するウィジェットを返すヘルパーメソッド
   // (これらは元のGachaScreenから移動または再定義)
   Widget _buildInitialContent(BuildContext context, WidgetRef ref) {
-    return Column(
+    return const Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.center,
-      children: const [
+      children: [
         SizedBox(
           height: 320,
           child: FittedBox(
@@ -479,10 +471,10 @@ class _GachaView extends ConsumerWidget {
   }
 
   Widget _buildLoadingContent() {
-    return Column(
+    return const Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.center,
-      children: const [
+      children: [
         SizedBox(
           height: 320,
           child: FittedBox(
@@ -769,7 +761,7 @@ class _GachaView extends ConsumerWidget {
             result.when(
               point: (amount) => Text(
                 '+$amount スターポイント',
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
                   color: Colors.blue,
@@ -933,7 +925,7 @@ class _GachaView extends ConsumerWidget {
                 ),
               ),
             ),
-            if (rarity == 'SSR') Positioned.fill(child: _RarityShineOverlay()),
+            if (rarity == 'SSR') const Positioned.fill(child: _RarityShineOverlay()),
           ],
         );
       },

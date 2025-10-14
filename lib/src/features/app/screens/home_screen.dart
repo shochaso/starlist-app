@@ -11,7 +11,7 @@ import '../../content/consumption_data_widget.dart';
 import '../../youtube/youtube_search_screen.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+  const HomeScreen({super.key});
 
   @override
   ConsumerState<HomeScreen> createState() => _HomeScreenState();

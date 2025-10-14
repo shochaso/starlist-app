@@ -214,7 +214,7 @@ class YouTubeApiService {
       throw Exception('OAuth2 credentials are required for authentication');
     }
 
-    final credentials = ClientId(_clientId!, _clientSecret!);
+    final credentials = ClientId(_clientId, _clientSecret);
     
     // 必要なスコープを指定
     const scopes = [

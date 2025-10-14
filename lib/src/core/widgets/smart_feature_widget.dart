@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../utils/lazy_loading_manager.dart';
 
 /// スマート機能Widget
 /// ユーザーの使用状況に応じて段階的に機能を開放

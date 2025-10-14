@@ -1018,7 +1018,7 @@ class StarlistWebHomePage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 24),
-            ...features.map((feature) => _buildFeatureItem(feature)).toList(),
+            ...features.map((feature) => _buildFeatureItem(feature)),
             const SizedBox(height: 24),
             const Text(
               '特典詳細',
@@ -1028,7 +1028,7 @@ class StarlistWebHomePage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 12),
-            ...detailedFeatures.map((feature) => _buildDetailedFeatureItem(feature)).toList(),
+            ...detailedFeatures.map((feature) => _buildDetailedFeatureItem(feature)),
             const SizedBox(height: 24),
             SizedBox(
               width: double.infinity,

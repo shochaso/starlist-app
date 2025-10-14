@@ -1,6 +1,5 @@
 import 'package:flutter/foundation.dart';
 import '../features/subscription/models/subscription_models.dart';
-import '../data/models/star_point_models.dart';
 
 /// 既存会員管理サービス連携インターフェース
 abstract class ExistingMembershipService {

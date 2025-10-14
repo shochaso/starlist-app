@@ -42,7 +42,7 @@ class ItemCard extends StatelessWidget {
   final double shadowOpacity;
 
   const ItemCard({
-    Key? key,
+    super.key,
     required this.title,
     this.subtitle,
     this.description,
@@ -56,7 +56,7 @@ class ItemCard extends StatelessWidget {
     this.margin = const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
     this.borderRadius = 12.0,
     this.shadowOpacity = 0.1,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

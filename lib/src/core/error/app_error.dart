@@ -13,16 +13,14 @@ class AppError implements Exception {
 }
 
 class NetworkError extends AppError {
-  NetworkError(String message, {String? code, dynamic details, StackTrace? stackTrace})
-      : super(message, code: code, details: details, stackTrace: stackTrace);
+  NetworkError(super.message, {super.code, super.details, super.stackTrace});
 }
 
 class ApiError extends AppError {
   final int statusCode;
   final String? responseBody;
 
-  ApiError(String message, this.statusCode, {String? code, dynamic details, this.responseBody, StackTrace? stackTrace})
-      : super(message, code: code, details: details, stackTrace: stackTrace);
+  ApiError(super.message, this.statusCode, {super.code, super.details, this.responseBody, super.stackTrace});
 
   factory ApiError.fromResponse(http.Response response) {
     try {
@@ -42,16 +40,13 @@ class ApiError extends AppError {
 }
 
 class ValidationError extends AppError {
-  ValidationError(String message, {String? code, dynamic details, StackTrace? stackTrace})
-      : super(message, code: code, details: details, stackTrace: stackTrace);
+  ValidationError(super.message, {super.code, super.details, super.stackTrace});
 }
 
 class AuthError extends AppError {
-  AuthError(String message, {String? code, dynamic details, StackTrace? stackTrace})
-      : super(message, code: code, details: details, stackTrace: stackTrace);
+  AuthError(super.message, {super.code, super.details, super.stackTrace});
 }
 
 class CacheError extends AppError {
-  CacheError(String message, {String? code, dynamic details, StackTrace? stackTrace})
-      : super(message, code: code, details: details, stackTrace: stackTrace);
+  CacheError(super.message, {super.code, super.details, super.stackTrace});
 }

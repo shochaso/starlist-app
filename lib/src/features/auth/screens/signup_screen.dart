@@ -4,7 +4,7 @@ import '../supabase_provider.dart';
 import '../validators/auth_validators.dart';
 
 class SignupScreen extends ConsumerStatefulWidget {
-  const SignupScreen({Key? key}) : super(key: key);
+  const SignupScreen({super.key});
 
   @override
   _SignupScreenState createState() => _SignupScreenState();

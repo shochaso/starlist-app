@@ -8,10 +8,10 @@ class AmazonPurchaseCard extends StatelessWidget {
   final VoidCallback? onTap;
 
   const AmazonPurchaseCard({
-    Key? key,
+    super.key,
     required this.purchase,
     this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

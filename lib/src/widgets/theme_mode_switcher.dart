@@ -11,12 +11,12 @@ class ThemeModeSwitcher extends ConsumerWidget {
   final CrossAxisAlignment crossAxisAlignment;
 
   const ThemeModeSwitcher({
-    Key? key,
+    super.key,
     this.showLabels = true,
     this.direction = Axis.horizontal,
     this.mainAxisAlignment = MainAxisAlignment.center,
     this.crossAxisAlignment = CrossAxisAlignment.center,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -162,11 +162,11 @@ class ThemeToggleButton extends ConsumerWidget {
   final Color? backgroundColor;
 
   const ThemeToggleButton({
-    Key? key,
+    super.key,
     this.size = 24.0,
     this.iconColor,
     this.backgroundColor,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -219,11 +219,11 @@ class ThemeSettingsCard extends ConsumerWidget {
   final EdgeInsetsGeometry? padding;
 
   const ThemeSettingsCard({
-    Key? key,
+    super.key,
     this.title = 'テーマ設定',
     this.subtitle,
     this.padding,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -340,10 +340,10 @@ class AnimatedThemeButton extends ConsumerStatefulWidget {
   final Duration animationDuration;
 
   const AnimatedThemeButton({
-    Key? key,
+    super.key,
     this.size = 48.0,
     this.animationDuration = const Duration(milliseconds: 600),
-  }) : super(key: key);
+  });
 
   @override
   ConsumerState<AnimatedThemeButton> createState() => _AnimatedThemeButtonState();

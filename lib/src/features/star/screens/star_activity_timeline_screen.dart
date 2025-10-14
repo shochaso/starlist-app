@@ -23,11 +23,11 @@ class StarActivityTimelineScreen extends ConsumerStatefulWidget {
   final String? title;
 
   const StarActivityTimelineScreen({
-    Key? key,
+    super.key,
     required this.starId,
     this.activityType,
     this.title,
-  }) : super(key: key);
+  });
 
   @override
   ConsumerState<StarActivityTimelineScreen> createState() => _StarActivityTimelineScreenState();

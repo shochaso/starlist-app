@@ -39,13 +39,13 @@ class YouTubeVideoListView extends ConsumerWidget {
   final Function(YouTubeVideo video)? onVideoTap;
 
   const YouTubeVideoListView({
-    Key? key,
+    super.key,
     required this.searchQuery,
     this.scrollDirection = Axis.vertical,
     this.padding = const EdgeInsets.all(8.0),
     this.itemSpacing = 8.0,
     this.onVideoTap,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -177,14 +177,14 @@ class PopularYouTubeVideosSection extends ConsumerWidget {
   final Function(YouTubeVideo video)? onVideoTap;
 
   const PopularYouTubeVideosSection({
-    Key? key,
+    super.key,
     required this.title,
     this.subtitle,
     this.onViewAll,
     this.isHorizontal = true,
     this.maxItems,
     this.onVideoTap,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

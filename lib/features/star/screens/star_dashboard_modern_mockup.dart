@@ -16,7 +16,6 @@ class StarDashboardModernMockApp extends StatelessWidget {
         brightness: Brightness.dark,
         fontFamily: 'Inter',
         colorScheme: const ColorScheme.dark(
-          background: _background,
           surface: _surface,
           primary: _accentYellow,
           secondary: _accentBlue,
@@ -41,11 +40,11 @@ class StarDashboardModernScreen extends StatelessWidget {
   ];
 
   static final _recentActivities = [
-    _Activity('Fan Name 1', '最新の投稿', 'Premium', _accentGreen, _accentGreenSoft, _accentYellow),
-    _Activity('Fan Name 2', '100 S-Points', 'Standard', _accentYellow, _accentYellowSoft, _accentYellow),
-    _Activity('Fan Name 3', 'Standard Fan', 'Standard', _accentBlue, _accentYellowSoft, _accentYellow),
-    _Activity('Fan Name 4', 'チケット購入', 'Light', _accentYellow, _accentBlueSoft, _accentBlue),
-    _Activity('Fan Name 5', '有料提案', 'Premium', _accentGreen, _accentGreenSoft, _accentGreen),
+    const _Activity('Fan Name 1', '最新の投稿', 'Premium', _accentGreen, _accentGreenSoft, _accentYellow),
+    const _Activity('Fan Name 2', '100 S-Points', 'Standard', _accentYellow, _accentYellowSoft, _accentYellow),
+    const _Activity('Fan Name 3', 'Standard Fan', 'Standard', _accentBlue, _accentYellowSoft, _accentYellow),
+    const _Activity('Fan Name 4', 'チケット購入', 'Light', _accentYellow, _accentBlueSoft, _accentBlue),
+    const _Activity('Fan Name 5', '有料提案', 'Premium', _accentGreen, _accentGreenSoft, _accentGreen),
   ];
 
   static final _tableRows = [
@@ -209,9 +208,9 @@ class StarDashboardModernScreen extends StatelessWidget {
 
   Widget _buildKpiRow(BuildContext context) {
     final cards = [
-      _KpiData('Total Fans', '12,345', _accentYellow, _sparklineOne),
-      _KpiData('Monthly Revenue', '¥ 250,000', _accentGreen, _sparklineTwo),
-      _KpiData('Engagement Rate', '7.8%', _accentBlue, _sparklineThree),
+      const _KpiData('Total Fans', '12,345', _accentYellow, _sparklineOne),
+      const _KpiData('Monthly Revenue', '¥ 250,000', _accentGreen, _sparklineTwo),
+      const _KpiData('Engagement Rate', '7.8%', _accentBlue, _sparklineThree),
     ];
 
     return Row(
@@ -341,10 +340,10 @@ class StarDashboardModernScreen extends StatelessWidget {
   }
 
   Widget _buildTableHeader() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+    return const Padding(
+      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 14),
       child: Row(
-        children: const [
+        children: [
           Expanded(flex: 3, child: _TableHeaderLabel('Title')),
           Expanded(flex: 2, child: _TableHeaderLabel('Type')),
           Expanded(flex: 2, child: _TableHeaderLabel('Plan')), 

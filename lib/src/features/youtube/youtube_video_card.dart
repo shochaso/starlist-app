@@ -12,11 +12,11 @@ class YouTubeVideoCard extends StatelessWidget {
   final VoidCallback? onTap;
 
   const YouTubeVideoCard({
-    Key? key,
+    super.key,
     required this.video,
     this.showChannelInfo = true,
     this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

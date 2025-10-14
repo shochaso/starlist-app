@@ -69,3 +69,7 @@ coverage/
 # Claud関連
 claude_desktop_config.json
 node_modules/
+
+# Development logs (c.sh script)
+logs/
+*.log

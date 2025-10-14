@@ -5,7 +5,7 @@ import '../../../features/auth/providers/user_provider.dart';
 
 /// 投票投稿作成画面
 class CreateVotingPostScreen extends ConsumerStatefulWidget {
-  const CreateVotingPostScreen({Key? key}) : super(key: key);
+  const CreateVotingPostScreen({super.key});
 
   @override
   ConsumerState<CreateVotingPostScreen> createState() => _CreateVotingPostScreenState();

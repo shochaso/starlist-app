@@ -19,13 +19,13 @@ class VirtualizedContentFeed extends StatefulWidget {
   
   /// コンストラクタ
   const VirtualizedContentFeed({
-    Key? key,
+    super.key,
     required this.contents,
     required this.onLoadMore,
     required this.itemBuilder,
     required this.isLoading,
     required this.hasMore,
-  }) : super(key: key);
+  });
   
   @override
   _VirtualizedContentFeedState createState() => _VirtualizedContentFeedState();

@@ -92,7 +92,7 @@ class LazyLoadingManager {
     
     _loadTimestamps.forEach((module, timestamp) {
       // 30分以上使用されていないモジュールをクリーンアップ
-      if (now.difference(timestamp) > Duration(minutes: 30)) {
+      if (now.difference(timestamp) > const Duration(minutes: 30)) {
         expiredModules.add(module);
       }
     });
@@ -127,7 +127,7 @@ class LazyLoadingManager {
   List<String> _getCleanupCandidates() {
     final now = DateTime.now();
     return _loadTimestamps.entries
-        .where((entry) => now.difference(entry.value) > Duration(minutes: 15))
+        .where((entry) => now.difference(entry.value) > const Duration(minutes: 15))
         .map((entry) => entry.key)
         .toList();
   }

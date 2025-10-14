@@ -24,7 +24,7 @@ class FollowRepository {
           .order('created_at', ascending: false)
           .range(offset, offset + limit - 1);
       
-      if (data == null || data.isEmpty) {
+      if (data.isEmpty) {
         return [];
       }
       
@@ -56,7 +56,7 @@ class FollowRepository {
           .order('created_at', ascending: false)
           .range(offset, offset + limit - 1);
       
-      if (data == null || data.isEmpty) {
+      if (data.isEmpty) {
         return [];
       }
       

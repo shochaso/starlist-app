@@ -21,7 +21,7 @@ class _LandingScreenState extends State<LandingScreen> {
     final colorScheme = theme.colorScheme;
 
     return Scaffold(
-      backgroundColor: colorScheme.background,
+      backgroundColor: colorScheme.surface,
       appBar: AppBar(
         title: Text('Starlist', style: theme.textTheme.titleLarge),
         actions: [
@@ -349,7 +349,7 @@ class _Footer extends StatelessWidget {
       margin: EdgeInsets.only(top: tokens.spacing.section),
       padding: EdgeInsets.all(tokens.spacing.lg),
       decoration: BoxDecoration(
-        color: colorScheme.surfaceVariant.withOpacity(0.4),
+        color: colorScheme.surfaceContainerHighest.withOpacity(0.4),
         borderRadius: tokens.radius.xlRadius,
       ),
       child: Column(

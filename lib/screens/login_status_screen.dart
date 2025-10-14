@@ -4,7 +4,6 @@ import '../providers/user_provider.dart';
 import '../src/providers/theme_provider_enhanced.dart';
 import '../features/auth/screens/star_signup_screen.dart';
 import '../features/auth/screens/star_email_signup_screen.dart';
-import '../data/test_accounts_data.dart';
 import 'test_account_switcher_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'starlist_main_screen.dart';

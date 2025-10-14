@@ -9,11 +9,11 @@ class StarPointsPurchaseScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final plans = <_PointsPlan>[
-      _PointsPlan(points: 10, priceYen: 100),
-      _PointsPlan(points: 50, priceYen: 500),
-      _PointsPlan(points: 100, priceYen: 1000),
-      _PointsPlan(points: 550, priceYen: 5000),
-      _PointsPlan(points: 1200, priceYen: 10000),
+      const _PointsPlan(points: 10, priceYen: 100),
+      const _PointsPlan(points: 50, priceYen: 500),
+      const _PointsPlan(points: 100, priceYen: 1000),
+      const _PointsPlan(points: 550, priceYen: 5000),
+      const _PointsPlan(points: 1200, priceYen: 10000),
     ];
 
     return Scaffold(

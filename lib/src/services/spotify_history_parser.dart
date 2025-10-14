@@ -5,20 +5,14 @@ class SpotifyHistoryItem extends SpotifyTrack {
   final int? playCount;
 
   SpotifyHistoryItem({
-    required String title,
-    required String artist,
-    String? album,
-    String? duration,
+    required super.title,
+    required super.artist,
+    super.album,
+    super.duration,
     this.playedAt,
     this.playCount,
-    required double confidence,
-  }) : super(
-    title: title,
-    artist: artist,
-    album: album,
-    duration: duration,
-    confidence: confidence,
-  );
+    required super.confidence,
+  });
 
   @override
   Map<String, dynamic> toMap() {

@@ -6,7 +6,7 @@ import '../../../data/models/netflix_models.dart';
 
 /// Netflixフィルター画面
 class NetflixFilterScreen extends ConsumerStatefulWidget {
-  const NetflixFilterScreen({Key? key}) : super(key: key);
+  const NetflixFilterScreen({super.key});
 
   @override
   ConsumerState<NetflixFilterScreen> createState() => _NetflixFilterScreenState();

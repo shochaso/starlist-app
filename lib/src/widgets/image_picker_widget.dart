@@ -18,7 +18,7 @@ class ImagePickerWidget extends StatefulWidget {
   final bool isCircular;
 
   const ImagePickerWidget({
-    Key? key,
+    super.key,
     required this.onImageSelected,
     this.onMultipleImagesSelected,
     this.currentImageUrl,
@@ -30,7 +30,7 @@ class ImagePickerWidget extends StatefulWidget {
     this.showEditIcon = true,
     this.borderColor,
     this.isCircular = true,
-  }) : super(key: key);
+  });
 
   @override
   State<ImagePickerWidget> createState() => _ImagePickerWidgetState();

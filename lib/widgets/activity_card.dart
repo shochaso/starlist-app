@@ -1,17 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import '../models/activity.dart';
-import '../theme/app_theme.dart';
 
 class ActivityCard extends StatelessWidget {
   final Activity activity;
   final VoidCallback? onTap;
 
   const ActivityCard({
-    Key? key,
+    super.key,
     required this.activity,
     this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

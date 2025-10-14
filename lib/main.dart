@@ -32,15 +32,6 @@ Future<void> main() async {
   }
 
   await NotificationService().init();
-  await ServiceIconRegistry.init();
-  assert(() {
-    final map = ServiceIconRegistryDebug.readMap();
-    if (map.isEmpty) {
-      // ignore: avoid_print
-      print('[icon] service_icons.json が空です');
-    }
-    return true;
-  }());
 
   runApp(const ProviderScope(child: MyApp()));
 }

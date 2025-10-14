@@ -5,7 +5,6 @@ import '../routes/app_routes.dart';
 import '../widgets/star_card.dart';
 import '../widgets/activity_card.dart';
 import '../widgets/horizontal_section.dart';
-import '../widgets/category_card.dart';
 import '../src/features/star/screens/star_timeline_sample_screen.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -622,7 +621,7 @@ class _QuickFilterChip extends StatelessWidget {
   final String label;
   final IconData icon;
 
-  const _QuickFilterChip({super.key, required this.label, required this.icon});
+  const _QuickFilterChip({required this.label, required this.icon});
 
   @override
   Widget build(BuildContext context) {

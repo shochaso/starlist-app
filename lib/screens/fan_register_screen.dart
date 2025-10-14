@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:go_router/go_router.dart';
 import 'package:starlist_app/theme/app_theme.dart';
 
 class FanRegisterScreen extends StatefulWidget {
-  const FanRegisterScreen({Key? key}) : super(key: key);
+  const FanRegisterScreen({super.key});
 
   @override
   State<FanRegisterScreen> createState() => _FanRegisterScreenState();
@@ -219,6 +219,7 @@ class _FanRegisterScreenState extends State<FanRegisterScreen> {
               _currentStep == _totalSteps - 1 ? 'ホームに進む' : '次へ',
               style: GoogleFonts.mPlusRounded1c(
                 fontWeight: FontWeight.bold,
+                color: Colors.white,
               ),
             ),
           ),
@@ -243,8 +244,7 @@ class _FanRegisterScreenState extends State<FanRegisterScreen> {
     } else if (_currentStep == 4) {
       // 完了ステップ
       return () {
-        // TODO: 実際のホーム画面への遷移
-        Navigator.pushReplacementNamed(context, '/home');
+        context.go('/home');
       };
     }
     return _nextStep;
@@ -451,7 +451,7 @@ class _FanRegisterScreenState extends State<FanRegisterScreen> {
               ),
             ),
           ),
-        )).toList(),
+        )),
         
         const SizedBox(height: 24),
         

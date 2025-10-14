@@ -7,7 +7,7 @@ import '../widgets/plan_card.dart';
 import '../screens/payment_method_screen.dart';
 
 class SubscriptionPlansScreen extends ConsumerStatefulWidget {
-  const SubscriptionPlansScreen({Key? key}) : super(key: key);
+  const SubscriptionPlansScreen({super.key});
 
   @override
   ConsumerState<SubscriptionPlansScreen> createState() => _SubscriptionPlansScreenState();

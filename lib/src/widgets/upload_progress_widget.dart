@@ -9,10 +9,10 @@ class UploadProgressWidget extends ConsumerWidget {
   final bool showOnlyActive;
 
   const UploadProgressWidget({
-    Key? key,
+    super.key,
     this.showDetails = true,
     this.showOnlyActive = false,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -271,7 +271,7 @@ class UploadProgressWidget extends ConsumerWidget {
 
 /// ミニマルなアップロード進捗インジケーター
 class UploadProgressIndicator extends ConsumerWidget {
-  const UploadProgressIndicator({Key? key}) : super(key: key);
+  const UploadProgressIndicator({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

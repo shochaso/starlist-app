@@ -12,7 +12,7 @@ import '../../../data/models/amazon_models.dart';
 
 /// Amazon購入履歴ホーム画面
 class AmazonHomeScreen extends ConsumerStatefulWidget {
-  const AmazonHomeScreen({Key? key}) : super(key: key);
+  const AmazonHomeScreen({super.key});
 
   @override
   ConsumerState<AmazonHomeScreen> createState() => _AmazonHomeScreenState();

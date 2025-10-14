@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../routes/app_routes.dart';
 import '../features/profile/screens/profile_edit_screen.dart';
 import '../features/app/screens/settings_screen.dart';
 

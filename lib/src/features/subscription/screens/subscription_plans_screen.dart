@@ -8,7 +8,7 @@ import '../presentation/screens/payment_method_screen.dart';
 
 /// 4プラン表示画面（更新版）
 class SubscriptionPlansScreen extends ConsumerStatefulWidget {
-  const SubscriptionPlansScreen({Key? key}) : super(key: key);
+  const SubscriptionPlansScreen({super.key});
 
   @override
   ConsumerState<SubscriptionPlansScreen> createState() =>
@@ -29,7 +29,7 @@ class _SubscriptionPlansScreenState
 
   @override
   Widget build(BuildContext context) {
-    final plans = plan_models.SubscriptionPlans.allPlans;
+    const plans = plan_models.SubscriptionPlans.allPlans;
     return Scaffold(
       appBar: AppBar(
         title: const Text('プラン選択'),

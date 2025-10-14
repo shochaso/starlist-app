@@ -10,9 +10,9 @@ class StarlistApp extends ConsumerWidget {
   final SupabaseClient supabaseClient;
 
   const StarlistApp({
-    Key? key,
+    super.key,
     required this.supabaseClient,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

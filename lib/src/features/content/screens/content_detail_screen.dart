@@ -12,9 +12,9 @@ class ContentDetailScreen extends StatefulWidget {
   final String contentId;
 
   const ContentDetailScreen({
-    Key? key,
+    super.key,
     required this.contentId,
-  }) : super(key: key);
+  });
 
   @override
   State<ContentDetailScreen> createState() => _ContentDetailScreenState();

@@ -23,14 +23,14 @@ class OptimizedNetworkImage extends StatelessWidget {
   
   /// コンストラクタ
   const OptimizedNetworkImage({
-    Key? key,
+    super.key,
     required this.imageUrl,
     this.placeholder,
     this.errorWidget,
     this.fit = BoxFit.cover,
     this.width,
     this.height,
-  }) : super(key: key);
+  });
   
   @override
   Widget build(BuildContext context) {

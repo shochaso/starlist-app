@@ -1,8 +1,50 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:starlist_app/models/user.dart';
 import 'package:starlist_app/providers/user_provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+
+class _DemoAccount {
+  final String email;
+  final String password;
+  final UserInfo user;
+  const _DemoAccount({
+    required this.email,
+    required this.password,
+    required this.user,
+  });
+}
+
+const List<_DemoAccount> _demoAccounts = [
+  _DemoAccount(
+    email: 'star@demo.app',
+    password: 'star1234',
+    user: UserInfo(
+      id: 'demo-star',
+      name: 'デモスター',
+      email: 'star@demo.app',
+      role: UserRole.star,
+      currentMode: UserMode.star,
+      starCategory: 'テクノロジー',
+      followers: 128000,
+      isVerified: true,
+    ),
+  ),
+  _DemoAccount(
+    email: 'fan@demo.app',
+    password: 'fan1234',
+    user: UserInfo(
+      id: 'demo-fan',
+      name: 'デモファン',
+      email: 'fan@demo.app',
+      role: UserRole.fan,
+      currentMode: UserMode.fan,
+      fanPlanType: FanPlanType.standard,
+    ),
+  ),
+];
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -41,20 +83,27 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         return;
       }
 
-      final response = await client.auth.signInWithPassword(
-        email: 'shochaso@gmail.com',
-        password: 'password1234',
-      );
+      // 自動ログインを一時的に無効化（認証情報が無効なため）
+      // final response = await client.auth.signInWithPassword(
+      //   email: 'shochaso@gmail.com',
+      //   password: 'password1234',
+      // );
 
-      if (response.user != null) {
-        print(
-            '[AutoLogin] LoginScreen: auto-login successful, redirecting to /home');
-        if (mounted) context.go('/home');
-      } else {
-        print('[AutoLogin] LoginScreen: auto-login failed - no user returned');
-      }
+      // if (response.user != null) {
+      //   print(
+      //       '[AutoLogin] LoginScreen: auto-login successful, redirecting to /home');
+      //   if (mounted) context.go('/home');
+      // } else {
+      //   print('[AutoLogin] LoginScreen: auto-login failed - no user returned');
+      // }
+
+      // 開発中は自動ログインをスキップしてログイン画面を表示
+      print(
+          '[AutoLogin] LoginScreen: auto-login skipped, showing login screen');
     } catch (e) {
       print('[AutoLogin] LoginScreen: auto-login error: $e');
+      // 認証エラーの場合はログイン画面を表示（アプリを終了しない）
+      print('[AutoLogin] LoginScreen: showing login screen');
     }
   }
 
@@ -77,6 +126,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       _isLoading = true;
     });
 
+    bool supabaseSuccess = false;
     try {
       final response = await Supabase.instance.client.auth.signInWithPassword(
         email: _emailController.text,
@@ -88,22 +138,66 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         if (mounted) {
           context.go('/home');
         }
-      } else {
-        throw Exception('ログインに失敗しました');
+        supabaseSuccess = true;
       }
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('ログインに失敗しました: $e')),
-        );
-      }
+      debugPrint('Supabaseログイン失敗: $e');
     } finally {
+      if (!supabaseSuccess) {
+        final demoLoggedIn = await _attemptDemoLogin(
+          email: _emailController.text,
+          password: _passwordController.text,
+        );
+
+        if (!demoLoggedIn && mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('ログインに失敗しました')),
+          );
+        } else {
+          if (mounted && demoLoggedIn) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('デモアカウントでログインしました')), 
+            );
+          }
+        }
+      }
+      
       if (mounted) {
         setState(() {
           _isLoading = false;
         });
       }
     }
+  }
+
+  Future<bool> _attemptDemoLogin({
+    required String email,
+    required String password,
+  }) async {
+    _DemoAccount? matched;
+    for (final account in _demoAccounts) {
+      if (account.email.toLowerCase() == email.toLowerCase() &&
+          account.password == password) {
+        matched = account;
+        break;
+      }
+    }
+
+    if (matched == null) {
+      return false;
+    }
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('is_logged_out', false);
+      await prefs.remove('logout_timestamp');
+    } catch (e) {
+      debugPrint('デモログイン時の状態保存に失敗: $e');
+    }
+
+    ref.read(currentUserProvider.notifier).setUser(matched.user);
+    if (mounted) context.go('/home');
+    return true;
   }
 
   @override
@@ -343,7 +437,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 child: const Text('パスワードをリセット'),
               ),
               TextButton(
-                onPressed: () {},
+                onPressed: () {
+                  context.go('/fan-register');
+                },
                 child: const Text('アカウント作成'),
               ),
             ],

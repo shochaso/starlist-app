@@ -9,10 +9,10 @@ class BirthdayNotificationCard extends ConsumerWidget {
   final VoidCallback? onTap;
 
   const BirthdayNotificationCard({
-    Key? key,
+    super.key,
     required this.notification,
     this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

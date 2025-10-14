@@ -36,7 +36,7 @@ class VotingRepository {
 
       if (response == null) return null;
       return StarPointBalance.fromJson(response);
-    } catch (e, stack) {
+    } catch (e) {
       // どんな理由でも安全に0で返す
       print('fetchBalance error (safe fallback to 0): $e');
       final now = DateTime.now();

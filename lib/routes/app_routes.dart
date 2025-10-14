@@ -7,6 +7,10 @@ import '../screens/following_screen.dart';
 import '../screens/fan_mypage_screen.dart';
 import '../screens/star_mypage_screen.dart';
 import '../screens/category_list_screen.dart';
+import '../screens/star_data_view_page.dart';
+import '../screens/dev_preview_page.dart';
+import '../features/social_link/social_link_screen.dart';
+import '../features/import_diagnose/import_diagnose_screen.dart';
 
 class AppRoutes {
   static const String home = '/';
@@ -16,6 +20,10 @@ class AppRoutes {
   static const String following = '/following';
   static const String fanMypage = '/fan_mypage';
   static const String starMypage = '/star_mypage';
+  static const String starData = '/star-data';
+  static const String devPreview = '/dev-preview';
+  static const String socialLink = '/settings/social-link';
+  static const String importDiagnose = '/import/diagnose';
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -33,13 +41,13 @@ class AppRoutes {
         } else if (settings.arguments is Map<String, dynamic>) {
           args = settings.arguments as Map<String, dynamic>;
         }
-        
+
         return MaterialPageRoute(
           builder: (context) => CategoryScreen(
             category: args?['title'] ?? '',
           ),
         );
-        
+
       case categoryList:
         return MaterialPageRoute(
           builder: (context) => const CategoryListScreen(),
@@ -62,10 +70,30 @@ class AppRoutes {
         return MaterialPageRoute(
           builder: (context) => const FanMyPageScreen(),
         );
-        
+
       case starMypage:
         return MaterialPageRoute(
           builder: (context) => const StarMyPageScreen(),
+        );
+
+      case starData:
+        return MaterialPageRoute(
+          builder: (context) => const StarDataViewPage(),
+        );
+
+      case devPreview:
+        return MaterialPageRoute(
+          builder: (context) => const DevPreviewPage(),
+        );
+
+      case socialLink:
+        return MaterialPageRoute(
+          builder: (context) => const SocialLinkScreen(),
+        );
+
+      case importDiagnose:
+        return MaterialPageRoute(
+          builder: (context) => const ImportDiagnoseScreen(),
         );
 
       default:
@@ -78,4 +106,4 @@ class AppRoutes {
         );
     }
   }
-} 
+}

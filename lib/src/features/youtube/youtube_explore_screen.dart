@@ -9,7 +9,7 @@ final searchQueryProvider = StateProvider<String>((ref) => '');
 
 /// YouTube探索画面
 class YouTubeExploreScreen extends ConsumerStatefulWidget {
-  const YouTubeExploreScreen({Key? key}) : super(key: key);
+  const YouTubeExploreScreen({super.key});
 
   @override
   ConsumerState<YouTubeExploreScreen> createState() => _YouTubeExploreScreenState();

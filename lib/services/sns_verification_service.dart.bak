@@ -7,12 +7,26 @@ import '../models/sns_verification.dart';
 /// SNS認証・連携サービス
 class SNSVerificationService {
   static final _supabase = Supabase.instance.client;
-  
+
   // API Keys (環境変数から取得)
   static const String _youtubeApiKey = 'YOUR_YOUTUBE_API_KEY';
   static const String _instagramApiKey = 'YOUR_INSTAGRAM_API_KEY';
   static const String _tiktokApiKey = 'YOUR_TIKTOK_API_KEY';
   static const String _twitterApiKey = 'YOUR_TWITTER_API_KEY';
+
+  /// 指定プラットフォームのAPI設定が行われているか
+  static bool isPlatformConfigured(SNSPlatform platform) {
+    switch (platform) {
+      case SNSPlatform.youtube:
+        return _youtubeApiKey != 'YOUR_YOUTUBE_API_KEY';
+      case SNSPlatform.instagram:
+        return _instagramApiKey != 'YOUR_INSTAGRAM_API_KEY';
+      case SNSPlatform.tiktok:
+        return _tiktokApiKey != 'YOUR_TIKTOK_API_KEY';
+      case SNSPlatform.twitter:
+        return _twitterApiKey != 'YOUR_TWITTER_API_KEY';
+    }
+  }
 
   /// SNSアカウント連携を開始
   static Future<SNSVerificationResult> startSNSVerification({
@@ -22,12 +36,19 @@ class SNSVerificationService {
     required String accountUrl,
   }) async {
     try {
+      if (!isPlatformConfigured(platform)) {
+        return SNSVerificationResult(
+          success: false,
+          error: '${platform.displayName}のAPIキーが設定されていません。管理者にお問い合わせください。',
+        );
+      }
+
       // 1. ユニークな認証コードを生成
       final verificationCode = _generateVerificationCode();
-      
+
       // 2. SNS APIからアカウント情報を取得
       final snsData = await _fetchSNSAccountData(platform, accountHandle);
-      
+
       if (snsData == null) {
         return SNSVerificationResult(
           success: false,
@@ -36,16 +57,20 @@ class SNSVerificationService {
       }
 
       // 3. データベースに認証記録を作成
-      final response = await _supabase.from('sns_verifications').insert({
-        'user_id': userId,
-        'platform': platform.value,
-        'account_handle': accountHandle,
-        'account_url': accountUrl,
-        'follower_count': snsData['followerCount'],
-        'verification_code': verificationCode,
-        'api_data': snsData,
-        'verification_status': 'pending',
-      }).select().single();
+      final response = await _supabase
+          .from('sns_verifications')
+          .insert({
+            'user_id': userId,
+            'platform': platform.value,
+            'account_handle': accountHandle,
+            'account_url': accountUrl,
+            'follower_count': snsData['followerCount'],
+            'verification_code': verificationCode,
+            'api_data': snsData,
+            'verification_status': 'pending',
+          })
+          .select()
+          .single();
 
       return SNSVerificationResult(
         success: true,
@@ -63,7 +88,8 @@ class SNSVerificationService {
   }
 
   /// 所有権確認を実行
-  static Future<SNSVerificationResult> verifyOwnership(String verificationId) async {
+  static Future<SNSVerificationResult> verifyOwnership(
+      String verificationId) async {
     try {
       // 1. 認証記録を取得
       final verification = await _supabase
@@ -76,9 +102,16 @@ class SNSVerificationService {
       final accountHandle = verification['account_handle'];
       final verificationCode = verification['verification_code'];
 
+      if (!isPlatformConfigured(platform)) {
+        return SNSVerificationResult(
+          success: false,
+          error: '${platform.displayName}のAPIキーが設定されていません。所有権確認を実行できません。',
+        );
+      }
+
       // 2. SNSプロフィールから認証コードを検索
       final profileData = await _fetchSNSProfile(platform, accountHandle);
-      
+
       if (profileData == null) {
         return SNSVerificationResult(
           success: false,
@@ -95,11 +128,11 @@ class SNSVerificationService {
       // 4. データベースを更新
       await _supabase.from('sns_verifications').update({
         'ownership_verified': isOwnershipVerified,
-        'ownership_verified_at': isOwnershipVerified 
-            ? DateTime.now().toIso8601String() 
-            : null,
+        'ownership_verified_at':
+            isOwnershipVerified ? DateTime.now().toIso8601String() : null,
         'verification_status': isOwnershipVerified ? 'verified' : 'failed',
-        'verification_attempts': (verification['verification_attempts'] ?? 0) + 1,
+        'verification_attempts':
+            (verification['verification_attempts'] ?? 0) + 1,
         'last_verification_attempt': DateTime.now().toIso8601String(),
         'updated_at': DateTime.now().toIso8601String(),
       }).eq('id', verificationId);
@@ -112,7 +145,7 @@ class SNSVerificationService {
       return SNSVerificationResult(
         success: isOwnershipVerified,
         verificationId: verificationId,
-        message: isOwnershipVerified 
+        message: isOwnershipVerified
             ? 'SNSアカウントの所有権が確認されました'
             : 'プロフィールに認証コードが見つかりませんでした',
         error: isOwnershipVerified ? null : 'プロフィールに認証コードを正しく埋め込んでください',
@@ -126,7 +159,8 @@ class SNSVerificationService {
   }
 
   /// ユーザーのSNS認証一覧を取得
-  static Future<List<SNSVerification>> getUserSNSVerifications(String userId) async {
+  static Future<List<SNSVerification>> getUserSNSVerifications(
+      String userId) async {
     try {
       final response = await _supabase
           .from('sns_verifications')
@@ -239,7 +273,8 @@ class SNSVerificationService {
   }
 
   /// YouTube データを取得
-  static Future<Map<String, dynamic>?> _fetchYouTubeData(String channelHandle) async {
+  static Future<Map<String, dynamic>?> _fetchYouTubeData(
+      String channelHandle) async {
     try {
       // YouTube Data API v3を使用
       final url = 'https://www.googleapis.com/youtube/v3/channels'
@@ -248,24 +283,25 @@ class SNSVerificationService {
           '&key=$_youtubeApiKey';
 
       final response = await http.get(Uri.parse(url));
-      
+
       if (response.statusCode != 200) {
         return null;
       }
 
       final data = jsonDecode(response.body);
-      
+
       if (data['items'] == null || data['items'].isEmpty) {
         return null;
       }
 
       final item = data['items'][0];
-      
+
       return {
         'platform': 'youtube',
         'channelId': item['id'],
         'channelName': item['snippet']['title'],
-        'followerCount': int.parse(item['statistics']['subscriberCount'] ?? '0'),
+        'followerCount':
+            int.parse(item['statistics']['subscriberCount'] ?? '0'),
         'videoCount': int.parse(item['statistics']['videoCount'] ?? '0'),
         'viewCount': int.parse(item['statistics']['viewCount'] ?? '0'),
         'description': item['snippet']['description'],
@@ -278,7 +314,8 @@ class SNSVerificationService {
   }
 
   /// YouTube プロフィールを取得
-  static Future<Map<String, dynamic>?> _fetchYouTubeProfile(String channelHandle) async {
+  static Future<Map<String, dynamic>?> _fetchYouTubeProfile(
+      String channelHandle) async {
     try {
       final url = 'https://www.googleapis.com/youtube/v3/channels'
           '?part=snippet'
@@ -286,19 +323,19 @@ class SNSVerificationService {
           '&key=$_youtubeApiKey';
 
       final response = await http.get(Uri.parse(url));
-      
+
       if (response.statusCode != 200) {
         return null;
       }
 
       final data = jsonDecode(response.body);
-      
+
       if (data['items'] == null || data['items'].isEmpty) {
         return null;
       }
 
       final item = data['items'][0];
-      
+
       return {
         'profile': item['snippet']['description'] ?? '',
       };
@@ -309,7 +346,8 @@ class SNSVerificationService {
   }
 
   /// Instagram データを取得（Basic Display API）
-  static Future<Map<String, dynamic>?> _fetchInstagramData(String username) async {
+  static Future<Map<String, dynamic>?> _fetchInstagramData(
+      String username) async {
     // Instagram Basic Display APIは個人アクセストークンが必要
     // 実装時は適切なOAuth2フローを使用
     return {
@@ -321,7 +359,8 @@ class SNSVerificationService {
   }
 
   /// Instagram プロフィールを取得
-  static Future<Map<String, dynamic>?> _fetchInstagramProfile(String username) async {
+  static Future<Map<String, dynamic>?> _fetchInstagramProfile(
+      String username) async {
     return {
       'profile': '', // APIから取得
     };
@@ -339,14 +378,16 @@ class SNSVerificationService {
   }
 
   /// TikTok プロフィールを取得
-  static Future<Map<String, dynamic>?> _fetchTikTokProfile(String username) async {
+  static Future<Map<String, dynamic>?> _fetchTikTokProfile(
+      String username) async {
     return {
       'profile': '', // APIから取得
     };
   }
 
   /// Twitter データを取得
-  static Future<Map<String, dynamic>?> _fetchTwitterData(String username) async {
+  static Future<Map<String, dynamic>?> _fetchTwitterData(
+      String username) async {
     try {
       // Twitter API v2を使用
       final url = 'https://api.twitter.com/2/users/by/username/$username'
@@ -358,19 +399,19 @@ class SNSVerificationService {
           'Authorization': 'Bearer $_twitterApiKey',
         },
       );
-      
+
       if (response.statusCode != 200) {
         return null;
       }
 
       final data = jsonDecode(response.body);
-      
+
       if (data['data'] == null) {
         return null;
       }
 
       final user = data['data'];
-      
+
       return {
         'platform': 'twitter',
         'userId': user['id'],
@@ -386,7 +427,8 @@ class SNSVerificationService {
   }
 
   /// Twitter プロフィールを取得
-  static Future<Map<String, dynamic>?> _fetchTwitterProfile(String username) async {
+  static Future<Map<String, dynamic>?> _fetchTwitterProfile(
+      String username) async {
     try {
       final url = 'https://api.twitter.com/2/users/by/username/$username'
           '?user.fields=description';
@@ -397,13 +439,13 @@ class SNSVerificationService {
           'Authorization': 'Bearer $_twitterApiKey',
         },
       );
-      
+
       if (response.statusCode != 200) {
         return null;
       }
 
       final data = jsonDecode(response.body);
-      
+
       return {
         'profile': data['data']['description'] ?? '',
       };
@@ -414,7 +456,8 @@ class SNSVerificationService {
   }
 
   /// プロフィール内の認証コード確認
-  static bool _checkVerificationCodeInProfile(String profileText, String verificationCode) {
+  static bool _checkVerificationCodeInProfile(
+      String profileText, String verificationCode) {
     // 認証コードがプロフィール文に含まれているかチェック
     return profileText.contains(verificationCode);
   }
@@ -439,9 +482,10 @@ class SNSVerificationService {
             .eq('user_id', userId)
             .maybeSingle();
 
-        if (parentalConsent != null && 
-            (parentalConsent['verification_status'] == 'approved' || 
-             parentalConsent['verification_status'] == 'parental_ekyc_completed')) {
+        if (parentalConsent != null &&
+            (parentalConsent['verification_status'] == 'approved' ||
+                parentalConsent['verification_status'] ==
+                    'parental_ekyc_completed')) {
           newStatus = 'under_review';
         }
       } else {
@@ -478,4 +522,4 @@ class SNSVerificationResult {
     this.message,
     this.error,
   });
-} 
+}

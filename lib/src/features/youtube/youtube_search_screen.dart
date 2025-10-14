@@ -8,9 +8,9 @@ class YouTubeSearchScreen extends ConsumerStatefulWidget {
   final String? initialQuery;
 
   const YouTubeSearchScreen({
-    Key? key,
+    super.key,
     this.initialQuery,
-  }) : super(key: key);
+  });
 
   @override
   ConsumerState<YouTubeSearchScreen> createState() => _YouTubeSearchScreenState();

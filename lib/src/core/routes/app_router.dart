@@ -2,15 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../features/content/bloc/content_bloc.dart';
 import '../../features/content/repositories/content_repository.dart';
 import '../../features/content/screens/content_list_screen.dart';
 import '../../features/content/screens/content_detail_screen.dart';
 import '../../features/content/screens/content_create_screen.dart';
 import '../../features/youtube/youtube_explore_screen.dart';
 import '../../features/star/screens/star_timeline_sample_screen.dart';
-import '../../../main.dart';  // HomeScreenをインポート
-import '../../../routes/app_routes.dart';
+// HomeScreenをインポート
 import '../../../screens/home_screen.dart';
 import '../../../screens/category_screen.dart';
 import '../../../screens/star_detail_screen.dart';

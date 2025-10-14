@@ -9,10 +9,10 @@ class UpcomingBirthdayWidget extends ConsumerWidget {
   final VoidCallback? onTap;
 
   const UpcomingBirthdayWidget({
-    Key? key,
+    super.key,
     required this.star,
     this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

@@ -7,9 +7,9 @@ class AmazonStatsCard extends StatelessWidget {
   final AmazonPurchaseStats stats;
 
   const AmazonStatsCard({
-    Key? key,
+    super.key,
     required this.stats,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

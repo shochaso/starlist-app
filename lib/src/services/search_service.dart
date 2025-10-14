@@ -1,4 +1,3 @@
-import 'dart:developer';
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -53,7 +52,7 @@ class SearchService {
           .order('created_at', ascending: false)
           .range(offset, offset + limit - 1);
       
-      if (data == null || data.isEmpty) {
+      if (data.isEmpty) {
         return [];
       }
       
@@ -89,7 +88,7 @@ class SearchService {
           .order('follower_count', ascending: false)
           .range(offset, offset + limit - 1);
       
-      if (data == null || data.isEmpty) {
+      if (data.isEmpty) {
         return [];
       }
       
@@ -118,7 +117,7 @@ class SearchService {
           .order('follower_count', ascending: false)
           .range(offset, offset + limit - 1);
       
-      if (data == null || data.isEmpty) {
+      if (data.isEmpty) {
         return [];
       }
       
@@ -197,7 +196,7 @@ class SearchService {
           .order('created_at', ascending: false)
           .limit(limit);
       
-      if (data == null || data.isEmpty) {
+      if (data.isEmpty) {
         return [];
       }
       

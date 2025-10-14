@@ -11,12 +11,12 @@ class BirthdayStarCard extends ConsumerWidget {
   final VoidCallback? onTap;
 
   const BirthdayStarCard({
-    Key? key,
+    super.key,
     required this.star,
     this.isFollowing = false,
     this.showCelebration = false,
     this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

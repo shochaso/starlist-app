@@ -5,7 +5,6 @@ import 'dart:io';
 
 import '../models/content_consumption_model.dart';
 import '../providers/content_provider.dart';
-import '../../auth/providers/user_provider.dart';
 import '../../auth/supabase_provider.dart';
 
 class ContentEditScreen extends ConsumerStatefulWidget {
@@ -13,10 +12,10 @@ class ContentEditScreen extends ConsumerStatefulWidget {
   final ContentCategory? initialCategory;
 
   const ContentEditScreen({
-    Key? key,
+    super.key,
     this.content,
     this.initialCategory,
-  }) : super(key: key);
+  });
 
   @override
   _ContentEditScreenState createState() => _ContentEditScreenState();
@@ -346,7 +345,7 @@ class _ContentEditScreenState extends ConsumerState<ContentEditScreen> {
               
               // カテゴリー選択
               DropdownButtonFormField<ContentCategory>(
-                value: _selectedCategory,
+                initialValue: _selectedCategory,
                 decoration: const InputDecoration(
                   labelText: 'カテゴリ',
                   border: OutlineInputBorder(),
@@ -398,7 +397,7 @@ class _ContentEditScreenState extends ConsumerState<ContentEditScreen> {
               
               // プライバシー設定
               DropdownButtonFormField<PrivacyLevel>(
-                value: _selectedPrivacyLevel,
+                initialValue: _selectedPrivacyLevel,
                 decoration: const InputDecoration(
                   labelText: 'プライバシー設定',
                   border: OutlineInputBorder(),

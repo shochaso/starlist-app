@@ -33,11 +33,11 @@ class AffiliateProductCard extends ConsumerWidget {
   final bool showStarInfo;
 
   const AffiliateProductCard({
-    Key? key,
+    super.key,
     required this.product,
     this.onTap,
     this.showStarInfo = true,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -182,14 +182,14 @@ class AffiliateProductList extends ConsumerWidget {
   final bool showStarInfo;
 
   const AffiliateProductList({
-    Key? key,
+    super.key,
     required this.products,
     this.isLoading = false,
     this.emptyMessage,
     this.onProductTap,
     this.scrollController,
     this.showStarInfo = true,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -329,13 +329,13 @@ class StarRecommendedProductsSection extends ConsumerWidget {
   final VoidCallback? onSeeAllTap;
 
   const StarRecommendedProductsSection({
-    Key? key,
+    super.key,
     required this.starId,
     this.title = 'スターのおすすめ',
     this.maxProducts = 4,
     this.onProductTap,
     this.onSeeAllTap,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -452,13 +452,13 @@ class PersonalizedRecommendationsSection extends ConsumerWidget {
   final VoidCallback? onSeeAllTap;
 
   const PersonalizedRecommendationsSection({
-    Key? key,
+    super.key,
     required this.userId,
     this.title = 'あなたにおすすめ',
     this.maxProducts = 4,
     this.onProductTap,
     this.onSeeAllTap,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

@@ -12,10 +12,10 @@ class ConsumptionDataWidget extends ConsumerWidget {
   final bool showHeader;
   
   const ConsumptionDataWidget({
-    Key? key,
+    super.key,
     required this.userId,
     this.showHeader = true,
-  }) : super(key: key);
+  });
   
   @override
   Widget build(BuildContext context, WidgetRef ref) {

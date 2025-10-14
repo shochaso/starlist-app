@@ -8,9 +8,9 @@ class SimpleYouTubeWidget extends StatefulWidget {
   final String starId;
   
   const SimpleYouTubeWidget({
-    Key? key,
+    super.key,
     required this.starId,
-  }) : super(key: key);
+  });
 
   @override
   State<SimpleYouTubeWidget> createState() => _SimpleYouTubeWidgetState();
@@ -490,7 +490,7 @@ class _SimpleYouTubeWidgetState extends State<SimpleYouTubeWidget> {
               title: Text(video.title),
               subtitle: Text(video.description),
               onTap: () => _launchVideo(video.id),
-            )).toList(),
+            )),
             if (videos.length > 5)
               TextButton(
                 onPressed: () => _showAllVideos(),

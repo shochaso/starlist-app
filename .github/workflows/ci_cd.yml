@@ -1,11 +1,13 @@
 # Starlist アプリケーション CI/CD ワークフロー
-name: Starlist CI/CD
+# 一時停止中: notify.yml の疎通確認後に再有効化
+name: Starlist CI/CD (Disabled)
 
 on:
-  push:
-    branches: [ main, develop ]
-  pull_request:
-    branches: [ main, develop ]
+  workflow_dispatch: {}  # 手動実行のみ
+  # push:
+  #   branches: [ main, develop ]
+  # pull_request:
+  #   branches: [ main, develop ]
 
 # 同一ブランチでのワークフローの同時実行をキャンセルし、デプロイの競合を防ぐ
 concurrency:

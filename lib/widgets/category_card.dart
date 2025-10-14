@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../theme/app_theme.dart';
 
 class CategoryCard extends StatelessWidget {
   final String name;
@@ -8,12 +7,12 @@ class CategoryCard extends StatelessWidget {
   final VoidCallback? onTap;
 
   const CategoryCard({
-    Key? key,
+    super.key,
     required this.name,
     required this.icon,
     required this.color,
     this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

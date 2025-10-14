@@ -69,21 +69,21 @@ class LightweightPreloader {
     return _lazyManager.loadModule(
       moduleName,
       () => _createLightweightModule(moduleName),
-      cacheExpiry: Duration(hours: 1),
+      cacheExpiry: const Duration(hours: 1),
     );
   }
 
   /// 遅延プリロード（軽量化対応）
   void _scheduleDelayedPreload(String moduleName) {
     _preloadTimers[moduleName] = Timer(
-      Duration(seconds: 5), // 5秒後にプリロード
+      const Duration(seconds: 5), // 5秒後にプリロード
       () => _preloadModule(moduleName),
     );
   }
 
   /// バックグラウンドプリロード（軽量化対応）
   void _scheduleBackgroundPreload([String? specificModule]) {
-    Timer(Duration(seconds: 10), () async {
+    Timer(const Duration(seconds: 10), () async {
       if (specificModule != null) {
         await _backgroundPreload(specificModule);
       } else {
@@ -91,7 +91,7 @@ class LightweightPreloader {
         for (final module in backgroundModules) {
           await _backgroundPreload(module);
           // 軽量化のため各モジュール間に間隔を空ける
-          await Future.delayed(Duration(seconds: 2));
+          await Future.delayed(const Duration(seconds: 2));
         }
       }
     });
@@ -107,7 +107,7 @@ class LightweightPreloader {
       await _lazyManager.loadModule(
         moduleName,
         () => _createLightweightModule(moduleName),
-        cacheExpiry: Duration(minutes: 30),
+        cacheExpiry: const Duration(minutes: 30),
       );
     } catch (e) {
       debugPrint('軽量化情報: バックグラウンドプリロード $moduleName をスキップ: $e');
@@ -205,7 +205,9 @@ class LightweightPreloader {
 
   /// 軽量化のためのクリーンアップ
   void cleanup() {
-    _preloadTimers.values.forEach((timer) => timer.cancel());
+    for (var timer in _preloadTimers.values) {
+      timer.cancel();
+    }
     _preloadTimers.clear();
     _preloadedData.clear();
     _lazyManager.cleanupMemory();

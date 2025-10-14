@@ -24,7 +24,7 @@ class PostCard extends ConsumerWidget {
     final themeState = ref.watch(themeProviderEnhanced);
     final isDark = themeState.isDarkMode;
     final membership = ref.watch(membershipProvider);
-    
+
     // アクセス権限チェック
     AccessLevel userAccessLevel;
     switch (membership) {
@@ -61,13 +61,16 @@ class PostCard extends ConsumerWidget {
           borderRadius: BorderRadius.circular(cardRadius),
           border: Border.all(
             color: canAccess
-                ? (isDark ? Colors.white.withOpacity(0.04) : const Color(0xFFE2E8F0))
+                ? (isDark
+                    ? Colors.white.withOpacity(0.04)
+                    : const Color(0xFFE2E8F0))
                 : const Color(0xFFFF6B6B).withOpacity(0.35),
             width: canAccess ? 1 : 1.4,
           ),
           boxShadow: [
             BoxShadow(
-              color: (isDark ? Colors.black : const Color(0xFF0F172A)).withOpacity(0.08),
+              color: (isDark ? Colors.black : const Color(0xFF0F172A))
+                  .withOpacity(0.08),
               blurRadius: 28,
               offset: const Offset(0, 18),
               spreadRadius: -14,
@@ -77,24 +80,22 @@ class PostCard extends ConsumerWidget {
         child: ClipRRect(
           borderRadius: BorderRadius.circular(cardRadius),
           child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
-          children: [
-            // ヘッダー
-            _buildHeader(isDark, canAccess),
-            
-            // コンテンツ
-              Flexible(
-                child: canAccess 
+            children: [
+              // ヘッダー
+              _buildHeader(isDark, canAccess),
+
+              // コンテンツ
+              canAccess
                   ? _buildContent(isDark)
                   : _buildRestrictedContent(isDark),
-              ),
-            
-            _buildSectionDivider(isDark),
 
-            // フッター
-            _buildFooter(ref, isDark, canAccess),
-          ],
+              _buildSectionDivider(isDark),
+
+              // フッター
+              _buildFooter(ref, isDark, canAccess),
+            ],
           ),
         ),
       ),
@@ -150,9 +151,9 @@ class PostCard extends ConsumerWidget {
               ),
             ),
           ),
-          
+
           const SizedBox(width: 10),
-          
+
           // 作者情報
           Expanded(
             child: Column(
@@ -167,7 +168,8 @@ class PostCard extends ConsumerWidget {
                         style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w700,
-                          color: isDark ? Colors.white : const Color(0xFF0F172A),
+                          color:
+                              isDark ? Colors.white : const Color(0xFF0F172A),
                           letterSpacing: 0.1,
                         ),
                         maxLines: 1,
@@ -191,7 +193,8 @@ class PostCard extends ConsumerWidget {
                       post.timeAgo,
                       style: TextStyle(
                         fontSize: 12,
-                        color: isDark ? Colors.white70 : const Color(0xFF64748B),
+                        color:
+                            isDark ? Colors.white70 : const Color(0xFF64748B),
                       ),
                     ),
                   ],
@@ -199,7 +202,7 @@ class PostCard extends ConsumerWidget {
               ],
             ),
           ),
-          
+
           const SizedBox(width: 10),
 
           Container(
@@ -231,14 +234,14 @@ class PostCard extends ConsumerWidget {
           borderRadius: BorderRadius.circular(999),
           border: Border.all(color: base.withOpacity(0.28)),
         ),
-        child: Row(
+        child: const Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(Icons.public, size: 11, color: base),
-            const SizedBox(width: 3),
+            SizedBox(width: 3),
             Text(
               '公開',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.w600,
                 color: base,
@@ -249,8 +252,10 @@ class PostCard extends ConsumerWidget {
       );
     }
 
-    final Color badgeColor = canAccess ? const Color(0xFFEAB308) : const Color(0xFFEF4444);
-    final IconData badgeIcon = canAccess ? Icons.workspace_premium : Icons.lock_outline;
+    final Color badgeColor =
+        canAccess ? const Color(0xFFEAB308) : const Color(0xFFEF4444);
+    final IconData badgeIcon =
+        canAccess ? Icons.workspace_premium : Icons.lock_outline;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
@@ -300,7 +305,7 @@ class PostCard extends ConsumerWidget {
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
-          
+
           if (!isCompact && post.description != null) ...[
             const SizedBox(height: 4),
             Text(
@@ -314,12 +319,12 @@ class PostCard extends ConsumerWidget {
               overflow: TextOverflow.ellipsis,
             ),
           ],
-          
+
           const SizedBox(height: 8),
-          
+
           // コンテンツタイプ別表示
           _buildTypeSpecificContent(isDark),
-          
+
           // タグ
           if (!isCompact && post.tags.isNotEmpty) ...[
             const SizedBox(height: 12),
@@ -408,7 +413,8 @@ class PostCard extends ConsumerWidget {
 
     const Color accent = Color(0xFFFF0000);
     final mainVideo = videos.isNotEmpty ? videos.first : null;
-    final otherVideos = videos.length > 1 ? videos.skip(1).take(2).toList() : [];
+    final otherVideos =
+        videos.length > 1 ? videos.skip(1).take(2).toList() : [];
 
     if (isCompact && mainVideo != null) {
       return Container(
@@ -464,8 +470,9 @@ class PostCard extends ConsumerWidget {
                           mainVideo['channel'] ?? '',
                           style: TextStyle(
                             fontSize: 11,
-                            color:
-                                isDark ? Colors.white70 : const Color(0xFF64748B),
+                            color: isDark
+                                ? Colors.white70
+                                : const Color(0xFF64748B),
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -515,27 +522,27 @@ class PostCard extends ConsumerWidget {
       children: [
         // メイン動画（大きく表示）
         if (mainVideo != null) ...[
-        Container(
+          Container(
             padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(18),
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                accent.withOpacity(isDark ? 0.25 : 0.16),
-                accent.withOpacity(isDark ? 0.12 : 0.08),
-              ],
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(18),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  accent.withOpacity(isDark ? 0.25 : 0.16),
+                  accent.withOpacity(isDark ? 0.12 : 0.08),
+                ],
+              ),
+              border: Border.all(color: accent.withOpacity(0.2)),
             ),
-            border: Border.all(color: accent.withOpacity(0.2)),
-          ),
-          child: Row(
-            children: [
+            child: Row(
+              children: [
                 // サムネイル風のアイコン
-              Container(
+                Container(
                   width: 76,
                   height: 52,
-                decoration: BoxDecoration(
+                  decoration: BoxDecoration(
                     color: accent.withOpacity(0.18),
                     borderRadius: BorderRadius.circular(10),
                   ),
@@ -555,7 +562,8 @@ class PostCard extends ConsumerWidget {
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w700,
-                          color: isDark ? Colors.white : const Color(0xFF111827),
+                          color:
+                              isDark ? Colors.white : const Color(0xFF111827),
                           height: 1.3,
                         ),
                         maxLines: 2,
@@ -564,44 +572,48 @@ class PostCard extends ConsumerWidget {
                       const SizedBox(height: 4),
                       Row(
                         children: [
-                          Icon(
-                  FontAwesomeIcons.youtube,
-                  color: accent,
+                          const Icon(
+                            FontAwesomeIcons.youtube,
+                            color: accent,
                             size: 12,
-                ),
+                          ),
                           const SizedBox(width: 5),
-              Expanded(
-                child: Text(
+                          Expanded(
+                            child: Text(
                               mainVideo['channel'] ?? '',
-                  style: TextStyle(
+                              style: TextStyle(
                                 fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                                color: isDark ? Colors.white70 : const Color(0xFF64748B),
-                  ),
+                                fontWeight: FontWeight.w600,
+                                color: isDark
+                                    ? Colors.white70
+                                    : const Color(0xFF64748B),
+                              ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                ),
-              ),
+                            ),
+                          ),
                         ],
                       ),
                       if (mainVideo['duration'] != null) ...[
                         const SizedBox(height: 3),
-                Text(
+                        Text(
                           mainVideo['duration'],
-                  style: TextStyle(
+                          style: TextStyle(
                             fontSize: 11,
-                            color: isDark ? Colors.white54 : const Color(0xFF94A3B8),
+                            color: isDark
+                                ? Colors.white54
+                                : const Color(0xFF94A3B8),
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                 ),
-                      ],
-            ],
-          ),
-        ),
               ],
             ),
           ),
         ],
-        
+
         // 他の動画（視聴として小さく表示）
         if (!isCompact && otherVideos.isNotEmpty) ...[
           const SizedBox(height: 10),
@@ -611,7 +623,9 @@ class PostCard extends ConsumerWidget {
               color: isDark ? const Color(0xFF1F1F23) : const Color(0xFFF8FAFC),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: isDark ? Colors.white.withOpacity(0.04) : const Color(0xFFE2E8F0),
+                color: isDark
+                    ? Colors.white.withOpacity(0.04)
+                    : const Color(0xFFE2E8F0),
               ),
             ),
             child: Column(
@@ -630,39 +644,42 @@ class PostCard extends ConsumerWidget {
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
-                        color: isDark ? Colors.white70 : const Color(0xFF475569),
+                        color:
+                            isDark ? Colors.white70 : const Color(0xFF475569),
                       ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 6),
                 ...otherVideos.map((video) => Padding(
-                  padding: const EdgeInsets.only(bottom: 4),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 4,
-                        height: 4,
-                        decoration: BoxDecoration(
-                          color: accent.withOpacity(0.6),
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          video['title'] ?? '',
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: isDark ? Colors.white60 : const Color(0xFF64748B),
+                      padding: const EdgeInsets.only(bottom: 4),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 4,
+                            height: 4,
+                            decoration: BoxDecoration(
+                              color: accent.withOpacity(0.6),
+                              shape: BoxShape.circle,
+                            ),
                           ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              video['title'] ?? '',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: isDark
+                                    ? Colors.white60
+                                    : const Color(0xFF64748B),
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                )),
+                    )),
               ],
             ),
           ),
@@ -679,7 +696,8 @@ class PostCard extends ConsumerWidget {
         color: isDark ? const Color(0xFF1F1F23) : const Color(0xFFF8FAFC),
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: isDark ? Colors.white.withOpacity(0.04) : const Color(0xFFE2E8F0),
+          color:
+              isDark ? Colors.white.withOpacity(0.04) : const Color(0xFFE2E8F0),
         ),
       ),
       child: Row(
@@ -748,12 +766,12 @@ class PostCard extends ConsumerWidget {
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: Colors.green.withOpacity( 0.1),
+            color: Colors.green.withOpacity(0.1),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Row(
             children: [
-              Icon(
+              const Icon(
                 Icons.shopping_bag,
                 color: Colors.green,
                 size: 16,
@@ -771,7 +789,7 @@ class PostCard extends ConsumerWidget {
               ),
               Text(
                 '合計: ¥${totalAmount.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}',
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
                   color: Colors.green,
@@ -780,7 +798,6 @@ class PostCard extends ConsumerWidget {
             ],
           ),
         ),
-        
         if (!isCompact && items.isNotEmpty) ...[
           const SizedBox(height: 12),
           ...items.take(3).map((item) => _buildShoppingItem(item, isDark)),
@@ -803,7 +820,7 @@ class PostCard extends ConsumerWidget {
             width: 50,
             height: 50,
             decoration: BoxDecoration(
-              color: Colors.grey.withOpacity( 0.3),
+              color: Colors.grey.withOpacity(0.3),
               borderRadius: BorderRadius.circular(6),
             ),
             child: const Icon(
@@ -843,7 +860,7 @@ class PostCard extends ConsumerWidget {
             children: [
               Text(
                 '¥${(item['price'] as int? ?? 0).toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')}',
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
                   color: Colors.green,
@@ -880,8 +897,10 @@ class PostCard extends ConsumerWidget {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                (isDark ? Colors.white : const Color(0xFF111827)).withOpacity(0.08),
-                (isDark ? Colors.white : const Color(0xFF111827)).withOpacity(0.03),
+                (isDark ? Colors.white : const Color(0xFF111827))
+                    .withOpacity(0.08),
+                (isDark ? Colors.white : const Color(0xFF111827))
+                    .withOpacity(0.03),
               ],
             ),
             borderRadius: BorderRadius.circular(999),
@@ -912,7 +931,9 @@ class PostCard extends ConsumerWidget {
                 : (isDark ? Colors.white70 : const Color(0xFF475569)),
             background: post.isLiked
                 ? const Color(0xFFFF6B6B).withOpacity(0.16)
-                : (isDark ? Colors.white.withOpacity(0.06) : const Color(0xFFF1F5F9)),
+                : (isDark
+                    ? Colors.white.withOpacity(0.06)
+                    : const Color(0xFFF1F5F9)),
             onTap: canAccess
                 ? () {
                     ref.read(postsProvider.notifier).toggleLike(post.id);
@@ -925,7 +946,9 @@ class PostCard extends ConsumerWidget {
             icon: Icons.comment_outlined,
             label: post.commentsCount.toString(),
             color: isDark ? Colors.white70 : const Color(0xFF475569),
-            background: isDark ? Colors.white.withOpacity(0.06) : const Color(0xFFF1F5F9),
+            background: isDark
+                ? Colors.white.withOpacity(0.06)
+                : const Color(0xFFF1F5F9),
             isEnabled: canAccess,
           ),
           const Spacer(),
@@ -934,7 +957,9 @@ class PostCard extends ConsumerWidget {
               icon: Icons.local_offer_outlined,
               label: post.tags.length.toString(),
               color: isDark ? Colors.white60 : const Color(0xFF94A3B8),
-              background: isDark ? Colors.white.withOpacity(0.03) : const Color(0xFFF4F4F5),
+              background: isDark
+                  ? Colors.white.withOpacity(0.03)
+                  : const Color(0xFFF4F4F5),
               isEnabled: false,
             ),
         ],
@@ -963,7 +988,8 @@ class PostCard extends ConsumerWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 16, color: isEnabled ? color : color.withOpacity(0.5)),
+            Icon(icon,
+                size: 16, color: isEnabled ? color : color.withOpacity(0.5)),
             const SizedBox(width: 6),
             Text(
               label,

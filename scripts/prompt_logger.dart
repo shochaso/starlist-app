@@ -8,7 +8,7 @@ String summarize(String input, {int maxLen = 200}) {
       .replaceAll(RegExp('[\t ]+'), ' ')
       .trim();
   if (normalized.length <= maxLen) return normalized;
-  return normalized.substring(0, maxLen).trimRight() + '…';
+  return '${normalized.substring(0, maxLen).trimRight()}…';
 }
 
 Future<void> ensureLogsDir(String path) async {
@@ -30,8 +30,8 @@ Future<void> main(List<String> args) async {
   final summary = summarize(input);
   final timestamp = DateTime.now().toIso8601String();
 
-  final logsDir = Directory.current.path + '/logs';
-  final historyPath = logsDir + '/prompt_history.json';
+  final logsDir = '${Directory.current.path}/logs';
+  final historyPath = '$logsDir/prompt_history.json';
   await ensureLogsDir(logsDir);
 
   final record = <String, dynamic>{

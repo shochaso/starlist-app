@@ -92,7 +92,7 @@ www ルーカス VS アルデン・.
 
   print('\n${'='*60}');
   print('=== 総合結果 ===');
-  final totalExpected = expectedCount1 + expectedCount2;
+  const totalExpected = expectedCount1 + expectedCount2;
   final totalExtracted = parsedVideos1.length + parsedVideos2.length;
   final overallAccuracy = (totalExtracted / totalExpected * 100).toStringAsFixed(1);
   

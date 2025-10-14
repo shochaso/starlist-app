@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/star.dart';
 import '../models/activity.dart';
-import '../widgets/activity_card.dart';
 
 class StarDetailScreen extends StatelessWidget {
   final Star star;

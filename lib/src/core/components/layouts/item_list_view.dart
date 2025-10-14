@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../cards/item_card.dart';
 
 /// データのリストを表示する汎用的なリストビューコンポーネント
 /// 
@@ -52,7 +51,7 @@ class ItemListView<T> extends StatelessWidget {
   final double endReachedThreshold;
 
   const ItemListView({
-    Key? key,
+    super.key,
     required this.items,
     required this.itemBuilder,
     this.emptyWidget,
@@ -68,7 +67,7 @@ class ItemListView<T> extends StatelessWidget {
     this.controller,
     this.onEndReached,
     this.endReachedThreshold = 200.0,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -226,7 +225,7 @@ class ItemListSection<T> extends StatelessWidget {
   final int? maxItems;
 
   const ItemListSection({
-    Key? key,
+    super.key,
     required this.title,
     this.subtitle,
     required this.items,
@@ -237,7 +236,7 @@ class ItemListSection<T> extends StatelessWidget {
     this.isHorizontal = false,
     this.isLoading = false,
     this.maxItems,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

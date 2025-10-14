@@ -8,7 +8,7 @@ import '../../../features/auth/providers/user_provider.dart';
 
 /// 投票システムのホーム画面
 class VotingHomeScreen extends ConsumerStatefulWidget {
-  const VotingHomeScreen({Key? key}) : super(key: key);
+  const VotingHomeScreen({super.key});
 
   @override
   ConsumerState<VotingHomeScreen> createState() => _VotingHomeScreenState();

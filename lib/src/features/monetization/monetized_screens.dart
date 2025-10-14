@@ -17,11 +17,11 @@ class MonetizedHomeScreen extends ConsumerStatefulWidget {
   final int sessionDurationMinutes;
 
   const MonetizedHomeScreen({
-    Key? key,
+    super.key,
     required this.userId,
     required this.userType,
     this.sessionDurationMinutes = 0,
-  }) : super(key: key);
+  });
 
   @override
   ConsumerState<MonetizedHomeScreen> createState() => _MonetizedHomeScreenState();
@@ -117,11 +117,11 @@ class MonetizedStarProfileScreen extends ConsumerWidget {
   final String userType;
 
   const MonetizedStarProfileScreen({
-    Key? key,
+    super.key,
     required this.starId,
     required this.userId,
     required this.userType,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -258,10 +258,10 @@ class MonetizedSettingsScreen extends ConsumerWidget {
   final String userType;
 
   const MonetizedSettingsScreen({
-    Key? key,
+    super.key,
     required this.userId,
     required this.userType,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

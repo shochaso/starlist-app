@@ -10,10 +10,10 @@ class FavoriteItemCard extends ConsumerWidget {
   final VoidCallback? onTap;
 
   const FavoriteItemCard({
-    Key? key,
+    super.key,
     required this.item,
     this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

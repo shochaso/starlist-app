@@ -1,6 +1,7 @@
 /// 中学生でもできる！YouTube API設定ガイド
 /// 
 /// このファイルでAPIキーの設定をします
+library;
 
 class SimpleYouTubeSetup {
   /// ステップ1: APIキーを設定する

@@ -12,11 +12,11 @@ class ContentListScreen extends StatefulWidget {
   final String title;
 
   const ContentListScreen({
-    Key? key,
+    super.key,
     this.authorId,
     this.contentType,
     this.title = 'コンテンツ一覧',
-  }) : super(key: key);
+  });
 
   @override
   State<ContentListScreen> createState() => _ContentListScreenState();
@@ -256,10 +256,10 @@ class ContentListItem extends StatelessWidget {
   final VoidCallback onTap;
 
   const ContentListItem({
-    Key? key,
+    super.key,
     required this.content,
     required this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

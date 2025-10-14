@@ -6,7 +6,7 @@ import '../../../data/models/amazon_models.dart';
 
 /// Amazonフィルター画面
 class AmazonFilterScreen extends ConsumerStatefulWidget {
-  const AmazonFilterScreen({Key? key}) : super(key: key);
+  const AmazonFilterScreen({super.key});
 
   @override
   ConsumerState<AmazonFilterScreen> createState() => _AmazonFilterScreenState();
@@ -437,7 +437,7 @@ class _AmazonFilterScreenState extends ConsumerState<AmazonFilterScreen> {
           Switch(
             value: value,
             onChanged: onChanged,
-            activeColor: const Color(0xFFFF9900),
+            activeThumbColor: const Color(0xFFFF9900),
           ),
         ],
       ),

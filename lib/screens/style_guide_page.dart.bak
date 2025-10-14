@@ -56,7 +56,7 @@ class _StyleGuidePageState extends State<StyleGuidePage> {
                       _ColorTile('Primary', colorScheme.primary, colorScheme.onPrimary),
                       _ColorTile('Secondary', colorScheme.secondary, colorScheme.onSecondary),
                       _ColorTile('Surface', colorScheme.surface, colorScheme.onSurface),
-                      _ColorTile('Background', colorScheme.background, colorScheme.onBackground),
+                      _ColorTile('Background', colorScheme.surface, colorScheme.onSurface),
                       _ColorTile('Success', colorScheme.tertiary, colorScheme.onTertiary),
                       _ColorTile('Warning', colorScheme.tertiaryContainer, colorScheme.onTertiaryContainer),
                       _ColorTile('Danger', colorScheme.error, colorScheme.onError),
@@ -85,22 +85,22 @@ class _StyleGuidePageState extends State<StyleGuidePage> {
                   child: Wrap(
                     spacing: tokens.spacing.sm,
                     runSpacing: tokens.spacing.sm,
-                    children: [
-                      const AppButton('Primary'),
-                      const AppButton('Secondary', variant: AppButtonVariant.secondary),
-                      const AppButton('Tonal', variant: AppButtonVariant.tonal),
-                      const AppButton('Text', variant: AppButtonVariant.text),
-                      const AppButton(
+                    children: const [
+                      AppButton('Primary'),
+                      AppButton('Secondary', variant: AppButtonVariant.secondary),
+                      AppButton('Tonal', variant: AppButtonVariant.tonal),
+                      AppButton('Text', variant: AppButtonVariant.text),
+                      AppButton(
                         'With Icon',
                         leading: Icon(Icons.star),
                       ),
                     ],
                   ),
                 ),
-                _Section(
+                const _Section(
                   title: 'Inputs',
                   child: Column(
-                    children: const [
+                    children: [
                       AppTextField(
                         labelText: 'Email',
                         hintText: 'user@starlist.app',
@@ -165,8 +165,8 @@ class _StyleGuidePageState extends State<StyleGuidePage> {
                         length: 3,
                         child: Column(
                           children: [
-                            TabBar(
-                              tabs: const [
+                            const TabBar(
+                              tabs: [
                                 Tab(text: 'Overview'),
                                 Tab(text: 'Audience'),
                                 Tab(text: 'Revenue'),

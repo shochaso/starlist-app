@@ -10,7 +10,7 @@ import '../../../../../shared/widgets/error_message.dart';
 /// トレンドコンテンツや人気スターのランキングを表示する画面です。
 class RankingScreen extends ConsumerStatefulWidget {
   /// コンストラクタ
-  const RankingScreen({Key? key}) : super(key: key);
+  const RankingScreen({super.key});
 
   @override
   ConsumerState<RankingScreen> createState() => _RankingScreenState();

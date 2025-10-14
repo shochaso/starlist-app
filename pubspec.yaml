@@ -50,4 +50,5 @@ flutter:
     - assets/images/
     - assets/icons/
     - assets/icons/services/
+    - assets/service_icons/
     - assets/config/service_icons.json

@@ -8,9 +8,9 @@ class NetflixOcrButton extends ConsumerStatefulWidget {
   final Function(List<NetflixViewingHistory>)? onOcrComplete;
 
   const NetflixOcrButton({
-    Key? key,
+    super.key,
     this.onOcrComplete,
-  }) : super(key: key);
+  });
 
   @override
   ConsumerState<NetflixOcrButton> createState() => _NetflixOcrButtonState();

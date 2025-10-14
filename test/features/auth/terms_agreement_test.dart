@@ -10,7 +10,7 @@ import 'terms_agreement_test.mocks.dart';
 void main() {
   group('AgencyTermsAgreement', () {
     test('should create agreement with required fields', () {
-      final agreement = AgencyTermsAgreement(
+      const agreement = AgencyTermsAgreement(
         userId: 'test-user-id',
         agencyName: 'テスト事務所',
         individualResponsibilityAcknowledged: true,
@@ -70,7 +70,7 @@ void main() {
     });
 
     test('should copy with new values', () {
-      final original = AgencyTermsAgreement(
+      const original = AgencyTermsAgreement(
         userId: 'test-user-id',
         agencyName: 'テスト事務所',
         individualResponsibilityAcknowledged: true,
@@ -91,7 +91,7 @@ void main() {
 
   group('AgencyTermsAgreementResult', () {
     test('should create success result', () {
-      final result = AgencyTermsAgreementResult.success(
+      const result = AgencyTermsAgreementResult.success(
         agreementId: 'test-id',
         message: '成功しました',
       );
@@ -103,7 +103,7 @@ void main() {
     });
 
     test('should create failure result', () {
-      final result = AgencyTermsAgreementResult.failure(
+      const result = AgencyTermsAgreementResult.failure(
         error: 'エラーが発生しました',
       );
 
@@ -122,14 +122,14 @@ void main() {
     });
 
     test('should submit agreement successfully', () async {
-      final agreement = AgencyTermsAgreement(
+      const agreement = AgencyTermsAgreement(
         userId: 'test-user-id',
         agencyName: 'テスト事務所',
         individualResponsibilityAcknowledged: true,
         platformTermsVersion: '1.0.0',
       );
 
-      final expectedResult = AgencyTermsAgreementResult.success(
+      const expectedResult = AgencyTermsAgreementResult.success(
         agreementId: 'test-id',
         message: '事務所利用規約への同意が完了しました',
       );
@@ -146,14 +146,14 @@ void main() {
     });
 
     test('should handle submission failure', () async {
-      final agreement = AgencyTermsAgreement(
+      const agreement = AgencyTermsAgreement(
         userId: 'test-user-id',
         agencyName: 'テスト事務所',
         individualResponsibilityAcknowledged: true,
         platformTermsVersion: '1.0.0',
       );
 
-      final expectedResult = AgencyTermsAgreementResult.failure(
+      const expectedResult = AgencyTermsAgreementResult.failure(
         error: '既に規約同意が完了しています',
       );
 
@@ -168,7 +168,7 @@ void main() {
     });
 
     test('should get user agreement', () async {
-      final expectedAgreement = AgencyTermsAgreement(
+      const expectedAgreement = AgencyTermsAgreement(
         id: 'test-id',
         userId: 'test-user-id',
         agencyName: 'テスト事務所',

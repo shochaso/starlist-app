@@ -6,7 +6,7 @@ import '../../auth/providers/user_provider.dart';
 
 /// 誕生日設定画面
 class BirthdaySettingsScreen extends ConsumerStatefulWidget {
-  const BirthdaySettingsScreen({Key? key}) : super(key: key);
+  const BirthdaySettingsScreen({super.key});
 
   @override
   ConsumerState<BirthdaySettingsScreen> createState() => _BirthdaySettingsScreenState();
@@ -191,7 +191,7 @@ class _BirthdaySettingsScreenState extends ConsumerState<BirthdaySettingsScreen>
                         _notificationsEnabled = value;
                       });
                     },
-                    activeColor: const Color(0xFF4ECDC4),
+                    activeThumbColor: const Color(0xFF4ECDC4),
                   ),
                 ],
               ),

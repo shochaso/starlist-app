@@ -8,11 +8,11 @@ class YouTubeVideoList extends StatelessWidget {
   final Function(YouTubeVideo)? onVideoTap;
 
   const YouTubeVideoList({
-    Key? key,
+    super.key,
     required this.videos,
     this.emptyMessage = '動画がありません',
     this.onVideoTap,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

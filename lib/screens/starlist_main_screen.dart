@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter/scheduler.dart';
 // 画面のインポート
 import '../features/search/screens/search_screen.dart';
 import '../features/mylist/screens/mylist_screen.dart';
@@ -14,7 +15,7 @@ import 'login_status_screen.dart';
 import 'test_account_switcher_screen.dart';
 import '../src/features/points/screens/star_points_purchase_screen.dart';
 import '../features/premium/screens/premium_restriction_screen.dart';
-import '../routes/app_routes.dart';
+import 'star_data_view_page.dart';
 // プロバイダー・サービス
 import '../providers/user_provider.dart';
 import '../src/providers/theme_provider_enhanced.dart';
@@ -524,11 +525,11 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
       elevation: 0,
       shadowColor: Colors.transparent,
       title: Text(
-          title,
-          style: TextStyle(
-            color: isDark ? Colors.white : Colors.black87,
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
+        title,
+        style: TextStyle(
+          color: isDark ? Colors.white : Colors.black87,
+          fontSize: 18,
+          fontWeight: FontWeight.w600,
         ),
       ),
       centerTitle: true,
@@ -545,21 +546,21 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
       automaticallyImplyLeading: false, // 戻るボタンを無効化
       actions: [
         IconButton(
-            icon: const Icon(Icons.casino, color: Colors.amber),
+          icon: const Icon(Icons.casino, color: Colors.amber),
           tooltip: 'ガチャ',
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => const GachaScreen()),
-              );
-            },
-          ),
+          onPressed: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (context) => const GachaScreen()),
+            );
+          },
+        ),
         IconButton(
-            icon: Icon(
+          icon: Icon(
             Icons.notifications_outlined,
-              color: isDark ? Colors.white54 : Colors.black54,
-            ),
+            color: isDark ? Colors.white54 : Colors.black54,
+          ),
           tooltip: '通知',
-            onPressed: () {},
+          onPressed: () {},
         ),
       ],
     );
@@ -662,6 +663,8 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
                       Icons.credit_card, '課金プラン', -1, 'subscription'),
                   _buildDrawerItem(Icons.stars, 'スターポイント購入', -1, 'buy_points'),
                 ],
+                _buildDrawerItem(
+                    Icons.grid_view_rounded, 'スターリスト', -1, 'starlist'),
                 _buildDrawerItem(Icons.settings, '設定', -1, 'settings'),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 18, 16, 6),
@@ -693,14 +696,6 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
                         builder: (context) => const LoginStatusScreen(),
                       ),
                     );
-                  },
-                ),
-                ListTile(
-                  dense: true,
-                  leading: const Icon(Icons.dataset),
-                  title: const Text('StarData'),
-                  onTap: () {
-                    Navigator.of(context).pushNamed(AppRoutes.starData);
                   },
                 ),
               ],
@@ -806,6 +801,26 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
             builder: (context) => const StarPointsPurchaseScreen(),
           ),
         );
+        return;
+      case 'starlist':
+        final rootNavigator = Navigator.of(context, rootNavigator: true);
+        SchedulerBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          debugPrint(
+              '[StarlistMainScreen] Navigating to StarDataViewPage via rootNavigator');
+          rootNavigator
+              .push(
+            MaterialPageRoute(
+              builder: (_) => const StarDataViewPage(),
+              settings: const RouteSettings(name: '/starlist'),
+            ),
+          )
+              .then((_) {
+            if (!mounted) return;
+            ref.read(selectedDrawerPageProvider.notifier).state = null;
+            debugPrint('[StarlistMainScreen] Returned from StarDataViewPage');
+          });
+        });
         return;
       case 'settings':
         if (mounted) context.go('/settings');
@@ -1013,7 +1028,8 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
                   child: Container(
                     width: MediaQuery.of(context).size.width * 0.85,
                     margin: const EdgeInsets.only(right: 16),
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 12),
                     decoration: BoxDecoration(
                       color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
                       borderRadius: BorderRadius.circular(16),
@@ -1211,7 +1227,8 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
             Flexible(
               child: ListView.builder(
                 shrinkWrap: true,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 itemCount: group.items.length,
                 itemBuilder: (context, index) {
                   final item = group.items[index];
@@ -1596,7 +1613,8 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
               return Container(
                 width: 280,
                 margin: const EdgeInsets.only(right: 16),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 decoration: BoxDecoration(
                   color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
                   borderRadius: BorderRadius.circular(12),
@@ -1711,7 +1729,8 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
               return Container(
                 width: 160,
                 margin: const EdgeInsets.only(right: 16),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
@@ -1772,7 +1791,8 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
               return Container(
                 width: 180,
                 margin: const EdgeInsets.only(right: 16),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
@@ -2020,83 +2040,81 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
           ),
         ),
         const SizedBox(height: 16),
-        ...todayPickup
-            .map((item) => Container(
-                  margin: const EdgeInsets.only(bottom: 16),
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: (isDark ? Colors.black : Colors.black)
-                            .withOpacity(0.08),
-                        blurRadius: 12,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                    border: Border.all(
-                        color: isDark
-                            ? const Color(0xFF333333)
-                            : const Color(0xFFF3F4F6)),
+        ...todayPickup.map((item) => Container(
+              margin: const EdgeInsets.only(bottom: 16),
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: (isDark ? Colors.black : Colors.black)
+                        .withOpacity(0.08),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
                   ),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 60,
-                        height: 60,
-                        decoration: BoxDecoration(
-                          color: item['color'] as Color,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Icon(
-                          item['icon'] as IconData,
-                          color: Colors.white,
-                          size: 28,
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              item['title'] as String,
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                                color: isDark ? Colors.white : Colors.black87,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              item['subtitle'] as String,
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                                color: isDark ? Colors.white70 : Colors.black54,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              item['description'] as String,
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: isDark ? Colors.white54 : Colors.black38,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Icon(
-                        Icons.arrow_forward_ios,
-                        color: isDark ? Colors.white54 : Colors.black38,
-                        size: 16,
-                      ),
-                    ],
+                ],
+                border: Border.all(
+                    color: isDark
+                        ? const Color(0xFF333333)
+                        : const Color(0xFFF3F4F6)),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 60,
+                    height: 60,
+                    decoration: BoxDecoration(
+                      color: item['color'] as Color,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(
+                      item['icon'] as IconData,
+                      color: Colors.white,
+                      size: 28,
+                    ),
                   ),
-                ))
-            ,
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          item['title'] as String,
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: isDark ? Colors.white : Colors.black87,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          item['subtitle'] as String,
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: isDark ? Colors.white70 : Colors.black54,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          item['description'] as String,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: isDark ? Colors.white54 : Colors.black38,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Icon(
+                    Icons.arrow_forward_ios,
+                    color: isDark ? Colors.white54 : Colors.black38,
+                    size: 16,
+                  ),
+                ],
+              ),
+            )),
       ],
     );
   }
@@ -2201,7 +2219,10 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
     final currentUser = ref.watch(currentUserProvider);
     final isDark = ref.watch(themeProviderEnhanced).isDarkMode;
 
-    final recentPosts = allPosts.take(6).toList();
+    final recentPosts = allPosts
+        .where((post) => post.type != PostType.youtube)
+        .take(6)
+        .toList();
     final otherPosts = _mockOtherPosts().take(6).toList();
 
     if (recentPosts.isEmpty && otherPosts.isEmpty) {
@@ -2287,15 +2308,15 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
         if (displayPaidPosts.isEmpty)
           _buildMutedInfoCard('現在アクセス可能な有料コンテンツはありません。')
         else
-        SizedBox(
+          SizedBox(
             height: 220,
             child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               physics: const BouncingScrollPhysics(),
               itemCount: displayPaidPosts.length,
               separatorBuilder: (_, __) => const SizedBox(width: 12),
-            itemBuilder: (context, index) {
+              itemBuilder: (context, index) {
                 final post = displayPaidPosts[index];
                 return SizedBox(
                   width: 280,
@@ -2368,15 +2389,15 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
     bool isFreePlan, {
     double width = 260,
   }) {
-    final restricted =
-        isFreePlan && (post['accessLevel'] as AccessLevel) != AccessLevel.public;
+    final restricted = isFreePlan &&
+        (post['accessLevel'] as AccessLevel) != AccessLevel.public;
 
     return SizedBox(
       width: width,
-                child: Container(
+      child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                  decoration: BoxDecoration(
+        decoration: BoxDecoration(
           color: isDark ? const Color(0xFF1F1F23) : Colors.white,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
@@ -2384,31 +2405,31 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
                 ? Colors.white.withOpacity(0.05)
                 : const Color(0xFFE2E8F0),
           ),
-                    boxShadow: [
-                      BoxShadow(
+          boxShadow: [
+            BoxShadow(
               color: (isDark ? Colors.black : Colors.black12).withOpacity(0.05),
               blurRadius: 18,
               offset: const Offset(0, 10),
               spreadRadius: -12,
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
                   width: 44,
                   height: 44,
-                          decoration: BoxDecoration(
+                  decoration: BoxDecoration(
                     color: post['color'] as Color,
                     borderRadius: BorderRadius.circular(14),
                   ),
                   child: Icon(
                     post['icon'] as IconData,
-                                  color: Colors.white,
+                    color: Colors.white,
                     size: 22,
                   ),
                 ),
@@ -2422,7 +2443,7 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
                           Expanded(
                             child: Text(
                               post['title'] as String,
-                                    style: TextStyle(
+                              style: TextStyle(
                                 fontSize: 15,
                                 fontWeight: FontWeight.w600,
                                 color: isDark ? Colors.white : Colors.black87,
@@ -2471,9 +2492,9 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
                     size: 14,
                     color: isDark ? Colors.white38 : const Color(0xFF94A3B8)),
                 const SizedBox(width: 4),
-                      Text(
+                Text(
                   post['time'] as String,
-                        style: TextStyle(
+                  style: TextStyle(
                     fontSize: 12,
                     color: isDark ? Colors.white54 : const Color(0xFF64748B),
                   ),
@@ -2503,18 +2524,18 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
     bool isFreePlan, {
     double width = 260,
   }) {
-    final restricted =
-        isFreePlan && (item['accessLevel'] as AccessLevel) != AccessLevel.public;
+    final restricted = isFreePlan &&
+        (item['accessLevel'] as AccessLevel) != AccessLevel.public;
 
     return SizedBox(
       width: width,
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                          decoration: BoxDecoration(
+        decoration: BoxDecoration(
           color: isDark ? const Color(0xFF1F1F23) : Colors.white,
           borderRadius: BorderRadius.circular(20),
-                            border: Border.all(
+          border: Border.all(
             color: isDark
                 ? Colors.white.withOpacity(0.05)
                 : const Color(0xFFE2E8F0),
@@ -2533,7 +2554,7 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
             CircleAvatar(
               radius: 20,
               backgroundColor: item['color'] as Color,
-                          child: Text(
+              child: Text(
                 (item['initial'] as String?) ??
                     (item['starName'] as String).substring(0, 1),
                 style: const TextStyle(
@@ -2578,10 +2599,10 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
                             ),
                           ),
                         ),
-                      ],
+                    ],
                   ),
-                      const SizedBox(height: 4),
-                      Text(
+                  const SizedBox(height: 4),
+                  Text(
                     item['category'] as String,
                     style: TextStyle(
                       fontSize: 13,
@@ -2593,8 +2614,8 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
                   const SizedBox(height: 6),
                   Text(
                     item['summary'] as String,
-                        style: TextStyle(
-                          fontSize: 12,
+                    style: TextStyle(
+                      fontSize: 12,
                       color: isDark ? Colors.white60 : Colors.black45,
                     ),
                     maxLines: 2,
@@ -2605,13 +2626,16 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
                     children: [
                       Icon(Icons.access_time,
                           size: 14,
-                          color: isDark ? Colors.white38 : const Color(0xFF94A3B8)),
+                          color: isDark
+                              ? Colors.white38
+                              : const Color(0xFF94A3B8)),
                       const SizedBox(width: 4),
                       Text(
                         item['time'] as String,
                         style: TextStyle(
                           fontSize: 12,
-                          color: isDark ? Colors.white54 : const Color(0xFF64748B),
+                          color:
+                              isDark ? Colors.white54 : const Color(0xFF64748B),
                         ),
                       ),
                       const Spacer(),
@@ -2627,18 +2651,19 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
                               : (isDark
                                   ? Colors.white70
                                   : const Color(0xFF0F766E)),
-          ),
-        ),
-      ],
-                  ),
-                ],
                         ),
                       ),
                     ],
                   ),
-                ),
-              );
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
+
   Widget _buildMutedInfoCard(String message) {
     final scheme = Theme.of(context).colorScheme;
     return Container(
@@ -2658,9 +2683,9 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: scheme.onSurfaceVariant,
                   ),
+            ),
           ),
-        ),
-      ],
+        ],
       ),
     );
   }
@@ -2850,8 +2875,7 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
                   onTap: () {
                     Navigator.of(context).push(
                       MaterialPageRoute(
-                        builder: (context) =>
-                            PostDetailScreen(post: post),
+                        builder: (context) => PostDetailScreen(post: post),
                       ),
                     );
                   },

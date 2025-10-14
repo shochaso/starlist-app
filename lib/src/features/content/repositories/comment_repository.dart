@@ -29,7 +29,7 @@ class CommentRepository {
           .order('created_at', ascending: false)
           .range(offset, offset + limit - 1);
       
-      if (data == null || data.isEmpty) {
+      if (data.isEmpty) {
         return [];
       }
       
@@ -102,7 +102,7 @@ class CommentRepository {
           .eq('id', commentId)
           .single();
       
-      if (existingComment == null || existingComment['user_id'] != userId) {
+      if (existingComment['user_id'] != userId) {
         log('コメントが見つからないか、更新権限がありません');
         return false;
       }
@@ -134,11 +134,6 @@ class CommentRepository {
           .select()
           .eq('id', commentId)
           .single();
-      
-      if (existingComment == null) {
-        log('コメントが見つかりません');
-        return false;
-      }
       
       final String contentId = existingComment['content_id'];
       

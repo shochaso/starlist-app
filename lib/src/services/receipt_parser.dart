@@ -292,7 +292,7 @@ class ReceiptParser {
           currentItem = beforePrice;
         }
         
-        if (currentItem != null && currentPrice != null) {
+        if (currentItem != null) {
           final confidence = _calculateConfidence({
             'hasValidName': currentItem.length > 3,
             'hasPrice': true,

@@ -5,7 +5,7 @@ import 'simple_youtube_service.dart';
 
 /// YouTuber履歴インポート画面（中学生向け）
 class YouTubeImportWidget extends StatefulWidget {
-  const YouTubeImportWidget({Key? key}) : super(key: key);
+  const YouTubeImportWidget({super.key});
 
   @override
   State<YouTubeImportWidget> createState() => _YouTubeImportWidgetState();

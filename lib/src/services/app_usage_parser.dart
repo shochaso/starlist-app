@@ -246,7 +246,7 @@ class AppUsageParser {
           currentApp = beforeTime;
         }
         
-        if (currentApp != null && currentTime != null) {
+        if (currentApp != null) {
           final confidence = _calculateConfidence({
             'hasValidName': currentApp.length > 2,
             'hasDuration': true,
@@ -329,7 +329,7 @@ class AppUsageParser {
       'SNS': ['Instagram', 'Twitter', 'Facebook', 'TikTok', 'LINE', 'Discord'],
       'ゲーム': ['ゲーム', 'Game', 'パズドラ', 'モンスト', 'ポケモン'],
       'エンタメ': ['YouTube', 'Netflix', 'Prime Video', 'Disney+', 'Spotify', 'Apple Music'],
-      '仕事': ['Slack', 'Teams', 'Zoom', 'Gmail', 'Outlook', 'Excel', 'Word'],
+      '仕事': ['Teams', 'Zoom', 'Gmail', 'Outlook', 'Excel', 'Word'],
       'ツール': ['設定', 'カメラ', 'メモ', 'カレンダー', '天気'],
     };
     

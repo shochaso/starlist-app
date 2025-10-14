@@ -11,11 +11,11 @@ class VotingPostCard extends ConsumerStatefulWidget {
   final VoidCallback? onVoteCompleted;
 
   const VotingPostCard({
-    Key? key,
+    super.key,
     required this.post,
     this.showResults = false,
     this.onVoteCompleted,
-  }) : super(key: key);
+  });
 
   @override
   ConsumerState<VotingPostCard> createState() => _VotingPostCardState();

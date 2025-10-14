@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class HelpCenterScreen extends ConsumerWidget {
-  const HelpCenterScreen({Key? key}) : super(key: key);
+  const HelpCenterScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -175,7 +175,7 @@ class HelpCenterScreen extends ConsumerWidget {
           ],
         ),
         const SizedBox(height: 16),
-        ...items.map((item) => _buildHelpItemTile(item)).toList(),
+        ...items.map((item) => _buildHelpItemTile(item)),
       ],
     );
   }

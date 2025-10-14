@@ -5,7 +5,7 @@ import 'theme_mode_switcher.dart';
 
 /// テーマテスト画面
 class ThemeTestScreen extends ConsumerWidget {
-  const ThemeTestScreen({Key? key}) : super(key: key);
+  const ThemeTestScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

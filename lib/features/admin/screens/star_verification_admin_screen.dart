@@ -3,10 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../services/sns_verification_service.dart';
 import '../../../services/parental_consent_service.dart';
-import '../../../services/ekyc_service.dart';
 import '../../../models/sns_verification.dart';
 import '../../../models/parental_consent.dart';
-import '../../../widgets/loading_overlay.dart';
+// import '../../../widgets/loading_overlay.dart'; // TODO: LoadingOverlayが存在しないためコメントアウト
 
 /// スター認証管理画面（管理者用）
 class StarVerificationAdminScreen extends ConsumerStatefulWidget {
@@ -63,23 +62,31 @@ class _StarVerificationAdminScreenState extends ConsumerState<StarVerificationAd
           ],
         ),
       ),
-      body: LoadingOverlay(
-        isLoading: _isLoading,
-        child: Column(
-          children: [
-            _buildFilterSection(),
-            Expanded(
-              child: TabBarView(
-                controller: _tabController,
-                children: [
-                  _buildApplicationsTab(),
-                  _buildSNSVerificationsTab(),
-                  _buildParentalConsentsTab(),
-                ],
+      body: Stack(
+        children: [
+          Column(
+            children: [
+              _buildFilterSection(),
+              Expanded(
+                child: TabBarView(
+                  controller: _tabController,
+                  children: [
+                    _buildApplicationsTab(),
+                    _buildSNSVerificationsTab(),
+                    _buildParentalConsentsTab(),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          if (_isLoading)
+            Container(
+              color: Colors.black.withOpacity(0.3),
+              child: const Center(
+                child: CircularProgressIndicator(),
               ),
             ),
-          ],
-        ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _loadAllData,

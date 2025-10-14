@@ -9,9 +9,9 @@ class AmazonPurchaseDetailScreen extends ConsumerWidget {
   final AmazonPurchase purchase;
 
   const AmazonPurchaseDetailScreen({
-    Key? key,
+    super.key,
     required this.purchase,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

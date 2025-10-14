@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../privacy/services/privacy_service.dart';
 
 class PrivacyScreen extends ConsumerStatefulWidget {
-  const PrivacyScreen({Key? key}) : super(key: key);
+  const PrivacyScreen({super.key});
 
   @override
   ConsumerState<PrivacyScreen> createState() => _PrivacyScreenState();

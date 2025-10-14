@@ -131,7 +131,7 @@ class NotificationService {
         requestBadgePermission: true,
         requestSoundPermission: true,
       );
-      final initSettings = InitializationSettings(android: androidSettings, iOS: iOSSettings);
+      const initSettings = InitializationSettings(android: androidSettings, iOS: iOSSettings);
       
       await _flutterLocalNotificationsPlugin.initialize(
         initSettings,
@@ -155,7 +155,7 @@ class NotificationService {
           requestBadgePermission: true,
           requestSoundPermission: true,
         );
-        final initSettings = InitializationSettings(android: androidSettings, iOS: iOSSettings);
+        const initSettings = InitializationSettings(android: androidSettings, iOS: iOSSettings);
         
         await _flutterLocalNotificationsPlugin.initialize(
           initSettings,

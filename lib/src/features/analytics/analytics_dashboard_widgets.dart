@@ -9,9 +9,9 @@ class FanAnalyticsDashboardScreen extends ConsumerStatefulWidget {
   final String starId;
 
   const FanAnalyticsDashboardScreen({
-    Key? key,
+    super.key,
     required this.starId,
-  }) : super(key: key);
+  });
 
   @override
   ConsumerState<FanAnalyticsDashboardScreen> createState() => _FanAnalyticsDashboardScreenState();

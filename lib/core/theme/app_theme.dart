@@ -1,1 +1,1 @@
-export 'package:starlist/theme/app_theme.dart';
+export 'package:starlist_app/theme/app_theme.dart';

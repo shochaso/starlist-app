@@ -9,10 +9,10 @@ class FavoriteList extends ConsumerWidget {
   final bool showEmptyMessage;
 
   const FavoriteList({
-    Key? key,
+    super.key,
     required this.userId,
     this.showEmptyMessage = true,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

@@ -7,7 +7,8 @@ import '../models/ekyc_verification.dart';
 class EKYCService {
   static const String _trustdockApiUrl = 'https://api.trustdock.io/v1';
   static const String _apiKey = 'YOUR_TRUSTDOCK_API_KEY'; // 環境変数から取得
-  
+  static bool get isConfigured => _apiKey != 'YOUR_TRUSTDOCK_API_KEY';
+
   /// eKYC認証を開始
   static Future<EKYCVerificationResult> startVerification({
     required String userId,
@@ -15,6 +16,13 @@ class EKYCService {
     String? parentalConsentId,
   }) async {
     try {
+      if (!isConfigured) {
+        return EKYCVerificationResult(
+          success: false,
+          error: 'eKYCプロバイダーのAPIキーが設定されていません。管理者にお問い合わせください。',
+        );
+      }
+
       // 1. SupabaseにeKYC記録を作成
       final verificationRecord = await _createVerificationRecord(
         userId: userId,
@@ -62,7 +70,8 @@ class EKYCService {
       // 3. Supabaseの認証記録を更新
       await _updateVerificationRecord(
         verificationId: verificationId,
-        status: verificationDetails['status'] == 'success' ? 'success' : 'failed',
+        status:
+            verificationDetails['status'] == 'success' ? 'success' : 'failed',
         resultData: verificationDetails,
         verifiedName: verificationDetails['name'],
         verifiedBirthDate: birthDate,
@@ -92,6 +101,13 @@ class EKYCService {
     required String parentalConsentId,
   }) async {
     try {
+      if (!isConfigured) {
+        return EKYCVerificationResult(
+          success: false,
+          error: 'eKYCプロバイダーのAPIキーが設定されていません。',
+        );
+      }
+
       // 親権者同意情報を取得
       final parentalConsent = await _getParentalConsent(parentalConsentId);
       if (parentalConsent == null) {
@@ -119,7 +135,7 @@ class EKYCService {
   static int _calculateAge(DateTime birthDate) {
     final today = DateTime.now();
     int age = today.year - birthDate.year;
-    if (today.month < birthDate.month || 
+    if (today.month < birthDate.month ||
         (today.month == birthDate.month && today.day < birthDate.day)) {
       age--;
     }
@@ -133,14 +149,19 @@ class EKYCService {
     String? parentalConsentId,
   }) async {
     final supabase = Supabase.instance.client;
-    
-    final response = await supabase.from('ekyc_verifications').insert({
-      if (type == EKYCVerificationType.user) 'user_id': userId,
-      if (type == EKYCVerificationType.parent) 'parental_consent_id': parentalConsentId,
-      'verification_type': type.toString().split('.').last,
-      'provider': 'trustdock',
-      'status': 'pending',
-    }).select().single();
+
+    final response = await supabase
+        .from('ekyc_verifications')
+        .insert({
+          if (type == EKYCVerificationType.user) 'user_id': userId,
+          if (type == EKYCVerificationType.parent)
+            'parental_consent_id': parentalConsentId,
+          'verification_type': type.toString().split('.').last,
+          'provider': 'trustdock',
+          'status': 'pending',
+        })
+        .select()
+        .single();
 
     return EKYCVerification.fromJson(response);
   }
@@ -204,7 +225,7 @@ class EKYCService {
     double? verificationScore,
   }) async {
     final supabase = Supabase.instance.client;
-    
+
     await supabase.from('ekyc_verifications').update({
       'status': status,
       'result_data': resultData,
@@ -225,7 +246,7 @@ class EKYCService {
     required bool isMinor,
   }) async {
     final supabase = Supabase.instance.client;
-    
+
     // eKYC記録からユーザーIDを取得
     final verification = await supabase
         .from('ekyc_verifications')
@@ -239,7 +260,8 @@ class EKYCService {
     if (verification['user_id'] != null) {
       // 本人のeKYC
       targetUserId = verification['user_id'];
-      newVerificationStatus = isMinor ? 'awaiting_parental_consent' : 'ekyc_completed';
+      newVerificationStatus =
+          isMinor ? 'awaiting_parental_consent' : 'ekyc_completed';
     } else {
       // 親権者のeKYC
       final parentalConsent = await supabase
@@ -247,10 +269,10 @@ class EKYCService {
           .select('user_id')
           .eq('id', verification['parental_consent_id'])
           .single();
-      
+
       targetUserId = parentalConsent['user_id'];
       newVerificationStatus = 'parental_ekyc_completed';
-      
+
       // 親権者同意の状態も更新
       await supabase.from('parental_consents').update({
         'parent_legal_name': legalName,
@@ -276,9 +298,10 @@ class EKYCService {
   }
 
   /// 親権者同意情報を取得
-  static Future<Map<String, dynamic>?> _getParentalConsent(String consentId) async {
+  static Future<Map<String, dynamic>?> _getParentalConsent(
+      String consentId) async {
     final supabase = Supabase.instance.client;
-    
+
     try {
       final response = await supabase
           .from('parental_consents')
@@ -294,7 +317,7 @@ class EKYCService {
 
 /// eKYC認証タイプ
 enum EKYCVerificationType {
-  user,   // 本人認証
+  user, // 本人認証
   parent, // 親権者認証
 }
 
@@ -370,4 +393,4 @@ class EKYCVerification {
           : null,
     );
   }
-} 
+}

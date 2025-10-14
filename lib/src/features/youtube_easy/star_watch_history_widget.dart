@@ -7,9 +7,9 @@ class StarWatchHistoryWidget extends ConsumerStatefulWidget {
   final String starId;
   
   const StarWatchHistoryWidget({
-    Key? key,
+    super.key,
     required this.starId,
-  }) : super(key: key);
+  });
 
   @override
   ConsumerState<StarWatchHistoryWidget> createState() => _StarWatchHistoryWidgetState();

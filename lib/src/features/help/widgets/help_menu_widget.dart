@@ -3,7 +3,7 @@ import '../screens/help_center_screen.dart';
 import '../screens/privacy_screen.dart';
 
 class HelpMenuWidget extends StatelessWidget {
-  const HelpMenuWidget({Key? key}) : super(key: key);
+  const HelpMenuWidget({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -54,7 +54,7 @@ class HelpMenuWidget extends StatelessWidget {
 
 // サイドバー用のヘルプセクション
 class SidebarHelpSection extends StatelessWidget {
-  const SidebarHelpSection({Key? key}) : super(key: key);
+  const SidebarHelpSection({super.key});
 
   @override
   Widget build(BuildContext context) {

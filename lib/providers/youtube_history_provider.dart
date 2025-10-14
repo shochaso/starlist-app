@@ -1,4 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import '../features/data_integration/support_matrix.dart';
+import '../features/data_integration/tag_only_saver.dart';
 
 // YouTube履歴データのモデル
 class YouTubeHistoryItem {
@@ -12,6 +15,8 @@ class YouTubeHistoryItem {
   final String? sessionId; // 同じインポートセッションを識別するID
   final String? starName; // スター名
   final String? starGenre; // スターのジャンル
+  final String? url; // 動画URL（オプション）
+  final String? thumbnailUrl; // サムネイルURL（オプション）
 
   YouTubeHistoryItem({
     required this.title,
@@ -24,11 +29,31 @@ class YouTubeHistoryItem {
     this.sessionId,
     this.starName,
     this.starGenre,
+    this.url,
+    this.thumbnailUrl,
   });
 
   // 表示用の視聴回数を取得
   String get displayViews {
     return viewCount ?? views ?? '不明';
+  }
+
+  // JSONシリアライズ
+  Map<String, dynamic> toJson() {
+    return {
+      'title': title,
+      'channel': channel,
+      'duration': duration,
+      'uploadTime': uploadTime,
+      'views': views,
+      'viewCount': viewCount,
+      'addedAt': addedAt.toIso8601String(),
+      'sessionId': sessionId,
+      'starName': starName,
+      'starGenre': starGenre,
+      'url': url,
+      'thumbnailUrl': thumbnailUrl,
+    };
   }
 }
 
@@ -51,11 +76,20 @@ class YouTubeHistoryGroup {
 // YouTube履歴データを管理するStateNotifier
 class YouTubeHistoryNotifier extends StateNotifier<List<YouTubeHistoryItem>> {
   YouTubeHistoryNotifier() : super([]);
+  
+  final _supabase = Supabase.instance.client;
 
   // 新しいYouTube履歴データを追加（スターごとに異なるセッションIDを生成）
-  void addHistory(List<YouTubeHistoryItem> newItems) {
+  // 🆕 対応/非対応サービスで分岐処理
+  Future<void> addHistory(List<YouTubeHistoryItem> newItems) async {
     if (newItems.isEmpty) {
       return;
+    }
+    
+    // 🆕 Supabaseへの永続化処理を追加
+    final userId = _supabase.auth.currentUser?.id;
+    if (userId != null) {
+      await _persistItems(newItems, userId);
     }
 
     final allHaveSessionId = newItems.every(
@@ -161,6 +195,112 @@ class YouTubeHistoryNotifier extends StateNotifier<List<YouTubeHistoryItem>> {
     print('最終グループ数: ${groups.length}');
 
     return groups;
+  }
+  
+  // 🆕 対応/非対応サービスで分岐して永続化
+  Future<void> _persistItems(List<YouTubeHistoryItem> items, String userId) async {
+    for (final item in items) {
+      const category = 'video';
+      const service = 'youtube';
+      
+      // YouTubeは現在MVPで対応済み
+      final isSupported = SupportMatrix.isMvpImplemented(service);
+      
+      if (isSupported) {
+        // フルモードで保存（既存の完全処理フロー）
+        await _persistFullMode(item, userId);
+      } else {
+        // タグのみモードで保存
+        await _persistTagOnlyMode(item, userId, category, service);
+      }
+    }
+  }
+  
+  // フルモード保存（既存処理を維持）
+  Future<void> _persistFullMode(YouTubeHistoryItem item, String userId) async {
+    try {
+      // TODO: エンリッチメント（サムネイル取得）
+      // TODO: マッチスコア計算
+      // TODO: コンテンツモデレーション
+      
+      await _supabase.from('contents').insert({
+        'author_id': userId,
+        'title': item.title,
+        'description': '${item.channel} - ${item.displayViews}',
+        'type': 'video',
+        'url': item.url,
+        'metadata': {
+          'channel': item.channel,
+          'duration': item.duration,
+          'uploadTime': item.uploadTime,
+          'views': item.displayViews,
+          'sessionId': item.sessionId,
+          'starName': item.starName,
+          'starGenre': item.starGenre,
+          'thumbnailUrl': item.thumbnailUrl,
+        },
+        'ingest_mode': 'full',
+        'confidence': 1.0, // TODO: 実際のマッチスコア
+        'tags': _buildTags(item),
+        'occurred_at': item.addedAt.toIso8601String(),
+        'category': 'video',
+        'service': 'youtube',
+        'is_published': false, // デフォルト非公開
+      });
+      
+      print('✅ フルモードで保存: ${item.title}');
+    } catch (e) {
+      print('❌ 保存エラー: $e');
+    }
+  }
+  
+  // タグのみモード保存
+  Future<void> _persistTagOnlyMode(
+    YouTubeHistoryItem item,
+    String userId,
+    String category,
+    String service,
+  ) async {
+    try {
+      final tags = TagOnlySaver.buildTags(
+        category: category,
+        service: service,
+        brandOrStore: null,
+        freeText: '${item.title} ${item.channel}',
+      );
+      
+      await TagOnlySaver().save(
+        authorId: userId,
+        sourceId: TagOnlySaver.generateSourceId(item.url ?? item.title),
+        category: category,
+        service: service,
+        brandOrStore: null,
+        freeTextKeywords: tags,
+        occurredAt: item.addedAt,
+        rawMetadata: item.toJson(),
+      );
+      
+      print('✅ タグのみモードで保存: ${item.title}');
+    } catch (e) {
+      print('❌ タグのみ保存エラー: $e');
+    }
+  }
+  
+  // タグ配列生成
+  List<String> _buildTags(YouTubeHistoryItem item) {
+    final tags = <String>{};
+    tags.add('video');
+    tags.add('youtube');
+    tags.add(item.channel);
+    
+    // タイトルから単語抽出
+    final titleWords = item.title
+        .split(RegExp(r'[\s　、。・,/|「」【】\(\)（）]+'))
+        .where((w) => w.trim().length >= 2)
+        .take(20);
+    tags.addAll(titleWords);
+    
+    return tags.toList();
   }
 }
 

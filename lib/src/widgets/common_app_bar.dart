@@ -93,7 +93,7 @@ class _BackHomeButton extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Material(
-      color: colorScheme.surfaceVariant.withOpacity(0.6),
+      color: colorScheme.surfaceContainerHighest.withOpacity(0.6),
       borderRadius: tokens.radius.lgRadius,
       child: InkWell(
         borderRadius: tokens.radius.lgRadius,
@@ -126,7 +126,7 @@ class CommonBackButton extends ConsumerWidget {
       label: toHome ? 'Back to home' : 'Back',
       button: true,
       child: Material(
-        color: colorScheme.surfaceVariant.withOpacity(0.6),
+        color: colorScheme.surfaceContainerHighest.withOpacity(0.6),
         borderRadius: tokens.radius.lgRadius,
         child: InkWell(
           borderRadius: tokens.radius.lgRadius,

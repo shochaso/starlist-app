@@ -8,10 +8,10 @@ class NetflixViewingCard extends StatelessWidget {
   final VoidCallback? onTap;
 
   const NetflixViewingCard({
-    Key? key,
+    super.key,
     required this.viewingHistory,
     this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

@@ -1,11 +1,15 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/models/post_model.dart';
 import '../data/mock_posts/hanayama_mizuki_posts.dart';
+import '../data/mock_posts/fujiwara_nomii_posts.dart';
 import '../src/providers/membership_provider.dart';
 
 /// 投稿データの状態管理
 class PostsNotifier extends StateNotifier<List<PostModel>> {
-  PostsNotifier() : super(HanayamaMizukiPosts.allPosts);
+  PostsNotifier() : super([
+    ...HanayamaMizukiPosts.allPosts,
+    ...FujiwaraNoMiiPosts.allPosts,
+  ]);
 
   /// 投稿を追加
   void addPost(PostModel post) {
@@ -39,7 +43,10 @@ class PostsNotifier extends StateNotifier<List<PostModel>> {
 
   /// リフレッシュ
   void refresh() {
-    state = HanayamaMizukiPosts.allPosts;
+    state = [
+      ...HanayamaMizukiPosts.allPosts,
+      ...FujiwaraNoMiiPosts.allPosts,
+    ];
   }
 }
 
@@ -109,6 +116,12 @@ final latestPostsProvider = Provider<List<PostModel>>((ref) {
 final hanayamaMizukiPostsProvider = Provider<List<PostModel>>((ref) {
   final accessiblePosts = ref.watch(accessiblePostsProvider);
   return accessiblePosts.where((post) => post.authorId == HanayamaMizukiPosts.authorId).toList();
+});
+
+/// ふじわらのみいの投稿のみを取得
+final fujiwaraNoMiiPostsProvider = Provider<List<PostModel>>((ref) {
+  final accessiblePosts = ref.watch(accessiblePostsProvider);
+  return accessiblePosts.where((post) => post.authorId == FujiwaraNoMiiPosts.authorId).toList();
 });
 
 /// 投稿統計情報

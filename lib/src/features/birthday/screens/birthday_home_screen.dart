@@ -10,7 +10,7 @@ import 'birthday_settings_screen.dart';
 
 /// 誕生日システムのホーム画面
 class BirthdayHomeScreen extends ConsumerStatefulWidget {
-  const BirthdayHomeScreen({Key? key}) : super(key: key);
+  const BirthdayHomeScreen({super.key});
 
   @override
   ConsumerState<BirthdayHomeScreen> createState() => _BirthdayHomeScreenState();

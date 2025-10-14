@@ -8,10 +8,10 @@ class BirthdaySettingCard extends ConsumerWidget {
   final Function(BirthdayNotificationSetting) onSettingChanged;
 
   const BirthdaySettingCard({
-    Key? key,
+    super.key,
     required this.setting,
     required this.onSettingChanged,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -65,7 +65,7 @@ class BirthdaySettingCard extends ConsumerWidget {
                   updatedAt: DateTime.now(),
                 ));
               },
-              activeColor: const Color(0xFF4ECDC4),
+              activeThumbColor: const Color(0xFF4ECDC4),
             ),
           ),
           

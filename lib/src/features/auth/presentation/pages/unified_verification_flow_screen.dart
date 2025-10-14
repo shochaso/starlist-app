@@ -142,9 +142,9 @@ class _UnifiedVerificationFlowScreenState extends ConsumerState<UnifiedVerificat
                   size: 24,
                 ),
                 const SizedBox(width: 12),
-                Text(
+                const Text(
                   '現在のステップ',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
@@ -170,18 +170,18 @@ class _UnifiedVerificationFlowScreenState extends ConsumerState<UnifiedVerificat
   /// 次のステップカード
   Widget _buildNextStepCard() {
     if (_nextStatus == null) {
-      return Card(
+      return const Card(
         elevation: 4,
         child: Padding(
-          padding: const EdgeInsets.all(20),
+          padding: EdgeInsets.all(20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 children: [
                   Icon(Icons.check_circle, color: Colors.green, size: 24),
-                  const SizedBox(width: 12),
-                  const Text(
+                  SizedBox(width: 12),
+                  Text(
                     '認証完了',
                     style: TextStyle(
                       fontSize: 16,
@@ -190,13 +190,13 @@ class _UnifiedVerificationFlowScreenState extends ConsumerState<UnifiedVerificat
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
-              const Text(
+              SizedBox(height: 16),
+              Text(
                 '全ての認証ステップが完了しました',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
               ),
-              const SizedBox(height: 8),
-              const Text(
+              SizedBox(height: 8),
+              Text(
                 '運営による最終審査をお待ちください',
                 style: TextStyle(fontSize: 14, color: Colors.grey),
               ),

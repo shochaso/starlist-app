@@ -10,13 +10,13 @@ class SubscriptionPlanCard extends StatelessWidget {
   final bool showRemovedFeatures;
 
   const SubscriptionPlanCard({
-    Key? key,
+    super.key,
     required this.plan,
     this.isSelected = false,
     this.isYearly = false,
     this.onTap,
     this.showRemovedFeatures = false,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
