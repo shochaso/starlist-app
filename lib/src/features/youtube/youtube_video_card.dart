@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../features/data_integration/models/youtube_video.dart';
+import 'package:starlist_app/widgets/media_gate.dart';
 
 /// YouTubeの動画を表示するカードウィジェット
 class YouTubeVideoCard extends StatelessWidget {
@@ -38,14 +39,16 @@ class YouTubeVideoCard extends StatelessWidget {
                 fit: StackFit.expand,
                 children: [
                   // サムネイル
-                  CachedNetworkImage(
-                    imageUrl: video.thumbnailUrl,
-                    fit: BoxFit.cover,
-                    placeholder: (context, url) => const Center(
-                      child: CircularProgressIndicator(),
-                    ),
-                    errorWidget: (context, url, error) => const Center(
-                      child: Icon(Icons.error),
+                  MediaGate(
+                    child: CachedNetworkImage(
+                      imageUrl: video.thumbnailUrl,
+                      fit: BoxFit.cover,
+                      placeholder: (context, url) => const Center(
+                        child: CircularProgressIndicator(),
+                      ),
+                      errorWidget: (context, url, error) => const Center(
+                        child: Icon(Icons.error),
+                      ),
                     ),
                   ),
                   // 動画の長さを表示
@@ -138,7 +141,7 @@ class YouTubeVideoCard extends StatelessWidget {
     String twoDigits(int n) => n.toString().padLeft(2, '0');
     String twoDigitMinutes = twoDigits(duration.inMinutes.remainder(60));
     String twoDigitSeconds = twoDigits(duration.inSeconds.remainder(60));
-    
+
     if (duration.inHours > 0) {
       return '${duration.inHours}:$twoDigitMinutes:$twoDigitSeconds';
     } else {
@@ -161,7 +164,7 @@ class YouTubeVideoCard extends StatelessWidget {
   String _formatPublishedDate(DateTime publishedAt) {
     final now = DateTime.now();
     final difference = now.difference(publishedAt);
-    
+
     if (difference.inDays > 365) {
       return '${(difference.inDays / 365).floor()}年前';
     } else if (difference.inDays > 30) {

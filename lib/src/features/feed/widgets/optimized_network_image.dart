@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
+import 'package:starlist_app/widgets/media_gate.dart';
+
 /// 最適化された画像ウィジェット
 class OptimizedNetworkImage extends StatelessWidget {
   /// 画像URL
@@ -34,7 +36,10 @@ class OptimizedNetworkImage extends StatelessWidget {
   
   @override
   Widget build(BuildContext context) {
-    return CachedNetworkImage(
+    return MediaGate(
+      minHeight: height,
+      minWidth: width,
+      child: CachedNetworkImage(
       imageUrl: imageUrl,
       fit: fit,
       width: width,
@@ -51,6 +56,7 @@ class OptimizedNetworkImage extends StatelessWidget {
       memCacheHeight: _calculateMemCacheHeight(height),
       maxWidthDiskCache: 800, // ディスクキャッシュの最大幅
       maxHeightDiskCache: 800, // ディスクキャッシュの最大高さ
+    ),
     );
   }
   

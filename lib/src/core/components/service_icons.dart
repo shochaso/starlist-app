@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:simple_icons/simple_icons.dart';
+import 'package:starlist_app/services/service_icon_registry.dart';
+import 'package:starlist_app/widgets/service_icon.dart';
 import '../constants/service_definitions.dart';
 import 'package:flutter/services.dart' show rootBundle;
 
@@ -34,6 +36,32 @@ class ServiceIcons {
     final preferRemote = <String, bool>{};
     final id = _normalizeServiceId(serviceId);
 
+    final registryPath = ServiceIconRegistry.pathFor(id);
+    if (registryPath != null) {
+      if (registryPath.isEmpty) {
+        return const SizedBox.shrink();
+      }
+      if (registryPath.startsWith('http')) {
+        return _wrapSquare(
+          Image.network(
+            registryPath,
+            width: size,
+            height: size,
+            fit: BoxFit.contain,
+          ),
+          size,
+        );
+      }
+      return ServiceIcon(registryPath, size: size);
+    }
+
+    if (id == 'abema') {
+      return _wrapSquare(
+        _buildAbemaMark(size: size, isDark: isDark),
+        size,
+      );
+    }
+
     // ユーザー要望: SimpleIcons を優先採用（安定表示 & ブランド一貫性）
     const preferSimpleIcon = <String>{
       'youtube',
@@ -44,97 +72,32 @@ class ServiceIcons {
       'apple_music'
     };
     if (preferSimpleIcon.contains(id)) {
-      return _buildSimpleIcon(id: id, size: size, isDark: isDark);
+      return _wrapSquare(
+        _buildSimpleIcon(id: id, size: size, isDark: isDark),
+        size,
+      );
     }
 
-    // 公式SVGアイコンファイルパスのマッピング（実際の公式アイコンを使用）
-    final iconPaths = {
-      // 動画サービス（公式アイコン）
-      'netflix': 'assets/icons/services/netflix.svg',
-      'spotify': 'assets/icons/services/spotify.svg',
-      'apple_music': 'assets/icons/services/apple_music.svg',
-      'youtube': 'assets/icons/services/youtube.svg',
-      'youtube_music': 'assets/icons/services/youtube_music.svg',
-      'disney_plus': 'assets/icons/services/disney_plus.svg',
-      'prime_video': 'assets/icons/services/prime_video.svg',
-      'hulu': 'assets/icons/services/hulu.svg',
-      'unext': 'assets/icons/services/unext.svg',
-      'abema': 'assets/icons/services/abema.svg',
-      'dtv': 'assets/icons/services/dtv.svg',
-      'fod': 'assets/icons/services/fod.svg',
-      'niconico': 'assets/icons/services/niconico.svg',
-
-      // 配信サービス（公式アイコン）
-      'twitch': 'assets/icons/services/twitch.svg',
-      'twitcasting': 'assets/icons/services/twitcasting.svg',
-      'furatch': 'assets/icons/services/furatch.svg',
-      'showroom': 'assets/icons/services/showroom.svg',
-      '17live': 'assets/icons/services/17live.svg',
-      'line_live': 'assets/icons/services/line_live.svg',
-      'mildom': 'assets/icons/services/mildom.svg',
-      'pococha': 'assets/icons/services/pococha.svg',
-      'palmu': 'assets/icons/services/palmu.svg',
-      'bigolive': 'assets/icons/services/bigolive.svg',
-      'openrec': 'assets/icons/services/openrec.svg',
-      'mirrativ': 'assets/icons/services/mirrativ.svg',
-      'reality': 'assets/icons/services/reality.svg',
-      'iriam': 'assets/icons/services/iriam.svg',
-      'spoon': 'assets/icons/services/spoon.svg',
-      'tangome': 'assets/icons/services/tangome.svg',
-
-      // SNS（公式アイコン）
-      'instagram': 'assets/icons/services/instagram.svg',
-      'tiktok': 'assets/icons/services/tiktok.svg',
-      'x': 'assets/icons/services/x_twitter.svg',
-      'facebook': 'assets/icons/services/facebook.svg',
-      'bereal': 'assets/icons/services/bereal.svg',
-      'threads': 'assets/icons/services/threads.svg',
-      'snapchat': 'assets/icons/services/snapchat.svg',
-      'linkedin': 'assets/icons/services/linkedin.svg',
-      'linktree': 'assets/icons/services/linktree.svg',
-
-      // ショッピング（公式アイコン）
-      'amazon': 'assets/icons/services/amazon.svg',
-      'rakuten': 'assets/icons/services/rakuten.svg',
-      'zozotown': 'assets/icons/services/zozotown.svg',
-      'qoo10': 'assets/icons/services/qoo10.svg',
-      'yahoo_shopping': 'assets/icons/services/yahoo_shopping.svg',
-      'mercari': 'assets/icons/services/mercari.svg',
-      'valuecommerce': 'assets/icons/services/valuecommerce.svg',
-      'other_ec': 'assets/icons/services/other.svg',
-      'amazon_music': 'assets/icons/services/amazon_music.svg',
-
-      // エンタメ・その他（公式アイコン）
-      'games': 'assets/icons/services/games.svg',
-      'game_apps': 'assets/icons/services/game_apps.svg',
-      'books_manga': 'assets/icons/services/books_manga.svg',
-      'books': 'assets/icons/services/books.svg',
-      'cinema': 'assets/icons/services/cinema.svg',
-      'food': 'assets/icons/services/food.svg',
-      'restaurant': 'assets/icons/services/restaurant.svg',
-      'delivery': 'assets/icons/services/delivery.svg',
-      'cooking': 'assets/icons/services/cooking.svg',
-      'credit_card': 'assets/icons/services/credit_card.svg',
-      'electronic_money': 'assets/icons/services/electronic_money.svg',
-      'live_concert': 'assets/icons/services/live_concert.svg',
-      'receipt': 'assets/icons/services/receipt.svg',
-      'smartphone_apps': 'assets/icons/services/smartphone_apps.svg',
-      'web_services': 'assets/icons/services/web_services.svg',
-      'other': 'assets/icons/services/other.svg',
-    };
+    final iconPaths = <String, String>{};
     final iconPath = iconPaths[id];
     if (preferRemote[id] == true) {
       // 公式CDNのベクターロゴを強制使用
-      return _buildRemoteLogo(serviceId: id, size: size, isDark: isDark);
+      return _wrapSquare(
+        _buildRemoteLogo(serviceId: id, size: size, isDark: isDark),
+        size,
+      );
     }
 
     // 1) アセットが存在する場合はそれを使用
     if (iconPath != null) {
-      return _buildSvgWithFallback(
-          iconPath: iconPath, serviceId: id, size: size, isDark: isDark);
+      return _wrapSquare(
+        _buildSvgWithFallback(
+            iconPath: iconPath, serviceId: id, size: size, isDark: isDark),
+        size,
+      );
     }
     // 2) ローカルassets/iconsフォルダから動的に解決
-    return FutureBuilder<String?>(
+    final widget = FutureBuilder<String?>(
       future: _resolveLocalIconPath(id),
       builder: (context, snapshot) {
         final path = snapshot.data;
@@ -162,6 +125,8 @@ class ServiceIcons {
         );
       },
     );
+
+    return _wrapSquare(widget, size);
   }
 
   static Widget _buildSimpleIcon({
@@ -286,6 +251,45 @@ class ServiceIcons {
         height: size,
         fit: BoxFit.contain,
         errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+      ),
+    );
+  }
+
+  static Widget _wrapSquare(Widget child, double size) {
+    return SizedBox(
+      width: size,
+      height: size,
+      child: Center(child: child),
+    );
+  }
+
+  static Widget _buildAbemaMark({required double size, required bool isDark}) {
+    final fontSize = size * 0.38;
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: isDark ? Colors.black : Colors.black,
+        borderRadius: BorderRadius.circular(size * 0.18),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.pets,
+            size: size * 0.45,
+            color: Colors.white,
+          ),
+          Text(
+            'ABEMA',
+            style: TextStyle(
+              fontWeight: FontWeight.w700,
+              fontSize: fontSize,
+              letterSpacing: -0.5,
+              color: Colors.white,
+            ),
+          ),
+        ],
       ),
     );
   }

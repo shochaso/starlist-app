@@ -1,0 +1,21 @@
+[
+  {"id": "abema", "type": "icon", "variant": "brand", "source": "custom", "key": "abema_mark"},
+  {"id": "hulu", "type": "icon", "variant": "brand", "source": "simple_icon", "key": "hulu"},
+  {"id": "netflix", "type": "icon", "variant": "brand", "source": "simple_icon", "key": "netflix"},
+  {"id": "amazon", "type": "icon", "variant": "brand", "source": "simple_icon", "key": "amazon"},
+  {"id": "amazon_prime_video", "type": "icon", "variant": "brand", "source": "simple_icon", "key": "primevideo"},
+  {"id": "spotify", "type": "icon", "variant": "brand", "source": "simple_icon", "key": "spotify"},
+  {"id": "youtube", "type": "icon", "variant": "brand", "source": "simple_icon", "key": "youtube"},
+  {"id": "shein", "type": "icon", "variant": "brand", "source": "simple_icon", "key": "shein"},
+  {"id": "uniqlo", "type": "icon", "variant": "brand", "source": "simple_icon", "key": "uniqlo"},
+  {"id": "gu", "type": "icon", "variant": "brand", "source": "simple_icon", "key": "gu"},
+  {"id": "seven_eleven", "type": "icon", "variant": "brand", "source": "monogram", "label": "7i"},
+  {"id": "family_mart", "type": "icon", "variant": "brand", "source": "monogram", "label": "FM"},
+  {"id": "u_next", "type": "icon", "variant": "brand", "source": "monogram", "label": "U"},
+  {"id": "demaecan", "type": "icon", "variant": "brand", "source": "monogram", "label": "出前"},
+  {"id": "uber_eats", "type": "icon", "variant": "brand", "source": "simple_icon", "key": "ubereats"},
+  {"id": "app_store", "type": "icon", "variant": "brand", "source": "simple_icon", "key": "appstore"},
+  {"id": "google_play", "type": "icon", "variant": "brand", "source": "simple_icon", "key": "googleplay"},
+  {"id": "rakuten_ichiba", "type": "icon", "variant": "brand", "source": "monogram", "label": "楽天"},
+  {"id": "amazon_music", "type": "icon", "variant": "brand", "source": "simple_icon", "key": "amazonmusic"}
+]

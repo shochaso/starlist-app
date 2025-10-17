@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../features/star_data/models.dart';
 import '../features/star_data/star_data_repository.dart';
+import '../src/core/config/feature_flags.dart';
 
 class StarDataViewPage extends ConsumerStatefulWidget {
   const StarDataViewPage({super.key});
@@ -67,8 +68,8 @@ class _StarDataViewPageState extends ConsumerState<StarDataViewPage>
         child: dashboardAsync.when(
           data: (dashboard) => DefaultTabController(
             length: 5,
-            child: Column(
-              children: [
+              child: Column(
+                children: [
                 const SizedBox(height: 12),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -102,22 +103,22 @@ class _StarDataViewPageState extends ConsumerState<StarDataViewPage>
                         Tab(text: 'ランキング'),
                         Tab(text: '統計'),
                         Tab(text: '受賞'),
-                      ],
-                    ),
-                  ),
-                ),
+                ],
+              ),
+            ),
+          ),
                 Expanded(
                   child: TabBarView(
                     controller: _tabController,
-                    children: [
+                      children: [
                       _OverviewSection(data: dashboard),
                       _PostsSection(posts: dashboard.posts),
                       _RankingSection(items: dashboard.ranking),
                       _StatsSection(stats: dashboard.stats),
                       _AwardSection(awards: dashboard.awards),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
               ],
             ),
           ),
@@ -162,18 +163,19 @@ class _HeroSummaryCard extends StatelessWidget {
             children: [
               CircleAvatar(
                 radius: 32,
-                backgroundImage: summary.avatarUrl.isNotEmpty
+                backgroundImage: (!FeatureFlags.hideSampleMedia &&
+                        summary.avatarUrl.isNotEmpty)
                     ? NetworkImage(summary.avatarUrl)
                     : null,
-                child: summary.avatarUrl.isEmpty
+                child: (FeatureFlags.hideSampleMedia || summary.avatarUrl.isEmpty)
                     ? const Icon(Icons.person, size: 32, color: Colors.white70)
                     : null,
               ),
               const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
                     Text(
                       summary.name,
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
@@ -290,9 +292,9 @@ class _OverviewSection extends StatelessWidget {
               _SocialChip(provider: 'X', status: '再認証'),
               _SocialChip(provider: 'Instagram', status: '連携中'),
             ],
-          ),
-        ),
-      ],
+                      ),
+                    ),
+                ],
     );
   }
 }

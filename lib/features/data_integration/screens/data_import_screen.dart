@@ -2,14 +2,15 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:starlist_app/consts/debug_flags.dart';
+import 'package:starlist_app/features/data_integration/widgets/blank_avatar.dart';
 import 'package:starlist_app/features/data_integration/widgets/icon_probe_banner.dart';
 import 'package:starlist_app/utils/key_normalizer.dart';
 import 'package:starlist_app/widgets/icon_diag_hud.dart';
+import '../../../config/ui_flags.dart';
 import '../../../src/core/components/service_icons.dart';
-import '../../../services/service_icon_registry.dart';
+import '../../../src/core/config/feature_flags.dart';
 import '../../../src/core/constants/service_definitions.dart';
 import '../../../src/providers/theme_provider_enhanced.dart';
 import '../../../providers/user_provider.dart';
@@ -48,7 +49,6 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
   bool isProcessing = false;
   bool showProcessingResults = false;
   List<Map<String, dynamic>> processedVideos = [];
-
 
   // 接続済みサービスのデータ
   final Map<String, Map<String, dynamic>> _connectedServices = {
@@ -376,6 +376,18 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
   // ユーザーが手入力で追加したサービスを保持
   final Map<String, List<Map<String, dynamic>>> _customServices = {};
 
+  final Map<String, String> _categoryDescriptions = const {
+    '動画配信': '動画サブスクリプションの視聴履歴や購入履歴を集約します。',
+    'ショッピング': 'オンラインストアやECサイトの購入履歴を連携して家計に反映します。',
+    'フードデリバリ': 'デリバリーサービスの注文記録をまとめ、支出傾向を可視化します。',
+    'コンビニ': '日々のコンビニ支出を取り込み、日常の消費を分析できます。',
+    '音楽': '音楽サブスクの再生履歴やランキング情報を取り込みます。',
+    'ゲーム（プレイのみ）': 'ゲームプラットフォームのプレイ実績を収集し、活動を可視化します。',
+    'スマホアプリ': 'モバイルアプリの購入履歴やサブスク状況をトラッキングします。',
+    'ファッション': 'ファッション通販サイトの購入・お気に入り情報をインポートします。',
+    '本': '書籍・漫画の購入／閲覧履歴を記録し、読書ログを補強します。',
+  };
+
   // レガシーデータカテゴリ（互換性のため残しておく）
   final List<Map<String, dynamic>> dataCategories = [
     {
@@ -509,9 +521,10 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
     final themeState = ref.watch(themeProviderEnhanced);
     final isDark = themeState.isDarkMode;
 
+    Widget content;
     if (widget.showAppBar) {
       // Standalone mode with AppBar (when navigated to directly)
-      return Scaffold(
+      content = Scaffold(
         key: _scaffoldKey,
         backgroundColor:
             isDark ? const Color(0xFF0A0A0B) : const Color(0xFFFBFBFD),
@@ -519,13 +532,28 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
           backgroundColor:
               isDark ? const Color(0xFF0A0A0B) : const Color(0xFFFBFBFD),
           elevation: 0,
-          leading: IconButton(
-            icon: Icon(
-              Icons.menu,
-              color: isDark ? Colors.white : Colors.black87,
-            ),
-            onPressed: () => _scaffoldKey.currentState?.openDrawer(),
-          ),
+          leading: kHideImportImages
+              ? TextButton(
+                  onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    foregroundColor: isDark ? Colors.white : Colors.black87,
+                  ),
+                  child: Text(
+                    'メニュー',
+                    style: TextStyle(
+                      color: isDark ? Colors.white : Colors.black87,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                )
+              : IconButton(
+                  icon: Icon(
+                    Icons.menu,
+                    color: isDark ? Colors.white : Colors.black87,
+                  ),
+                  onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+                ),
           title: const SizedBox.shrink(),
         ),
         drawer: _buildDrawer(),
@@ -539,7 +567,7 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
       );
     } else {
       // Tab mode without AppBar (when used in StarlistMainScreen)
-      return Container(
+      content = Container(
         color: isDark ? const Color(0xFF0A0A0B) : const Color(0xFFFBFBFD),
         child: SafeArea(
           child: selectedCategory == null
@@ -550,6 +578,24 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
         ),
       );
     }
+
+    if (!kHideImportImages) {
+      return content;
+    }
+
+    final theme = Theme.of(context);
+    final iconlessTheme = theme.copyWith(
+      iconTheme: const IconThemeData(size: 0, opacity: 0.0),
+      primaryIconTheme: const IconThemeData(size: 0, opacity: 0.0),
+    );
+
+    return Theme(
+      data: iconlessTheme,
+      child: IconTheme(
+        data: const IconThemeData(size: 0, opacity: 0.0),
+        child: content,
+      ),
+    );
   }
 
   Widget _buildMainDashboard() {
@@ -566,28 +612,9 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
                 color: Colors.black.withOpacity(0.05),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text('PROBE', style: TextStyle(fontSize: 12)),
-                  const SizedBox(width: 12),
-                  Image.asset(
-                    'assets/service_icons/seven_eleven.png',
-                    width: 28,
-                    height: 28,
-                  ),
-                  const SizedBox(width: 12),
-                  ServiceIconRegistry.iconFor('seven_eleven', size: 28),
-                  const SizedBox(width: 12),
-                  ServiceIconRegistry.iconFor(
-                    normalizeKey('key-seven_eleven'),
-                    size: 28,
-                  ),
-                  const SizedBox(width: 12),
-                  _UnextSvgProbe(),
-                  const SizedBox(width: 12),
-                  ServiceIconRegistry.iconFor('unext', size: 28),
-                ],
+              child: const Text(
+                'PROBE: import icon rendering disabled (images hidden)',
+                style: TextStyle(fontSize: 12),
               ),
             ),
           if (kIconProbe) const IconProbeBanner(),
@@ -873,58 +900,103 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
           ),
         ),
         const SizedBox(height: 20),
-
-        // 各ジャンルを縦に並べて表示
-        ..._baseServiceCategories.entries.map((entry) {
-          final categoryName = entry.key;
-          final services = _getDisplayServicesForCategory(categoryName);
-
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(left: 4),
-                  child: Text(
-                    categoryName,
-                    style: TextStyle(
-                      color: isDark ? Colors.white : Colors.black87,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 12),
-
-                // 横スクロールサービスリスト
-                SizedBox(
-                  height: 100,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: services.length,
-                    itemBuilder: (context, index) {
-                      final service = services[index];
-                      return Padding(
-                        padding: EdgeInsets.only(
-                          left: index == 0 ? 4 : 8,
-                          right: index == services.length - 1 ? 4 : 0,
-                        ),
-                        child: _buildCategoryServiceCard(
-                          categoryName,
-                          service,
-                          isDark,
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ],
-            ),
-          );
-        }),
+        for (final entry in _baseServiceCategories.entries)
+          _buildCategorySectionBlock(context, entry.key, isDark),
       ],
     );
+  }
+
+  Widget _buildCategorySectionBlock(
+    BuildContext context,
+    String categoryName,
+    bool isDark,
+  ) {
+    final services = _getDisplayServicesForCategory(categoryName);
+    if (services.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    final description = _categoryDescriptions[categoryName] ?? '';
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 28),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                categoryName,
+                style: TextStyle(
+                  color: isDark ? Colors.white : Colors.black87,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              Text(
+                '${services.length} 件',
+                style: TextStyle(
+                  color: isDark ? Colors.white70 : Colors.grey[600],
+                  fontSize: 13,
+                ),
+              ),
+            ],
+          ),
+          if (description.isNotEmpty) ...[
+            const SizedBox(height: 6),
+            Text(
+              description,
+              style: TextStyle(
+                color: isDark ? Colors.white60 : Colors.grey[600],
+                fontSize: 13,
+              ),
+            ),
+          ],
+          const SizedBox(height: 16),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final width = constraints.maxWidth;
+              final crossAxisCount = _resolveCrossAxisCount(width);
+              final cardHeight = _resolveCategoryCardHeight(width);
+              return GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: crossAxisCount,
+                  crossAxisSpacing: 16,
+                  mainAxisSpacing: 16,
+                  mainAxisExtent: cardHeight,
+                ),
+                itemCount: services.length,
+                itemBuilder: (context, index) {
+                  final service = services[index];
+                  return _buildCategoryServiceCard(
+                    categoryName,
+                    service,
+                    isDark,
+                  );
+                },
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  int _resolveCrossAxisCount(double width) {
+    if (width >= 1280) return 5;
+    if (width >= 1024) return 4;
+    if (width >= 768) return 3;
+    return 2;
+  }
+
+  double _resolveCategoryCardHeight(double width) {
+    if (width >= 1280) return 196;
+    if (width >= 1024) return 188;
+    if (width >= 768) return 184;
+    return 180;
   }
 
   // API連携・アフィリエイトセクション
@@ -1005,12 +1077,8 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // 実際のサービスロゴを使用
-              ServiceIcons.buildIcon(
-                serviceId: service['id'],
-                size: 43,
-                isDark: isDark,
-              ),
+              // 画像の代わりに空のプレースホルダーを表示
+              buildBlankAvatar(size: 43),
               const SizedBox(height: 8),
               Text(
                 service['title'],
@@ -1060,7 +1128,16 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
       }
     }
 
-    return base;
+    return base
+        .where((service) => !_shouldHideService(service))
+        .toList(growable: false);
+  }
+
+  bool _shouldHideService(Map<String, dynamic> service) {
+    if (FeatureFlags.hideSampleCards && service['isSample'] == true) {
+      return true;
+    }
+    return false;
   }
 
   // ジャンル別サービス用カード（実際のロゴ使用）
@@ -1091,15 +1168,14 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
     final double iconSize = (service['iconSize'] as double?) ?? 31;
 
     Widget buildIcon() {
+      if (kHideImportImages) {
+        return buildBlankAvatar(size: iconSize);
+      }
       if (iconData != null) {
         return Icon(iconData, size: iconSize, color: iconColor);
       }
-      return ServiceIconRegistry.iconFor(resolvedServiceId, size: iconSize);
+      return buildBlankAvatar(size: iconSize);
     }
-
-    final resolvedPath = ServiceIconRegistry.pathFor(resolvedServiceId);
-    final resolvedLabel =
-        resolvedPath != null ? resolvedPath.split('/').last : 'MISS';
 
     void handleTap() {
       if (isManualEntry) {
@@ -1181,10 +1257,9 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
     return GestureDetector(
       onTap: handleTap,
       child: Container(
-        width: 170,
         decoration: BoxDecoration(
           gradient: gradient,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(18),
           border: border,
           boxShadow: [
             BoxShadow(
@@ -1200,16 +1275,23 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
         child: Stack(
           children: [
             Padding(
-              padding: const EdgeInsets.all(10),
+              padding: const EdgeInsets.all(14),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.center,
-                mainAxisSize: MainAxisSize.min,
                 children: [
                   Opacity(
                     opacity: showComingSoonBadge ? 0.5 : 1.0,
-                    child: buildIcon(),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: _squareIcon(
+                        size: 56,
+                        probeLabel: resolvedServiceId,
+                        child: buildIcon(),
+                      ),
+                    ),
                   ),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 12),
                   Text(
                     title,
                     style: TextStyle(
@@ -1218,15 +1300,14 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
                           : showComingSoonBadge
                               ? (isDark ? Colors.grey[500] : Colors.grey[600])
                               : (isDark ? Colors.white : Colors.black87),
-                      fontSize: 12,
+                      fontSize: 13,
                       fontWeight: FontWeight.w600,
                     ),
-                    textAlign: TextAlign.center,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                   if (subtitle.isNotEmpty) ...[
-                    const SizedBox(height: 2),
+                    const SizedBox(height: 6),
                     Text(
                       subtitle,
                       style: TextStyle(
@@ -1235,38 +1316,43 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
                                 ? Colors.white70
                                 : const Color(0xFF0F172A).withOpacity(0.7))
                             : (isDark ? Colors.grey[400] : Colors.grey[600]),
-                        fontSize: 9,
+                        fontSize: 11,
                       ),
-                      textAlign: TextAlign.center,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
                   ],
-                  const SizedBox(height: 4),
-                  Text(
-                    'key=$effectiveServiceId → $resolvedServiceId  path=$resolvedLabel',
-                    style: const TextStyle(fontSize: 10),
-                    textAlign: TextAlign.center,
-                  ),
+                  if (kDebugMode) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      'key=$effectiveServiceId → $resolvedServiceId (icon hidden)',
+                      style: TextStyle(
+                        fontSize: 10,
+                        color: isDark ? Colors.white38 : Colors.grey[500],
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
                 ],
               ),
             ),
             if (showComingSoonBadge)
               Positioned(
-                top: 8,
-                right: 8,
+                top: 10,
+                right: 12,
                 child: Container(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                   decoration: BoxDecoration(
                     color: const Color(0xFFFFC107),
-                    borderRadius: BorderRadius.circular(6),
+                    borderRadius: BorderRadius.circular(8),
                   ),
                   child: const Text(
                     '開発中',
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 8,
+                      fontSize: 9,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -1677,12 +1763,8 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
         ),
         child: Row(
           children: [
-            // 実際のサービスロゴを使用
-            ServiceIcons.buildIcon(
-              serviceId: service['id'],
-              size: 48,
-              isDark: isDark,
-            ),
+            // 画像の代わりに空のプレースホルダーを表示
+            buildBlankAvatar(size: 48),
             const SizedBox(width: 16),
             Expanded(
               child: Column(
@@ -1777,11 +1859,7 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
                     ),
                   ],
                 ),
-                child: ServiceIcons.buildIcon(
-                  serviceId: service['id']!,
-                  size: 24,
-                  isDark: false,
-                ),
+                child: buildBlankAvatar(size: 24),
               ),
               const SizedBox(height: 8),
               Text(
@@ -1967,11 +2045,7 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                ServiceIcons.buildIcon(
-                  serviceId: serviceId,
-                  size: 24,
-                  isDark: true,
-                ),
+                buildBlankAvatar(size: 24),
                 const SizedBox(height: 8),
                 Text(
                   ServiceIcons.getService(serviceId)?.name ?? '',
@@ -2905,11 +2979,7 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
                     ],
                   ),
                   child: ServiceIcons.getService(category['id']) != null
-                      ? ServiceIcons.buildIcon(
-                          serviceId: category['id'],
-                          size: 28,
-                          isDark: false,
-                        )
+                      ? buildBlankAvatar(size: 28)
                       : Icon(
                           category['icon'],
                           color: Colors.white,
@@ -3278,14 +3348,25 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
                       ],
                     ),
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.close,
-                        color: Colors.white70, size: 20),
-                    onPressed: () => Navigator.of(context).pop(),
-                    constraints:
-                        const BoxConstraints(minWidth: 32, minHeight: 32),
-                    padding: EdgeInsets.zero,
-                  ),
+                  kHideImportImages
+                      ? TextButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          style: TextButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                          ),
+                          child: const Text(
+                            '閉じる',
+                            style: TextStyle(color: Colors.white70),
+                          ),
+                        )
+                      : IconButton(
+                          icon: const Icon(Icons.close,
+                              color: Colors.white70, size: 20),
+                          onPressed: () => Navigator.of(context).pop(),
+                          constraints:
+                              const BoxConstraints(minWidth: 32, minHeight: 32),
+                          padding: EdgeInsets.zero,
+                        ),
                 ],
               ),
             ),
@@ -3377,22 +3458,24 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
       ),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-        leading: Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: isActive
-                ? const Color(0xFF4ECDC4)
-                : (isDark ? Colors.white10 : Colors.grey.shade100),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Icon(
-            icon,
-            color: isActive
-                ? Colors.white
-                : (isDark ? Colors.white54 : Colors.grey.shade600),
-            size: 18,
-          ),
-        ),
+        leading: kHideImportImages
+            ? buildBlankAvatar(size: 24)
+            : Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: isActive
+                      ? const Color(0xFF4ECDC4)
+                      : (isDark ? Colors.white10 : Colors.grey.shade100),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(
+                  icon,
+                  color: isActive
+                      ? Colors.white
+                      : (isDark ? Colors.white54 : Colors.grey.shade600),
+                  size: 18,
+                ),
+              ),
         title: Text(
           title,
           style: TextStyle(
@@ -3403,13 +3486,13 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
             fontSize: 15,
           ),
         ),
-        trailing: isActive
-            ? const Icon(
+        trailing: kHideImportImages || !isActive
+            ? null
+            : const Icon(
                 Icons.arrow_forward_ios,
                 color: Color(0xFF4ECDC4),
                 size: 14,
-              )
-            : null,
+              ),
         onTap: onTap,
       ),
     );
@@ -3430,44 +3513,27 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
       debugPrint(stack.toString());
     }
   }
-}
 
-class _UnextSvgProbe extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 80,
-      height: 60,
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        color: Colors.amber.withOpacity(0.16),
-        border: Border.all(color: Colors.amber.withOpacity(0.4), width: 1),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: const [
-          _SvgSample(),
-          SizedBox(height: 4),
-          Text('SvgPicture', style: TextStyle(fontSize: 9)),
-        ],
-      ),
-    );
-  }
-}
-
-class _SvgSample extends StatelessWidget {
-  const _SvgSample();
-
-  @override
-  Widget build(BuildContext context) {
-    return SvgPicture.asset(
-      'assets/service_icons/unext.svg',
-      width: 40,
-      height: 24,
-      allowDrawingOutsideViewBox: true,
-      colorFilter: const ColorFilter.mode(Color(0xFF00AEEF), BlendMode.srcIn),
-      placeholderBuilder: (_) => const Icon(Icons.image_not_supported, size: 18),
+  /// Helper method to create a square icon widget with optional debug probe label
+  Widget _squareIcon({
+    required double size,
+    required Widget child,
+    String? probeLabel,
+  }) {
+    return SizedBox(
+      width: size,
+      height: size,
+      child: probeLabel != null
+          ? LayoutBuilder(
+              builder: (context, constraints) {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  debugPrint(
+                      '[IconProbe][$probeLabel] constraints=${constraints.maxWidth}x${constraints.maxHeight}');
+                });
+                return child;
+              },
+            )
+          : child,
     );
   }
 }

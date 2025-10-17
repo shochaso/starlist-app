@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 
+import 'package:starlist_app/config/ui_flags.dart';
 import 'package:starlist_app/consts/debug_flags.dart';
 import 'package:starlist_app/services/service_icon_registry.dart';
+import 'package:starlist_app/widgets/service_icon.dart';
 
 class IconProbeBanner extends StatefulWidget {
   const IconProbeBanner({super.key});
@@ -17,7 +19,9 @@ class _IconProbeBannerState extends State<IconProbeBanner> {
   @override
   void initState() {
     super.initState();
-    _runDiag();
+    if (!kHideImportImages) {
+      _runDiag();
+    }
   }
 
   Future<void> _runDiag() async {
@@ -37,6 +41,9 @@ class _IconProbeBannerState extends State<IconProbeBanner> {
 
   @override
   Widget build(BuildContext context) {
+    if (kHideImportImages) {
+      return const SizedBox.shrink();
+    }
     return Container(
       margin: const EdgeInsets.all(12),
       padding: const EdgeInsets.all(12),
@@ -52,7 +59,7 @@ class _IconProbeBannerState extends State<IconProbeBanner> {
           const SizedBox(height: 8),
           Row(
             children: [
-              Image.asset(kIconProbeAsset, width: 28, height: 28),
+              const ServiceIcon(kIconProbeAsset, size: 28),
               const SizedBox(width: 12),
               ServiceIconRegistry.iconFor(kIconProbeKey, size: 28),
               const SizedBox(width: 12),

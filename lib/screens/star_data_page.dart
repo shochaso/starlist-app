@@ -2,6 +2,8 @@ import 'dart:math' as math;
 import 'dart:ui';
 
 import 'package:cached_network_image/cached_network_image.dart';
+
+import '../widgets/media_gate.dart';
 import 'package:flutter/material.dart';
 
 import '../utils/visibility_rules.dart';
@@ -41,18 +43,18 @@ class _StarDataPageState extends State<StarDataPage> {
   bool _matchesQuery(Post p) {
     if (query.trim().isEmpty) return true;
     final q = query.toLowerCase();
-    final inPost =
-        p.postTitle.toLowerCase().contains(q) || p.category.toLowerCase().contains(q);
-    final inItems = p.items.any((it) =>
-        [it.title, it.channel, it.artist]
-            .whereType<String>()
-            .any((t) => t.toLowerCase().contains(q)));
+    final inPost = p.postTitle.toLowerCase().contains(q) ||
+        p.category.toLowerCase().contains(q);
+    final inItems = p.items.any((it) => [it.title, it.channel, it.artist]
+        .whereType<String>()
+        .any((t) => t.toLowerCase().contains(q)));
     return inPost || inItems;
   }
 
   @override
   Widget build(BuildContext context) {
-    final pre = data.where((p) => _matchesQuery(p) && _dateKeep(p.date)).toList();
+    final pre =
+        data.where((p) => _matchesQuery(p) && _dateKeep(p.date)).toList();
 
     final counts = <String, int>{};
     for (final p in pre) {
@@ -63,7 +65,8 @@ class _StarDataPageState extends State<StarDataPage> {
         ? pre
         : pre.where((p) {
             if (matchAllCats) {
-              return selectedCats.length == 1 && selectedCats.contains(p.category);
+              return selectedCats.length == 1 &&
+                  selectedCats.contains(p.category);
             }
             return selectedCats.contains(p.category);
           }).toList();
@@ -71,7 +74,8 @@ class _StarDataPageState extends State<StarDataPage> {
     return Scaffold(
       backgroundColor: const Color(0xFFF7F8FA),
       appBar: AppBar(
-        title: const Text('スターリスト', style: TextStyle(fontWeight: FontWeight.w700)),
+        title:
+            const Text('スターリスト', style: TextStyle(fontWeight: FontWeight.w700)),
         elevation: 0.5,
         backgroundColor: Colors.white,
         actions: [
@@ -80,10 +84,15 @@ class _StarDataPageState extends State<StarDataPage> {
             child: ToggleButtons(
               borderRadius: BorderRadius.circular(10),
               isSelected: [viewMode == 'fan', viewMode == 'star'],
-              onPressed: (i) => setState(() => viewMode = i == 0 ? 'fan' : 'star'),
+              onPressed: (i) =>
+                  setState(() => viewMode = i == 0 ? 'fan' : 'star'),
               children: const [
-                Padding(padding: EdgeInsets.symmetric(horizontal: 10), child: Text('ファン視点')),
-                Padding(padding: EdgeInsets.symmetric(horizontal: 10), child: Text('スター視点')),
+                Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 10),
+                    child: Text('ファン視点')),
+                Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 10),
+                    child: Text('スター視点')),
               ],
             ),
           ),
@@ -104,7 +113,8 @@ class _StarDataPageState extends State<StarDataPage> {
                           prefixIcon: const Icon(Icons.search),
                           filled: true,
                           fillColor: Colors.white,
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12)),
                         ),
                         onChanged: (v) => setState(() => query = v),
                       ),
@@ -122,7 +132,8 @@ class _StarDataPageState extends State<StarDataPage> {
                       Padding(
                         padding: const EdgeInsets.only(right: 6),
                         child: ChoiceChip(
-                          label: Text('全て  ${pre.length}', style: const TextStyle(fontSize: 12)),
+                          label: Text('全て  ${pre.length}',
+                              style: const TextStyle(fontSize: 12)),
                           selected: selectedCats.isEmpty,
                           onSelected: (_) => setState(selectedCats.clear),
                         ),
@@ -136,7 +147,9 @@ class _StarDataPageState extends State<StarDataPage> {
                                 style: const TextStyle(fontSize: 12)),
                             selected: sel,
                             onSelected: (_) => setState(() {
-                              sel ? selectedCats.remove(c.id) : selectedCats.add(c.id);
+                              sel
+                                  ? selectedCats.remove(c.id)
+                                  : selectedCats.add(c.id);
                             }),
                           ),
                         );
@@ -148,7 +161,8 @@ class _StarDataPageState extends State<StarDataPage> {
                           Switch(
                             value: matchAllCats,
                             onChanged: (v) => setState(() => matchAllCats = v),
-                            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            materialTapTargetSize:
+                                MaterialTapTargetSize.shrinkWrap,
                           ),
                         ]),
                       ),
@@ -157,7 +171,9 @@ class _StarDataPageState extends State<StarDataPage> {
                   const SizedBox(height: 8),
                   if (viewMode == 'fan')
                     Row(children: [
-                      const Text('プラン:', style: TextStyle(fontSize: 12, color: Colors.black54)),
+                      const Text('プラン:',
+                          style:
+                              TextStyle(fontSize: 12, color: Colors.black54)),
                       const SizedBox(width: 6),
                       Wrap(spacing: 6, children: [
                         _planBtn('無料', 'free'),
@@ -167,7 +183,8 @@ class _StarDataPageState extends State<StarDataPage> {
                       ]),
                       const Spacer(),
                       Text('${filtered.length} 件',
-                          style: const TextStyle(fontSize: 12, color: Colors.black54)),
+                          style: const TextStyle(
+                              fontSize: 12, color: Colors.black54)),
                     ]),
                 ],
               ),
@@ -184,8 +201,9 @@ class _StarDataPageState extends State<StarDataPage> {
                   postVisibility: post.visibility,
                 );
 
-                final bool fullAccess =
-                    viewMode == 'star' || post.category == 'youtube' || canViewPostResult;
+                final bool fullAccess = viewMode == 'star' ||
+                    post.category == 'youtube' ||
+                    canViewPostResult;
                 final plan = _buildVisibilityPlan(
                   post: post,
                   fullAccess: fullAccess,
@@ -196,7 +214,8 @@ class _StarDataPageState extends State<StarDataPage> {
                   padding: const EdgeInsets.fromLTRB(16, 6, 16, 12),
                   child: Card(
                     elevation: 0.5,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14)),
                     child: Column(
                       children: [
                         _PostHeader(post: post),
@@ -207,7 +226,8 @@ class _StarDataPageState extends State<StarDataPage> {
                             return GridView.builder(
                               shrinkWrap: true,
                               physics: const NeverScrollableScrollPhysics(),
-                              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                              gridDelegate:
+                                  SliverGridDelegateWithFixedCrossAxisCount(
                                 crossAxisCount: cross,
                                 crossAxisSpacing: 10,
                                 mainAxisSpacing: 10,
@@ -216,7 +236,8 @@ class _StarDataPageState extends State<StarDataPage> {
                               itemCount: post.items.length,
                               itemBuilder: (context, idx) {
                                 final it = post.items[idx];
-                                final isVisible = plan.visibleIds.contains(it.id);
+                                final isVisible =
+                                    plan.visibleIds.contains(it.id);
                                 return _ItemCard(
                                   item: it,
                                   isVisible: isVisible,
@@ -310,8 +331,9 @@ class _StarDataPageState extends State<StarDataPage> {
     }
 
     final hiddenCount = math.max(0, post.totalItems - visibleIds.length);
-    final bestHidden =
-        post.items.where((it) => it.isBest && !visibleIds.contains(it.id)).length;
+    final bestHidden = post.items
+        .where((it) => it.isBest && !visibleIds.contains(it.id))
+        .length;
 
     return _PostVisibilityPlan(
       fullAccess: false,
@@ -349,17 +371,20 @@ class _PostHeader extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(post.postTitle, style: const TextStyle(fontWeight: FontWeight.bold)),
+                Text(post.postTitle,
+                    style: const TextStyle(fontWeight: FontWeight.bold)),
                 Text('${_fmt(post.date)} ${post.time} • ${post.totalItems}件',
-                    style: const TextStyle(fontSize: 11, color: Colors.black54)),
+                    style:
+                        const TextStyle(fontSize: 11, color: Colors.black54)),
               ],
             ),
           ),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration:
-                BoxDecoration(color: badge.color, borderRadius: BorderRadius.circular(999)),
-            child: Text(badge.text, style: const TextStyle(color: Colors.white, fontSize: 11)),
+            decoration: BoxDecoration(
+                color: badge.color, borderRadius: BorderRadius.circular(999)),
+            child: Text(badge.text,
+                style: const TextStyle(color: Colors.white, fontSize: 11)),
           ),
         ],
       ),
@@ -368,7 +393,8 @@ class _PostHeader extends StatelessWidget {
 }
 
 class _ItemCard extends StatelessWidget {
-  const _ItemCard({required this.item, required this.isVisible, required this.isPeek});
+  const _ItemCard(
+      {required this.item, required this.isVisible, required this.isPeek});
   final Item item;
   final bool isVisible;
   final bool isPeek;
@@ -388,7 +414,10 @@ class _ItemCard extends StatelessWidget {
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: Colors.black12),
-          boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 6, offset: Offset(0, 2))],
+          boxShadow: const [
+            BoxShadow(
+                color: Colors.black12, blurRadius: 6, offset: Offset(0, 2))
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -399,21 +428,27 @@ class _ItemCard extends StatelessWidget {
                 fit: StackFit.expand,
                 children: [
                   ClipRRect(
-                    borderRadius:
-                        const BorderRadius.only(topLeft: Radius.circular(12), topRight: Radius.circular(12)),
-                    child: CachedNetworkImage(
-                      imageUrl: item.thumbnail,
-                      fit: BoxFit.cover,
-                      memCacheHeight: 480,
-                      fadeInDuration: const Duration(milliseconds: 120),
-                      placeholder: (_, __) => Container(color: const Color(0xFFF3F4F6)),
-                      errorWidget: (_, __, ___) => const Icon(Icons.broken_image_outlined),
+                    borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(12),
+                        topRight: Radius.circular(12)),
+                    child: MediaGate(
+                      child: CachedNetworkImage(
+                        imageUrl: item.thumbnail,
+                        fit: BoxFit.cover,
+                        memCacheHeight: 480,
+                        fadeInDuration: const Duration(milliseconds: 120),
+                        placeholder: (_, __) =>
+                            Container(color: const Color(0xFFF3F4F6)),
+                        errorWidget: (_, __, ___) =>
+                            const Icon(Icons.broken_image_outlined),
+                      ),
                     ),
                   ),
                   if (!isVisible) ...[
                     const Positioned.fill(child: _ObscuredLayer()),
                     Center(
-                      child: Icon(Icons.lock_outline, color: Colors.white.withOpacity(.95), size: 28),
+                      child: Icon(Icons.lock_outline,
+                          color: Colors.white.withOpacity(.95), size: 28),
                     ),
                   ],
                   if (item.isBest && isVisible)
@@ -421,9 +456,14 @@ class _ItemCard extends StatelessWidget {
                       right: 6,
                       top: 6,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-                        decoration: BoxDecoration(color: const Color(0xFFFFD54F), borderRadius: BorderRadius.circular(8)),
-                        child: const Text('★ベスト', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 3),
+                        decoration: BoxDecoration(
+                            color: const Color(0xFFFFD54F),
+                            borderRadius: BorderRadius.circular(8)),
+                        child: const Text('★ベスト',
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 11)),
                       ),
                     ),
                   if (isPeek && !item.isBest)
@@ -431,9 +471,14 @@ class _ItemCard extends StatelessWidget {
                       left: 6,
                       top: 6,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-                        decoration: BoxDecoration(color: Colors.black.withOpacity(0.45), borderRadius: BorderRadius.circular(8)),
-                        child: const Text('PREVIEW', style: TextStyle(color: Colors.white, fontSize: 10)),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 3),
+                        decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.45),
+                            borderRadius: BorderRadius.circular(8)),
+                        child: const Text('PREVIEW',
+                            style:
+                                TextStyle(color: Colors.white, fontSize: 10)),
                       ),
                     ),
                 ],
@@ -449,25 +494,31 @@ class _ItemCard extends StatelessWidget {
                     Text(isVisible ? item.title : '非公開アイテム',
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w600)),
+                        style: theme.textTheme.bodySmall
+                            ?.copyWith(fontWeight: FontWeight.w600)),
                     const SizedBox(height: 2),
                     if (isVisible && item.price != null)
                       Text(item.price!,
                           style: const TextStyle(
-                              fontSize: 12, color: Colors.deepPurple, fontWeight: FontWeight.bold)),
+                              fontSize: 12,
+                              color: Colors.deepPurple,
+                              fontWeight: FontWeight.bold)),
                     if (isVisible && item.channel != null)
                       Text(item.channel!,
-                          style: const TextStyle(fontSize: 11, color: Colors.black54),
+                          style: const TextStyle(
+                              fontSize: 11, color: Colors.black54),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis),
                     if (isVisible && item.artist != null)
                       Text(item.artist!,
-                          style: const TextStyle(fontSize: 11, color: Colors.black54),
+                          style: const TextStyle(
+                              fontSize: 11, color: Colors.black54),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis),
                     if (isVisible && item.duration != null)
                       Text(item.duration!,
-                          style: const TextStyle(fontSize: 11, color: Colors.black54)),
+                          style: const TextStyle(
+                              fontSize: 11, color: Colors.black54)),
                   ],
                 ),
               ),
@@ -543,7 +594,10 @@ class _PixelatedPainter extends CustomPainter {
 }
 
 class _TeaserBanner extends StatelessWidget {
-  const _TeaserBanner({required this.hiddenCount, required this.bestHidden, required this.badgeText});
+  const _TeaserBanner(
+      {required this.hiddenCount,
+      required this.bestHidden,
+      required this.badgeText});
   final int hiddenCount;
   final int bestHidden;
   final String badgeText;
@@ -554,27 +608,35 @@ class _TeaserBanner extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 12),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(colors: [Color(0xFFFFF3CD), Color(0xFFFFE8A1)]),
+        gradient: const LinearGradient(
+            colors: [Color(0xFFFFF3CD), Color(0xFFFFE8A1)]),
         border: Border.all(color: const Color(0xFFF4C84D)),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(children: [
         Container(
           padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(color: const Color(0xFFF4C84D), borderRadius: BorderRadius.circular(999)),
+          decoration: BoxDecoration(
+              color: const Color(0xFFF4C84D),
+              borderRadius: BorderRadius.circular(999)),
           child: const Icon(Icons.auto_awesome, color: Color(0xFF7A5200)),
         ),
         const SizedBox(width: 10),
         Expanded(
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text('残り$hiddenCount件が非公開${bestHidden > 0 ? '（うち★ベスト $bestHidden件）' : ''}',
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(
+                '残り$hiddenCount件が非公開${bestHidden > 0 ? '（うち★ベスト $bestHidden件）' : ''}',
                 style: const TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 2),
             Text('$badgeTextにアップグレードで見ることができます',
                 style: const TextStyle(fontSize: 12, color: Colors.black54)),
           ]),
         ),
-        FilledButton.icon(onPressed: () {}, icon: const Icon(Icons.lock), label: const Text('アップグレード')),
+        FilledButton.icon(
+            onPressed: () {},
+            icon: const Icon(Icons.lock),
+            label: const Text('アップグレード')),
       ]),
     );
   }
@@ -590,12 +652,16 @@ class _StarComment extends StatelessWidget {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: const Color(0xFFF5EDFF),
-        border: Border(left: BorderSide(color: Colors.purple.shade400, width: 3)),
+        border:
+            Border(left: BorderSide(color: Colors.purple.shade400, width: 3)),
         borderRadius: BorderRadius.circular(10),
       ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Text('💬 スターのコメント',
-            style: TextStyle(fontSize: 12, color: Colors.purple.shade700, fontWeight: FontWeight.w600)),
+            style: TextStyle(
+                fontSize: 12,
+                color: Colors.purple.shade700,
+                fontWeight: FontWeight.w600)),
         const SizedBox(height: 4),
         Text(text),
       ]),
@@ -604,7 +670,8 @@ class _StarComment extends StatelessWidget {
 }
 
 class _ActionBar extends StatelessWidget {
-  const _ActionBar({required this.likes, required this.comments, this.ctaLabel});
+  const _ActionBar(
+      {required this.likes, required this.comments, this.ctaLabel});
   final int likes;
   final int comments;
   final String? ctaLabel;
@@ -612,7 +679,8 @@ class _ActionBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      decoration: const BoxDecoration(border: Border(top: BorderSide(color: Color(0xFFE9E9E9)))),
+      decoration: const BoxDecoration(
+          border: Border(top: BorderSide(color: Color(0xFFE9E9E9)))),
       child: Row(children: [
         Row(children: [
           const Icon(Icons.favorite_border, size: 18, color: Colors.black54),
@@ -621,13 +689,16 @@ class _ActionBar extends StatelessWidget {
         ]),
         const SizedBox(width: 14),
         Row(children: [
-          const Icon(Icons.mode_comment_outlined, size: 18, color: Colors.black54),
+          const Icon(Icons.mode_comment_outlined,
+              size: 18, color: Colors.black54),
           const SizedBox(width: 4),
           Text('$comments'),
         ]),
         const Spacer(),
         if (ctaLabel != null)
-          FilledButton(onPressed: () {}, child: Text(ctaLabel!, style: const TextStyle(fontSize: 12))),
+          FilledButton(
+              onPressed: () {},
+              child: Text(ctaLabel!, style: const TextStyle(fontSize: 12))),
       ]),
     );
   }
@@ -638,8 +709,12 @@ class _HatchPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final bg = Paint()..color = const Color(0x80FFFFFF);
     canvas.drawRect(Offset.zero & size, bg);
-    final p1 = Paint()..color = const Color(0x66FFFFFF)..strokeWidth = 1.2;
-    final p2 = Paint()..color = const Color(0x33FFFFFF)..strokeWidth = 1.2;
+    final p1 = Paint()
+      ..color = const Color(0x66FFFFFF)
+      ..strokeWidth = 1.2;
+    final p2 = Paint()
+      ..color = const Color(0x33FFFFFF)
+      ..strokeWidth = 1.2;
 
     const step = 8.0;
     for (double x = -size.height; x < size.width; x += step) {
@@ -696,7 +771,13 @@ const _cats = [
   Category('food', '食事'),
 ];
 
-int _gridCrossAxisCount(double w) => w < 360 ? 2 : w < 540 ? 3 : w < 720 ? 4 : 5;
+int _gridCrossAxisCount(double w) => w < 360
+    ? 2
+    : w < 540
+        ? 3
+        : w < 720
+            ? 4
+            : 5;
 
 class _PostVisibilityPlan {
   const _PostVisibilityPlan({
@@ -782,7 +863,8 @@ List<Post> sampleData() => [
             price: '¥598',
             visible: false,
             isBest: true,
-            thumbnail: 'https://www.7andi.com/var/rev0/0000/3115/11948162553.jpg',
+            thumbnail:
+                'https://www.7andi.com/var/rev0/0000/3115/11948162553.jpg',
           ),
           Item(
               id: 3,
@@ -790,7 +872,8 @@ List<Post> sampleData() => [
               price: '¥238',
               visible: false,
               isBest: false,
-              thumbnail: 'https://via.placeholder.com/80x80/ffcc00/ffffff?text=からあげ'),
+              thumbnail:
+                  'https://via.placeholder.com/80x80/ffcc00/ffffff?text=からあげ'),
           Item(
               id: 4,
               title: 'セブンカフェ アイスコーヒー L',
@@ -805,7 +888,8 @@ List<Post> sampleData() => [
               price: '¥128',
               visible: false,
               isBest: false,
-              thumbnail: 'https://www.calbee.co.jp/common/utility/binout.php?db=products&f=5221'),
+              thumbnail:
+                  'https://www.calbee.co.jp/common/utility/binout.php?db=products&f=5221'),
         ],
         visibility: 'premium',
         likes: 432,

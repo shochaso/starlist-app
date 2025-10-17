@@ -12,6 +12,15 @@ const Map<String, String> kServiceAliases = {
   'u_next': 'u_next',
   'u-next': 'u_next',
   'u_next_video': 'u_next',
-}; 
+  'shein_fashion': 'shein',
+  'she_in': 'shein',
+  'sheinjp': 'shein',
+  'shein_jp': 'shein',
+  'シーイン': 'shein',
+  'ubereats': 'uber_eats',
+  'uber_eats': 'uber_eats',
+  'uber_eats_jp': 'uber_eats',
+  'ウーバーイーツ': 'uber_eats',
+};
 
 String resolveAlias(String key) => kServiceAliases[key] ?? key;
