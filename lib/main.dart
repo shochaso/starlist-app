@@ -2,8 +2,10 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'config/environment_config.dart';
 import 'core/navigation/app_router.dart';
 import 'theme/app_theme.dart';
 import 'src/services/notification_service.dart';
@@ -11,6 +13,8 @@ import 'services/service_icon_registry.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  await dotenv.load(fileName: '.env.development');
 
   FlutterError.onError = (FlutterErrorDetails details) {
     FlutterError.dumpErrorToConsole(details);
@@ -22,9 +26,8 @@ Future<void> main() async {
 
   try {
     await Supabase.initialize(
-      url: 'https://zjwvmoxpacbpwawlwbrd.supabase.co',
-      anonKey:
-          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpqd3Ztb3hwYWNicHdhd2x3YnJkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDEzNTQwMzMsImV4cCI6MjA1NjkzMDAzM30.37KDj4QhQmv6crotphR9GnPTM_0zv0PCCnKfXvsZx_g',
+      url: EnvironmentConfig.supabaseUrl,
+      anonKey: EnvironmentConfig.supabaseAnonKey,
     );
   } catch (error, stackTrace) {
     debugPrint('[Supabase] Initialization skipped: $error');
@@ -32,6 +35,7 @@ Future<void> main() async {
   }
 
   await NotificationService().init();
+  await ServiceIconRegistry.init();
 
   runApp(const ProviderScope(child: MyApp()));
 }

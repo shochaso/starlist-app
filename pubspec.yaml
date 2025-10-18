@@ -36,6 +36,8 @@ dependencies:
   shared_preferences: ^2.2.3
   intl: ^0.20.2
   crypto: ^3.0.6
+  http: ^1.2.1
+  flutter_dotenv: ^5.1.0
 
 dev_dependencies:
   flutter_test:
@@ -49,3 +51,4 @@ flutter:
   assets:
     - assets/config/service_icons.json
     - assets/config/image_registry.json
+    - assets/service_icons/
