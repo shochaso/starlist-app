@@ -37,7 +37,7 @@ dependencies:
   intl: ^0.20.2
   crypto: ^3.0.6
   http: ^1.2.1
-  flutter_dotenv: ^5.1.0
+  auth0_flutter: ^1.4.0
 
 dev_dependencies:
   flutter_test:
@@ -45,6 +45,7 @@ dev_dependencies:
   flutter_lints: ^4.0.0
   build_runner: ^2.6.0
   freezed: ^3.0.0-0.0.dev
+  mocktail: ^1.0.0
 
 flutter:
   uses-material-design: true
@@ -52,3 +53,4 @@ flutter:
     - assets/config/service_icons.json
     - assets/config/image_registry.json
     - assets/service_icons/
+    - assets/icons/services/

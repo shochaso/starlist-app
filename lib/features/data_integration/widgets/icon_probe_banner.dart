@@ -31,8 +31,8 @@ class _IconProbeBannerState extends State<IconProbeBanner> {
       final inManifest = manifest.contains(kIconProbeAsset);
       setState(() {
         _status = inManifest
-            ? '✅ assets OK / seven_eleven.png 参照可'
-            : '⚠️ AssetManifestに seven_eleven.png が見当たりません';
+            ? '✅ assets OK / generic.svg 参照可'
+            : '⚠️ AssetManifestに generic.svg が見当たりません';
       });
     } catch (e) {
       setState(() => _status = '❌ assets 読み込み失敗: $e');
@@ -59,7 +59,7 @@ class _IconProbeBannerState extends State<IconProbeBanner> {
           const SizedBox(height: 8),
           Row(
             children: [
-              const ServiceIcon(kIconProbeAsset, size: 28),
+              const ServiceIcon.asset(kIconProbeAsset, size: 28),
               const SizedBox(width: 12),
               ServiceIconRegistry.iconFor(kIconProbeKey, size: 28),
               const SizedBox(width: 12),

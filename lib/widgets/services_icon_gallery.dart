@@ -62,10 +62,10 @@ class _ServicesIconGalleryState extends State<ServicesIconGallery> {
           itemCount: images.length,
           itemBuilder: (_, index) {
             final path = images[index];
-            final child = ServiceIcon(
+            final child = ServiceIcon.asset(
               path,
               size: 72,
-              onImageError: (_, __, ___) => _errorBox('読み込み失敗'),
+              fallback: Icons.error_outline,
             );
             return DecoratedBox(
               decoration: BoxDecoration(

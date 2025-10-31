@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:starlist_app/services/image_url_builder.dart';
 
 import '../features/data_integration/models/youtube_video.dart';
 import 'package:starlist_app/widgets/media_gate.dart';
@@ -41,7 +42,10 @@ class YouTubeVideoCard extends StatelessWidget {
                   // サムネイル
                   MediaGate(
                     child: CachedNetworkImage(
-                      imageUrl: video.thumbnailUrl,
+                      imageUrl: ImageUrlBuilder.thumbnail(
+                        video.thumbnailUrl,
+                        width: 640,
+                      ),
                       fit: BoxFit.cover,
                       placeholder: (context, url) => const Center(
                         child: CircularProgressIndicator(),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:starlist_app/config/ui_flags.dart';
+import 'package:starlist_app/widgets/signed_image.dart';
 
 import 'import_diagnose_repository.dart';
 import 'models.dart';
@@ -109,7 +110,10 @@ class _DiagnoseBody extends ConsumerWidget {
                 child: Row(
                   children: [
                     Expanded(
-                        child: _ImagePane(imageUrl: state.originalImageUrl)),
+                        child: _ImagePane(
+                      imageUrl: state.originalImageUrl,
+                      storagePath: state.storagePath,
+                    )),
                     const SizedBox(width: 16),
                     Expanded(child: _OcrPane(text: state.ocrText)),
                   ],
@@ -131,9 +135,10 @@ class _DiagnoseBody extends ConsumerWidget {
 }
 
 class _ImagePane extends StatelessWidget {
-  const _ImagePane({required this.imageUrl});
+  const _ImagePane({required this.imageUrl, required this.storagePath});
 
   final String imageUrl;
+  final String storagePath;
 
   @override
   Widget build(BuildContext context) {
@@ -176,18 +181,33 @@ class _ImagePane extends StatelessWidget {
                 color: Colors.grey.shade200,
                 alignment: Alignment.center,
                 padding: const EdgeInsets.all(16),
-                child: imageUrl.isNotEmpty
-                    ? SelectableText(
-                        imageUrl,
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(fontSize: 12),
-                      )
-                    : const Text('画像は提供されていません'),
+                child: kHideImportImages || storagePath.isEmpty
+                    ? _buildUrlFallback()
+                    : SignedImage(
+                        key: ValueKey(storagePath),
+                        objectPath: storagePath,
+                        initialUrl: imageUrl.isNotEmpty ? imageUrl : null,
+                        fit: BoxFit.contain,
+                        placeholder: (_) => const CircularProgressIndicator(),
+                        errorPlaceholder: (_) => _buildUrlFallback(),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
               ),
             ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildUrlFallback() {
+    if (imageUrl.isEmpty) {
+      return const Text('画像は提供されていません');
+    }
+    return SelectableText(
+      imageUrl,
+      textAlign: TextAlign.center,
+      style: const TextStyle(fontSize: 12),
     );
   }
 }
@@ -253,7 +273,7 @@ class _OcrPaneState extends State<_OcrPane> {
                 maxLines: null,
                 decoration: InputDecoration(
                   filled: true,
-                  fillColor: Theme.of(context).colorScheme.surfaceVariant,
+                  fillColor: Theme.of(context).colorScheme.surfaceContainerHighest,
                   border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16)),
                 ),

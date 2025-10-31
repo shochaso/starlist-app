@@ -2,7 +2,6 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'config/environment_config.dart';
@@ -11,10 +10,16 @@ import 'theme/app_theme.dart';
 import 'src/services/notification_service.dart';
 import 'services/service_icon_registry.dart';
 
+void clearImageCaches() {
+  PaintingBinding.instance.imageCache.clear();
+  PaintingBinding.instance.imageCache.clearLiveImages();
+}
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await dotenv.load(fileName: '.env.development');
+  // 画像キャッシュをクリア
+  clearImageCaches();
 
   FlutterError.onError = (FlutterErrorDetails details) {
     FlutterError.dumpErrorToConsole(details);
@@ -29,6 +34,7 @@ Future<void> main() async {
       url: EnvironmentConfig.supabaseUrl,
       anonKey: EnvironmentConfig.supabaseAnonKey,
     );
+    debugPrint('[Supabase] Initialization completed successfully');
   } catch (error, stackTrace) {
     debugPrint('[Supabase] Initialization skipped: $error');
     debugPrintStack(stackTrace: stackTrace);

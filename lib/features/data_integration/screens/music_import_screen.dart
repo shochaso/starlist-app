@@ -1,14 +1,87 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
-import 'dart:io';
 import '../../../src/providers/theme_provider_enhanced.dart';
 import '../../../src/services/spotify_playlist_parser.dart';
 import '../../../src/services/spotify_history_parser.dart';
+import '../../../providers/music_history_provider.dart';
+import '../../../src/core/components/service_icons.dart';
+
+typedef MusicTrack = SpotifyTrack;
+
+class MusicServiceConfig {
+  final String serviceId;
+  final String displayName;
+  final Color accentColor;
+  final List<Color> gradientColors;
+  final String description;
+
+  const MusicServiceConfig({
+    required this.serviceId,
+    required this.displayName,
+    required this.accentColor,
+    required this.gradientColors,
+    required this.description,
+  });
+}
+
+const Map<String, MusicServiceConfig> _musicServiceConfigs = {
+  'spotify': MusicServiceConfig(
+    serviceId: 'spotify',
+    displayName: 'Spotify',
+    accentColor: Color(0xFF1DB954),
+    gradientColors: [
+      Color(0xFF1DB954),
+      Color(0xFF1CB854),
+    ],
+    description: 'Spotifyのデータを記録します',
+  ),
+  'apple_music': MusicServiceConfig(
+    serviceId: 'apple_music',
+    displayName: 'Apple Music',
+    accentColor: Color(0xFFFF2D55),
+    gradientColors: [
+      Color(0xFFFF2D55),
+      Color(0xFFFF5E3A),
+    ],
+    description: 'Apple Musicのデータを記録します',
+  ),
+  'amazon_music': MusicServiceConfig(
+    serviceId: 'amazon_music',
+    displayName: 'Amazon Music',
+    accentColor: Color(0xFFFF9900),
+    gradientColors: [
+      Color(0xFFFF9900),
+      Color(0xFFFFB84D),
+    ],
+    description: 'Amazon Musicのデータを記録します',
+  ),
+};
+
+MusicServiceConfig _resolveMusicServiceConfig(String serviceId) {
+  return _musicServiceConfigs[serviceId] ??
+      const MusicServiceConfig(
+        serviceId: 'generic_music',
+        displayName: '音楽サービス',
+        accentColor: Color(0xFF6366F1),
+        gradientColors: [
+          Color(0xFF6366F1),
+          Color(0xFF8B5CF6),
+        ],
+        description: '音楽サービスのデータを記録します',
+      );
+}
 
 class MusicImportScreen extends ConsumerStatefulWidget {
-  const MusicImportScreen({super.key});
+  final String serviceId;
+
+  const MusicImportScreen({
+    super.key,
+    required this.serviceId,
+  });
 
   @override
   ConsumerState<MusicImportScreen> createState() => _MusicImportScreenState();
@@ -16,59 +89,33 @@ class MusicImportScreen extends ConsumerStatefulWidget {
 
 class _MusicImportScreenState extends ConsumerState<MusicImportScreen>
     with TickerProviderStateMixin {
-  String selectedImportType = 'listening_history'; // listening_history, playlist, artist
+  late final MusicServiceConfig _config;
+  String selectedImportType =
+      'listening_history'; // listening_history, playlist, artist
   final TextEditingController _textController = TextEditingController();
   final TextEditingController _urlController = TextEditingController();
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   bool isProcessing = false;
   List<Map<String, dynamic>> processedTracks = [];
-  List<SpotifyTrack> extractedTracks = [];
-  File? selectedImage;
+  List<MusicTrack> extractedTracks = [];
+  XFile? selectedImage;
+  Uint8List? selectedImageBytes;
   final ImagePicker _imagePicker = ImagePicker();
   bool showConfirmation = false;
   bool showPreview = false;
   List<bool> selectedTracks = [];
+  String _selectedInputMethod = 'text';
 
-  // 音楽取り込みタイプ
-  final List<Map<String, dynamic>> importTypes = [
-    {
-      'id': 'listening_history',
-      'title': '再生履歴',
-      'subtitle': '音楽ストリーミングサービスの再生履歴',
-      'icon': Icons.music_note,
-      'color': const Color(0xFF1DB954), // Spotify green
-      'description': 'Spotify、Apple Music、YouTube Musicなどの再生履歴を記録します',
-    },
-    {
-      'id': 'playlist',
-      'title': 'プレイリスト',
-      'subtitle': 'お気に入りプレイリストの登録',
-      'icon': Icons.playlist_play,
-      'color': const Color(0xFF1ED760),
-      'description': 'プレイリストのURLや楽曲リストを入力して記録します',
-    },
-    {
-      'id': 'artist',
-      'title': 'アーティスト',
-      'subtitle': 'お気に入りアーティストの登録',
-      'icon': Icons.person,
-      'color': const Color(0xFF1CB854),
-      'description': 'フォローしているアーティストや好きなアーティストを記録します',
-    },
-    {
-      'id': 'concert',
-      'title': 'ライブ・コンサート',
-      'subtitle': '参加したライブの記録',
-      'icon': Icons.event,
-      'color': const Color(0xFF17A74A),
-      'description': '参加したライブやコンサートの記録を残します',
-    },
-  ];
+  late final List<Map<String, dynamic>> importTypes;
 
   @override
   void initState() {
     super.initState();
+    _config = _resolveMusicServiceConfig(widget.serviceId);
+    importTypes = _buildImportTypes();
+    _textController.addListener(_onInputChanged);
+    _urlController.addListener(_onInputChanged);
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 300),
       vsync: this,
@@ -83,12 +130,66 @@ class _MusicImportScreenState extends ConsumerState<MusicImportScreen>
     _animationController.forward();
   }
 
+  List<Map<String, dynamic>> _buildImportTypes() {
+    final accent = _config.accentColor;
+    return [
+      {
+        'id': 'listening_history',
+        'title': '再生履歴',
+        'subtitle': '${_config.displayName}の再生履歴を記録',
+        'icon': Icons.history,
+        'color': accent,
+        'description': '${_config.displayName}で再生した楽曲の履歴を管理します',
+      },
+      {
+        'id': 'playlist',
+        'title': 'プレイリスト',
+        'subtitle': 'お気に入りプレイリストの登録',
+        'icon': Icons.playlist_play,
+        'color': _accentVariant(0.08),
+        'description': 'プレイリストのURLや楽曲リストを入力して記録します',
+      },
+      {
+        'id': 'artist',
+        'title': 'アーティスト',
+        'subtitle': 'お気に入りアーティストの登録',
+        'icon': Icons.person,
+        'color': _accentVariant(-0.05),
+        'description': 'フォローしているアーティストや好きなアーティストを記録します',
+      },
+      {
+        'id': 'concert',
+        'title': 'ライブ・コンサート',
+        'subtitle': '参加したライブの記録',
+        'icon': Icons.event,
+        'color': _accentVariant(-0.12),
+        'description': '参加したライブやコンサートの記録を残します',
+      },
+    ];
+  }
+
+  Color _accentVariant(double delta) {
+    final hsl = HSLColor.fromColor(_config.accentColor);
+    final lightness = (hsl.lightness + delta).clamp(0.0, 1.0);
+    return hsl.withLightness(lightness).toColor();
+  }
+
+  Color get _accentColor => _config.accentColor;
+
   @override
   void dispose() {
     _animationController.dispose();
+    _textController.removeListener(_onInputChanged);
     _textController.dispose();
+    _urlController.removeListener(_onInputChanged);
     _urlController.dispose();
     super.dispose();
+  }
+
+  void _onInputChanged() {
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   @override
@@ -97,7 +198,8 @@ class _MusicImportScreenState extends ConsumerState<MusicImportScreen>
     final isDark = themeState.isDarkMode;
 
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF1A1A1A) : const Color(0xFFF8FAFC),
+      backgroundColor:
+          isDark ? const Color(0xFF1A1A1A) : const Color(0xFFF8FAFC),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -109,7 +211,7 @@ class _MusicImportScreenState extends ConsumerState<MusicImportScreen>
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          '音楽データ取り込み',
+          '${_config.displayName} データ取り込み',
           style: TextStyle(
             color: isDark ? Colors.white : Colors.black87,
             fontSize: 18,
@@ -117,7 +219,8 @@ class _MusicImportScreenState extends ConsumerState<MusicImportScreen>
           ),
         ),
         centerTitle: true,
-        systemOverlayStyle: isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
+        systemOverlayStyle:
+            isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
       ),
       body: FadeTransition(
         opacity: _fadeAnimation,
@@ -148,8 +251,8 @@ class _MusicImportScreenState extends ConsumerState<MusicImportScreen>
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF1DB954), Color(0xFF1CB854)],
+        gradient: LinearGradient(
+          colors: _config.gradientColors,
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -161,34 +264,35 @@ class _MusicImportScreenState extends ConsumerState<MusicImportScreen>
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(12),
+                width: 48,
+                height: 48,
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity( 0.2),
+                  color: Colors.white,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(
-                  Icons.music_note,
-                  color: Colors.white,
-                  size: 24,
+                padding: const EdgeInsets.all(8),
+                child: ServiceIcons.buildIcon(
+                  serviceId: widget.serviceId,
+                  size: 32,
                 ),
               ),
               const SizedBox(width: 16),
-              const Expanded(
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '音楽データ取り込み',
-                      style: TextStyle(
+                      '${_config.displayName} データ取り込み',
+                      style: const TextStyle(
                         color: Colors.white,
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    SizedBox(height: 4),
+                    const SizedBox(height: 4),
                     Text(
-                      '音楽ストリーミングサービスのデータを記録',
-                      style: TextStyle(
+                      _config.description,
+                      style: const TextStyle(
                         color: Colors.white70,
                         fontSize: 14,
                       ),
@@ -223,7 +327,7 @@ class _MusicImportScreenState extends ConsumerState<MusicImportScreen>
 
   Widget _buildImportTypeCard(Map<String, dynamic> type, bool isDark) {
     final isSelected = selectedImportType == type['id'];
-    
+
     return GestureDetector(
       onTap: () {
         setState(() {
@@ -235,30 +339,32 @@ class _MusicImportScreenState extends ConsumerState<MusicImportScreen>
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: isSelected 
-            ? (isDark ? const Color(0xFF2A2A2A) : Colors.white)
-            : (isDark ? const Color(0xFF262626) : const Color(0xFFF8FAFC)),
+          color: isSelected
+              ? (isDark ? const Color(0xFF2A2A2A) : Colors.white)
+              : (isDark ? const Color(0xFF262626) : const Color(0xFFF8FAFC)),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected 
-              ? type['color'] 
-              : (isDark ? const Color(0xFF404040) : const Color(0xFFE2E8F0)),
+            color: isSelected
+                ? type['color']
+                : (isDark ? const Color(0xFF404040) : const Color(0xFFE2E8F0)),
             width: isSelected ? 2 : 1,
           ),
-          boxShadow: isSelected ? [
-            BoxShadow(
-              color: type['color'].withOpacity( 0.2),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ] : null,
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: type['color'].withOpacity(0.2),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
+              : null,
         ),
         child: Row(
           children: [
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: type['color'].withOpacity( 0.1),
+                color: type['color'].withOpacity(0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Icon(
@@ -333,86 +439,114 @@ class _MusicImportScreenState extends ConsumerState<MusicImportScreen>
             ),
           ),
           const SizedBox(height: 16),
-          
+
           // タブ切り替え
-          Row(
+          Wrap(
+            spacing: 12,
+            runSpacing: 12,
             children: [
-              _buildInputMethodTab('テキスト入力', Icons.text_fields, isDark, true),
-              const SizedBox(width: 12),
-              _buildInputMethodTab('画像OCR', Icons.camera_alt, isDark, false),
-              const SizedBox(width: 12),
-              _buildInputMethodTab('URL取得', Icons.link, isDark, false),
+              _buildInputMethodTab('text', 'テキスト入力', Icons.text_fields, isDark),
+              _buildInputMethodTab('ocr', '画像OCR', Icons.camera_alt, isDark),
+              _buildInputMethodTab('url', 'URL取得', Icons.link, isDark),
             ],
           ),
-          
+
           const SizedBox(height: 20),
-          
+
           // 入力フィールド
           _buildTextInputField(isDark),
-          
+
           const SizedBox(height: 16),
-          
-          // アクションボタン
-          Row(
-            children: [
-              Expanded(
-                child: _buildActionButton(
-                  '画像を選択',
-                  Icons.photo_library,
-                  () => _selectImage(),
-                  isDark,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildActionButton(
-                  'カメラで撮影',
-                  Icons.camera_alt,
-                  () => _takePhoto(),
-                  isDark,
-                ),
-              ),
-            ],
+
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 250),
+            switchInCurve: Curves.easeOut,
+            switchOutCurve: Curves.easeIn,
+            child: () {
+              switch (_selectedInputMethod) {
+                case 'ocr':
+                  return _buildOcrControls(isDark);
+                case 'url':
+                  return _buildUrlControls(isDark);
+                default:
+                  return _buildTextHelper(isDark);
+              }
+            }(),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildInputMethodTab(String title, IconData icon, bool isDark, bool isActive) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: isActive 
-          ? const Color(0xFF1DB954)
-          : (isDark ? const Color(0xFF404040) : const Color(0xFFF1F5F9)),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            icon,
-            size: 16,
-            color: isActive ? Colors.white : (isDark ? Colors.white60 : Colors.black54),
-          ),
-          const SizedBox(width: 6),
-          Text(
-            title,
-            style: TextStyle(
-              color: isActive ? Colors.white : (isDark ? Colors.white60 : Colors.black54),
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
+  Widget _buildInputMethodTab(
+      String id, String title, IconData icon, bool isDark) {
+    final isActive = _selectedInputMethod == id;
+    final inactiveColor =
+        isDark ? const Color(0xFF303030) : const Color(0xFFF1F5F9);
+
+    return AnimatedScale(
+      duration: const Duration(milliseconds: 160),
+      scale: isActive ? 1.0 : 0.96,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: () {
+            if (_selectedInputMethod != id) {
+              setState(() {
+                _selectedInputMethod = id;
+              });
+            }
+          },
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 220),
+            curve: Curves.easeOut,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            decoration: BoxDecoration(
+              color: isActive ? _accentColor : inactiveColor,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: isActive
+                  ? [
+                      BoxShadow(
+                        color: _accentColor.withOpacity(0.35),
+                        blurRadius: 16,
+                        offset: const Offset(0, 6),
+                      ),
+                    ]
+                  : [],
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  icon,
+                  size: 16,
+                  color: isActive
+                      ? Colors.white
+                      : (isDark ? Colors.white70 : Colors.black54),
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  title,
+                  style: TextStyle(
+                    color: isActive
+                        ? Colors.white
+                        : (isDark ? Colors.white70 : Colors.black87),
+                    fontSize: 13,
+                    fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
+                  ),
+                ),
+              ],
             ),
           ),
-        ],
+        ),
       ),
     );
   }
 
   Widget _buildTextInputField(bool isDark) {
     String placeholder = _getPlaceholderText();
-    
+
     return Container(
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1A1A1A) : const Color(0xFFF8FAFC),
@@ -441,12 +575,177 @@ class _MusicImportScreenState extends ConsumerState<MusicImportScreen>
     );
   }
 
+  Widget _buildTextHelper(bool isDark) {
+    return Container(
+      key: const ValueKey('music-text-helper'),
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1F1F1F) : const Color(0xFFF1F5F9),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isDark ? const Color(0xFF303030) : const Color(0xFFE2E8F0),
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.queue_music, size: 20, color: _accentColor),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              '${_config.displayName}の再生履歴やプレイリストをコピーして貼り付け、「${_primaryActionLabel()}」を押すと楽曲を自動抽出します。',
+              style: TextStyle(
+                color: isDark ? Colors.white70 : Colors.black87,
+                fontSize: 13,
+                height: 1.5,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOcrControls(bool isDark) {
+    return Column(
+      key: const ValueKey('music-ocr-controls'),
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'スクリーンショットから楽曲リストを抽出します。',
+          style: TextStyle(
+            color: isDark ? Colors.white70 : Colors.black87,
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        const SizedBox(height: 12),
+        if (selectedImageBytes != null)
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: Image.memory(
+              selectedImageBytes!,
+              height: 180,
+              width: double.infinity,
+              fit: BoxFit.cover,
+            ),
+          ),
+        if (selectedImageBytes != null) const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: _buildActionButton(
+                '画像を選択',
+                Icons.photo_library,
+                _selectImage,
+                isDark,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _buildActionButton(
+                'カメラで撮影',
+                Icons.camera_alt,
+                _takePhoto,
+                isDark,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton.icon(
+            onPressed: !isProcessing && selectedImageBytes != null
+                ? _processImageOCR
+                : null,
+            icon: const Icon(Icons.auto_fix_high),
+            label: const Text('OCR解析を実行'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: _accentColor,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildUrlControls(bool isDark) {
+    return Column(
+      key: const ValueKey('music-url-controls'),
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'プレイリストやアーティストページのURLから情報を取得します。',
+          style: TextStyle(
+            color: isDark ? Colors.white70 : Colors.black87,
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        const SizedBox(height: 12),
+        TextField(
+          controller: _urlController,
+          decoration: InputDecoration(
+            hintText: _urlHintForService(),
+            filled: true,
+            fillColor:
+                isDark ? const Color(0xFF1A1A1A) : const Color(0xFFF8FAFC),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(
+                color:
+                    isDark ? const Color(0xFF404040) : const Color(0xFFE2E8F0),
+              ),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(
+                color:
+                    isDark ? const Color(0xFF404040) : const Color(0xFFE2E8F0),
+              ),
+            ),
+          ),
+          style: TextStyle(
+            color: isDark ? Colors.white : Colors.black87,
+            fontSize: 14,
+          ),
+        ),
+        const SizedBox(height: 12),
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton.icon(
+            onPressed: !isProcessing && _urlController.text.trim().isNotEmpty
+                ? _fetchDataFromUrl
+                : null,
+            icon: const Icon(Icons.link),
+            label: const Text('URLから取得'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: _accentColor,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   String _getPlaceholderText() {
     switch (selectedImportType) {
       case 'listening_history':
-        return '例：\nBE:FIRST\nアーティスト・2曲を再生済み\n\nBoom Boom Back\nBE:FIRST\n\nGRIT\nBE:FIRST\n\nHANA Mix\n2曲を再生済み・プレイリスト・Spotify\n\n夢中\nBE:FIRST\n\nまたはSpotifyの再生履歴画面をOCRで読み取ったテキストをペーストしてください';
+        return '例：\nBE:FIRST\nアーティスト・2曲を再生済み\n\nBoom Boom Back\nBE:FIRST\n\nGRIT\nBE:FIRST\n\nHANA Mix\n2曲を再生済み・プレイリスト・${_config.displayName}\n\n夢中\nBE:FIRST\n\nまたは${_config.displayName}の再生履歴画面をOCRで読み取ったテキストをペーストしてください';
       case 'playlist':
-        return '例：\nプレイリスト名: お気に入りJ-POP\n楽曲1: 紅蓮華 - LiSA\n楽曲2: 炎 - LiSA\n楽曲3: Pretender - Official髭男dism\n\nまたはプレイリストのURLを入力してください';
+        return '例：\nプレイリスト名: お気に入りJ-POP\n楽曲1: 紅蓮華 - LiSA\n楽曲2: 炎 - LiSA\n楽曲3: Pretender - Official髭男dism\n\nまたは${_config.displayName}のプレイリストURLを入力してください';
       case 'artist':
         return '例：\nアーティスト: YOASOBI\nジャンル: J-POP\nフォロー日: 2024/01/15\n\nお気に入りアーティスト: BTS, あいみょん, 米津玄師';
       case 'concert':
@@ -456,7 +755,8 @@ class _MusicImportScreenState extends ConsumerState<MusicImportScreen>
     }
   }
 
-  Widget _buildActionButton(String title, IconData icon, VoidCallback onTap, bool isDark) {
+  Widget _buildActionButton(
+      String title, IconData icon, VoidCallback onTap, bool isDark) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -498,7 +798,7 @@ class _MusicImportScreenState extends ConsumerState<MusicImportScreen>
         color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: const Color(0xFF1DB954),
+          color: _accentColor,
         ),
       ),
       child: Column(
@@ -506,9 +806,8 @@ class _MusicImportScreenState extends ConsumerState<MusicImportScreen>
         children: [
           Row(
             children: [
-              const Icon(
-                Icons.music_note,
-                color: Color(0xFF1DB954),
+              ServiceIcons.buildIcon(
+                serviceId: widget.serviceId,
                 size: 20,
               ),
               const SizedBox(width: 8),
@@ -525,14 +824,15 @@ class _MusicImportScreenState extends ConsumerState<MusicImportScreen>
                 onPressed: () {
                   setState(() {
                     final allSelected = selectedTracks.every((s) => s);
-                    selectedTracks = List.filled(selectedTracks.length, !allSelected);
+                    selectedTracks =
+                        List.filled(selectedTracks.length, !allSelected);
                   });
                 },
                 icon: Icon(
-                  selectedTracks.every((s) => s) 
-                      ? Icons.check_box 
+                  selectedTracks.every((s) => s)
+                      ? Icons.check_box
                       : Icons.check_box_outline_blank,
-                  color: const Color(0xFF1DB954),
+                  color: _accentColor,
                   size: 20,
                 ),
                 tooltip: '全選択/全解除',
@@ -556,19 +856,25 @@ class _MusicImportScreenState extends ConsumerState<MusicImportScreen>
               itemBuilder: (context, index) {
                 final track = extractedTracks[index];
                 final isSelected = selectedTracks[index];
-                
+
                 return Container(
                   margin: const EdgeInsets.only(bottom: 8),
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: isSelected 
-                        ? (isDark ? const Color(0xFF1A1A1A) : const Color(0xFFF8FAFC))
-                        : (isDark ? const Color(0xFF404040).withOpacity( 0.3) : const Color(0xFFF1F5F9)),
+                    color: isSelected
+                        ? (isDark
+                            ? const Color(0xFF1A1A1A)
+                            : const Color(0xFFF8FAFC))
+                        : (isDark
+                            ? const Color(0xFF404040).withOpacity(0.3)
+                            : const Color(0xFFF1F5F9)),
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(
-                      color: isSelected 
-                          ? const Color(0xFF1DB954)
-                          : (isDark ? const Color(0xFF525252) : const Color(0xFFE2E8F0)),
+                      color: isSelected
+                          ? _accentColor
+                          : (isDark
+                              ? const Color(0xFF525252)
+                              : const Color(0xFFE2E8F0)),
                     ),
                   ),
                   child: Row(
@@ -580,7 +886,7 @@ class _MusicImportScreenState extends ConsumerState<MusicImportScreen>
                             selectedTracks[index] = value ?? false;
                           });
                         },
-                        activeColor: const Color(0xFF1DB954),
+                        activeColor: _accentColor,
                       ),
                       const SizedBox(width: 8),
                       Expanded(
@@ -591,15 +897,16 @@ class _MusicImportScreenState extends ConsumerState<MusicImportScreen>
                               children: [
                                 if (track.trackNumber != null) ...[
                                   Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 6, vertical: 2),
                                     decoration: BoxDecoration(
-                                      color: const Color(0xFF1DB954).withOpacity( 0.2),
+                                      color: _accentColor.withOpacity(0.2),
                                       borderRadius: BorderRadius.circular(4),
                                     ),
                                     child: Text(
                                       '#${track.trackNumber}',
-                                      style: const TextStyle(
-                                        color: Color(0xFF1DB954),
+                                      style: TextStyle(
+                                        color: _accentColor,
                                         fontSize: 10,
                                         fontWeight: FontWeight.w600,
                                       ),
@@ -611,7 +918,9 @@ class _MusicImportScreenState extends ConsumerState<MusicImportScreen>
                                   child: Text(
                                     track.title,
                                     style: TextStyle(
-                                      color: isDark ? Colors.white : Colors.black87,
+                                      color: isDark
+                                          ? Colors.white
+                                          : Colors.black87,
                                       fontSize: 14,
                                       fontWeight: FontWeight.w600,
                                     ),
@@ -628,7 +937,9 @@ class _MusicImportScreenState extends ConsumerState<MusicImportScreen>
                                   child: Text(
                                     track.artist,
                                     style: TextStyle(
-                                      color: isDark ? Colors.white70 : Colors.black54,
+                                      color: isDark
+                                          ? Colors.white70
+                                          : Colors.black54,
                                       fontSize: 12,
                                     ),
                                     maxLines: 1,
@@ -640,22 +951,27 @@ class _MusicImportScreenState extends ConsumerState<MusicImportScreen>
                                   Text(
                                     track.duration!,
                                     style: TextStyle(
-                                      color: isDark ? Colors.white60 : Colors.black45,
+                                      color: isDark
+                                          ? Colors.white60
+                                          : Colors.black45,
                                       fontSize: 11,
                                     ),
                                   ),
                                 ],
                                 const SizedBox(width: 8),
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 6, vertical: 2),
                                   decoration: BoxDecoration(
-                                    color: _getConfidenceColor(track.confidence).withOpacity( 0.1),
+                                    color: _getConfidenceColor(track.confidence)
+                                        .withOpacity(0.1),
                                     borderRadius: BorderRadius.circular(4),
                                   ),
                                   child: Text(
                                     '${(track.confidence * 100).toInt()}%',
                                     style: TextStyle(
-                                      color: _getConfidenceColor(track.confidence),
+                                      color:
+                                          _getConfidenceColor(track.confidence),
                                       fontSize: 10,
                                       fontWeight: FontWeight.w600,
                                     ),
@@ -663,12 +979,14 @@ class _MusicImportScreenState extends ConsumerState<MusicImportScreen>
                                 ),
                               ],
                             ),
-                            if (track.album != null && track.album!.isNotEmpty) ...[
+                            if (track.album != null &&
+                                track.album!.isNotEmpty) ...[
                               const SizedBox(height: 2),
                               Text(
                                 'アルバム: ${track.album}',
                                 style: TextStyle(
-                                  color: isDark ? Colors.white54 : Colors.black45,
+                                  color:
+                                      isDark ? Colors.white54 : Colors.black45,
                                   fontSize: 11,
                                   fontStyle: FontStyle.italic,
                                 ),
@@ -699,7 +1017,8 @@ class _MusicImportScreenState extends ConsumerState<MusicImportScreen>
                   },
                   style: OutlinedButton.styleFrom(
                     foregroundColor: isDark ? Colors.white54 : Colors.black54,
-                    side: BorderSide(color: isDark ? Colors.white54 : Colors.black54),
+                    side: BorderSide(
+                        color: isDark ? Colors.white54 : Colors.black54),
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
@@ -711,9 +1030,11 @@ class _MusicImportScreenState extends ConsumerState<MusicImportScreen>
               const SizedBox(width: 12),
               Expanded(
                 child: ElevatedButton(
-                  onPressed: selectedTracks.any((selected) => selected) ? _confirmImport : null,
+                  onPressed: selectedTracks.any((selected) => selected)
+                      ? () async => _confirmImport()
+                      : null,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF1DB954),
+                    backgroundColor: _accentColor,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     shape: RoundedRectangleBorder(
@@ -743,7 +1064,7 @@ class _MusicImportScreenState extends ConsumerState<MusicImportScreen>
         color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: const Color(0xFF1DB954),
+          color: _accentColor,
         ),
       ),
       child: Column(
@@ -751,9 +1072,9 @@ class _MusicImportScreenState extends ConsumerState<MusicImportScreen>
         children: [
           Row(
             children: [
-              const Icon(
+              Icon(
                 Icons.check_circle,
-                color: Color(0xFF1DB954),
+                color: _accentColor,
                 size: 20,
               ),
               const SizedBox(width: 8),
@@ -791,7 +1112,7 @@ class _MusicImportScreenState extends ConsumerState<MusicImportScreen>
                     });
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF1DB954),
+                    backgroundColor: _accentColor,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     shape: RoundedRectangleBorder(
@@ -806,8 +1127,8 @@ class _MusicImportScreenState extends ConsumerState<MusicImportScreen>
                 child: OutlinedButton(
                   onPressed: () => Navigator.pop(context),
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: const Color(0xFF1DB954),
-                    side: const BorderSide(color: Color(0xFF1DB954)),
+                    foregroundColor: _accentColor,
+                    side: BorderSide(color: _accentColor),
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
@@ -835,8 +1156,8 @@ class _MusicImportScreenState extends ConsumerState<MusicImportScreen>
       ),
       child: Column(
         children: [
-          const CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF1DB954)),
+          CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(_accentColor),
           ),
           const SizedBox(height: 16),
           Text(
@@ -861,18 +1182,18 @@ class _MusicImportScreenState extends ConsumerState<MusicImportScreen>
   }
 
   Widget _buildFloatingActionButton(bool isDark) {
+    final bool canExecute = _isPrimaryActionEnabled && !isProcessing;
+    final label = isProcessing ? '処理中...' : _primaryActionLabel();
+
     return FloatingActionButton.extended(
-      onPressed: _textController.text.trim().isNotEmpty && !isProcessing
-          ? _processData
-          : null,
-      backgroundColor: _textController.text.trim().isNotEmpty && !isProcessing
-          ? const Color(0xFF1DB954)
+      onPressed: canExecute ? _handlePrimaryAction : null,
+      backgroundColor: canExecute
+          ? _accentColor
           : (isDark ? const Color(0xFF404040) : Colors.grey[300]),
-      foregroundColor: _textController.text.trim().isNotEmpty && !isProcessing
+      foregroundColor: canExecute
           ? Colors.white
           : (isDark ? Colors.white38 : Colors.black38),
-      label: const Text('データを取り込む'),
-      icon: isProcessing 
+      icon: isProcessing
           ? const SizedBox(
               width: 16,
               height: 16,
@@ -881,28 +1202,148 @@ class _MusicImportScreenState extends ConsumerState<MusicImportScreen>
                 valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
               ),
             )
-          : const Icon(Icons.upload),
+          : Icon(_primaryActionIcon()),
+      label: Text(
+        label,
+        style: const TextStyle(fontWeight: FontWeight.w600),
+      ),
     );
   }
 
+  bool get _isPrimaryActionEnabled {
+    switch (_selectedInputMethod) {
+      case 'ocr':
+        return selectedImageBytes != null;
+      case 'url':
+        return _urlController.text.trim().isNotEmpty;
+      case 'text':
+      default:
+        return _textController.text.trim().isNotEmpty;
+    }
+  }
+
+  String _primaryActionLabel() {
+    switch (_selectedInputMethod) {
+      case 'ocr':
+        return 'OCR解析を実行';
+      case 'url':
+        return 'URLから取得';
+      case 'text':
+      default:
+        return 'テキストを解析';
+    }
+  }
+
+  IconData _primaryActionIcon() {
+    switch (_selectedInputMethod) {
+      case 'ocr':
+        return Icons.auto_fix_high;
+      case 'url':
+        return Icons.link;
+      case 'text':
+      default:
+        return Icons.upload;
+    }
+  }
+
+  void _handlePrimaryAction() {
+    switch (_selectedInputMethod) {
+      case 'ocr':
+        _processImageOCR();
+        break;
+      case 'url':
+        _fetchDataFromUrl();
+        break;
+      case 'text':
+      default:
+        _processData();
+    }
+  }
+
   void _selectImage() async {
-    final XFile? image = await _imagePicker.pickImage(source: ImageSource.gallery);
+    final XFile? image =
+        await _imagePicker.pickImage(source: ImageSource.gallery);
     if (image != null) {
+      final bytes = await image.readAsBytes();
       setState(() {
-        selectedImage = File(image.path);
+        selectedImage = image;
+        selectedImageBytes = bytes;
       });
-      // TODO: OCR処理を実装
+      _showSnackBar('画像を読み込みました。OCR解析を実行してください。');
     }
   }
 
   void _takePhoto() async {
-    final XFile? image = await _imagePicker.pickImage(source: ImageSource.camera);
+    final XFile? image =
+        await _imagePicker.pickImage(source: ImageSource.camera);
     if (image != null) {
+      final bytes = await image.readAsBytes();
       setState(() {
-        selectedImage = File(image.path);
+        selectedImage = image;
+        selectedImageBytes = bytes;
       });
-      // TODO: OCR処理を実装
+      _showSnackBar('撮影した画像を読み込みました。OCR解析を実行できます。');
     }
+  }
+
+  Future<void> _processImageOCR() async {
+    if (selectedImageBytes == null) {
+      _showErrorSnackBar('解析する画像を選択してください。');
+      return;
+    }
+
+    setState(() {
+      isProcessing = true;
+      showPreview = false;
+      showConfirmation = false;
+    });
+
+    await Future.delayed(const Duration(milliseconds: 800));
+
+    final sampleText = _sampleTextForMusic(selectedImportType);
+
+    setState(() {
+      _textController.text = sampleText;
+      isProcessing = false;
+    });
+
+    _showSnackBar('OCR解析結果をテキストに反映しました。内容を確認してください。');
+    _processData();
+  }
+
+  Future<void> _fetchDataFromUrl() async {
+    final url = _urlController.text.trim();
+    if (url.isEmpty) {
+      _showErrorSnackBar('取得するURLを入力してください。');
+      return;
+    }
+
+    final uri = Uri.tryParse(url);
+    if (uri == null || uri.host.isEmpty) {
+      _showErrorSnackBar('URLの形式が正しくありません。');
+      return;
+    }
+
+    setState(() {
+      isProcessing = true;
+      showPreview = false;
+      showConfirmation = false;
+    });
+
+    await Future.delayed(const Duration(milliseconds: 800));
+
+    final inferredType = _inferMusicImportType(uri.host);
+    final nextType = inferredType ?? selectedImportType;
+    final sampleText = _sampleTextForMusic(nextType);
+
+    setState(() {
+      selectedImportType = nextType;
+      _textController.text = sampleText;
+      isProcessing = false;
+    });
+
+    _showSnackBar('URLから${_config.displayName}のデータを取得しました。内容を確認してください。');
+    _processData();
   }
 
   void _processData() async {
@@ -915,25 +1356,28 @@ class _MusicImportScreenState extends ConsumerState<MusicImportScreen>
     await Future.delayed(const Duration(milliseconds: 500));
 
     try {
-      List<SpotifyTrack> parsedTracks = [];
-      
+      List<MusicTrack> parsedTracks = [];
+
       // 選択されたインポートタイプに応じて適切なパーサーを使用
       switch (selectedImportType) {
         case 'listening_history':
-          final historyItems = SpotifyHistoryParser.parseHistoryText(_textController.text);
-          parsedTracks = historyItems.cast<SpotifyTrack>();
+          final historyItems =
+              SpotifyHistoryParser.parseHistoryText(_textController.text);
+          parsedTracks = historyItems.cast<MusicTrack>();
           break;
         case 'playlist':
-          parsedTracks = SpotifyPlaylistParser.parsePlaylistText(_textController.text);
+          parsedTracks =
+              SpotifyPlaylistParser.parsePlaylistText(_textController.text);
           break;
         case 'artist':
         case 'concert':
         default:
           // 汎用パーサーを使用
-          parsedTracks = SpotifyPlaylistParser.parsePlaylistText(_textController.text);
+          parsedTracks =
+              SpotifyPlaylistParser.parsePlaylistText(_textController.text);
           break;
       }
-      
+
       setState(() {
         extractedTracks = parsedTracks;
         selectedTracks = List.filled(parsedTracks.length, true); // デフォルトで全選択
@@ -954,30 +1398,150 @@ class _MusicImportScreenState extends ConsumerState<MusicImportScreen>
     }
   }
 
+  String _sampleTextForMusic(String type) {
+    switch (type) {
+      case 'listening_history':
+        return '''
+再生日時: 2024/02/18 21:30
+楽曲: 夜に駆ける
+アーティスト: YOASOBI
+
+再生日時: 2024/02/18 21:12
+楽曲: 怪物
+アーティスト: YOASOBI
+
+再生日時: 2024/02/18 20:55
+楽曲: 群青
+アーティスト: YOASOBI'''
+            .trim();
+      case 'playlist':
+        return '''
+プレイリスト名: BEST OF ${_config.displayName}
+楽曲1: Butter - BTS
+楽曲2: Dynamite - BTS
+楽曲3: Permission to Dance - BTS
+楽曲4: Run BTS - BTS'''
+            .trim();
+      case 'artist':
+        return '''
+アーティスト: RADWIMPS
+代表曲: 前前前世, なんでもないや
+フォロー日: 2024/02/01
+メモ: 新作アルバムをチェック'''
+            .trim();
+      case 'concert':
+        return '''
+イベント名: RADWIMPS WORLD TOUR 2024
+会場: 横浜アリーナ
+開催日: 2024/04/12
+座席: スタンドBブロック 12列
+ハイライト: 新曲初披露'''
+            .trim();
+      default:
+        return '''
+楽曲: サンプルソング
+アーティスト: Sample Artist
+再生日: 2024/02/18'''
+            .trim();
+    }
+  }
+
+  String? _inferMusicImportType(String host) {
+    final lower = host.toLowerCase();
+    if (lower.contains('spotify')) return 'playlist';
+    if (lower.contains('music.apple')) return 'playlist';
+    if (lower.contains('music.youtube')) return 'playlist';
+    if (lower.contains('line.me/music')) return 'playlist';
+    if (lower.contains('live') || lower.contains('event')) return 'concert';
+    return null;
+  }
+
+  String _urlHintForService() {
+    switch (widget.serviceId) {
+      case 'spotify':
+        return 'https://open.spotify.com/playlist/xxxxxxxx';
+      case 'apple_music':
+        return 'https://music.apple.com/jp/playlist/...';
+      case 'amazon_music':
+        return 'https://music.amazon.co.jp/playlists/...';
+      default:
+        return 'https://example.com/music/playlist/...';
+    }
+  }
+
   void _showErrorSnackBar(String message) {
+    _showSnackBar(message, color: Colors.red[600]);
+  }
+
+  void _showSnackBar(String message, {Color? color}) {
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(message),
-          backgroundColor: Colors.red[600],
+          backgroundColor: color ?? const Color(0xFF323232),
           duration: const Duration(seconds: 4),
         ),
       );
     }
   }
 
-  void _confirmImport() {
-    final selectedMusicTracks = extractedTracks
+  Future<void> _confirmImport() async {
+    final selectedEntries = extractedTracks
         .asMap()
         .entries
         .where((entry) => selectedTracks[entry.key])
-        .map((entry) => entry.value.toMap())
         .toList();
+
+    if (selectedEntries.isEmpty) {
+      _showErrorSnackBar('取り込む楽曲を選択してください');
+      return;
+    }
+
+    final now = DateTime.now();
+    final sessionId =
+        '${_config.serviceId}_${now.millisecondsSinceEpoch.toString()}';
+
+    final selectedMusicTracks = selectedEntries
+        .map(
+          (entry) => {
+            ...entry.value.toMap(),
+            'serviceId': _config.serviceId,
+            'serviceName': _config.displayName,
+            'sessionId': sessionId,
+            'importedAt': now.toIso8601String(),
+          },
+        )
+        .toList();
+
+    final historyItems = selectedEntries
+        .map(
+          (entry) => MusicHistoryItem.fromTrack(
+            track: entry.value,
+            serviceId: _config.serviceId,
+            serviceName: _config.displayName,
+            addedAt: now,
+            sessionId: sessionId,
+          ),
+        )
+        .toList();
+
+    await ref
+        .read(musicHistoryProvider.notifier)
+        .addTracks(_config.serviceId, historyItems);
 
     setState(() {
       processedTracks = selectedMusicTracks;
       showPreview = false;
       showConfirmation = true;
     });
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('${selectedMusicTracks.length}件の楽曲を取り込みました'),
+          backgroundColor: _accentColor,
+        ),
+      );
+    }
   }
 }

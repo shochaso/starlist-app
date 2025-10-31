@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:starlist_app/services/image_url_builder.dart';
 import '../../../core/components/layouts/timeline_view.dart';
 import '../providers/star_activity_provider.dart';
 import '../models/star_activity.dart';
@@ -231,7 +232,7 @@ class _StarActivityTimelineScreenState extends ConsumerState<StarActivityTimelin
           : null,
       media: hasImage
           ? Image.network(
-              activity.imageUrl!,
+              ImageUrlBuilder.thumbnail(activity.imageUrl!),
               fit: BoxFit.cover,
               errorBuilder: (context, error, stackTrace) => const Center(
                 child: Icon(Icons.broken_image, color: Colors.grey),
@@ -357,7 +358,7 @@ class _StarActivityTimelineScreenState extends ConsumerState<StarActivityTimelin
                     ClipRRect(
                       borderRadius: BorderRadius.circular(12.0),
                       child: Image.network(
-                        activity.imageUrl!,
+                        ImageUrlBuilder.thumbnail(activity.imageUrl!),
                         fit: BoxFit.cover,
                         width: double.infinity,
                       ),

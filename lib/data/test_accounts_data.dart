@@ -40,7 +40,7 @@ class TestAccountsData {
   static final User freeFan = User(
     id: 'test_free_fan',
     name: '田中太郎',
-    email: 'tanaka.taro@example.com',
+    email: 'shomafree@gmail.com',
     type: UserType.fan,
     fanPlanType: FanPlanType.free,
     createdAt: DateTime.now(),
@@ -49,7 +49,7 @@ class TestAccountsData {
   static final User lightPlan = User(
     id: 'test_light_fan',
     name: '佐藤花子',
-    email: 'sato.hanako@example.com',
+    email: 'shomalight@gmail.com',
     type: UserType.fan,
     fanPlanType: FanPlanType.light,
     createdAt: DateTime.now(),
@@ -76,7 +76,7 @@ class TestAccountsData {
   static final User starUser = User(
     id: 'test_star_creator',
     name: '花山瑞樹',
-    email: 'hanayama@example.com',
+    email: 'hanayama@gmail.com',
     type: UserType.star,
     fanPlanType: null,
     createdAt: DateTime.now(),

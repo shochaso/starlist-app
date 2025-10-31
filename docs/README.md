@@ -78,9 +78,10 @@ API設計・仕様
 ## 🚀 ドキュメントの使い方
 
 ### 新規メンバー向け
-1. [README.md](../README.md) - プロジェクト概要
-2. [development/DEVELOPMENT_GUIDE.md](./development/DEVELOPMENT_GUIDE.md) - 開発環境セットアップ
-3. [planning/Task.md](./planning/Task.md) - 現在のタスク
+1. [STARLIST_OVERVIEW.md](./STARLIST_OVERVIEW.md) - プロジェクト全体像サマリー
+2. [COMPANY_SETUP_GUIDE.md](./COMPANY_SETUP_GUIDE.md) - アカウント/環境セットアップ
+3. [development/DEVELOPMENT_GUIDE.md](./development/DEVELOPMENT_GUIDE.md) - 開発環境セットアップ詳細
+4. [planning/Task.md](./planning/Task.md) - 現在のタスク
 
 ### PM向け
 1. [planning/](./planning/) - 計画・進捗管理
@@ -104,6 +105,5 @@ API設計・仕様
 ---
 
 最終更新: 2025年10月15日
-
 
 

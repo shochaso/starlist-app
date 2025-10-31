@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:starlist_app/services/image_url_builder.dart';
+
 import '../../../data/models/netflix_models.dart';
 
 /// Netflix視聴履歴カードウィジェット
@@ -43,7 +45,10 @@ class NetflixViewingCard extends StatelessWidget {
                       ? ClipRRect(
                           borderRadius: BorderRadius.circular(12),
                           child: Image.network(
-                            viewingHistory.imageUrl!,
+                            ImageUrlBuilder.thumbnail(
+                              viewingHistory.imageUrl!,
+                              width: 320,
+                            ),
                             fit: BoxFit.cover,
                             errorBuilder: (context, error, stackTrace) => _buildImagePlaceholder(),
                           ),

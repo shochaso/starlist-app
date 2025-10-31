@@ -1,4 +1,4 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:starlist_app/services/service_icon_registry.dart';
@@ -6,35 +6,39 @@ import 'package:starlist_app/services/service_icon_registry.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  test('iconFor returns blank placeholder respecting size', () {
-    const size = 42.0;
-    final widget = ServiceIconRegistry.iconFor('amazon', size: size);
-
-    expect(widget, isA<SizedBox>());
-    final box = widget as SizedBox;
-    expect(box.width, size);
-    expect(box.height, size);
+  test('iconFor returns a ServiceIcon widget', () {
+    final widget = ServiceIconRegistry.iconFor('amazon', size: 42);
+    expect(widget, isA<Widget>());
   });
 
-  test('pathFor returns empty string while images are hidden', () {
-    expect(ServiceIconRegistry.pathFor('amazon'), equals(''));
-    expect(ServiceIconRegistry.pathFor('netflix'), equals(''));
-    expect(ServiceIconRegistry.pathFor('shein_jp'), equals(''));
+  test('pathFor resolves CDN SVG path', () {
+    expect(
+      ServiceIconRegistry.pathFor('amazon'),
+      startsWith('https://cdn.starlist.jp/icons/amazon.svg'),
+    );
+    expect(
+      ServiceIconRegistry.pathFor('prime_video'),
+      startsWith('https://cdn.starlist.jp/icons/prime_video.svg'),
+    );
+    expect(
+      ServiceIconRegistry.pathFor('SHEIN_JP'),
+      startsWith('https://cdn.starlist.jp/icons/shein.svg'),
+    );
+    expect(ServiceIconRegistry.pathFor('amazon'), contains('?v='));
   });
 
-  test('debugAutoMap exposes empty mappings when images disabled', () {
+  test('debugAutoMap exposes alias mappings', () {
     final debugMap = ServiceIconRegistry.debugAutoMap();
-    for (final entry in debugMap.entries) {
-      expect(entry.value, isEmpty);
-    }
+    expect(debugMap['amazon_prime'], endsWith('prime_video.svg'));
+    expect(debugMap['u_next'], endsWith('unext.svg'));
   });
 
-  test('iconForOrNull also returns placeholder', () {
-    const size = 30.0;
-    final widget = ServiceIconRegistry.iconForOrNull('netflix', size: size);
-    expect(widget, isA<SizedBox>());
-    final box = widget as SizedBox;
-    expect(box.width, size);
-    expect(box.height, size);
+  test('iconForOrNull returns null when key empty', () {
+    expect(ServiceIconRegistry.iconForOrNull(null), isNull);
+    expect(ServiceIconRegistry.iconForOrNull(''), isNull);
+    expect(
+      ServiceIconRegistry.iconForOrNull('netflix', size: 30),
+      isA<Widget>(),
+    );
   });
 }

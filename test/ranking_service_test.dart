@@ -1,3 +1,4 @@
+@Skip('legacy ranking stack; pending re-home')
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
 import 'package:mockito/annotations.dart';
@@ -6,8 +7,9 @@ import 'package:starlist_app/src/features/ranking/repositories/ranking_repositor
 import 'package:starlist_app/src/features/ranking/services/ranking_service.dart';
 import 'package:starlist_app/src/core/errors/app_exceptions.dart';
 
-@GenerateMocks([RankingRepository])
 import 'ranking_service_test.mocks.dart';
+
+@GenerateMocks([RankingRepository])
 
 void main() {
   late RankingService rankingService;

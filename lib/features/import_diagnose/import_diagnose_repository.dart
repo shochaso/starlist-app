@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:starlist_app/services/signed_url_client.dart';
 
 import '../../providers/supabase_client_provider.dart';
 import 'models.dart';
@@ -19,10 +20,13 @@ final importDiagnoseProvider = FutureProvider.autoDispose
 });
 
 class ImportDiagnoseRepository {
-  ImportDiagnoseRepository(this._client) : _functions = _client.functions;
+  ImportDiagnoseRepository(this._client)
+      : _functions = _client.functions,
+        _signedUrls = SignedUrlClient(client: _client);
 
   final SupabaseClient _client;
   final FunctionsClient _functions;
+  final SignedUrlClient _signedUrls;
 
   Future<ImportDiagnoseState> fetch({String? jobId}) async {
     if (jobId == null || jobId.isEmpty) {
@@ -78,19 +82,19 @@ class ImportDiagnoseRepository {
     return _parseState(payload);
   }
 
-  Future<String?> refreshSignedUrl(String resource) async {
-    final payload = await _invoke(
-      'media/refresh-signed-url',
-      method: HttpMethod.post,
-      body: {'resource': resource},
-    );
-    if (payload is Map<String, dynamic>) {
-      return payload['signed_url'] as String? ?? payload['url'] as String?;
+  Future<String?> refreshSignedUrl(String resource, {String? currentUrl}) async {
+    try {
+      if (currentUrl != null && currentUrl.isNotEmpty) {
+        return await _signedUrls.ensureFresh(
+          resource,
+          currentUrl,
+        );
+      }
+      return await _signedUrls.getSignedUrl(resource);
+    } catch (error, stack) {
+      log('refreshSignedUrl failed', error: error, stackTrace: stack);
+      return null;
     }
-    if (payload is String && payload.isNotEmpty) {
-      return payload;
-    }
-    return null;
   }
 
   Future<dynamic> _invoke(
@@ -119,7 +123,7 @@ class ImportDiagnoseRepository {
 
   ImportDiagnoseState _parseState(dynamic payload) {
     if (payload == null) {
-      return ImportDiagnoseState.empty();
+      return const ImportDiagnoseState.empty();
     }
     if (payload is Map<String, dynamic>) {
       return ImportDiagnoseState.fromJson(payload);
@@ -153,19 +157,21 @@ class ImportDiagnoseRepository {
     final needsRefresh = state.ocr.imageUrl.isEmpty ||
         state.alertMessage?.contains('expired') == true ||
         _payloadFlagTrue(payload, 'signed_url_expired');
-    if (!needsRefresh) {
+    final resource = _extractStorageResource(payload) ?? state.storagePath;
+    if (!needsRefresh && resource == state.storagePath && state.ocr.imageUrl.isNotEmpty) {
       return state;
     }
-    final resource = _extractStorageResource(payload);
-    if (resource == null) {
+    if (resource.isEmpty) {
       return state;
     }
-    final refreshed = await refreshSignedUrl(resource);
+    final refreshed = await refreshSignedUrl(resource, currentUrl: state.ocr.imageUrl);
     if (refreshed == null || refreshed.isEmpty) {
-      return state;
+      return state.copyWith(
+        ocr: state.ocr.copyWith(storagePath: resource),
+      );
     }
     return state.copyWith(
-      ocr: state.ocr.copyWith(imageUrl: refreshed),
+      ocr: state.ocr.copyWith(imageUrl: refreshed, storagePath: resource),
     );
   }
 

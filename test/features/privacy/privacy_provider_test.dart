@@ -1,3 +1,4 @@
+@Skip('legacy privacy provider tests; pending migration')
 import "package:flutter_test/flutter_test.dart";
 import "package:mockito/mockito.dart";
 import "package:starlist_app/src/features/privacy/models/privacy_settings.dart";

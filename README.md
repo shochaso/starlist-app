@@ -635,3 +635,56 @@ final tokens = Theme.of(context).extension<AppTokens>()!;
 - カラーは `Theme.of(context).colorScheme` を経由して取得してください。直接のマジックナンバー使用は避け、コンポーネント側で必要なアクセント色を選択します。
 - カスタム UI を組む際は、`AppButton`・`AppCard`・`AppTextField` (`lib/ui/`) をベースにすると Material 3 とトークン準拠のスタイルを再利用できます。
 - フォーカスリングはトークンで太さ・色・オフセットを制御しています。タッチ/キーボード操作を想定するウィジェットでは `Focus` / `InkWell` を用いて可視化を崩さないようにしてください。
+
+## Runtime Flags & Supabase Deployment Flow
+
+### Flutter Runtime Flags
+
+| Flag               | Type   | Description                                 |
+|--------------------|--------|---------------------------------------------|
+| `kEnv`             | String | Build environment (`development/staging/prod`) |
+| `kHideImportIcons` | bool   | Hide icon rendering entirely                |
+| `kCfBypassLocal`   | bool   | Use only local assets (skip CDN requests)   |
+
+Sample commands:
+
+```bash
+flutter run -d chrome --dart-define=ENV=development --dart-define=HIDE_IMPORT_ICONS=true --dart-define=CF_BYPASS_LOCAL=true
+flutter run -d chrome --dart-define=ENV=development --dart-define=HIDE_IMPORT_ICONS=false --dart-define=CF_BYPASS_LOCAL=true
+flutter run -d chrome --dart-define=ENV=production  --dart-define=HIDE_IMPORT_ICONS=false --dart-define=CF_BYPASS_LOCAL=false
+```
+
+### Make Targets
+
+```bash
+make db-push    # Push migrations to dev
+make db-pull    # Pull dev schema
+make fn-deploy  # Deploy Edge Functions
+make fn-logs FUNC=sign-url  # Tail logs
+make fn-serve   # Local serve (requires ./supabase/.env)
+```
+
+### CI/CD Rules
+
+- PR 必須 (`flutter analyze`, `flutter test`, `supabase db push --dry-run`)
+- `release/*` ブランチ push でステージングへ自動反映
+- `main` ブランチ push で本番へ自動反映
+- DB 変更は必ずマイグレーション経由
+- Secrets は個人PC と CI で分離、期限付き・ローテ必須
+
+### Rollback
+
+```bash
+supabase db dump -f backup/$(date +%Y%m%dT%H%M%S).sql   # デプロイ前
+psql $DATABASE_URL < backup/YYYYMMDDTHHMMSS.sql         # 復旧
+# or supabase migration revert (migration_id)
+```
+
+### Setup Checklist
+
+- [ ] `supabase link --project-ref zjwvmoxpacbpwawlwbrd` をローカルで実行済み
+- [ ] GitHub Secrets: `SUPABASE_ACCESS_TOKEN_STG` / `SUPABASE_ACCESS_TOKEN_PROD`
+- [ ] CI で Supabase CLI をインストールできること
+- [ ] PR チェックに `flutter analyze` / `flutter test` / `supabase db push --dry-run` が含まれている
+- [ ] `.env` / `.env.*` は Git 管理対象外
+```

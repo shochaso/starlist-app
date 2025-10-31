@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:starlist_app/services/image_url_builder.dart';
+
 import '../models/star.dart';
 import '../routes/app_routes.dart';
 import '../src/core/config/feature_flags.dart';
@@ -497,7 +499,10 @@ class FollowingScreen extends StatelessWidget {
                   width: 60,
                   height: 60,
                   child: Image.network(
-                    star.imageUrl,
+                    ImageUrlBuilder.thumbnail(
+                      star.imageUrl,
+                      width: 320,
+                    ),
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) {
                       return Container(

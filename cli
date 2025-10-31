@@ -4,6 +4,9 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 run_chrome() {
+  echo "Flutterキャッシュをクリアします..."
+  (cd "$ROOT_DIR" && flutter clean)
+
   echo "Chrome版Starlistを起動します..."
   (cd "$ROOT_DIR" && flutter run -d chrome --web-port=8080)
 }

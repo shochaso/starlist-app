@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:starlist_app/services/image_url_builder.dart';
+
 import '../../../data/models/amazon_models.dart';
 
 /// Amazon購入履歴カードウィジェット
@@ -43,7 +45,10 @@ class AmazonPurchaseCard extends StatelessWidget {
                       ? ClipRRect(
                           borderRadius: BorderRadius.circular(12),
                           child: Image.network(
-                            purchase.imageUrl!,
+                            ImageUrlBuilder.thumbnail(
+                              purchase.imageUrl!,
+                              width: 240,
+                            ),
                             fit: BoxFit.cover,
                             errorBuilder: (context, error, stackTrace) => _buildImagePlaceholder(),
                           ),

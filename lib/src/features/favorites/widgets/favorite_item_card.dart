@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../models/favorite_item_model.dart';
-import '../providers/favorite_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:starlist_app/services/image_url_builder.dart';
+
+import '../models/favorite_item_model.dart';
+import '../providers/favorite_provider.dart';
 /// お気に入りアイテムを表示するカードウィジェット
 class FavoriteItemCard extends ConsumerWidget {
   final FavoriteItemModel item;
@@ -38,7 +40,7 @@ class FavoriteItemCard extends ConsumerWidget {
               AspectRatio(
                 aspectRatio: 16 / 9,
                 child: Image.network(
-                  item.thumbnailUrl!,
+                  ImageUrlBuilder.thumbnail(item.thumbnailUrl!),
                   fit: BoxFit.cover,
                   errorBuilder: (context, error, stackTrace) {
                     return Container(

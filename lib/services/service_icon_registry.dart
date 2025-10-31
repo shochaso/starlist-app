@@ -1,35 +1,60 @@
 import 'package:flutter/widgets.dart';
 
-import 'package:starlist_app/config/ui_flags.dart';
-import 'package:starlist_app/utils/key_normalizer.dart';
-import 'package:starlist_app/widgets/icon_diag_hud.dart' show diagTouch;
+import '../utils/key_normalizer.dart';
+import 'service_icon/service_icon_registry.dart' as internal;
+import 'service_icon/service_icon_widget.dart';
 
+/// Compatibility shim that keeps the legacy ServiceIconRegistry API available
+/// while delegating implementation to the v2 icon pipeline.
 class ServiceIconRegistry {
-  static const Map<String, Map<String, String>> _map = {};
+  const ServiceIconRegistry._();
 
-  static Map<String, String> get icons => const {};
+  static Future<void> init() => internal.ServiceIconRegistry.init();
 
-  static Future<void> init() async {}
+  static Map<String, String> get icons =>
+      internal.ServiceIconRegistry.instance.icons;
 
-  static Widget iconFor(String rawKey, {double size = 24}) {
-    final key = resolveAlias(normalizeKey(rawKey));
-    diagTouch(key: key, path: '');
-    return SizedBox(width: size, height: size);
+  static Widget iconFor(
+    String key, {
+    double size = 24,
+    IconData? fallback,
+  }) {
+    final normalized = KeyNormalizer.normalize(key);
+    return ServiceIcon.forKey(
+      normalized,
+      size: size,
+      fallback: fallback,
+    );
   }
 
-  static String? pathFor(String rawKey) {
-    resolveAlias(normalizeKey(rawKey));
-    return kHideImportImages ? '' : '';
+  static Widget? iconForOrNull(
+    String? key, {
+    double size = 24,
+    IconData? fallback,
+  }) {
+    if (key == null || key.isEmpty) {
+      return null;
+    }
+    return iconFor(key, size: size, fallback: fallback);
+  }
+
+  static String? pathFor(String key) {
+    final normalized = KeyNormalizer.normalize(key);
+    return internal.ServiceIconRegistry.pathFor(normalized);
+  }
+
+  static void clearCache() {
+    internal.ServiceIconRegistry.instance.clear();
   }
 
   static Map<String, String> debugAutoMap() {
-    return _map.map((key, _) => MapEntry(key, ''));
-  }
-
-  static Widget? iconForOrNull(String rawKey, {double size = 24}) {
-    if (kHideImportImages) {
-      return SizedBox(width: size, height: size);
+    final map = <String, String>{};
+    for (final entry in KeyNormalizer.aliases.entries) {
+      map[entry.key] = pathFor(entry.value) ?? '';
     }
-    return null;
+    for (final entry in icons.entries) {
+      map.putIfAbsent(entry.key, () => pathFor(entry.key) ?? entry.value);
+    }
+    return map;
   }
 }

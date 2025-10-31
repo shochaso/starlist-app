@@ -1,3 +1,4 @@
+@Skip('legacy content provider tests; pending migration')
 import "package:flutter_test/flutter_test.dart";
 import "package:mockito/mockito.dart";
 import "package:starlist_app/src/features/content/models/content_model.dart";

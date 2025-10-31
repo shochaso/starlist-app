@@ -128,7 +128,7 @@ class _StarVerificationAdminScreenState extends ConsumerState<StarVerificationAd
             children: [
               Expanded(
                 child: DropdownButtonFormField<String>(
-                  initialValue: _selectedStatus,
+                  value: _selectedStatus,
                   decoration: const InputDecoration(
                     labelText: 'ステータス',
                     border: OutlineInputBorder(),
@@ -152,7 +152,7 @@ class _StarVerificationAdminScreenState extends ConsumerState<StarVerificationAd
               const SizedBox(width: 12),
               Expanded(
                 child: DropdownButtonFormField<SNSPlatform?>(
-                  initialValue: _selectedPlatform,
+                  value: _selectedPlatform,
                   decoration: const InputDecoration(
                     labelText: 'SNSプラットフォーム',
                     border: OutlineInputBorder(),

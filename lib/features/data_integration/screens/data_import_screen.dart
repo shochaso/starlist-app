@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -27,6 +29,10 @@ import 'entertainment_import_screen.dart';
 import 'food_import_screen.dart';
 import 'payment_import_screen.dart';
 import 'digital_import_screen.dart';
+import 'convenience_import_screen.dart';
+import 'books_import_screen.dart';
+import 'fashion_import_screen.dart';
+import 'app_usage_import_screen.dart';
 import 'package:go_router/go_router.dart';
 
 class DataImportScreen extends ConsumerStatefulWidget {
@@ -100,22 +106,45 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
       'priority': 1,
     },
     {
+      'id': 'netflix',
+      'title': 'Netflix',
+      'subtitle': '',
+      'priority': 2,
+      'iconScale': 0.5,
+    },
+    {
+      'id': 'prime_video',
+      'title': 'Amazon Prime Video',
+      'subtitle': '',
+      'priority': 3,
+    },
+    {
       'id': 'amazon',
       'title': 'Amazon',
       'subtitle': '',
-      'priority': 2,
+      'priority': 4,
+      'iconScale': 1.7,
     },
     {
       'id': 'spotify',
       'title': 'Spotify',
       'subtitle': '',
-      'priority': 3,
+      'priority': 5,
+      'iconScale': 1.5,
+    },
+    {
+      'id': 'ubereats',
+      'title': 'Uber Eats',
+      'subtitle': '',
+      'priority': 6,
+      'iconScale': 2.0,
     },
     {
       'id': 'receipt',
       'title': 'レシート',
       'subtitle': '',
-      'priority': 4,
+      'priority': 7,
+      'fallbackIcon': Icons.receipt_long,
     },
     // MVP版では以下のサービスを非表示
     // {
@@ -140,8 +169,18 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
         'title': 'Amazon Prime Video',
         'subtitle': '映画・ドラマ・オリジナル'
       },
-      {'id': 'netflix', 'title': 'Netflix', 'subtitle': '映画・ドラマ・シリーズ'},
-      {'id': 'unext', 'title': 'U-NEXT', 'subtitle': '映画・アニメ・雑誌'},
+      {
+        'id': 'netflix',
+        'title': 'Netflix',
+        'subtitle': '映画・ドラマ・シリーズ',
+        'iconSize': 7.75,
+      },
+      {
+        'id': 'unext',
+        'title': 'U-NEXT',
+        'subtitle': '映画・アニメ・雑誌',
+        'iconSize': 46.5,
+      },
       {'id': 'hulu', 'title': 'Hulu', 'subtitle': '海外ドラマ・アニメ'},
       {'id': 'abema', 'title': 'ABEMA', 'subtitle': 'アニメ・バラエティ・ニュース'},
       {
@@ -154,16 +193,14 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
       },
     ],
     'ショッピング': [
-      {'id': 'amazon', 'title': 'Amazon', 'subtitle': '注文履歴・お気に入り'},
+      {
+        'id': 'amazon',
+        'title': 'Amazon',
+        'subtitle': '注文履歴・お気に入り',
+        'iconSize': 52.7,
+      },
       {'id': 'yahoo_shopping', 'title': 'Yahoo!ショッピング', 'subtitle': '購入履歴'},
       {'id': 'rakuten', 'title': '楽天市場', 'subtitle': '購入履歴'},
-      {
-        'id': 'shein',
-        'title': 'SHEIN',
-        'subtitle': 'ファストファッション通販',
-        'iconData': Icons.shopping_bag,
-        'iconColor': const Color(0xFFF54785),
-      },
       {
         'id': 'manual_entry_shopping',
         'title': 'その他',
@@ -174,7 +211,12 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
       },
     ],
     'フードデリバリ': [
-      {'id': 'ubereats', 'title': 'Uber Eats', 'subtitle': 'フードデリバリー'},
+      {
+        'id': 'ubereats',
+        'title': 'Uber Eats',
+        'subtitle': 'フードデリバリー',
+        'iconSize': 62.0,
+      },
       {
         'id': 'demaecan',
         'title': '出前館',
@@ -196,35 +238,30 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
         'id': 'seven_eleven',
         'title': 'セブン-イレブン',
         'subtitle': '最寄りコンビニの利用',
-        'iconData': Icons.local_convenience_store,
         'iconColor': const Color(0xFFF58220),
       },
       {
         'id': 'family_mart',
         'title': 'ファミリーマート',
         'subtitle': '最寄りコンビニの利用',
-        'iconData': Icons.local_convenience_store,
         'iconColor': const Color(0xFF1BA548),
       },
       {
         'id': 'lawson',
         'title': 'ローソン',
         'subtitle': '最寄りコンビニの利用',
-        'iconData': Icons.local_convenience_store,
         'iconColor': const Color(0xFF0078C8),
       },
       {
         'id': 'daily_yamazaki',
         'title': 'デイリーヤマザキ',
         'subtitle': '最寄りコンビニの利用',
-        'iconData': Icons.local_convenience_store,
         'iconColor': const Color(0xFFD6001C),
       },
       {
         'id': 'ministop',
         'title': 'ミニストップ',
         'subtitle': '最寄りコンビニの利用',
-        'iconData': Icons.local_convenience_store,
         'iconColor': const Color(0xFF005BAC),
       },
       {
@@ -238,7 +275,12 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
     ],
     '音楽': [
       {'id': 'amazon_music', 'title': 'Amazon Music', 'subtitle': '音楽ストリーミング'},
-      {'id': 'spotify', 'title': 'Spotify', 'subtitle': '音楽ストリーミング'},
+      {
+        'id': 'spotify',
+        'title': 'Spotify',
+        'subtitle': '音楽ストリーミング',
+        'iconSize': 46.5,
+      },
       {'id': 'apple_music', 'title': 'Apple Music', 'subtitle': '音楽再生履歴'},
       {
         'id': 'manual_entry_music',
@@ -287,13 +329,19 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
       },
     ],
     'ファッション': [
-      {'id': 'zozotown', 'title': 'ZOZOTOWN', 'subtitle': 'ファッション通販'},
+      {
+        'id': 'zozotown',
+        'title': 'ZOZOTOWN',
+        'subtitle': 'ファッション通販',
+        'iconSize': 46.5,
+      },
       {
         'id': 'uniqlo',
         'title': 'UNIQLO',
         'subtitle': 'オンラインストア・アプリ',
         'iconData': Icons.checkroom,
         'iconColor': const Color(0xFFDC143C),
+        'iconSize': 46.5,
       },
       {
         'id': 'gu',
@@ -301,6 +349,7 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
         'subtitle': 'オンラインストア・アプリ',
         'iconData': Icons.checkroom,
         'iconColor': const Color(0xFF1E88E5),
+        'iconSize': 46.5,
       },
       {
         'id': 'shein_fashion',
@@ -309,6 +358,7 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
         'iconData': Icons.shopping_bag,
         'iconColor': const Color(0xFFF54785),
         'linkedServiceId': 'shein',
+        'iconSize': 46.5,
       },
       {
         'id': 'manual_entry_fashion',
@@ -1004,108 +1054,32 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
     final themeState = ref.watch(themeProviderEnhanced);
     final isDark = themeState.isDarkMode;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'API連携・アフィリエイト',
-          style: TextStyle(
-            color: isDark ? Colors.white : Colors.black87,
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 20),
-
-        // API サービス一覧
-        ..._apiServices.map((service) {
-          final serviceData = _connectedServices[service['id']] ??
-              {
-                'isConnected': false,
-                'dataCount': 0,
-                'lastSync': '未接続',
-              };
-
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: _buildApiServiceCard(service, serviceData, isDark),
-          );
-        }),
-      ],
-    );
+    return const SizedBox.shrink();
   }
 
-  // 優先度サービス用カード（実際のロゴ使用）
+  // 優先度サービス用カード（実際のロゴ使用、ホバー/クリック対応）
   Widget _buildPriorityServiceCard(Map<String, dynamic> service, bool isDark) {
-    return GestureDetector(
-      onTap: () => _navigateToService(service['id']),
-      child: Container(
-        decoration: BoxDecoration(
-          gradient: isDark
-              ? const LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [Color(0xFF2A2A2A), Color(0xFF1F1F1F)],
-                )
-              : const LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [Colors.white, Color(0xFFFAFBFC)],
-                ),
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: isDark
-                  ? Colors.black.withOpacity(0.3)
-                  : Colors.black.withOpacity(0.08),
-              blurRadius: 20,
-              offset: const Offset(0, 8),
-              spreadRadius: 0,
-            ),
-            BoxShadow(
-              color: isDark
-                  ? Colors.black.withOpacity(0.2)
-                  : Colors.white.withOpacity(0.9),
-              blurRadius: 0,
-              offset: const Offset(0, 1),
-              spreadRadius: 0,
-            ),
-          ],
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // 画像の代わりに空のプレースホルダーを表示
-              buildBlankAvatar(size: 43),
-              const SizedBox(height: 8),
-              Text(
-                service['title'],
-                style: TextStyle(
-                  color: isDark ? Colors.white : Colors.black87,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
-                textAlign: TextAlign.center,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: 4),
-              Text(
-                service['subtitle'],
-                style: TextStyle(
-                  color: isDark ? Colors.grey[400] : Colors.grey[600],
-                  fontSize: 10,
-                ),
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
-          ),
-        ),
-      ),
+    const double baseIconSize = 43;
+    const double baseBoxSize = 56;
+    final double iconScale = (service['iconScale'] as num?)?.toDouble() ?? 1.0;
+    final double iconSize = baseIconSize * iconScale;
+    final double iconBoxSize = baseBoxSize * iconScale;
+    final String serviceId = service['id'] as String;
+    final serviceDefinition = ServiceIcons.getService(serviceId);
+    final Color accentColor = serviceDefinition?.primaryColor ?? 
+        _getServiceColor(serviceId);
+
+    return _InteractiveServiceCard(
+      serviceId: serviceId,
+      title: service['title'] as String,
+      subtitle: service['subtitle'] as String?,
+      iconSize: iconSize,
+      iconBoxSize: iconBoxSize,
+      isDark: isDark,
+      accentColor: accentColor,
+      fallbackIcon: service['fallbackIcon'] as IconData?,
+      onTap: () => _navigateToService(serviceId),
+      isPriority: true,
     );
   }
 
@@ -1166,16 +1140,7 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
         : service['iconColor'] as Color? ??
             (isDark ? Colors.white : const Color(0xFF1A1A2E));
     final double iconSize = (service['iconSize'] as double?) ?? 31;
-
-    Widget buildIcon() {
-      if (kHideImportImages) {
-        return buildBlankAvatar(size: iconSize);
-      }
-      if (iconData != null) {
-        return Icon(iconData, size: iconSize, color: iconColor);
-      }
-      return buildBlankAvatar(size: iconSize);
-    }
+    final double iconBoxSize = math.max(iconSize + 22, 28);
 
     void handleTap() {
       if (isManualEntry) {
@@ -1254,113 +1219,30 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
               : 2,
     );
 
-    return GestureDetector(
-      onTap: handleTap,
-      child: Container(
-        decoration: BoxDecoration(
+    final serviceDefinition = ServiceIcons.getService(effectiveServiceId);
+    final Color accentColor = serviceDefinition?.primaryColor ?? 
+        (service['iconColor'] as Color?) ?? 
+        _getServiceColor(effectiveServiceId);
+
+    return _InteractiveServiceCard(
+      serviceId: resolvedServiceId,
+      title: title,
+      subtitle: subtitle.isNotEmpty ? subtitle : null,
+      iconSize: iconSize,
+      iconBoxSize: iconBoxSize,
+      isDark: isDark,
+      accentColor: accentColor,
+      isManualEntry: isManualEntry,
+      isCustom: isCustom,
+      isImplemented: isImplemented,
+      iconData: iconData,
+      iconColor: iconColor,
           gradient: gradient,
-          borderRadius: BorderRadius.circular(18),
           border: border,
-          boxShadow: [
-            BoxShadow(
-              color: isDark
-                  ? Colors.black.withOpacity(0.3)
-                  : Colors.black.withOpacity(0.08),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-              spreadRadius: 0,
-            ),
-          ],
-        ),
-        child: Stack(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(14),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Opacity(
-                    opacity: showComingSoonBadge ? 0.5 : 1.0,
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: _squareIcon(
-                        size: 56,
+      showComingSoonBadge: showComingSoonBadge,
+      onTap: handleTap,
                         probeLabel: resolvedServiceId,
-                        child: buildIcon(),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    title,
-                    style: TextStyle(
-                      color: isManualEntry
-                          ? (isDark ? Colors.white : const Color(0xFF0F172A))
-                          : showComingSoonBadge
-                              ? (isDark ? Colors.grey[500] : Colors.grey[600])
-                              : (isDark ? Colors.white : Colors.black87),
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  if (subtitle.isNotEmpty) ...[
-                    const SizedBox(height: 6),
-                    Text(
-                      subtitle,
-                      style: TextStyle(
-                        color: isManualEntry
-                            ? (isDark
-                                ? Colors.white70
-                                : const Color(0xFF0F172A).withOpacity(0.7))
-                            : (isDark ? Colors.grey[400] : Colors.grey[600]),
-                        fontSize: 11,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                  if (kDebugMode) ...[
-                    const SizedBox(height: 8),
-                    Text(
-                      'key=$effectiveServiceId → $resolvedServiceId (icon hidden)',
-                      style: TextStyle(
-                        fontSize: 10,
-                        color: isDark ? Colors.white38 : Colors.grey[500],
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                ],
-              ),
-            ),
-            if (showComingSoonBadge)
-              Positioned(
-                top: 10,
-                right: 12,
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFFC107),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Text(
-                    '開発中',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 9,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ),
-          ],
-        ),
-      ),
+      isPriority: false,
     );
   }
 
@@ -1518,7 +1400,9 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
                     ),
                     const SizedBox(height: 8),
                     DropdownButtonFormField<String>(
-                      initialValue: selectedCategory,
+                      value: categories.contains(selectedCategory)
+                          ? selectedCategory
+                          : null,
                       items: categories
                           .map(
                             (category) => DropdownMenuItem(
@@ -1550,7 +1434,7 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
                     ),
                     const SizedBox(height: 8),
                     DropdownButtonFormField<String>(
-                      initialValue: options.any(
+                      value: options.any(
                               (option) => option['id'] == selectedServiceId)
                           ? selectedServiceId
                           : 'custom',
@@ -1696,7 +1580,30 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
       'abema',
       'hulu',
       'disney',
-      'unext'
+      'unext',
+      'restaurant',
+      'delivery',
+      'cooking',
+      'ubereats',
+      'demaecan',
+      'seven_eleven',
+      'family_mart',
+      'lawson',
+      'daily_yamazaki',
+      'ministop',
+      'steam',
+      'playstation',
+      'nintendo',
+      'zozotown',
+      'uniqlo',
+      'gu',
+      'amazon_books',
+      'kindle',
+      'rakuten_books',
+      'audible',
+      'books',
+      'ios_screen_time',
+      'android_digital_wellbeing',
     ];
     return implementedServices.contains(serviceId);
   }
@@ -1851,7 +1758,7 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
                   boxShadow: [
                     BoxShadow(
                       color: ServiceIcons.getService(service['id']!)
-                              ?.color
+                              ?.primaryColor
                               .withOpacity(0.2) ??
                           const Color(0xFF4ECDC4).withOpacity(0.2),
                       blurRadius: 6,
@@ -2081,10 +1988,12 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
         );
         break;
       case 'spotify':
+      case 'apple_music':
+      case 'amazon_music':
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => const MusicImportScreen(),
+            builder: (context) => MusicImportScreen(serviceId: serviceId),
           ),
         );
         break;
@@ -2144,9 +2053,29 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
           ),
         );
         break;
+      case 'seven_eleven':
+      case 'family_mart':
+      case 'lawson':
+      case 'daily_yamazaki':
+      case 'ministop':
+      case 'manual_entry_convenience':
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ConvenienceImportScreen(
+              serviceId: serviceId,
+              serviceName: _getServiceDisplayName(serviceId),
+              serviceColor: _getServiceColor(serviceId),
+              serviceIcon: _getServiceIcon(serviceId),
+            ),
+          ),
+        );
+        break;
       case 'restaurant':
       case 'delivery':
       case 'cooking':
+      case 'ubereats':
+      case 'demaecan':
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -2176,12 +2105,84 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
         );
         break;
       case 'games':
-      case 'books':
       case 'cinema':
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) => EntertainmentImportScreen(
+              serviceId: serviceId,
+              serviceName: _getServiceDisplayName(serviceId),
+              serviceColor: _getServiceColor(serviceId),
+              serviceIcon: _getServiceIcon(serviceId),
+            ),
+          ),
+        );
+        break;
+      case 'books':
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => BooksImportScreen(
+              serviceId: serviceId,
+              serviceName: _getServiceDisplayName(serviceId),
+              serviceColor: _getServiceColor(serviceId),
+              serviceIcon: _getServiceIcon(serviceId),
+            ),
+          ),
+        );
+        break;
+      case 'steam':
+      case 'playstation':
+      case 'nintendo':
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => EntertainmentImportScreen(
+              serviceId: serviceId,
+              serviceName: _getServiceDisplayName(serviceId),
+              serviceColor: _getServiceColor(serviceId),
+              serviceIcon: _getServiceIcon(serviceId),
+            ),
+          ),
+        );
+        break;
+      case 'zozotown':
+      case 'uniqlo':
+      case 'gu':
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => FashionImportScreen(
+              serviceId: serviceId,
+              serviceName: _getServiceDisplayName(serviceId),
+              serviceColor: _getServiceColor(serviceId),
+              serviceIcon: _getServiceIcon(serviceId),
+            ),
+          ),
+        );
+        break;
+      case 'amazon_books':
+      case 'kindle':
+      case 'rakuten_books':
+      case 'audible':
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => BooksImportScreen(
+              serviceId: serviceId,
+              serviceName: _getServiceDisplayName(serviceId),
+              serviceColor: _getServiceColor(serviceId),
+              serviceIcon: _getServiceIcon(serviceId),
+            ),
+          ),
+        );
+        break;
+      case 'ios_screen_time':
+      case 'android_digital_wellbeing':
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => AppUsageImportScreen(
               serviceId: serviceId,
               serviceName: _getServiceDisplayName(serviceId),
               serviceColor: _getServiceColor(serviceId),
@@ -2390,6 +2391,8 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
       case 'shein':
       case 'shein_fashion':
         return 'SHEIN';
+      case 'ubereats':
+        return 'Uber Eats';
       case 'demaecan':
         return '出前館';
       case 'restaurant':
@@ -2482,6 +2485,8 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
       case 'shein':
       case 'shein_fashion':
         return const Color(0xFFF54785);
+      case 'ubereats':
+        return const Color(0xFF000000);
       case 'demaecan':
         return const Color(0xFFFF7043);
       case 'restaurant':
@@ -2581,6 +2586,24 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
           return FontAwesomeIcons.globe; // ウェブサービス用
         case 'game_apps':
           return FontAwesomeIcons.gamepad; // ゲームアプリ用
+        case 'steam':
+          return FontAwesomeIcons.steam; // Steam用
+        case 'playstation':
+          return FontAwesomeIcons.playstation; // PlayStation用
+        case 'nintendo':
+          return FontAwesomeIcons.gamepad; // Nintendo用
+        case 'zozotown':
+        case 'uniqlo':
+        case 'gu':
+          return FontAwesomeIcons.shirt; // ファッション用
+        case 'amazon_books':
+        case 'kindle':
+        case 'rakuten_books':
+        case 'audible':
+          return FontAwesomeIcons.book; // 書籍用
+        case 'ios_screen_time':
+        case 'android_digital_wellbeing':
+          return FontAwesomeIcons.mobileScreen; // アプリ使用時間用
         default:
           return FontAwesomeIcons.question;
       }
@@ -2679,12 +2702,11 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
           return ServiceIcons.buildServiceCard(
             serviceId: service['id'],
             title: service['name'],
-            description: serviceData['isConnected']
+            subtitle: serviceData['isConnected']
                 ? '${serviceData['dataCount']}件のデータ • ${serviceData['lastSync']}'
                 : service['description'],
             onTap: () => _connectService(service['id']),
             isConnected: serviceData['isConnected'],
-            isDark: isDark,
           );
         }),
       ],
@@ -2905,7 +2927,7 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
       SnackBar(
         content: Text(
             '${ServiceIcons.getService(serviceId)?.name ?? serviceId}との連携を開始します'),
-        backgroundColor: ServiceIcons.getService(serviceId)?.color ??
+        backgroundColor: ServiceIcons.getService(serviceId)?.primaryColor ??
             const Color(0xFF4ECDC4),
       ),
     );
@@ -3523,7 +3545,386 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
     return SizedBox(
       width: size,
       height: size,
-      child: probeLabel != null
+      child: probeLabel != null && kIconProbe
+          ? LayoutBuilder(
+              builder: (context, constraints) {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  debugPrint(
+                      '[IconProbe][$probeLabel] constraints=${constraints.maxWidth}x${constraints.maxHeight}');
+                });
+                return child;
+              },
+            )
+          : child,
+    );
+  }
+}
+
+/// インタラクティブなサービスカードウィジェット（ホバー/クリック対応）
+class _InteractiveServiceCard extends StatefulWidget {
+  final String serviceId;
+  final String title;
+  final String? subtitle;
+  final double iconSize;
+  final double iconBoxSize;
+  final bool isDark;
+  final Color accentColor;
+  final IconData? fallbackIcon;
+  final VoidCallback onTap;
+  final bool isPriority;
+  
+  // Category card specific
+  final bool isManualEntry;
+  final bool isCustom;
+  final bool isImplemented;
+  final IconData? iconData;
+  final Color? iconColor;
+  final LinearGradient? gradient;
+  final Border? border;
+  final bool showComingSoonBadge;
+  final String? probeLabel;
+
+  const _InteractiveServiceCard({
+    required this.serviceId,
+    required this.title,
+    this.subtitle,
+    required this.iconSize,
+    required this.iconBoxSize,
+    required this.isDark,
+    required this.accentColor,
+    this.fallbackIcon,
+    required this.onTap,
+    required this.isPriority,
+    this.isManualEntry = false,
+    this.isCustom = false,
+    this.isImplemented = true,
+    this.iconData,
+    this.iconColor,
+    this.gradient,
+    this.border,
+    this.showComingSoonBadge = false,
+    this.probeLabel,
+  });
+
+  @override
+  State<_InteractiveServiceCard> createState() => _InteractiveServiceCardState();
+}
+
+class _InteractiveServiceCardState extends State<_InteractiveServiceCard>
+    with SingleTickerProviderStateMixin {
+  bool _isHovered = false;
+  bool _isPressed = false;
+  late AnimationController _animationController;
+  late Animation<double> _scaleAnimation;
+  late Animation<double> _glowAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 200),
+      vsync: this,
+    );
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.97).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    );
+    _glowAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  Widget _buildIcon() {
+    if (kHideImportImages) {
+      return buildBlankAvatar(size: widget.iconSize);
+    }
+    if (widget.isManualEntry || widget.isCustom) {
+      if (widget.iconData != null) {
+        return Icon(
+          widget.iconData,
+          size: widget.iconSize,
+          color: widget.iconColor,
+        );
+      }
+      return buildBlankAvatar(size: widget.iconSize);
+    }
+    return ServiceIcons.buildIcon(
+      serviceId: widget.serviceId,
+      size: widget.iconSize,
+      fallback: widget.fallbackIcon ?? Icons.apps,
+      isDark: widget.isDark,
+    );
+  }
+
+  LinearGradient _getGradient() {
+    if (widget.gradient != null) return widget.gradient!;
+    
+    if (widget.isPriority) {
+      return widget.isDark
+          ? const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0xFF2A2A2A), Color(0xFF1F1F1F)],
+            )
+          : const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Colors.white, Color(0xFFFAFBFC)],
+            );
+    }
+    
+    return widget.isDark
+        ? LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: widget.isImplemented
+                ? [const Color(0xFF2A2A2A), const Color(0xFF1F1F1F)]
+                : [
+                    const Color(0xFF2A2A2A).withOpacity(0.6),
+                    const Color(0xFF1F1F1F).withOpacity(0.6),
+                  ],
+          )
+        : LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: widget.isImplemented
+                ? [Colors.white, const Color(0xFFFAFBFC)]
+                : [Colors.grey[100]!, const Color(0xFFF5F5F5)],
+          );
+  }
+
+  Border _getBorder() {
+    if (widget.border != null) return widget.border!;
+    
+    final borderColor = widget.isManualEntry
+        ? (widget.isDark
+            ? Colors.white.withOpacity(0.08)
+            : const Color(0xFFE2E8F0))
+        : widget.isImplemented
+            ? (widget.isDark
+                ? const Color(0xFF404040).withOpacity(0.3)
+                : const Color(0xFFE2E8F0).withOpacity(0.6))
+            : const Color(0xFFFFC107).withOpacity(0.3);
+    
+    return Border.all(
+      color: _isHovered
+          ? widget.accentColor.withOpacity(0.4)
+          : borderColor,
+      width: widget.isManualEntry
+          ? 1.5
+          : widget.isImplemented
+              ? (_isHovered ? 2 : 1)
+              : 2,
+    );
+  }
+
+  List<BoxShadow> _getShadows() {
+    final baseShadows = <BoxShadow>[
+      BoxShadow(
+        color: widget.isDark
+            ? Colors.black.withOpacity(0.3)
+            : Colors.black.withOpacity(0.08),
+        blurRadius: widget.isPriority ? 20 : 12,
+        offset: Offset(0, widget.isPriority ? 8 : 4),
+        spreadRadius: 0,
+      ),
+    ];
+    
+    if (_isHovered) {
+      baseShadows.add(
+        BoxShadow(
+          color: widget.accentColor.withOpacity(0.25 * _glowAnimation.value),
+          blurRadius: 24,
+          offset: const Offset(0, 8),
+          spreadRadius: 0,
+        ),
+      );
+    }
+    
+    return baseShadows;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final borderRadius = widget.isPriority ? 20.0 : 18.0;
+    final padding = widget.isPriority
+        ? const EdgeInsets.all(16)
+        : const EdgeInsets.all(14);
+
+    return MouseRegion(
+      onEnter: (_) {
+        setState(() {
+          _isHovered = true;
+        });
+        _animationController.forward();
+      },
+      onExit: (_) {
+        setState(() {
+          _isHovered = false;
+        });
+        _animationController.reverse();
+      },
+      child: GestureDetector(
+        onTapDown: (_) {
+          setState(() {
+            _isPressed = true;
+          });
+          _animationController.forward();
+        },
+        onTapUp: (_) {
+          setState(() {
+            _isPressed = false;
+          });
+          _animationController.reverse();
+          widget.onTap();
+        },
+        onTapCancel: () {
+          setState(() {
+            _isPressed = false;
+          });
+          _animationController.reverse();
+        },
+        child: AnimatedBuilder(
+          animation: _animationController,
+          builder: (context, child) {
+            return Transform.scale(
+              scale: _isPressed ? _scaleAnimation.value : 1.0,
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: _getGradient(),
+                  borderRadius: BorderRadius.circular(borderRadius),
+                  border: _getBorder(),
+                  boxShadow: _getShadows(),
+                ),
+                child: Stack(
+                  children: [
+                    Padding(
+                      padding: padding,
+                      child: Column(
+                        crossAxisAlignment: widget.isPriority
+                            ? CrossAxisAlignment.center
+                            : CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Opacity(
+                            opacity: widget.showComingSoonBadge ? 0.5 : 1.0,
+                            child: Align(
+                              alignment: widget.isPriority
+                                  ? Alignment.center
+                                  : Alignment.centerLeft,
+                              child: _buildIconContainer(),
+                            ),
+                          ),
+                          SizedBox(height: widget.isPriority ? 8 : 12),
+                          Text(
+                            widget.title,
+                            style: TextStyle(
+                              color: widget.isManualEntry
+                                  ? (widget.isDark
+                                      ? Colors.white
+                                      : const Color(0xFF0F172A))
+                                  : widget.showComingSoonBadge
+                                      ? (widget.isDark
+                                          ? Colors.grey[500]
+                                          : Colors.grey[600])
+                                      : (widget.isDark
+                                          ? Colors.white
+                                          : Colors.black87),
+                              fontSize: widget.isPriority ? 14 : 13,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            textAlign: widget.isPriority
+                                ? TextAlign.center
+                                : TextAlign.left,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          if (widget.subtitle != null &&
+                              widget.subtitle!.isNotEmpty) ...[
+                            SizedBox(height: widget.isPriority ? 4 : 6),
+                            Text(
+                              widget.subtitle!,
+                              style: TextStyle(
+                                color: widget.isManualEntry
+                                    ? (widget.isDark
+                                        ? Colors.white70
+                                        : const Color(0xFF0F172A)
+                                            .withOpacity(0.7))
+                                    : (widget.isDark
+                                        ? Colors.grey[400]
+                                        : Colors.grey[600]),
+                                fontSize: widget.isPriority ? 10 : 11,
+                              ),
+                              textAlign: widget.isPriority
+                                  ? TextAlign.center
+                                  : TextAlign.left,
+                              maxLines: widget.isPriority ? 2 : 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                    if (widget.showComingSoonBadge)
+                      Positioned(
+                        top: 10,
+                        right: 12,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFFC107),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Text(
+                            '開発中',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 9,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildIconContainer() {
+    if (widget.isPriority) {
+      return SizedBox(
+        height: widget.iconBoxSize,
+        child: _buildIcon(),
+      );
+    }
+    
+    return _squareIcon(
+      size: widget.iconBoxSize,
+      probeLabel: widget.probeLabel,
+      child: _buildIcon(),
+    );
+  }
+
+  Widget _squareIcon({
+    required double size,
+    required Widget child,
+    String? probeLabel,
+  }) {
+    return SizedBox(
+      width: size,
+      height: size,
+      child: probeLabel != null && kIconProbe
           ? LayoutBuilder(
               builder: (context, constraints) {
                 WidgetsBinding.instance.addPostFrameCallback((_) {

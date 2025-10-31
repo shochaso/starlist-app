@@ -1,11 +1,11 @@
 import 'dart:math' as math;
 import 'dart:ui';
 
+import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:starlist_app/services/image_url_builder.dart';
 
 import '../widgets/media_gate.dart';
-import 'package:flutter/material.dart';
-
 import '../utils/visibility_rules.dart';
 
 const bool kUsePixelationMask = false;
@@ -433,7 +433,10 @@ class _ItemCard extends StatelessWidget {
                         topRight: Radius.circular(12)),
                     child: MediaGate(
                       child: CachedNetworkImage(
-                        imageUrl: item.thumbnail,
+                        imageUrl: ImageUrlBuilder.thumbnail(
+                          item.thumbnail,
+                          width: 640,
+                        ),
                         fit: BoxFit.cover,
                         memCacheHeight: 480,
                         fadeInDuration: const Duration(milliseconds: 120),

@@ -811,7 +811,9 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
           rootNavigator
               .push(
             MaterialPageRoute(
-              builder: (_) => const StarDataViewPage(),
+              builder: (_) => const StarDataViewPage(
+                username: 'demo-star',
+              ),
               settings: const RouteSettings(name: '/starlist'),
             ),
           )

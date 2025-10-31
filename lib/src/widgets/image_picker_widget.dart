@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:starlist_app/services/image_url_builder.dart';
 
 /// 画像選択ウィジェット
 class ImagePickerWidget extends StatefulWidget {
@@ -107,7 +108,7 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
       // ネットワーク画像
       imageWidget = ClipOval(
         child: Image.network(
-          widget.currentImageUrl!,
+          ImageUrlBuilder.thumbnail(widget.currentImageUrl!),
           fit: BoxFit.cover,
           loadingBuilder: (context, child, loadingProgress) {
             if (loadingProgress == null) return child;

@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:starlist_app/services/image_url_builder.dart';
 
 import '../bloc/content_bloc.dart';
 import '../models/content_model.dart';
@@ -304,7 +305,7 @@ class _ContentDetailScreenState extends State<ContentDetailScreen> {
     return Container(
       constraints: const BoxConstraints(maxHeight: 300),
       child: Image.network(
-        url,
+        ImageUrlBuilder.thumbnail(url, width: 720),
         fit: BoxFit.contain,
         errorBuilder: (context, error, stackTrace) {
           return Container(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:starlist_app/services/image_url_builder.dart';
 
 import '../models/content_model.dart';
 import '../../../core/components/loading/loading_indicator.dart';
@@ -210,7 +211,7 @@ class _ContentCreateScreenState extends ConsumerState<ContentCreateScreen> {
 
                     // コンテンツタイプ
                     DropdownButtonFormField<ContentTypeModel>(
-                      initialValue: _selectedType,
+                      value: _selectedType,
                       decoration: const InputDecoration(
                         labelText: 'コンテンツタイプ *',
                         border: OutlineInputBorder(),
@@ -343,7 +344,10 @@ class _ContentCreateScreenState extends ConsumerState<ContentCreateScreen> {
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Image.network(
-                                _urlController.text,
+                                ImageUrlBuilder.thumbnail(
+                                  _urlController.text,
+                                  width: 720,
+                                ),
                                 fit: BoxFit.contain,
                                 errorBuilder: (context, error, stackTrace) {
                                   return const Center(
