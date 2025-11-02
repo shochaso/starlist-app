@@ -79,6 +79,12 @@ app.post('/ocr:process', async (req, res) => {
     });
   } catch (error) {
     const message = String(error?.message ?? error);
+    const stack = error?.stack ?? '';
+    console.error('[OCR Error]', {
+      message,
+      stack,
+      error: error?.toString(),
+    });
     let status = 500;
     if (message.includes('PERMISSION_DENIED')) status = 403;
     if (message.includes('NOT_FOUND')) status = 404;
