@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:starlist_app/services/image_url_builder.dart';
 
 import 'youtube_provider.dart';
 
@@ -99,7 +100,10 @@ class _YouTubeSearchScreenState extends ConsumerState<YouTubeSearchScreen> {
                       margin: const EdgeInsets.only(bottom: 12.0),
                       child: ListTile(
                         leading: Image.network(
-                          video.thumbnailUrl,
+                          ImageUrlBuilder.thumbnail(
+                            video.thumbnailUrl,
+                            width: 320,
+                          ),
                           width: 120,
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) {

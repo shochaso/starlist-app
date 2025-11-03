@@ -36,8 +36,8 @@ class StarDashboardData {
         awards = const [];
 
   factory StarDashboardData.sample() {
-    return StarDashboardData(
-      summary: const StarSummary(
+    return const StarDashboardData(
+      summary: StarSummary(
         name: '星ノ海 めぐみ',
         avatarUrl: 'https://cdn.starry.social/avatar/megu.png',
         followerCount: 128430,
@@ -46,7 +46,7 @@ class StarDashboardData {
         revenueThisMonth: 1840000,
         fanSupportRate: 92,
       ),
-      posts: const [
+      posts: [
         StarPost(
           id: 'p1',
           title: '7/10 配信アーカイブ',
@@ -66,14 +66,14 @@ class StarDashboardData {
           publishedAt: '2024-07-08',
         ),
       ],
-      ranking: const [
+      ranking: [
         FanRankingItem(rank: 1, fanName: 'こはる', score: 98),
         FanRankingItem(rank: 2, fanName: 'Daiki', score: 95),
         FanRankingItem(rank: 3, fanName: 'Nori', score: 90),
       ],
-      stats: const StarStats(
+      stats: StarStats(
           postCount: 42, views: 1200000, revenue: 2800000, engagement: 18),
-      awards: const [
+      awards: [
         StarAward(title: '人気配信者アワード', date: '2024/06/01'),
         StarAward(title: 'ファン投票 1位', date: '2024/05/12'),
       ],

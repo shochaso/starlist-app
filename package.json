@@ -4,7 +4,8 @@
   "description": "Flutter Web with BrowserSync for instant reload",
   "scripts": {
     "start:bs": "browser-sync start --config bs-config.js",
-    "dev": "echo 'Run: npm run start:bs in separate terminal, then ./scripts/c.sh'"
+    "dev": "echo 'Run: npm run start:bs in separate terminal, then ./scripts/c.sh'",
+    "report": "bash scripts/progress-report.sh"
   },
   "keywords": [],
   "author": "",
@@ -13,4 +14,3 @@
     "browser-sync": "^2.29.3"
   }
 }
-

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:starlist_app/services/image_url_builder.dart';
+
 import 'star_watch_history_service.dart';
 
 /// ファン向け：スターの視聴履歴表示画面
@@ -194,7 +196,10 @@ class _FanWatchHistoryViewState extends ConsumerState<FanWatchHistoryView> {
               ClipRRect(
                 borderRadius: BorderRadius.circular(8),
                 child: Image.network(
-                  item.thumbnailUrl,
+                  ImageUrlBuilder.thumbnail(
+                    item.thumbnailUrl,
+                    width: 480,
+                  ),
                   width: 120,
                   height: 68,
                   fit: BoxFit.cover,

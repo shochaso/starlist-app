@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:starlist_app/services/image_url_builder.dart';
+
 import 'star_watch_history_service.dart';
 
 /// スター専用：視聴履歴管理画面
@@ -297,8 +299,11 @@ class _StarWatchHistoryWidgetState extends ConsumerState<StarWatchHistoryWidget>
       child: ListTile(
         leading: ClipRRect(
           borderRadius: BorderRadius.circular(8),
-          child: Image.network(
-            item.thumbnailUrl,
+                  child: Image.network(
+                    ImageUrlBuilder.thumbnail(
+                      item.thumbnailUrl,
+                      width: 480,
+                    ),
             width: 80,
             height: 45,
             fit: BoxFit.cover,

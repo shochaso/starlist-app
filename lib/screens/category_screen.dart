@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:starlist_app/services/image_url_builder.dart';
+
 import '../models/star.dart';
 import '../routes/app_routes.dart';
 import '../src/features/content/models/content_consumption_model.dart';
@@ -190,7 +192,10 @@ class CategoryScreen extends StatelessWidget {
                         height: 60,
                         color: isDarkMode ? Colors.grey.shade800 : Colors.grey.shade300,
                         child: Image.network(
-                          filteredStars[index].imageUrl,
+                          ImageUrlBuilder.thumbnail(
+                            filteredStars[index].imageUrl,
+                            width: 320,
+                          ),
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) {
                             return Center(

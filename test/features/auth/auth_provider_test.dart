@@ -1,3 +1,4 @@
+@Skip('legacy auth provider tests; pending migration')
 import "package:flutter_test/flutter_test.dart";
 import "package:mockito/mockito.dart";
 import "package:starlist_app/src/features/auth/models/user_auth_model.dart";

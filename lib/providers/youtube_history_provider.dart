@@ -17,6 +17,7 @@ class YouTubeHistoryItem {
   final String? starGenre; // スターのジャンル
   final String? url; // 動画URL（オプション）
   final String? thumbnailUrl; // サムネイルURL（オプション）
+  final bool isPublished; // 公開状態
 
   YouTubeHistoryItem({
     required this.title,
@@ -31,6 +32,7 @@ class YouTubeHistoryItem {
     this.starGenre,
     this.url,
     this.thumbnailUrl,
+    this.isPublished = false,
   });
 
   // 表示用の視聴回数を取得
@@ -53,6 +55,7 @@ class YouTubeHistoryItem {
       'starGenre': starGenre,
       'url': url,
       'thumbnailUrl': thumbnailUrl,
+      'isPublished': isPublished,
     };
   }
 }
@@ -76,7 +79,7 @@ class YouTubeHistoryGroup {
 // YouTube履歴データを管理するStateNotifier
 class YouTubeHistoryNotifier extends StateNotifier<List<YouTubeHistoryItem>> {
   YouTubeHistoryNotifier() : super([]);
-  
+
   final _supabase = Supabase.instance.client;
 
   // 新しいYouTube履歴データを追加（スターごとに異なるセッションIDを生成）
@@ -85,7 +88,7 @@ class YouTubeHistoryNotifier extends StateNotifier<List<YouTubeHistoryItem>> {
     if (newItems.isEmpty) {
       return;
     }
-    
+
     // 🆕 Supabaseへの永続化処理を追加
     final userId = _supabase.auth.currentUser?.id;
     if (userId != null) {
@@ -127,6 +130,7 @@ class YouTubeHistoryNotifier extends StateNotifier<List<YouTubeHistoryItem>> {
               sessionId: item.sessionId ?? sessionId,
               starName: item.starName,
               starGenre: item.starGenre,
+              isPublished: item.isPublished,
             ),
           ),
         );
@@ -196,16 +200,17 @@ class YouTubeHistoryNotifier extends StateNotifier<List<YouTubeHistoryItem>> {
 
     return groups;
   }
-  
+
   // 🆕 対応/非対応サービスで分岐して永続化
-  Future<void> _persistItems(List<YouTubeHistoryItem> items, String userId) async {
+  Future<void> _persistItems(
+      List<YouTubeHistoryItem> items, String userId) async {
     for (final item in items) {
       const category = 'video';
       const service = 'youtube';
-      
+
       // YouTubeは現在MVPで対応済み
       final isSupported = SupportMatrix.isMvpImplemented(service);
-      
+
       if (isSupported) {
         // フルモードで保存（既存の完全処理フロー）
         await _persistFullMode(item, userId);
@@ -215,14 +220,14 @@ class YouTubeHistoryNotifier extends StateNotifier<List<YouTubeHistoryItem>> {
       }
     }
   }
-  
+
   // フルモード保存（既存処理を維持）
   Future<void> _persistFullMode(YouTubeHistoryItem item, String userId) async {
     try {
       // TODO: エンリッチメント（サムネイル取得）
       // TODO: マッチスコア計算
       // TODO: コンテンツモデレーション
-      
+
       await _supabase.from('contents').insert({
         'author_id': userId,
         'title': item.title,
@@ -245,15 +250,15 @@ class YouTubeHistoryNotifier extends StateNotifier<List<YouTubeHistoryItem>> {
         'occurred_at': item.addedAt.toIso8601String(),
         'category': 'video',
         'service': 'youtube',
-        'is_published': false, // デフォルト非公開
+        'is_published': item.isPublished,
       });
-      
+
       print('✅ フルモードで保存: ${item.title}');
     } catch (e) {
       print('❌ 保存エラー: $e');
     }
   }
-  
+
   // タグのみモード保存
   Future<void> _persistTagOnlyMode(
     YouTubeHistoryItem item,
@@ -268,7 +273,7 @@ class YouTubeHistoryNotifier extends StateNotifier<List<YouTubeHistoryItem>> {
         brandOrStore: null,
         freeText: '${item.title} ${item.channel}',
       );
-      
+
       await TagOnlySaver().save(
         authorId: userId,
         sourceId: TagOnlySaver.generateSourceId(item.url ?? item.title),
@@ -278,28 +283,29 @@ class YouTubeHistoryNotifier extends StateNotifier<List<YouTubeHistoryItem>> {
         freeTextKeywords: tags,
         occurredAt: item.addedAt,
         rawMetadata: item.toJson(),
+        isPublished: item.isPublished,
       );
-      
+
       print('✅ タグのみモードで保存: ${item.title}');
     } catch (e) {
       print('❌ タグのみ保存エラー: $e');
     }
   }
-  
+
   // タグ配列生成
   List<String> _buildTags(YouTubeHistoryItem item) {
     final tags = <String>{};
     tags.add('video');
     tags.add('youtube');
     tags.add(item.channel);
-    
+
     // タイトルから単語抽出
     final titleWords = item.title
         .split(RegExp(r'[\s　、。・,/|「」【】\(\)（）]+'))
         .where((w) => w.trim().length >= 2)
         .take(20);
     tags.addAll(titleWords);
-    
+
     return tags.toList();
   }
 }

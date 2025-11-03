@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import 'package:starlist_app/widgets/media_gate.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../models/subscription_plan.dart';
@@ -310,22 +312,32 @@ class _PaymentMethodScreenState extends ConsumerState<PaymentMethodScreen> {
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Image.asset(
-                'assets/images/visa.png',
-                width: 40,
-                height: 25,
-                errorBuilder: (context, error, stackTrace) =>
-                    const Icon(Icons.credit_card, size: 30, color: Colors.blue),
+              MediaGate(
+                minWidth: 40,
+                minHeight: 25,
+                child: Image.asset(
+                  'assets/images/visa.png',
+                  width: 40,
+                  height: 25,
+                  errorBuilder: (context, error, stackTrace) => const Icon(
+                      Icons.credit_card,
+                      size: 30,
+                      color: Colors.blue),
+                ),
               ),
               const SizedBox(width: 8),
-              Image.asset(
-                'assets/images/jcb.png',
-                width: 40,
-                height: 25,
-                errorBuilder: (context, error, stackTrace) => const Icon(
-                    Icons.credit_card,
-                    size: 30,
-                    color: Colors.green),
+              MediaGate(
+                minWidth: 40,
+                minHeight: 25,
+                child: Image.asset(
+                  'assets/images/jcb.png',
+                  width: 40,
+                  height: 25,
+                  errorBuilder: (context, error, stackTrace) => const Icon(
+                      Icons.credit_card,
+                      size: 30,
+                      color: Colors.green),
+                ),
               ),
             ],
           ),
@@ -346,14 +358,18 @@ class _PaymentMethodScreenState extends ConsumerState<PaymentMethodScreen> {
             },
             activeColor: theme.colorScheme.primary,
           ),
-          trailing: Image.asset(
-            'assets/images/paypay.png',
-            width: 40,
-            height: 40,
-            errorBuilder: (context, error, stackTrace) => const Icon(
-                Icons.account_balance_wallet,
-                size: 30,
-                color: Colors.red),
+          trailing: MediaGate(
+            minWidth: 40,
+            minHeight: 40,
+            child: Image.asset(
+              'assets/images/paypay.png',
+              width: 40,
+              height: 40,
+              errorBuilder: (context, error, stackTrace) => const Icon(
+                  Icons.account_balance_wallet,
+                  size: 30,
+                  color: Colors.red),
+            ),
           ),
         ),
 
@@ -372,12 +388,18 @@ class _PaymentMethodScreenState extends ConsumerState<PaymentMethodScreen> {
             },
             activeColor: theme.colorScheme.primary,
           ),
-          trailing: Image.asset(
-            'assets/images/merpay.png',
-            width: 40,
-            height: 40,
-            errorBuilder: (context, error, stackTrace) =>
-                const Icon(Icons.shopping_cart, size: 30, color: Colors.orange),
+          trailing: MediaGate(
+            minWidth: 40,
+            minHeight: 40,
+            child: Image.asset(
+              'assets/images/merpay.png',
+              width: 40,
+              height: 40,
+              errorBuilder: (context, error, stackTrace) => const Icon(
+                  Icons.shopping_cart,
+                  size: 30,
+                  color: Colors.orange),
+            ),
           ),
         ),
 
@@ -397,12 +419,16 @@ class _PaymentMethodScreenState extends ConsumerState<PaymentMethodScreen> {
               },
               activeColor: theme.colorScheme.primary,
             ),
-            trailing: Image.asset(
-              'assets/images/apple_pay.png',
-              width: 40,
-              height: 40,
-              errorBuilder: (context, error, stackTrace) =>
-                  const Icon(Icons.apple, size: 30),
+            trailing: MediaGate(
+              minWidth: 40,
+              minHeight: 40,
+              child: Image.asset(
+                'assets/images/apple_pay.png',
+                width: 40,
+                height: 40,
+                errorBuilder: (context, error, stackTrace) =>
+                    const Icon(Icons.apple, size: 30),
+              ),
             ),
           ),
 
@@ -420,12 +446,18 @@ class _PaymentMethodScreenState extends ConsumerState<PaymentMethodScreen> {
               },
               activeColor: theme.colorScheme.primary,
             ),
-            trailing: Image.asset(
-              'assets/images/google_pay.png',
-              width: 40,
-              height: 40,
-              errorBuilder: (context, error, stackTrace) =>
-                  const Icon(Icons.g_mobiledata, size: 30, color: Colors.blue),
+            trailing: MediaGate(
+              minWidth: 40,
+              minHeight: 40,
+              child: Image.asset(
+                'assets/images/google_pay.png',
+                width: 40,
+                height: 40,
+                errorBuilder: (context, error, stackTrace) => const Icon(
+                    Icons.g_mobiledata,
+                    size: 30,
+                    color: Colors.blue),
+              ),
             ),
           ),
       ],

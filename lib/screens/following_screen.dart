@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:starlist_app/services/image_url_builder.dart';
+
 import '../models/star.dart';
 import '../routes/app_routes.dart';
+import '../src/core/config/feature_flags.dart';
 
 class FollowingScreen extends StatelessWidget {
   const FollowingScreen({super.key});
@@ -11,8 +14,10 @@ class FollowingScreen extends StatelessWidget {
     final backgroundColor = isDarkMode ? Colors.black : Colors.white;
     final textColor = isDarkMode ? Colors.white : Colors.black;
     final cardColor = isDarkMode ? Colors.grey.shade900 : Colors.grey.shade100;
-    final secondaryTextColor = isDarkMode ? Colors.grey.shade400 : Colors.grey.shade700;
-    final dividerColor = isDarkMode ? Colors.grey.shade800 : Colors.grey.shade300;
+    final secondaryTextColor =
+        isDarkMode ? Colors.grey.shade400 : Colors.grey.shade700;
+    final dividerColor =
+        isDarkMode ? Colors.grey.shade800 : Colors.grey.shade300;
     final accentColor = isDarkMode ? Colors.blue : Colors.black;
 
     // モック用のフォロー中データ
@@ -48,7 +53,7 @@ class FollowingScreen extends StatelessWidget {
         isVerified: true,
       ),
     ];
-    
+
     // 課金ファンになっているスター
     final List<Star> paidFanStars = [
       Star(
@@ -143,7 +148,7 @@ class FollowingScreen extends StatelessWidget {
                 ],
               ),
             ),
-            
+
             // スターリスト
             SizedBox(
               height: 160,
@@ -187,7 +192,7 @@ class FollowingScreen extends StatelessWidget {
                       ),
                     );
                   }
-                  
+
                   final list = starLists[index];
                   return Container(
                     width: 120,
@@ -195,17 +200,16 @@ class FollowingScreen extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: cardColor,
                       borderRadius: BorderRadius.circular(12),
-                      image: DecorationImage(
-                        image: NetworkImage(list['image']),
-                        fit: BoxFit.cover,
-                        colorFilter: ColorFilter.mode(
-                          Colors.black.withOpacity(0.3),
-                          BlendMode.darken,
-                        ),
-                        onError: (exception, stackTrace) {
-                          return;
-                        },
-                      ),
+                      image: FeatureFlags.hideSampleMedia
+                          ? null
+                          : DecorationImage(
+                              image: NetworkImage(list['image']),
+                              fit: BoxFit.cover,
+                              colorFilter: ColorFilter.mode(
+                                Colors.black.withOpacity(0.3),
+                                BlendMode.darken,
+                              ),
+                            ),
                     ),
                     child: Stack(
                       children: [
@@ -257,7 +261,7 @@ class FollowingScreen extends StatelessWidget {
                 },
               ),
             ),
-            
+
             // 課金ファンセクション
             if (paidFanStars.isNotEmpty) ...[
               Padding(
@@ -284,7 +288,8 @@ class FollowingScreen extends StatelessWidget {
                       ],
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
                         color: Colors.amber.withOpacity(0.2),
                         borderRadius: BorderRadius.circular(20),
@@ -311,7 +316,6 @@ class FollowingScreen extends StatelessWidget {
                   ],
                 ),
               ),
-              
               ListView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
@@ -319,19 +323,13 @@ class FollowingScreen extends StatelessWidget {
                 itemCount: paidFanStars.length,
                 itemBuilder: (context, index) {
                   final star = paidFanStars[index];
-                  return _buildStarListTile(
-                    context, 
-                    star, 
-                    cardColor, 
-                    textColor, 
-                    secondaryTextColor, 
-                    isDarkMode,
-                    isPremium: true
-                  );
+                  return _buildStarListTile(context, star, cardColor, textColor,
+                      secondaryTextColor, isDarkMode,
+                      isPremium: true);
                 },
               ),
             ],
-            
+
             // フォロー中スターセクション
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 24, 16, 16),
@@ -371,7 +369,7 @@ class FollowingScreen extends StatelessWidget {
                 ],
               ),
             ),
-            
+
             // フォロー中スターリスト
             ListView.builder(
               shrinkWrap: true,
@@ -380,18 +378,12 @@ class FollowingScreen extends StatelessWidget {
               itemCount: followingStars.length,
               itemBuilder: (context, index) {
                 final star = followingStars[index];
-                return _buildStarListTile(
-                  context, 
-                  star, 
-                  cardColor, 
-                  textColor, 
-                  secondaryTextColor, 
-                  isDarkMode,
-                  isPremium: false
-                );
+                return _buildStarListTile(context, star, cardColor, textColor,
+                    secondaryTextColor, isDarkMode,
+                    isPremium: false);
               },
             ),
-            
+
             // SNS連携セクション
             Padding(
               padding: const EdgeInsets.all(16),
@@ -464,7 +456,7 @@ class FollowingScreen extends StatelessWidget {
                 ),
               ),
             ),
-            
+
             // 余白
             const SizedBox(height: 80),
           ],
@@ -472,17 +464,11 @@ class FollowingScreen extends StatelessWidget {
       ),
     );
   }
-  
+
   // スターリストアイテム
-  Widget _buildStarListTile(
-    BuildContext context, 
-    Star star, 
-    Color cardColor, 
-    Color textColor, 
-    Color secondaryTextColor, 
-    bool isDarkMode,
-    {bool isPremium = false}
-  ) {
+  Widget _buildStarListTile(BuildContext context, Star star, Color cardColor,
+      Color textColor, Color secondaryTextColor, bool isDarkMode,
+      {bool isPremium = false}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Container(
@@ -513,7 +499,10 @@ class FollowingScreen extends StatelessWidget {
                   width: 60,
                   height: 60,
                   child: Image.network(
-                    star.imageUrl,
+                    ImageUrlBuilder.thumbnail(
+                      star.imageUrl,
+                      width: 320,
+                    ),
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) {
                       return Container(
@@ -641,7 +630,7 @@ class FollowingScreen extends StatelessWidget {
       ),
     );
   }
-  
+
   // SNS連携ボタン
   Widget _buildSocialConnectButton(
     String platform,
@@ -706,7 +695,7 @@ class FollowingScreen extends StatelessWidget {
       ],
     );
   }
-  
+
   // ランクに応じた色を返す
   Color _getRankColor(String rank, bool isDarkMode) {
     switch (rank) {
@@ -726,7 +715,7 @@ class FollowingScreen extends StatelessWidget {
         return isDarkMode ? Colors.grey.shade700 : Colors.grey.shade600;
     }
   }
-  
+
   // フォロワー数のフォーマット
   String _formatFollowers(int followers) {
     if (followers >= 10000) {
@@ -739,4 +728,4 @@ class FollowingScreen extends StatelessWidget {
       return '$followers';
     }
   }
-} 
+}

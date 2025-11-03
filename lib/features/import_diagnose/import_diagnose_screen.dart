@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:starlist_app/config/ui_flags.dart';
+import 'package:starlist_app/widgets/signed_image.dart';
 
 import 'import_diagnose_repository.dart';
 import 'models.dart';
@@ -13,7 +15,7 @@ class ImportDiagnoseScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final stateAsync = ref.watch(importDiagnoseProvider(jobId));
 
-    return Scaffold(
+    Widget scaffold = Scaffold(
       appBar: AppBar(
         title: const Text('データ取込み診断'),
         elevation: 0,
@@ -23,10 +25,24 @@ class ImportDiagnoseScreen extends ConsumerWidget {
           data: (state) => _DiagnoseBody(state: state, jobId: jobId),
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (error, _) => _ErrorState(
-            message:
-                '診断データの取得に失敗しました\n${_diagnoseReadableError(error)}',
+            message: '診断データの取得に失敗しました\n${_diagnoseReadableError(error)}',
           ),
         ),
+      ),
+    );
+    if (!kHideImportImages) {
+      return scaffold;
+    }
+    final theme = Theme.of(context);
+    final iconlessTheme = theme.copyWith(
+      iconTheme: const IconThemeData(size: 0, opacity: 0.0),
+      primaryIconTheme: const IconThemeData(size: 0, opacity: 0.0),
+    );
+    return Theme(
+      data: iconlessTheme,
+      child: IconTheme(
+        data: const IconThemeData(size: 0, opacity: 0.0),
+        child: scaffold,
       ),
     );
   }
@@ -94,7 +110,10 @@ class _DiagnoseBody extends ConsumerWidget {
                 child: Row(
                   children: [
                     Expanded(
-                        child: _ImagePane(imageUrl: state.originalImageUrl)),
+                        child: _ImagePane(
+                      imageUrl: state.originalImageUrl,
+                      storagePath: state.storagePath,
+                    )),
                     const SizedBox(width: 16),
                     Expanded(child: _OcrPane(text: state.ocrText)),
                   ],
@@ -116,9 +135,10 @@ class _DiagnoseBody extends ConsumerWidget {
 }
 
 class _ImagePane extends StatelessWidget {
-  const _ImagePane({required this.imageUrl});
+  const _ImagePane({required this.imageUrl, required this.storagePath});
 
   final String imageUrl;
+  final String storagePath;
 
   @override
   Widget build(BuildContext context) {
@@ -139,10 +159,15 @@ class _ImagePane extends StatelessWidget {
                         .titleMedium
                         ?.copyWith(fontWeight: FontWeight.w600)),
                 const Spacer(),
-                IconButton(
-                  icon: const Icon(Icons.zoom_in_outlined),
-                  onPressed: () {},
-                ),
+                kHideImportImages
+                    ? TextButton(
+                        onPressed: () {},
+                        child: const Text('ズーム'),
+                      )
+                    : IconButton(
+                        icon: const Icon(Icons.zoom_in_outlined),
+                        onPressed: () {},
+                      ),
               ],
             ),
           ),
@@ -152,21 +177,37 @@ class _ImagePane extends StatelessWidget {
                 bottomLeft: Radius.circular(16),
                 bottomRight: Radius.circular(16),
               ),
-              child: InteractiveViewer(
-                minScale: 0.8,
-                maxScale: 3.5,
-                child: imageUrl.isNotEmpty
-                    ? Image.network(imageUrl, fit: BoxFit.contain)
-                    : Container(
-                        color: Colors.grey.shade200,
-                        alignment: Alignment.center,
-                        child: const Text('画像がありません'),
+              child: Container(
+                color: Colors.grey.shade200,
+                alignment: Alignment.center,
+                padding: const EdgeInsets.all(16),
+                child: kHideImportImages || storagePath.isEmpty
+                    ? _buildUrlFallback()
+                    : SignedImage(
+                        key: ValueKey(storagePath),
+                        objectPath: storagePath,
+                        initialUrl: imageUrl.isNotEmpty ? imageUrl : null,
+                        fit: BoxFit.contain,
+                        placeholder: (_) => const CircularProgressIndicator(),
+                        errorPlaceholder: (_) => _buildUrlFallback(),
+                        borderRadius: BorderRadius.circular(12),
                       ),
               ),
             ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildUrlFallback() {
+    if (imageUrl.isEmpty) {
+      return const Text('画像は提供されていません');
+    }
+    return SelectableText(
+      imageUrl,
+      textAlign: TextAlign.center,
+      style: const TextStyle(fontSize: 12),
     );
   }
 }
@@ -232,7 +273,7 @@ class _OcrPaneState extends State<_OcrPane> {
                 maxLines: null,
                 decoration: InputDecoration(
                   filled: true,
-                  fillColor: Theme.of(context).colorScheme.surfaceVariant,
+                  fillColor: Theme.of(context).colorScheme.surfaceContainerHighest,
                   border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16)),
                 ),
@@ -275,8 +316,7 @@ class _ActionBarState extends ConsumerState<_ActionBar> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content:
-                Text('再解析に失敗しました: ${_diagnoseReadableError(error)}'),
+            content: Text('再解析に失敗しました: ${_diagnoseReadableError(error)}'),
           ),
         );
       }
@@ -301,8 +341,7 @@ class _ActionBarState extends ConsumerState<_ActionBar> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-                '商品情報の再取得に失敗しました: ${_diagnoseReadableError(error)}'),
+            content: Text('商品情報の再取得に失敗しました: ${_diagnoseReadableError(error)}'),
           ),
         );
       }

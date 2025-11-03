@@ -3,6 +3,8 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 
+import 'package:starlist_app/services/image_url_builder.dart';
+
 import '../models/star.dart';
 import '../theme/context_ext.dart';
 
@@ -92,7 +94,10 @@ class _StarCardState extends State<StarCard> {
                       top: Radius.circular(tokens.radius.xl),
                     ),
                     child: Image.network(
-                      widget.star.imageUrl,
+                      ImageUrlBuilder.thumbnail(
+                        widget.star.imageUrl,
+                        width: 480,
+                      ),
                       fit: BoxFit.cover,
                       errorBuilder: (_, __, ___) => Container(
                         color: placeholderColor,

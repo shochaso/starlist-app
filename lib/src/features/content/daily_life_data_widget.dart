@@ -1,6 +1,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:starlist_app/services/image_url_builder.dart';
 
 import 'models/content_consumption_model.dart';
 import 'providers/content_provider.dart';
@@ -131,7 +132,10 @@ class ConsumptionDataWidget extends ConsumerWidget {
             AspectRatio(
               aspectRatio: 16 / 9,
               child: Image.network(
-                thumbnailUrl,
+                ImageUrlBuilder.thumbnail(
+                  thumbnailUrl,
+                  width: 640,
+                ),
                 fit: BoxFit.cover,
               ),
             ),

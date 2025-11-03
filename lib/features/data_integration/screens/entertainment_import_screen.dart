@@ -1,9 +1,10 @@
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
-import 'dart:io';
 import '../../../src/providers/theme_provider_enhanced.dart';
+import '../../../src/core/components/service_icons.dart';
 
 class EntertainmentImportScreen extends ConsumerStatefulWidget {
   final String serviceId;
@@ -29,7 +30,8 @@ class _EntertainmentImportScreenState extends ConsumerState<EntertainmentImportS
   bool isProcessing = false;
   List<Map<String, dynamic>> processedContent = [];
   List<Map<String, dynamic>> extractedContent = [];
-  File? selectedImage;
+  XFile? selectedImage;
+  Uint8List? selectedImageBytes;
   final ImagePicker _imagePicker = ImagePicker();
   bool showConfirmation = false;
   bool showPreview = false;
@@ -72,14 +74,16 @@ class _EntertainmentImportScreenState extends ConsumerState<EntertainmentImportS
   void _pickImage() async {
     final pickedFile = await _imagePicker.pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
+      final bytes = await pickedFile.readAsBytes();
       setState(() {
-        selectedImage = File(pickedFile.path);
+        selectedImage = pickedFile;
+        selectedImageBytes = bytes;
       });
     }
   }
 
   void _processImageOCR() async {
-    if (selectedImage == null) return;
+    if (selectedImageBytes == null && selectedImage == null) return;
 
     setState(() {
       isProcessing = true;
@@ -312,10 +316,19 @@ class _EntertainmentImportScreenState extends ConsumerState<EntertainmentImportS
               ),
               child: Row(
                 children: [
-                  Icon(
-                    widget.serviceIcon,
-                    color: Colors.white,
-                    size: 32,
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.all(8),
+                    child: ServiceIcons.buildIcon(
+                      serviceId: widget.serviceId,
+                      size: 32,
+                      fallback: widget.serviceIcon,
+                    ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -417,7 +430,7 @@ class _EntertainmentImportScreenState extends ConsumerState<EntertainmentImportS
               ),
             ),
             const SizedBox(height: 8),
-            if (selectedImage != null) ...[
+            if (selectedImageBytes != null) ...[
               Container(
                 height: 200,
                 width: double.infinity,
@@ -429,8 +442,8 @@ class _EntertainmentImportScreenState extends ConsumerState<EntertainmentImportS
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(12),
-                  child: Image.file(
-                    selectedImage!,
+                  child: Image.memory(
+                    selectedImageBytes!,
                     fit: BoxFit.cover,
                   ),
                 ),
@@ -443,7 +456,7 @@ class _EntertainmentImportScreenState extends ConsumerState<EntertainmentImportS
                   child: ElevatedButton.icon(
                     onPressed: _pickImage,
                     icon: const Icon(Icons.image, size: 18),
-                    label: Text(selectedImage == null ? '画像を選択' : '画像を変更'),
+                    label: Text(selectedImageBytes == null ? '画像を選択' : '画像を変更'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: isDark ? const Color(0xFF444444) : const Color(0xFFF1F5F9),
                       foregroundColor: isDark ? Colors.white : Colors.black87,
@@ -455,7 +468,7 @@ class _EntertainmentImportScreenState extends ConsumerState<EntertainmentImportS
                     ),
                   ),
                 ),
-                if (selectedImage != null) ...[
+                if (selectedImageBytes != null) ...[
                   const SizedBox(width: 12),
                   Expanded(
                     child: ElevatedButton.icon(
@@ -590,7 +603,11 @@ class _EntertainmentImportScreenState extends ConsumerState<EntertainmentImportS
         children: [
           Row(
             children: [
-              Icon(widget.serviceIcon, color: widget.serviceColor, size: 20),
+              ServiceIcons.buildIcon(
+                serviceId: widget.serviceId,
+                size: 20,
+                fallback: widget.serviceIcon,
+              ),
               const SizedBox(width: 8),
               Text(
                 '検出されたコンテンツ (${extractedContent.length}件)',

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:starlist_app/services/image_url_builder.dart';
 import '../models/affiliate_product.dart';
 import '../services/affiliate_service.dart';
 
@@ -58,7 +59,7 @@ class AffiliateProductCard extends ConsumerWidget {
                 AspectRatio(
                   aspectRatio: 1.5,
                   child: Image.network(
-                    product.imageUrl,
+                    ImageUrlBuilder.thumbnail(product.imageUrl),
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) {
                       return Container(

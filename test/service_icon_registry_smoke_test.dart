@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:starlist_app/services/service_icon_registry.dart';
@@ -5,49 +6,39 @@ import 'package:starlist_app/services/service_icon_registry.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  test('service icon map should not be empty', () {
+  test('iconFor returns a ServiceIcon widget', () {
+    final widget = ServiceIconRegistry.iconFor('amazon', size: 42);
+    expect(widget, isA<Widget>());
+  });
+
+  test('pathFor resolves CDN SVG path', () {
+    expect(
+      ServiceIconRegistry.pathFor('amazon'),
+      startsWith('https://cdn.starlist.jp/icons/amazon.svg'),
+    );
+    expect(
+      ServiceIconRegistry.pathFor('prime_video'),
+      startsWith('https://cdn.starlist.jp/icons/prime_video.svg'),
+    );
+    expect(
+      ServiceIconRegistry.pathFor('SHEIN_JP'),
+      startsWith('https://cdn.starlist.jp/icons/shein.svg'),
+    );
+    expect(ServiceIconRegistry.pathFor('amazon'), contains('?v='));
+  });
+
+  test('debugAutoMap exposes alias mappings', () {
     final debugMap = ServiceIconRegistry.debugAutoMap();
-    expect(
-      debugMap.isNotEmpty,
-      true,
-      reason: 'ServiceIconRegistry の _map が空です',
-    );
-    
-    // すべてのサービスアイコンにパスが設定されていることを確認
-    for (final entry in debugMap.entries) {
-      expect(
-        entry.value.isNotEmpty,
-        true,
-        reason: 'サービス "${entry.key}" のパスが空です',
-      );
-    }
+    expect(debugMap['amazon_prime'], endsWith('prime_video.svg'));
+    expect(debugMap['u_next'], endsWith('unext.svg'));
   });
-  
-  test('pathFor should return correct paths', () {
-    final amazonPath = ServiceIconRegistry.pathFor('amazon');
-    expect(amazonPath, equals('assets/service_icons/amazon.png'));
-    
-    final netflixPath = ServiceIconRegistry.pathFor('netflix');
-    expect(netflixPath, equals('assets/service_icons/netflix.png'));
-    
-    final abemaPath = ServiceIconRegistry.pathFor('abema');
-    expect(abemaPath, equals('assets/service_icons/abema.jpg'));
-  });
-  
-  test('pathFor should handle case insensitivity', () {
+
+  test('iconForOrNull returns null when key empty', () {
+    expect(ServiceIconRegistry.iconForOrNull(null), isNull);
+    expect(ServiceIconRegistry.iconForOrNull(''), isNull);
     expect(
-      ServiceIconRegistry.pathFor('AMAZON'),
-      equals(ServiceIconRegistry.pathFor('amazon')),
+      ServiceIconRegistry.iconForOrNull('netflix', size: 30),
+      isA<Widget>(),
     );
-    
-    expect(
-      ServiceIconRegistry.pathFor('Netflix'),
-      equals(ServiceIconRegistry.pathFor('netflix')),
-    );
-  });
-  
-  test('pathFor should return null for unknown services', () {
-    expect(ServiceIconRegistry.pathFor('unknown_service'), isNull);
-    expect(ServiceIconRegistry.pathFor(''), isNull);
   });
 }

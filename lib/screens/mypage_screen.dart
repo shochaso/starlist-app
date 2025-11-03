@@ -130,7 +130,11 @@ class MypageScreen extends ConsumerWidget {
                     ),
                     trailing: Switch(
                       value: isDarkMode,
-                      activeThumbColor: isDarkMode ? Colors.blue : Colors.black,
+                      thumbColor: MaterialStateProperty.resolveWith<Color?>(
+                        (states) => states.contains(MaterialState.selected)
+                            ? (isDarkMode ? Colors.blue : Colors.black)
+                            : null,
+                      ),
                       onChanged: (value) {
                         if (onThemeToggle != null) {
                           onThemeToggle!();

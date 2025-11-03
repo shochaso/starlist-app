@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:starlist_app/services/image_url_builder.dart';
+
 import '../models/activity.dart';
 
 class ActivityCard extends StatelessWidget {
@@ -35,7 +37,10 @@ class ActivityCard extends StatelessWidget {
               child: AspectRatio(
                 aspectRatio: 16 / 9,
                 child: Image.network(
-                  activity.imageUrl,
+                  ImageUrlBuilder.thumbnail(
+                    activity.imageUrl,
+                    width: 640,
+                  ),
                   fit: BoxFit.cover,
                   errorBuilder: (context, error, stackTrace) {
                     return Container(

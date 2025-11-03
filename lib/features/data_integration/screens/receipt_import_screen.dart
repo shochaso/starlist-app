@@ -1,10 +1,11 @@
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
-import 'dart:io';
 import '../../../providers/theme_provider.dart';
 import '../../../services/receipt_ocr_parser.dart';
+import '../../../src/core/components/service_icons.dart';
 
 class ReceiptImportScreen extends ConsumerStatefulWidget {
   const ReceiptImportScreen({super.key});
@@ -21,7 +22,8 @@ class _ReceiptImportScreenState extends ConsumerState<ReceiptImportScreen>
   bool isProcessing = false;
   List<ReceiptItem> extractedItems = [];
   Receipt? processedReceipt;
-  File? selectedImage;
+  XFile? selectedImage;
+  Uint8List? selectedImageBytes;
   final ImagePicker _imagePicker = ImagePicker();
   bool showConfirmation = false;
 
@@ -75,10 +77,13 @@ class _ReceiptImportScreenState extends ConsumerState<ReceiptImportScreen>
                 color: const Color(0xFF10B981),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Icon(
-                Icons.receipt,
-                color: Colors.white,
-                size: 20,
+              child: Center(
+                child: ServiceIcons.buildIcon(
+                  serviceId: 'receipt',
+                  size: 20,
+                  fallback: Icons.receipt,
+                  isDark: isDark,
+                ),
               ),
             ),
             const SizedBox(width: 12),
@@ -155,10 +160,13 @@ class _ReceiptImportScreenState extends ConsumerState<ReceiptImportScreen>
                     color: const Color(0xFF10B981).withOpacity(0.2),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: const Icon(
-                    Icons.receipt,
-                    color: Color(0xFF10B981),
-                    size: 20,
+                  child: Center(
+                    child: ServiceIcons.buildIcon(
+                      serviceId: 'receipt',
+                      size: 20,
+                      fallback: Icons.receipt,
+                      isDark: isDark,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -198,7 +206,7 @@ class _ReceiptImportScreenState extends ConsumerState<ReceiptImportScreen>
               ),
             ),
             const SizedBox(height: 8),
-            if (selectedImage != null) ...[
+            if (selectedImageBytes != null) ...[
               Container(
                 height: 300,
                 width: double.infinity,
@@ -210,8 +218,8 @@ class _ReceiptImportScreenState extends ConsumerState<ReceiptImportScreen>
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(12),
-                  child: Image.file(
-                    selectedImage!,
+                  child: Image.memory(
+                    selectedImageBytes!,
                     fit: BoxFit.contain,
                   ),
                 ),
@@ -874,8 +882,10 @@ class _ReceiptImportScreenState extends ConsumerState<ReceiptImportScreen>
       );
       
       if (image != null) {
+        final bytes = await image.readAsBytes();
         setState(() {
-          selectedImage = File(image.path);
+          selectedImage = image;
+          selectedImageBytes = bytes;
         });
       }
     } catch (e) {
@@ -889,7 +899,7 @@ class _ReceiptImportScreenState extends ConsumerState<ReceiptImportScreen>
   }
 
   Future<void> _processReceiptOCR() async {
-    if (selectedImage == null) return;
+    if (selectedImageBytes == null && selectedImage == null) return;
 
     setState(() {
       isProcessing = true;
@@ -898,7 +908,8 @@ class _ReceiptImportScreenState extends ConsumerState<ReceiptImportScreen>
     try {
       const apiKey = 'YOUR_GOOGLE_API_KEY'; // TODO: 実際のAPIキーに置き換える
       
-      final imageBytes = await selectedImage!.readAsBytes();
+      final imageBytes = selectedImageBytes ?? await selectedImage!.readAsBytes();
+      selectedImageBytes = imageBytes;
       final ocrParser = ReceiptOCRParser(apiKey: apiKey);
       final receipt = await ocrParser.parseReceiptImage(imageBytes);
       

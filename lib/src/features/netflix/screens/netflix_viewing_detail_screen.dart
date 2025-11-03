@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:starlist_app/services/image_url_builder.dart';
+
 import '../providers/netflix_providers.dart';
 import '../../../data/models/netflix_models.dart';
 
@@ -58,7 +60,10 @@ class _NetflixViewingDetailScreenState extends ConsumerState<NetflixViewingDetai
                   // 背景画像またはプレースホルダー
                   widget.viewingHistory.imageUrl != null
                       ? Image.network(
-                          widget.viewingHistory.imageUrl!,
+                          ImageUrlBuilder.thumbnail(
+                            widget.viewingHistory.imageUrl!,
+                            width: 480,
+                          ),
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) => _buildImagePlaceholder(),
                         )

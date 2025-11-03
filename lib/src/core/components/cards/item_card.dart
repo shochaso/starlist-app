@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:starlist_app/services/image_url_builder.dart';
 
 /// リストビュー内で使用される汎用的なアイテムカード
 class ItemCard extends StatelessWidget {
@@ -144,7 +145,10 @@ class ItemCard extends StatelessWidget {
       return ClipRRect(
         borderRadius: BorderRadius.circular(borderRadius / 2),
         child: Image.network(
-          imageUrl!,
+          ImageUrlBuilder.thumbnail(
+            imageUrl!,
+            width: 320,
+          ),
           width: 60.0,
           height: 60.0,
           fit: BoxFit.cover,

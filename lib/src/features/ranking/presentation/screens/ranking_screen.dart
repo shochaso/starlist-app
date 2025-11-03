@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:starlist_app/services/image_url_builder.dart';
+
 import '../viewmodels/ranking_view_model.dart';
 import '../../../models/ranking_model.dart';
 import '../../../../../shared/widgets/loading_indicator.dart';
@@ -183,7 +185,10 @@ class _RankingScreenState extends ConsumerState<RankingScreen> with SingleTicker
               ClipRRect(
                 borderRadius: BorderRadius.circular(8),
                 child: Image.network(
-                  item.imageUrl!,
+                  ImageUrlBuilder.thumbnail(
+                    item.imageUrl!,
+                    width: 240,
+                  ),
                   width: 60,
                   height: 60,
                   fit: BoxFit.cover,

@@ -676,7 +676,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           Switch(
             value: value,
             onChanged: onChanged,
-            activeThumbColor: const Color(0xFF4ECDC4),
+            thumbColor: MaterialStateProperty.resolveWith<Color?>(
+              (states) => states.contains(MaterialState.selected)
+                  ? const Color(0xFF4ECDC4)
+                  : null,
+            ),
           ),
         ],
       ),

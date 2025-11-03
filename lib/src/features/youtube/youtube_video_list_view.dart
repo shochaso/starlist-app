@@ -1,14 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:starlist_app/services/image_url_builder.dart';
+
 import '../../core/components/layouts/item_list_view.dart';
 import '../../core/components/cards/item_card.dart';
 import '../data_integration/models/youtube_video.dart';
 import '../data_integration/services/youtube_api_service.dart';
 
+const String _kYouTubeApiKey = String.fromEnvironment('YOUTUBE_API_KEY');
+
 /// YouTubeビデオプロバイダー
 final youtubeVideosProvider = FutureProvider.autoDispose.family<List<YouTubeVideo>, String>((ref, query) async {
   final youtubeService = YouTubeApiService(
-    apiKey: const String.fromEnvironment('YOUTUBE_API_KEY'),
+    apiKey: _kYouTubeApiKey,
   );
   return youtubeService.searchVideos(query);
 });
@@ -16,7 +20,7 @@ final youtubeVideosProvider = FutureProvider.autoDispose.family<List<YouTubeVide
 /// 人気のYouTubeビデオプロバイダー
 final popularYoutubeVideosProvider = FutureProvider.autoDispose<List<YouTubeVideo>>((ref) async {
   final youtubeService = YouTubeApiService(
-    apiKey: const String.fromEnvironment('YOUTUBE_API_KEY'),
+    apiKey: _kYouTubeApiKey,
   );
   return youtubeService.getPopularVideos();
 });
@@ -268,7 +272,10 @@ class PopularYouTubeVideosSection extends ConsumerWidget {
                 AspectRatio(
                   aspectRatio: 16 / 9,
                   child: Image.network(
-                    video.thumbnailUrl,
+                    ImageUrlBuilder.thumbnail(
+                      video.thumbnailUrl,
+                      width: 640,
+                    ),
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) {
                       return Container(

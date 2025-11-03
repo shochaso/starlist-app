@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:starlist_app/services/image_url_builder.dart';
+
 import 'youtube_history_importer.dart';
 import 'simple_youtube_setup.dart';
 import 'simple_youtube_service.dart';
@@ -333,7 +335,10 @@ class _YouTubeImportWidgetState extends State<YouTubeImportWidget> {
           ClipRRect(
             borderRadius: BorderRadius.circular(20),
             child: Image.network(
-              channel.imageUrl,
+              ImageUrlBuilder.thumbnail(
+                channel.imageUrl,
+                width: 160,
+              ),
               width: 40,
               height: 40,
               fit: BoxFit.cover,
