@@ -1,27 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:flutter/scheduler.dart';
+
+// サイドバーのインポート
+import '../features/sidebar/presentation/star_list_sidebar.dart';
+
 // 画面のインポート
 import '../features/search/screens/search_screen.dart';
 import '../features/mylist/screens/mylist_screen.dart';
 import '../features/profile/screens/profile_screen.dart';
 import '../features/data_integration/screens/data_import_screen.dart';
-import '../features/star/screens/star_dashboard_screen.dart';
-import '../src/features/subscription/screens/subscription_plans_screen.dart';
 import '../src/features/gacha/presentation/gacha_screen.dart';
 import '../features/content/screens/post_detail_screen.dart';
-import 'login_status_screen.dart';
 import 'test_account_switcher_screen.dart';
-import '../src/features/points/screens/star_points_purchase_screen.dart';
-import '../features/premium/screens/premium_restriction_screen.dart';
-import 'star_data_view_page.dart';
+
 // プロバイダー・サービス
 import '../providers/user_provider.dart';
 import '../src/providers/theme_provider_enhanced.dart';
 import '../providers/youtube_history_provider.dart';
 import '../providers/posts_provider.dart';
 import '../services/access_control_service.dart';
+
 // ウィジェット・モデル
 import '../src/core/components/service_icons.dart';
 import '../src/widgets/post_card.dart';
@@ -494,7 +493,14 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
       backgroundColor:
           isDark ? const Color(0xFF1A1A1A) : const Color(0xFFF8FAFC),
       appBar: _buildAppBar(),
-      drawer: _buildDrawer(),
+      drawer: Theme(
+        data: Theme.of(context).copyWith(
+          drawerTheme: DrawerThemeData(
+            backgroundColor: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+          ),
+        ),
+        child: const StarListSidebar(),
+      ),
       body: _buildBody(selectedTab),
       bottomNavigationBar: _buildBottomNavigationBar(selectedTab),
       floatingActionButton: FloatingActionButton(
@@ -566,271 +572,6 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
     );
   }
 
-  Widget _buildDrawer() {
-    final currentUser = ref.watch(currentUserProvider);
-    final themeState = ref.watch(themeProviderEnhanced);
-    final isDark = themeState.isDarkMode;
-
-    return Drawer(
-      backgroundColor: isDark ? const Color(0xFF1A1A1A) : Colors.white,
-      child: Column(
-        children: [
-          SafeArea(
-            child: Container(
-              margin: const EdgeInsets.only(top: 8),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    Color(0xFF4ECDC4),
-                    Color(0xFF44A08D),
-                  ],
-                ),
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(20),
-                  bottomRight: Radius.circular(20),
-                ),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Icon(
-                      Icons.star,
-                      color: Colors.white,
-                      size: 20,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Text(
-                          'Starlist',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
-                            letterSpacing: -0.3,
-                          ),
-                        ),
-                        Text(
-                          currentUser.isStar ? 'スター' : 'ファン',
-                          style: const TextStyle(
-                            color: Colors.white70,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.close,
-                        color: Colors.white70, size: 20),
-                    onPressed: () => Navigator.of(context).pop(),
-                    constraints:
-                        const BoxConstraints(minWidth: 32, minHeight: 32),
-                    padding: EdgeInsets.zero,
-                  ),
-                ],
-              ),
-            ),
-          ),
-          Expanded(
-            child: ListView(
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              children: [
-                _buildDrawerItem(Icons.home, 'ホーム', 0, null),
-                _buildDrawerItem(Icons.search, '検索', 1, null),
-                _buildDrawerItem(Icons.star, 'マイリスト', 3, null),
-                // スターのみ表示
-                if (currentUser.isStar) ...[
-                  _buildDrawerItem(Icons.camera_alt, 'データ取込み', 2, null),
-                  _buildDrawerItem(Icons.analytics, 'ダッシュボード', -1, 'dashboard'),
-                ],
-                _buildDrawerItem(Icons.person, 'マイページ', 4, null),
-                // ファンのみ課金プラン表示
-                if (currentUser.isFan) ...[
-                  _buildDrawerItem(
-                      Icons.credit_card, '課金プラン', -1, 'subscription'),
-                  _buildDrawerItem(Icons.stars, 'スターポイント購入', -1, 'buy_points'),
-                ],
-                _buildDrawerItem(
-                    Icons.grid_view_rounded, 'スターリスト', -1, 'starlist'),
-                _buildDrawerItem(Icons.settings, '設定', -1, 'settings'),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 18, 16, 6),
-                  child: Text(
-                    'クイック操作',
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: isDark ? Colors.white54 : Colors.grey.shade600,
-                    ),
-                  ),
-                ),
-                SwitchListTile.adaptive(
-                  value: isDark,
-                  onChanged: (_) {
-                    ref.read(themeProviderEnhanced.notifier).toggleLightDark();
-                  },
-                  dense: true,
-                  activeColor: const Color(0xFF4ECDC4),
-                  title: const Text('ダークモード'),
-                ),
-                ListTile(
-                  dense: true,
-                  leading: const Icon(Icons.login),
-                  title: const Text('ログイン状態'),
-                  onTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => const LoginStatusScreen(),
-                      ),
-                    );
-                  },
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDrawerItem(
-      IconData icon, String title, int tabIndex, String? pageKey) {
-    final selectedTab = ref.watch(selectedTabProvider);
-    final selectedDrawerPage = ref.watch(selectedDrawerPageProvider);
-    final themeState = ref.watch(themeProviderEnhanced);
-    final isDark = themeState.isDarkMode;
-
-    // 選択状態の判定を修正：現在選択されているページまたはタブのみアクティブ
-    final isTabActive =
-        tabIndex != -1 && selectedTab == tabIndex && selectedDrawerPage == null;
-    final isPageActive = pageKey != null && selectedDrawerPage == pageKey;
-    final isActive = isTabActive || isPageActive;
-
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 3),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        color: isActive ? const Color(0xFF4ECDC4).withOpacity(0.15) : null,
-        border: isActive
-            ? Border.all(
-                color: const Color(0xFF4ECDC4).withOpacity(0.3),
-                width: 1,
-              )
-            : null,
-      ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-        leading: Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: isActive
-                ? const Color(0xFF4ECDC4)
-                : (isDark ? Colors.white10 : Colors.grey.shade100),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Icon(
-            icon,
-            color: isActive
-                ? Colors.white
-                : (isDark ? Colors.white54 : Colors.grey.shade600),
-            size: 18,
-          ),
-        ),
-        title: Text(
-          title,
-          style: TextStyle(
-            color: isActive
-                ? const Color(0xFF4ECDC4)
-                : (isDark ? Colors.white : Colors.grey.shade800),
-            fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
-            fontSize: 15,
-          ),
-        ),
-        trailing: isActive
-            ? const Icon(
-                Icons.arrow_forward_ios,
-                color: Color(0xFF4ECDC4),
-                size: 14,
-              )
-            : null,
-        onTap: () {
-          Navigator.of(context).pop();
-          if (tabIndex != -1) {
-            ref.read(selectedTabProvider.notifier).state = tabIndex;
-            ref.read(selectedDrawerPageProvider.notifier).state =
-                null; // ドロワー選択をリセット
-          } else if (pageKey != null) {
-            ref.read(selectedDrawerPageProvider.notifier).state = pageKey;
-            _navigateToPage(pageKey);
-          }
-        },
-      ),
-    );
-  }
-
-  void _navigateToPage(String pageKey) {
-    switch (pageKey) {
-      case 'dashboard':
-        Navigator.of(context).push(
-          MaterialPageRoute(builder: (context) => const StarDashboardScreen()),
-        );
-        return;
-      case 'subscription':
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (context) => const SubscriptionPlansScreen(),
-          ),
-        );
-        return;
-      case 'buy_points':
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (context) => const StarPointsPurchaseScreen(),
-          ),
-        );
-        return;
-      case 'starlist':
-        final rootNavigator = Navigator.of(context, rootNavigator: true);
-        SchedulerBinding.instance.addPostFrameCallback((_) {
-          if (!mounted) return;
-          debugPrint(
-              '[StarlistMainScreen] Navigating to StarDataViewPage via rootNavigator');
-          rootNavigator
-              .push(
-            MaterialPageRoute(
-              builder: (_) => const StarDataViewPage(
-                username: 'demo-star',
-              ),
-              settings: const RouteSettings(name: '/starlist'),
-            ),
-          )
-              .then((_) {
-            if (!mounted) return;
-            ref.read(selectedDrawerPageProvider.notifier).state = null;
-            debugPrint('[StarlistMainScreen] Returned from StarDataViewPage');
-          });
-        });
-        return;
-      case 'settings':
-        if (mounted) context.go('/settings');
-        return;
-      default:
-        return;
-    }
-  }
 
   Widget _buildBody(int selectedTab) {
     switch (selectedTab) {
@@ -2856,109 +2597,9 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
     }
   }
 
-  Widget _buildHanayamaMizukiPostsSection() {
-    final hanayamaPosts = ref.watch(hanayamaMizukiPostsProvider);
-    final currentUser = ref.watch(currentUserProvider);
-    final themeState = ref.watch(themeProviderEnhanced);
-
-    if (hanayamaPosts.isEmpty) {
-      return const SizedBox.shrink();
-    }
-
-    // アクセス制御を適用
-    final accessiblePosts = hanayamaPosts.where((post) {
-      if (post.accessLevel == AccessLevel.public) return true;
-      if (post.accessLevel == AccessLevel.light) {
-        return AccessControlService.canViewContent(
-          currentUser.fanPlanType,
-          ContentType.youtubeVideos,
-        );
-      }
-      return false;
-    }).toList();
-
-    // 制限された投稿も概要として表示
-    final restrictedPosts = hanayamaPosts.where((post) {
-      if (post.accessLevel == AccessLevel.public) return false;
-      if (post.accessLevel == AccessLevel.light) {
-        return !AccessControlService.canViewContent(
-          currentUser.fanPlanType,
-          ContentType.youtubeVideos,
-        );
-      }
-      return false;
-    }).toList();
-
-    final allDisplayPosts = <dynamic>[];
-    allDisplayPosts.addAll(accessiblePosts);
-
-    // 制限された投稿を概要として追加
-    if (restrictedPosts.isNotEmpty) {
-      allDisplayPosts.addAll(restrictedPosts.map((post) => {
-            'title': post.title, // 制限付きの表記を削除
-            'author': '花山瑞樹',
-            'time': '最近',
-            'type': 'restricted',
-            'thumbnail': const Color(0xFF9C27B0),
-            'accessLevel': post.accessLevel,
-            'isRestricted': true,
-            'originalPost': post,
-          }));
-    }
-
-    if (allDisplayPosts.isEmpty) {
-      return const SizedBox.shrink();
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildSectionTitle('花山瑞樹の投稿'),
-        const SizedBox(height: 16),
-        SizedBox(
-          height: 280,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            physics: const BouncingScrollPhysics(),
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            itemCount: allDisplayPosts.length,
-            itemBuilder: (context, index) {
-              final post = allDisplayPosts[index];
-
-              // 制限された投稿の場合
-              if (post is Map<String, dynamic> &&
-                  post['isRestricted'] == true) {
-                return _buildRestrictedPostCard(
-                    post, context, themeState.isDarkMode);
-              }
-
-              // 通常の投稿の場合
-              return Container(
-                width: 320,
-                margin: const EdgeInsets.only(right: 16),
-                child: PostCard(
-                  post: post as PostModel,
-                  isCompact: true,
-                  onTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => PostDetailScreen(post: post),
-                      ),
-                    );
-                  },
-                ),
-              );
-            },
-          ),
-        ),
-      ],
-    );
-  }
-
   Widget _buildSectionTitle(String title) {
     final themeState = ref.watch(themeProviderEnhanced);
-    final isDark = themeState.isDarkMode;
-
+    
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
@@ -2969,7 +2610,7 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: isDark ? Colors.white : Colors.black87,
+              color: themeState.isDarkMode ? Colors.white : Colors.black87,
             ),
           ),
           TextButton(
@@ -2983,125 +2624,6 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  /// 制限された投稿のカードを表示
-  Widget _buildRestrictedPostCard(
-      Map<String, dynamic> post, BuildContext context, bool isDark) {
-    return GestureDetector(
-      onTap: () {
-        // 閲覧制限画面に遷移
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (context) => PremiumRestrictionScreen(
-              contentTitle: post['title'] as String,
-              contentType: '投稿',
-              starName: post['author'] as String,
-              requiredPlan: post['accessLevel'] == AccessLevel.light
-                  ? 'ライトプラン以上'
-                  : 'プレミアムプラン以上',
-              contentTypeEnum: ContentType.premiumContent,
-            ),
-          ),
-        );
-      },
-      child: Container(
-        width: 320,
-        margin: const EdgeInsets.only(right: 16),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: (isDark ? Colors.black : Colors.black).withOpacity(0.08),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              height: 160,
-              decoration: BoxDecoration(
-                color: post['thumbnail'] as Color,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.lock,
-                      color: Colors.white,
-                      size: 32, // 48から32に縮小
-                    ),
-                    SizedBox(height: 8),
-                    Text(
-                      'プラン制限',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 10, // 12から10に縮小
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              post['title'] as String,
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: isDark ? Colors.white : Colors.black87,
-              ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              post['author'] as String,
-              style: TextStyle(
-                fontSize: 14,
-                color: isDark ? Colors.white70 : Colors.black54,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: Colors.blue.withOpacity(0.2), // オレンジから青に変更
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: Colors.blue.withOpacity(0.5), // オレンジから青に変更
-                  width: 1,
-                ),
-              ),
-              child: Text(
-                '${post['accessLevel'] == AccessLevel.light ? 'ライトプラン以上' : 'プレミアムプラン以上'}で閲覧可能',
-                style: TextStyle(
-                  fontSize: 10,
-                  color: Colors.blue.shade700, // オレンジから青に変更
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              post['time'] as String,
-              style: TextStyle(
-                fontSize: 12,
-                color: isDark ? Colors.white54 : Colors.black38,
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
