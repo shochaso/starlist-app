@@ -1,11 +1,15 @@
 
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:http/http.dart' as http;
 import '../../../providers/theme_provider.dart';
 import '../../../services/receipt_ocr_parser.dart';
 import '../../../src/core/components/service_icons.dart';
+import '../utils/image_preprocessor.dart';
+import '../../../config/environment_config.dart';
 
 class ReceiptImportScreen extends ConsumerStatefulWidget {
   const ReceiptImportScreen({super.key});
@@ -901,31 +905,99 @@ class _ReceiptImportScreenState extends ConsumerState<ReceiptImportScreen>
   Future<void> _processReceiptOCR() async {
     if (selectedImageBytes == null && selectedImage == null) return;
 
+    String _detectMime(Uint8List data) {
+      if (data.length >= 4 &&
+          data[0] == 0x89 &&
+          data[1] == 0x50 &&
+          data[2] == 0x4E &&
+          data[3] == 0x47) {
+        return 'image/png';
+      }
+      if (data.length >= 2 && data[0] == 0xFF && data[1] == 0xD8) {
+        return 'image/jpeg';
+      }
+      if (data.length >= 4 &&
+          data[0] == 0x47 &&
+          data[1] == 0x49 &&
+          data[2] == 0x46) {
+        return 'image/gif';
+      }
+      return 'application/octet-stream';
+    }
+
     setState(() {
       isProcessing = true;
     });
 
     try {
-      const apiKey = 'YOUR_GOOGLE_API_KEY'; // TODO: 実際のAPIキーに置き換える
+      final rawBytes = selectedImageBytes ?? await selectedImage!.readAsBytes();
+      final normalizedBytes = await prepareImageForDocAi(rawBytes);
+      selectedImageBytes = normalizedBytes;
+
+      String? mimeType;
+      if (selectedImage != null) {
+        try {
+          mimeType = await selectedImage!.mimeType;
+        } catch (_) {
+          mimeType = null;
+        }
+      }
+      mimeType = 'image/jpeg';
+
+      // Cloud Run APIを呼び出し
+      const apiBase = EnvironmentConfig.docAiApiBase;
+      if (apiBase.isEmpty) {
+        throw Exception('API_BASEが設定されていません。環境変数を確認してください。');
+      }
+
+      final base64Image = base64Encode(normalizedBytes);
+      final response = await http.post(
+        Uri.parse('$apiBase/ocr/process'),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          'mimeType': mimeType,
+          'contentBase64': base64Image,
+          'originalMimeType':
+              selectedImageBytes != null ? _detectMime(selectedImageBytes!) : mimeType,
+        }),
+      );
+
+      if (response.statusCode != 200) {
+        final errorBody = jsonDecode(response.body) as Map<String, dynamic>;
+        final serverError = errorBody['error'] ?? 'OCR処理に失敗しました';
+        final detailInfo = errorBody['details'] ?? errorBody['badRequest'];
+        throw Exception(
+          '$serverError' + (detailInfo != null ? ' | details: ' + detailInfo.toString() : ''),
+        );
+      }
+
+      final result = jsonDecode(response.body) as Map<String, dynamic>;
+      final rawText = (result['text'] as String? ?? '').trim();
       
-      final imageBytes = selectedImageBytes ?? await selectedImage!.readAsBytes();
-      selectedImageBytes = imageBytes;
-      final ocrParser = ReceiptOCRParser(apiKey: apiKey);
-      final receipt = await ocrParser.parseReceiptImage(imageBytes);
-      
-      _textController.text = receipt.items.map((item) => 
-        '${item.name} ¥${item.price?.toStringAsFixed(0) ?? "0"} (${item.category})'
-      ).join('\n');
+      if (rawText.isEmpty) {
+        throw Exception('OCR結果が空でした。');
+      }
+
+      final parsedItems = _extractItemsFromText(rawText);
+      if (parsedItems.isEmpty) {
+        throw Exception(
+          'テキストは取得できましたが、商品行を認識できませんでした。手動で調整してください。',
+        );
+      }
+
+      _textController.text = rawText;
 
       setState(() {
         isProcessing = false;
-        extractedItems = receipt.items;
+        extractedItems = parsedItems;
         showConfirmation = true;
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('レシートから${receipt.items.length}個の商品を抽出しました！'),
+          content: Text('レシートから${parsedItems.length}件の商品を抽出しました。'),
           backgroundColor: const Color(0xFF10B981),
           duration: const Duration(seconds: 4),
         ),
@@ -935,10 +1007,12 @@ class _ReceiptImportScreenState extends ConsumerState<ReceiptImportScreen>
         isProcessing = false;
       });
       
+      final errorMessage = e.toString();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('レシートの解析に失敗しました: $e'),
+          content: Text('レシートの解析に失敗しました: $errorMessage'),
           backgroundColor: Colors.red,
+          duration: const Duration(seconds: 5),
         ),
       );
     }
@@ -961,46 +1035,117 @@ class _ReceiptImportScreenState extends ConsumerState<ReceiptImportScreen>
 
     await Future.delayed(const Duration(seconds: 2));
 
-    // 手動入力データの解析（簡易版）
-    final items = _parseManualInput(_textController.text);
-    
+    final items = _extractItemsFromText(_textController.text);
+
     setState(() {
       isProcessing = false;
       extractedItems = items;
-      showConfirmation = true;
+      showConfirmation = items.isNotEmpty;
     });
+
+    if (items.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('商品行が見つかりませんでした。内容を確認してください。'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('${items.length}個の商品情報を抽出しました！'),
+        content: Text('${items.length}件の商品情報を抽出しました！'),
         backgroundColor: const Color(0xFF10B981),
         duration: const Duration(seconds: 4),
       ),
     );
   }
 
-  List<ReceiptItem> _parseManualInput(String text) {
+  List<ReceiptItem> _extractItemsFromText(String text) {
     final items = <ReceiptItem>[];
-    final lines = text.split('\n');
-    
-    for (final line in lines) {
-      final priceMatch = RegExp(r'¥(\d+)').firstMatch(line);
+    final lines = text
+        .split(RegExp(r'\r?\n'))
+        .map((line) => line.trim())
+        .where((line) => line.isNotEmpty)
+        .toList();
+
+    const totalKeywords = [
+      '合計',
+      '小計',
+      '合　計',
+      '税込',
+      '税',
+      '割引',
+      'お預り',
+      'お預かり',
+      '釣',
+      '会計',
+      'クーポン'
+    ];
+
+    String? pendingName;
+    for (final rawLine in lines) {
+      final normalized = rawLine.replaceAll('￥', '¥');
+      if (totalKeywords.any((keyword) => normalized.contains(keyword))) {
+        pendingName = null;
+        continue;
+      }
+
+      final priceMatch =
+          RegExp(r'(?:¥|￥)?\s*(\d{1,3}(?:,\d{3})*|\d+)(?:円)?\s*$').firstMatch(normalized);
       if (priceMatch != null) {
-        final price = double.tryParse(priceMatch.group(1)!);
-        final itemName = line.substring(0, priceMatch.start).trim();
-        
-        if (itemName.isNotEmpty && price != null) {
-          items.add(ReceiptItem(
+        final priceText = priceMatch.group(1)!.replaceAll(',', '');
+        final price = double.tryParse(priceText);
+        if (price == null) continue;
+
+        var itemName = normalized.substring(0, priceMatch.start).trim();
+        if (itemName.isEmpty && pendingName != null) {
+          itemName = pendingName.trim();
+          pendingName = null;
+        }
+        if (itemName.isEmpty || itemName.length < 2) {
+          continue;
+        }
+
+        items.add(
+          ReceiptItem(
             name: itemName,
             price: price,
-            category: 'その他',
-            confidence: 0.6,
-          ));
-        }
+            category: _guessCategory(itemName),
+            confidence: 0.75,
+          ),
+        );
+      } else {
+        pendingName = normalized;
       }
     }
-    
+
     return items;
+  }
+
+  String? _inferMimeType(List<int> bytes) {
+    if (bytes.length >= 4 &&
+        bytes[0] == 0x89 &&
+        bytes[1] == 0x50 &&
+        bytes[2] == 0x4E &&
+        bytes[3] == 0x47) {
+      return 'image/png';
+    }
+    if (bytes.length >= 3 &&
+        bytes[0] == 0xFF &&
+        bytes[1] == 0xD8 &&
+        bytes[2] == 0xFF) {
+      return 'image/jpeg';
+    }
+    if (bytes.length >= 4 &&
+        bytes[0] == 0x25 &&
+        bytes[1] == 0x50 &&
+        bytes[2] == 0x44 &&
+        bytes[3] == 0x46) {
+      return 'application/pdf';
+    }
+    return null;
   }
 
   void _confirmAndImportItems() {
@@ -1033,6 +1178,57 @@ class _ReceiptImportScreenState extends ConsumerState<ReceiptImportScreen>
         duration: const Duration(seconds: 4),
       ),
     );
+  }
+
+  String _guessCategory(String name) {
+    final lower = name.toLowerCase();
+    if (lower.contains('弁当') ||
+        lower.contains('おにぎり') ||
+        lower.contains('パン') ||
+        lower.contains('coffee') ||
+        lower.contains('drink') ||
+        lower.contains('ジュース') ||
+        lower.contains('お茶') ||
+        lower.contains('food')) {
+      return '食品・飲料';
+    }
+    if (lower.contains('tシャツ') ||
+        lower.contains('シャツ') ||
+        lower.contains('パンツ') ||
+        lower.contains('スカート') ||
+        lower.contains('バッグ') ||
+        lower.contains('sneaker') ||
+        lower.contains('靴')) {
+      return 'ファッション';
+    }
+    if (lower.contains('化粧') ||
+        lower.contains('コスメ') ||
+        lower.contains('ヘア') ||
+        lower.contains('シャンプー') ||
+        lower.contains('クリーム') ||
+        lower.contains('薬') ||
+        lower.contains('サプリ')) {
+      return '美容・ヘルスケア';
+    }
+    if (lower.contains('pc') ||
+        lower.contains('laptop') ||
+        lower.contains('usb') ||
+        lower.contains('充電') ||
+        lower.contains('ケーブル') ||
+        lower.contains('家電') ||
+        lower.contains('イヤホン')) {
+      return '家電・PC';
+    }
+    if (lower.contains('本') ||
+        lower.contains('book') ||
+        lower.contains('ノート') ||
+        lower.contains('ペン') ||
+        lower.contains('文具') ||
+        lower.contains('雑誌') ||
+        lower.contains('コミック')) {
+      return '本・文具';
+    }
+    return 'その他';
   }
 
   Color _getCategoryColor(String category) {

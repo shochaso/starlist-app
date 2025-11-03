@@ -850,69 +850,101 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
   }
 
   Widget _buildHomeView() {
-    return SingleChildScrollView(
-      controller: _scrollController,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // 最新YouTube履歴セクション（一番上）
-          _buildLatestYouTubeHistorySection(),
-          const SizedBox(height: 16),
+    return Builder(
+      builder: (context) {
+        try {
+          return SingleChildScrollView(
+            controller: _scrollController,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // 最新YouTube履歴セクション（一番上）
+                _buildLatestYouTubeHistorySection(),
+                const SizedBox(height: 16),
 
-          // 新着投稿ダイジェスト（YouTube投稿除外）
-          _buildRecentPostsSection(),
-          const SizedBox(height: 16),
+                // 新着投稿ダイジェスト（YouTube投稿除外）
+                _buildRecentPostsSection(),
+                const SizedBox(height: 16),
 
-          // 有料フォローコンテンツ
-          _buildPaidFollowContentSection(),
-          const SizedBox(height: 16),
+                // 有料フォローコンテンツ
+                _buildPaidFollowContentSection(),
+                const SizedBox(height: 16),
 
-          // フォローユーザーの登録状況
-          _buildFollowingUsersRegistrationSection(),
-          const SizedBox(height: 16),
+                // フォローユーザーの登録状況
+                _buildFollowingUsersRegistrationSection(),
+                const SizedBox(height: 16),
 
-          // 通知セクション
-          _buildNotificationsSection(),
-          const SizedBox(height: 16),
+                // 通知セクション
+                _buildNotificationsSection(),
+                const SizedBox(height: 16),
 
-          // 自然な広告1（おすすめアプリ）
-          _buildNativeAd1(),
-          const SizedBox(height: 16),
+                // 自然な広告1（おすすめアプリ）
+                _buildNativeAd1(),
+                const SizedBox(height: 16),
 
-          // トレンドトピックセクション
-          _buildTrendingTopicsSection(),
-          const SizedBox(height: 16),
+                // トレンドトピックセクション
+                _buildTrendingTopicsSection(),
+                const SizedBox(height: 16),
 
-          // プレイリストセクション
-          _buildFeaturedPlaylistsSection(),
-          const SizedBox(height: 16),
+                // プレイリストセクション
+                _buildFeaturedPlaylistsSection(),
+                const SizedBox(height: 16),
 
-          // 自然な広告2（スポンサードコンテンツ）
-          _buildNativeAd2(),
-          const SizedBox(height: 16),
+                // 自然な広告2（スポンサードコンテンツ）
+                _buildNativeAd2(),
+                const SizedBox(height: 16),
 
-          // おすすめスターセクション
-          _buildRecommendedStarsSection(),
-          const SizedBox(height: 16),
+                // おすすめスターセクション
+                _buildRecommendedStarsSection(),
+                const SizedBox(height: 16),
 
-          // 新しく参加したスターセクション
-          _buildNewStarsSection(),
-          const SizedBox(height: 16),
+                // 新しく参加したスターセクション
+                _buildNewStarsSection(),
+                const SizedBox(height: 16),
 
-          // 今日のピックアップセクション
-          _buildTodayPickupSection(),
-          const SizedBox(height: 100), // ボトムナビゲーション用の余白
-        ],
-      ),
+                // 今日のピックアップセクション
+                _buildTodayPickupSection(),
+                const SizedBox(height: 100), // ボトムナビゲーション用の余白
+              ],
+            ),
+          );
+        } catch (e, stackTrace) {
+          debugPrint('[StarlistMainScreen] Error in _buildHomeView: $e');
+          debugPrintStack(stackTrace: stackTrace);
+          return Center(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.error_outline, size: 64, color: Colors.red),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'エラーが発生しました',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    e.toString(),
+                    style: const TextStyle(fontSize: 12),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+      },
     );
   }
 
   Widget _buildLatestYouTubeHistorySection() {
-    final themeState = ref.watch(themeProviderEnhanced);
-    final isDark = themeState.isDarkMode;
-    final youtubeHistoryGroups = ref.watch(groupedYoutubeHistoryProvider);
-    final youtubePosts = ref.watch(youtubePostsProvider);
+    try {
+      final themeState = ref.watch(themeProviderEnhanced);
+      final isDark = themeState.isDarkMode;
+      final youtubeHistoryGroups = ref.watch(groupedYoutubeHistoryProvider);
+      final youtubePosts = ref.watch(youtubePostsProvider);
 
     // YouTube履歴とYouTube投稿の両方が空の場合は、デフォルトデータを表示
     if (youtubeHistoryGroups.isEmpty && youtubePosts.isEmpty) {
@@ -1158,6 +1190,39 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
         ),
       ],
     );
+    } catch (e, stackTrace) {
+      debugPrint('[StarlistMainScreen] Error in _buildLatestYouTubeHistorySection: $e');
+      debugPrintStack(stackTrace: stackTrace);
+      final themeState = ref.watch(themeProviderEnhanced);
+      final isDark = themeState.isDarkMode;
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildSectionTitle('最新YouTube履歴'),
+          const SizedBox(height: 16),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                  color: isDark
+                      ? const Color(0xFF333333)
+                      : const Color(0xFFF3F4F6)),
+            ),
+            child: Center(
+              child: Text(
+                'エラーが発生しました: ${e.toString()}',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: isDark ? Colors.white54 : Colors.black54,
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
+    }
   }
 
   String _formatImportTime(DateTime time) {

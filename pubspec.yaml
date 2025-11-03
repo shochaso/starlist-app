@@ -25,6 +25,7 @@ dependencies:
   otp: ^3.1.4
   qr_flutter: ^4.1.0
   simple_icons: ^14.6.1
+  image: ^4.2.0
   # Added for push notifications and monitoring
   firebase_core: ^2.24.2
   flutter_local_notifications: ^17.1.2
@@ -38,6 +39,7 @@ dependencies:
   crypto: ^3.0.6
   http: ^1.2.1
   auth0_flutter: ^1.4.0
+  mime: ^1.0.6
 
 dev_dependencies:
   flutter_test:

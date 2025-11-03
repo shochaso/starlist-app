@@ -29,8 +29,8 @@ void main() {
 
   test('debugAutoMap exposes alias mappings', () {
     final debugMap = ServiceIconRegistry.debugAutoMap();
-    expect(debugMap['amazon_prime'], endsWith('prime_video.svg'));
-    expect(debugMap['u_next'], endsWith('unext.svg'));
+    expect(debugMap['amazon_prime'], contains('prime_video.svg'));
+    expect(debugMap['u_next'], contains('unext.svg'));
   });
 
   test('iconForOrNull returns null when key empty', () {

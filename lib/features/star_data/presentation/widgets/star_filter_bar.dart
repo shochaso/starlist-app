@@ -14,7 +14,7 @@ class StarFilterBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final filters = StarDataCategories.filters;
+    const filters = StarDataCategories.filters;
     return SizedBox(
       height: 48,
       child: AnimatedSwitcher(

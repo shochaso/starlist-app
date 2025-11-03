@@ -159,6 +159,25 @@ class YouTubeHistoryNotifier extends StateNotifier<List<YouTubeHistoryItem>> {
     state = [];
   }
 
+  // 特定の履歴アイテムを削除
+  void removeHistoryItem(YouTubeHistoryItem item) {
+    state = state.where((i) => i != item).toList();
+  }
+
+  // セッションIDでグループを削除
+  void removeHistoryGroup(String sessionId) {
+    state = state.where((i) => i.sessionId != sessionId).toList();
+  }
+
+  // インデックスで履歴アイテムを削除
+  void removeHistoryItemAtIndex(int index) {
+    if (index >= 0 && index < state.length) {
+      final newState = List<YouTubeHistoryItem>.from(state);
+      newState.removeAt(index);
+      state = newState;
+    }
+  }
+
   // 最新の履歴アイテムを取得（最大4件）
   List<YouTubeHistoryItem> getLatestHistory() {
     return state.take(4).toList();

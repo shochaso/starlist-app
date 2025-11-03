@@ -20,7 +20,7 @@ void main() {
     registerFallbackValue(const StarDataControllerArgs(username: 'dummy'));
   });
 
-  StarDataPage _buildPage({
+  StarDataPage buildPage({
     List<StarData>? items,
     bool isLoggedIn = true,
     bool canViewFollowers = false,
@@ -70,7 +70,7 @@ void main() {
   test('initial load uses repository with provided category', () async {
     final repo = _MockStarDataRepository();
     final telemetry = _MockStarDataTelemetry();
-    final args = StarDataControllerArgs(
+    const args = StarDataControllerArgs(
       username: 'aurora',
       initialCategory: StarDataCategory.music,
     );
@@ -81,7 +81,7 @@ void main() {
         category: any(named: 'category'),
         cursor: any(named: 'cursor'),
       ),
-    ).thenAnswer((_) async => _buildPage());
+    ).thenAnswer((_) async => buildPage());
 
     final container = ProviderContainer(
       overrides: [
@@ -112,7 +112,7 @@ void main() {
   test('selectCategory fetches new data and records view', () async {
     final repo = _MockStarDataRepository();
     final telemetry = _MockStarDataTelemetry();
-    final args = const StarDataControllerArgs(username: 'aurora');
+    const args = StarDataControllerArgs(username: 'aurora');
 
     when(
       () => repo.fetchStarData(
@@ -123,7 +123,7 @@ void main() {
     ).thenAnswer((invocation) async {
       final category =
           invocation.namedArguments[#category] as StarDataCategory?;
-      return _buildPage(
+      return buildPage(
         items: [
           StarData(
             id: 'item-${category?.apiValue ?? 'all'}',
@@ -178,7 +178,7 @@ void main() {
   test('viewer access toggles digest-only view for anonymous users', () async {
     final repo = _MockStarDataRepository();
     final telemetry = _MockStarDataTelemetry();
-    final args = const StarDataControllerArgs(username: 'aurora');
+    const args = StarDataControllerArgs(username: 'aurora');
 
     when(
       () => repo.fetchStarData(
@@ -187,7 +187,7 @@ void main() {
         cursor: any(named: 'cursor'),
       ),
     ).thenAnswer(
-      (_) async => _buildPage(isLoggedIn: false, items: const []),
+      (_) async => buildPage(isLoggedIn: false, items: const []),
     );
 
     final container = ProviderContainer(
@@ -209,7 +209,7 @@ void main() {
       () async {
     final repo = _MockStarDataRepository();
     final telemetry = _MockStarDataTelemetry();
-    final args = const StarDataControllerArgs(username: 'aurora');
+    const args = StarDataControllerArgs(username: 'aurora');
 
     when(
       () => repo.fetchStarData(
@@ -218,7 +218,7 @@ void main() {
         cursor: null,
       ),
     ).thenAnswer(
-      (_) async => _buildPage(
+      (_) async => buildPage(
         nextCursor: 'cursor-1',
         canViewFollowers: true,
         items: [
@@ -246,7 +246,7 @@ void main() {
         cursor: 'cursor-1',
       ),
     ).thenAnswer(
-      (_) async => _buildPage(
+      (_) async => buildPage(
         items: [
           StarData(
             id: '2',

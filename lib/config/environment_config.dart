@@ -46,4 +46,9 @@ class EnvironmentConfig {
     'APP_BUILD_VERSION',
     defaultValue: 'dev',
   );
+
+  static const String docAiApiBase = String.fromEnvironment(
+    'API_BASE',
+    defaultValue: 'https://ocr-proxy-1092709877001.us-central1.run.app',
+  );
 }
