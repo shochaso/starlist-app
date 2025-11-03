@@ -1045,8 +1045,7 @@ class _YouTubeImportScreenState extends ConsumerState<YouTubeImportScreen>
           data[2] == 0x46) {
         return 'image/gif';
       }
-      // デフォルトとしてJPEGを返す（prepareImageForDocAiがJPEGに変換するため）
-      return 'image/jpeg';
+      return 'application/octet-stream';
     }
 
     // OCR処理前の重要な注意事項を表示
@@ -1066,7 +1065,7 @@ class _YouTubeImportScreenState extends ConsumerState<YouTubeImportScreen>
 
       final normalizedBytes = await prepareImageForDocAi(selectedImageBytes!);
       final base64Image = base64Encode(normalizedBytes);
-      final sanitizedMimeType = 'image/jpeg';
+      final sanitizedMimeType = _detectMime(normalizedBytes); // 変換後の実際のMIMEタイプを検出
       final originalMime = _detectMime(selectedImageBytes!);
       debugPrint(
         '[DocAI] sending payload (converted=$sanitizedMimeType, bytes=${normalizedBytes.length}, original=$originalMime)',
