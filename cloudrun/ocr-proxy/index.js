@@ -3,6 +3,7 @@ import process from 'node:process';
 import { DocumentProcessorServiceClient } from '@google-cloud/documentai';
 
 const app = express();
+const OCR_ENDPOINTS = ['/ocr/process', '/ocr:process'];
 app.use(
   express.json({
     limit: '10mb',
@@ -38,13 +39,40 @@ app.use((req, res, next) => {
   return next();
 });
 
-app.post('/ocr:process', async (req, res) => {
-
-  const { mimeType, contentBase64 } = req.body ?? {};
+const handleOcrRequest = async (req, res) => {
+  const { mimeType, contentBase64, originalMimeType } = req.body ?? {};
   if (!mimeType || !contentBase64) {
     return res
       .status(400)
       .json({ error: 'mimeType と contentBase64 は必須です。' });
+  }
+
+  const sanitizedBase64 = String(contentBase64)
+    .replace(/^data:[^;]+;base64,/, '')
+    .replace(/\s+/g, '');
+
+  console.log('[OCR] incoming payload', {
+    mimeType,
+    originalMimeType: originalMimeType ?? null,
+    base64Length: sanitizedBase64.length,
+  });
+
+  let binary;
+  try {
+    binary = Buffer.from(sanitizedBase64, 'base64');
+  } catch (decodeError) {
+    console.error('[OCR Error] base64 decode failed', {
+      message: decodeError?.message ?? decodeError,
+    });
+    return res.status(400).json({
+      error: '画像データのデコードに失敗しました。base64 形式を確認してください。',
+    });
+  }
+
+  if (!binary.length) {
+    return res.status(400).json({
+      error: '画像データが空です。base64 形式を確認してください。',
+    });
   }
 
   const projectId = process.env.DOCUMENT_AI_PROJECT_ID;
@@ -65,13 +93,17 @@ app.post('/ocr:process', async (req, res) => {
     const [result] = await client.processDocument({
       name,
       rawDocument: {
-        content: Buffer.from(contentBase64, 'base64'),
+        content: binary,
         mimeType,
       },
     });
 
     const document = result.document ?? {};
     const text = document.text ?? '';
+    console.log('[OCR] Document AI success', {
+      characters: text.length,
+      mimeType,
+    });
 
     return res.json({
       text,
@@ -80,18 +112,66 @@ app.post('/ocr:process', async (req, res) => {
   } catch (error) {
     const message = String(error?.message ?? error);
     const stack = error?.stack ?? '';
+    const code = error?.code;
+    const details = error?.details;
+    let badRequest = null;
+    try {
+      const metadata = error?.metadata?.get?.('google.rpc.BadRequest');
+      if (metadata && metadata.length > 0) {
+        badRequest = metadata.map((entry) => entry.toString());
+      }
+    } catch (_) {
+      badRequest = null;
+    }
+    // より詳細なエラーメタデータの取得
+    let errorMetadata = null;
+    try {
+      if (error?.metadata) {
+        errorMetadata = {};
+        for (const [key, value] of error.metadata.getMap()) {
+          errorMetadata[key] = Array.isArray(value) 
+            ? value.map(v => v.toString())
+            : value.toString();
+        }
+      }
+    } catch (metaError) {
+      console.error('[OCR Error] Failed to extract metadata', metaError);
+    }
+
     console.error('[OCR Error]', {
       message,
+      code,
+      details,
+      badRequest,
+      errorMetadata,
+      processorName: name,
+      mimeType: normalizedMimeType,
+      binarySize: binary.length,
       stack,
       error: error?.toString(),
     });
     let status = 500;
     if (message.includes('PERMISSION_DENIED')) status = 403;
     if (message.includes('NOT_FOUND')) status = 404;
+    if (String(code) === '3' || message.includes('INVALID_ARGUMENT')) {
+      status = 422;
+    }
     return res.status(status).json({
       error: message,
+      details,
+      badRequest,
+      errorMetadata,
+      processorInfo: {
+        projectId,
+        location,
+        processorId,
+      },
     });
   }
+};
+
+OCR_ENDPOINTS.forEach((path) => {
+  app.post(path, handleOcrRequest);
 });
 
 const port = process.env.PORT ?? 8080;
