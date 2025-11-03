@@ -128,10 +128,22 @@ const handleOcrRequest = async (req, res) => {
     try {
       if (error?.metadata) {
         errorMetadata = {};
-        for (const [key, value] of error.metadata.getMap()) {
-          errorMetadata[key] = Array.isArray(value) 
-            ? value.map(v => v.toString())
-            : value.toString();
+        // metadataはMap形式の可能性がある
+        if (typeof error.metadata.getMap === 'function') {
+          const metadataMap = error.metadata.getMap();
+          for (const [key, value] of metadataMap) {
+            errorMetadata[key] = Array.isArray(value) 
+              ? value.map(v => v.toString())
+              : value.toString();
+          }
+        } else if (error.metadata instanceof Map) {
+          for (const [key, value] of error.metadata) {
+            errorMetadata[key] = Array.isArray(value) 
+              ? value.map(v => v.toString())
+              : value.toString();
+          }
+        } else {
+          errorMetadata = error.metadata;
         }
       }
     } catch (metaError) {
@@ -145,7 +157,7 @@ const handleOcrRequest = async (req, res) => {
       badRequest,
       errorMetadata,
       processorName: name,
-      mimeType: normalizedMimeType,
+      mimeType,
       binarySize: binary.length,
       stack,
       error: error?.toString(),
