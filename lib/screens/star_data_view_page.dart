@@ -1,1 +1,1 @@
-export '../features/star_data/presentation/star_data_view_page.dart';
+export '../features/star_data/presentation/star_data_youtube_page.dart';

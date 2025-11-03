@@ -6,8 +6,7 @@ import 'package:starlist_app/features/login/screens/login_screen.dart';
 import 'package:starlist_app/features/login/screens/password_reset_request_screen.dart';
 import 'package:starlist_app/features/login/screens/password_reset_screen.dart';
 // import 'package:starlist_app/screens/style_guide_page.dart'; // 一時的にコメントアウト
-import 'package:starlist_app/screens/star_data_view_page.dart';
-import 'package:starlist_app/features/star_data/domain/category.dart';
+import 'package:starlist_app/features/star_data/presentation/star_data_youtube_page.dart';
 import 'package:starlist_app/features/registration/presentation/screens/1_follower_check_screen.dart';
 import 'package:starlist_app/features/registration/presentation/screens/2_basic_info_screen.dart';
 import 'package:starlist_app/features/registration/presentation/screens/3_profile_info_screen.dart';
@@ -107,20 +106,11 @@ GoRouter createAppRouter() {
       ),
       GoRoute(
         path: '/stars/:username/data',
-        builder: (context, state) {
-          final username = state.pathParameters['username'] ?? 'demo-star';
-          final categoryParam = state.uri.queryParameters['category'];
-          return StarDataViewPage(
-            username: username,
-            initialCategory: StarDataCategory.maybeFrom(categoryParam),
-          );
-        },
+        builder: (context, state) => const StarDataYoutubePage(),
       ),
       GoRoute(
         path: '/star-data',
-        builder: (context, state) => const StarDataViewPage(
-          username: 'demo-star',
-        ),
+        builder: (context, state) => const StarDataYoutubePage(),
       ),
       // GoRoute(
       //   path: '/style-guide',

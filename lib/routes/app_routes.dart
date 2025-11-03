@@ -7,7 +7,7 @@ import '../screens/following_screen.dart';
 import '../screens/fan_mypage_screen.dart';
 import '../screens/star_mypage_screen.dart';
 import '../screens/category_list_screen.dart';
-import '../screens/star_data_view_page.dart';
+import '../features/star_data/presentation/star_data_youtube_page.dart';
 import '../screens/dev_preview_page.dart';
 import '../features/social_link/social_link_screen.dart';
 import '../features/import_diagnose/import_diagnose_screen.dart';
@@ -77,11 +77,8 @@ class AppRoutes {
         );
 
       case starData:
-        final username =
-            (settings.arguments is String ? settings.arguments as String : null) ??
-                'demo-star';
         return MaterialPageRoute(
-          builder: (context) => StarDataViewPage(username: username),
+          builder: (context) => const StarDataYoutubePage(),
         );
 
       case devPreview:

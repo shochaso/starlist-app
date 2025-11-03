@@ -15,7 +15,7 @@ import 'login_status_screen.dart';
 import 'test_account_switcher_screen.dart';
 import '../src/features/points/screens/star_points_purchase_screen.dart';
 import '../features/premium/screens/premium_restriction_screen.dart';
-import 'star_data_view_page.dart';
+import '../features/star_data/presentation/star_data_youtube_page.dart';
 // プロバイダー・サービス
 import '../providers/user_provider.dart';
 import '../src/providers/theme_provider_enhanced.dart';
@@ -807,20 +807,18 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
         SchedulerBinding.instance.addPostFrameCallback((_) {
           if (!mounted) return;
           debugPrint(
-              '[StarlistMainScreen] Navigating to StarDataViewPage via rootNavigator');
+              '[StarlistMainScreen] Navigating to StarDataYoutubePage via rootNavigator');
           rootNavigator
               .push(
             MaterialPageRoute(
-              builder: (_) => const StarDataViewPage(
-                username: 'demo-star',
-              ),
+              builder: (_) => const StarDataYoutubePage(),
               settings: const RouteSettings(name: '/starlist'),
             ),
           )
               .then((_) {
             if (!mounted) return;
             ref.read(selectedDrawerPageProvider.notifier).state = null;
-            debugPrint('[StarlistMainScreen] Returned from StarDataViewPage');
+            debugPrint('[StarlistMainScreen] Returned from StarDataYoutubePage');
           });
         });
         return;
