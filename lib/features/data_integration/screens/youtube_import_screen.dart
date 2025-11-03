@@ -1067,9 +1067,17 @@ class _YouTubeImportScreenState extends ConsumerState<YouTubeImportScreen>
       final base64Image = base64Encode(normalizedBytes);
       final sanitizedMimeType = _detectMime(normalizedBytes); // 変換後の実際のMIMEタイプを検出
       final originalMime = _detectMime(selectedImageBytes!);
-      debugPrint(
-        '[DocAI] sending payload (converted=$sanitizedMimeType, bytes=${normalizedBytes.length}, original=$originalMime)',
-      );
+      
+      // 詳細なログ出力
+      debugPrint('[DocAI] === OCR Request Details ===');
+      debugPrint('[DocAI] original bytes length: ${selectedImageBytes!.length}');
+      debugPrint('[DocAI] normalized bytes length: ${normalizedBytes.length}');
+      debugPrint('[DocAI] converted mimeType: $sanitizedMimeType');
+      debugPrint('[DocAI] original mimeType: $originalMime');
+      debugPrint('[DocAI] base64 length: ${base64Image.length}');
+      debugPrint('[DocAI] sending payload (converted=$sanitizedMimeType, bytes=${normalizedBytes.length}, original=$originalMime)');
+      debugPrint('[DocAI] === End OCR Request Details ===');
+      
       final response = await http.post(
         Uri.parse('$apiBase/ocr/process'),
         headers: {

@@ -51,15 +51,16 @@ const handleOcrRequest = async (req, res) => {
     .replace(/^data:[^;]+;base64,/, '')
     .replace(/\s+/g, '');
 
-  console.log('[OCR] incoming payload', {
-    mimeType,
-    originalMimeType: originalMimeType ?? null,
-    base64Length: sanitizedBase64.length,
-  });
+  console.log('[OCR] === incoming payload ===');
+  console.log('[OCR] mimeType:', mimeType);
+  console.log('[OCR] originalMimeType:', originalMimeType ?? null);
+  console.log('[OCR] base64Length:', sanitizedBase64.length);
+  console.log('[OCR] === end incoming payload ===');
 
   let binary;
   try {
     binary = Buffer.from(sanitizedBase64, 'base64');
+    console.log('[OCR] binary decoded successfully, size:', binary.length);
   } catch (decodeError) {
     console.error('[OCR Error] base64 decode failed', {
       message: decodeError?.message ?? decodeError,
@@ -70,10 +71,14 @@ const handleOcrRequest = async (req, res) => {
   }
 
   if (!binary.length) {
+    console.error('[OCR Error] binary data is empty');
     return res.status(400).json({
       error: '画像データが空です。base64 形式を確認してください。',
     });
   }
+  
+  console.log('[OCR] binary data size:', binary.length, 'bytes');
+  console.log('[OCR] binary first 20 bytes:', binary.slice(0, 20).toString('hex'));
 
   const projectId = process.env.DOCUMENT_AI_PROJECT_ID;
   const location = process.env.DOCUMENT_AI_LOCATION;
@@ -87,6 +92,13 @@ const handleOcrRequest = async (req, res) => {
   }
 
   const name = `projects/${projectId}/locations/${location}/processors/${processorId}`;
+  console.log('[OCR] processor name:', name);
+  console.log('[OCR] sending to Document AI:', {
+    processorName: name,
+    mimeType,
+    contentSize: binary.length,
+  });
+  
   const client = new DocumentProcessorServiceClient();
 
   try {
