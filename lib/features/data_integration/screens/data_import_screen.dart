@@ -7,7 +7,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:starlist_app/consts/debug_flags.dart';
 import 'package:starlist_app/features/data_integration/widgets/blank_avatar.dart';
-import 'package:starlist_app/features/data_integration/widgets/icon_probe_banner.dart';
 import 'package:starlist_app/utils/key_normalizer.dart';
 import 'package:starlist_app/widgets/icon_diag_hud.dart';
 import '../../../config/ui_flags.dart';
@@ -654,20 +653,6 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (kDebugMode)
-            Container(
-              margin: const EdgeInsets.only(bottom: 12),
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.05),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Text(
-                'PROBE: import icon rendering disabled (images hidden)',
-                style: TextStyle(fontSize: 12),
-              ),
-            ),
-          if (kIconProbe) const IconProbeBanner(),
           // メインサービス（優先度の高い6つ）
           _buildPriorityServicesSection(),
           const SizedBox(height: 32),
@@ -1241,8 +1226,7 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
           border: border,
       showComingSoonBadge: showComingSoonBadge,
       onTap: handleTap,
-                        probeLabel: resolvedServiceId,
-      isPriority: false,
+                        isPriority: false,
     );
   }
 
@@ -1581,6 +1565,8 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
       'hulu',
       'disney',
       'unext',
+      'dtv',
+      'fod',
       'restaurant',
       'delivery',
       'cooking',
@@ -2373,7 +2359,6 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
       case 'hulu':
         return 'Hulu';
       case 'disney':
-        return 'Disney+';
       case 'disney_plus':
         return 'Disney+';
       case 'unext':
@@ -2420,9 +2405,8 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
       case 'electronic_money':
         return '電子マネー';
       case 'smartphone_apps':
-        return 'スマホアプリ';
       case 'app_store':
-        return 'App Store';
+        return 'スマホアプリ';
       case 'google_play':
         return 'Google Play';
       case 'web_services':
@@ -3582,8 +3566,6 @@ class _InteractiveServiceCard extends StatefulWidget {
   final LinearGradient? gradient;
   final Border? border;
   final bool showComingSoonBadge;
-  final String? probeLabel;
-
   const _InteractiveServiceCard({
     required this.serviceId,
     required this.title,
@@ -3603,7 +3585,6 @@ class _InteractiveServiceCard extends StatefulWidget {
     this.gradient,
     this.border,
     this.showComingSoonBadge = false,
-    this.probeLabel,
   });
 
   @override
@@ -3911,7 +3892,6 @@ class _InteractiveServiceCardState extends State<_InteractiveServiceCard>
     
     return _squareIcon(
       size: widget.iconBoxSize,
-      probeLabel: widget.probeLabel,
       child: _buildIcon(),
     );
   }
@@ -3919,22 +3899,11 @@ class _InteractiveServiceCardState extends State<_InteractiveServiceCard>
   Widget _squareIcon({
     required double size,
     required Widget child,
-    String? probeLabel,
   }) {
     return SizedBox(
       width: size,
       height: size,
-      child: probeLabel != null && kIconProbe
-          ? LayoutBuilder(
-              builder: (context, constraints) {
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  debugPrint(
-                      '[IconProbe][$probeLabel] constraints=${constraints.maxWidth}x${constraints.maxHeight}');
-                });
-                return child;
-              },
-            )
-          : child,
+      child: child,
     );
   }
 }

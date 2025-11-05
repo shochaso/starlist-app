@@ -8,7 +8,7 @@
     "test:process": "node test-process.js"
   },
   "dependencies": {
-    "@google-cloud/documentai": "^11.3.0",
+    "@google-cloud/documentai": "^9.5.0",
     "@google-cloud/storage": "^7.13.0",
     "express": "^4.19.2"
   }

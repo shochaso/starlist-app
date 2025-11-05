@@ -1,18 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-
-// サイドバーのインポート
-import '../features/sidebar/presentation/star_list_sidebar.dart';
 
 // 画面のインポート
 import '../features/search/screens/search_screen.dart';
 import '../features/mylist/screens/mylist_screen.dart';
 import '../features/profile/screens/profile_screen.dart';
 import '../features/data_integration/screens/data_import_screen.dart';
+import '../features/star/screens/star_dashboard_screen.dart';
 import '../src/features/gacha/presentation/gacha_screen.dart';
 import '../features/content/screens/post_detail_screen.dart';
+import '../src/features/subscription/screens/subscription_plans_screen.dart';
+import '../src/features/points/screens/star_points_purchase_screen.dart';
+import 'login_status_screen.dart';
 import 'test_account_switcher_screen.dart';
+import 'star_data_view_page.dart';
 
 // プロバイダー・サービス
 import '../providers/user_provider.dart';
@@ -493,14 +496,7 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
       backgroundColor:
           isDark ? const Color(0xFF1A1A1A) : const Color(0xFFF8FAFC),
       appBar: _buildAppBar(),
-      drawer: Theme(
-        data: Theme.of(context).copyWith(
-          drawerTheme: DrawerThemeData(
-            backgroundColor: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-          ),
-        ),
-        child: const StarListSidebar(),
-      ),
+      drawer: _buildDrawer(),
       body: _buildBody(selectedTab),
       bottomNavigationBar: _buildBottomNavigationBar(selectedTab),
       floatingActionButton: FloatingActionButton(
@@ -573,6 +569,260 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
   }
 
 
+  Drawer _buildDrawer() {
+    final currentUser = ref.watch(currentUserProvider);
+    final themeState = ref.watch(themeProviderEnhanced);
+    final isDark = themeState.isDarkMode;
+
+    return Drawer(
+      backgroundColor: isDark ? const Color(0xFF1A1A1A) : Colors.white,
+      child: Column(
+        children: [
+          SafeArea(
+            child: Container(
+              margin: const EdgeInsets.only(top: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Color(0xFF4ECDC4),
+                    Color(0xFF44A08D),
+                  ],
+                ),
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(20),
+                  bottomRight: Radius.circular(20),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(
+                      Icons.star,
+                      color: Colors.white,
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text(
+                          'Starlist',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                            letterSpacing: -0.3,
+                          ),
+                        ),
+                        Text(
+                          currentUser.isStar ? 'スター' : 'ファン',
+                          style: const TextStyle(
+                            color: Colors.white70,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close, color: Colors.white70, size: 20),
+                    onPressed: () => Navigator.of(context).pop(),
+                    constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                    padding: EdgeInsets.zero,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              children: [
+                _buildDrawerItem(Icons.home, 'ホーム', 0, null),
+                _buildDrawerItem(Icons.search, '検索', 1, null),
+                _buildDrawerItem(Icons.star, 'マイリスト', 3, null),
+                if (currentUser.isStar) ...[
+                  _buildDrawerItem(Icons.camera_alt, 'データ取込み', 2, null),
+                  _buildDrawerItem(Icons.analytics, 'ダッシュボード', -1, 'dashboard'),
+                ],
+                _buildDrawerItem(Icons.person, 'マイページ', 4, null),
+                if (currentUser.isFan) ...[
+                  _buildDrawerItem(Icons.credit_card, '課金プラン', -1, 'subscription'),
+                  _buildDrawerItem(Icons.stars, 'スターポイント購入', -1, 'buy_points'),
+                ],
+                _buildDrawerItem(Icons.grid_view_rounded, 'スターリスト', -1, 'starlist'),
+                _buildDrawerItem(Icons.settings, '設定', -1, 'settings'),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 18, 16, 6),
+                  child: Text(
+                    'クイック操作',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: isDark ? Colors.white54 : Colors.grey.shade600,
+                    ),
+                  ),
+                ),
+                SwitchListTile.adaptive(
+                  value: isDark,
+                  onChanged: (_) {
+                    ref.read(themeProviderEnhanced.notifier).toggleLightDark();
+                  },
+                  dense: true,
+                  activeColor: const Color(0xFF4ECDC4),
+                  title: const Text('ダークモード'),
+                ),
+                ListTile(
+                  dense: true,
+                  leading: const Icon(Icons.login),
+                  title: const Text('ログイン状態'),
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => const LoginStatusScreen(),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDrawerItem(IconData icon, String title, int tabIndex, String? pageKey) {
+    final selectedTab = ref.watch(selectedTabProvider);
+    final selectedDrawerPage = ref.watch(selectedDrawerPageProvider);
+    final themeState = ref.watch(themeProviderEnhanced);
+    final isDark = themeState.isDarkMode;
+
+    final isTabActive = tabIndex != -1 && selectedTab == tabIndex && selectedDrawerPage == null;
+    final isPageActive = pageKey != null && selectedDrawerPage == pageKey;
+    final isActive = isTabActive || isPageActive;
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 3),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        color: isActive ? const Color(0xFF4ECDC4).withOpacity(0.15) : null,
+        border: isActive
+            ? Border.all(
+                color: const Color(0xFF4ECDC4).withOpacity(0.3),
+                width: 1,
+              )
+            : null,
+      ),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        leading: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: isActive
+                ? const Color(0xFF4ECDC4)
+                : (isDark ? Colors.white10 : Colors.grey.shade100),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(
+            icon,
+            color: isActive
+                ? Colors.white
+                : (isDark ? Colors.white54 : Colors.grey.shade600),
+            size: 18,
+          ),
+        ),
+        title: Text(
+          title,
+          style: TextStyle(
+            color: isActive
+                ? const Color(0xFF4ECDC4)
+                : (isDark ? Colors.white : Colors.grey.shade800),
+            fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
+            fontSize: 15,
+          ),
+        ),
+        trailing: isActive
+            ? const Icon(
+                Icons.arrow_forward_ios,
+                color: Color(0xFF4ECDC4),
+                size: 14,
+              )
+            : null,
+        onTap: () {
+          Navigator.of(context).pop();
+          if (tabIndex != -1) {
+            ref.read(selectedTabProvider.notifier).state = tabIndex;
+            ref.read(selectedDrawerPageProvider.notifier).state = null;
+          } else if (pageKey != null) {
+            ref.read(selectedDrawerPageProvider.notifier).state = pageKey;
+            _navigateToPage(pageKey);
+          }
+        },
+      ),
+    );
+  }
+
+  void _navigateToPage(String pageKey) {
+    final currentUser = ref.read(currentUserProvider);
+    switch (pageKey) {
+      case 'dashboard':
+        Navigator.of(context).push(
+          MaterialPageRoute(builder: (context) => const StarDashboardScreen()),
+        );
+        return;
+      case 'subscription':
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => const SubscriptionPlansScreen(),
+          ),
+        );
+        return;
+      case 'buy_points':
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => const StarPointsPurchaseScreen(),
+          ),
+        );
+        return;
+      case 'starlist':
+        final rootNavigator = Navigator.of(context, rootNavigator: true);
+        SchedulerBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          rootNavigator
+              .push(
+            MaterialPageRoute(
+              builder: (_) => StarDataViewPage(
+                username: currentUser.name,
+              ),
+              settings: const RouteSettings(name: '/starlist'),
+            ),
+          )
+              .then((_) {
+            if (!mounted) return;
+            ref.read(selectedDrawerPageProvider.notifier).state = null;
+          });
+        });
+        return;
+      case 'settings':
+        if (mounted) context.go('/settings');
+        return;
+      default:
+        return;
+    }
+  }
+
   Widget _buildBody(int selectedTab) {
     switch (selectedTab) {
       case 0:
@@ -591,92 +841,38 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
   }
 
   Widget _buildHomeView() {
-    return Builder(
-      builder: (context) {
-        try {
-          return SingleChildScrollView(
-            controller: _scrollController,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // 最新YouTube履歴セクション（一番上）
-                _buildLatestYouTubeHistorySection(),
-                const SizedBox(height: 16),
-
-                // 新着投稿ダイジェスト（YouTube投稿除外）
-                _buildRecentPostsSection(),
-                const SizedBox(height: 16),
-
-                // 有料フォローコンテンツ
-                _buildPaidFollowContentSection(),
-                const SizedBox(height: 16),
-
-                // フォローユーザーの登録状況
-                _buildFollowingUsersRegistrationSection(),
-                const SizedBox(height: 16),
-
-                // 通知セクション
-                _buildNotificationsSection(),
-                const SizedBox(height: 16),
-
-                // 自然な広告1（おすすめアプリ）
-                _buildNativeAd1(),
-                const SizedBox(height: 16),
-
-                // トレンドトピックセクション
-                _buildTrendingTopicsSection(),
-                const SizedBox(height: 16),
-
-                // プレイリストセクション
-                _buildFeaturedPlaylistsSection(),
-                const SizedBox(height: 16),
-
-                // 自然な広告2（スポンサードコンテンツ）
-                _buildNativeAd2(),
-                const SizedBox(height: 16),
-
-                // おすすめスターセクション
-                _buildRecommendedStarsSection(),
-                const SizedBox(height: 16),
-
-                // 新しく参加したスターセクション
-                _buildNewStarsSection(),
-                const SizedBox(height: 16),
-
-                // 今日のピックアップセクション
-                _buildTodayPickupSection(),
-                const SizedBox(height: 100), // ボトムナビゲーション用の余白
-              ],
-            ),
-          );
-        } catch (e, stackTrace) {
-          debugPrint('[StarlistMainScreen] Error in _buildHomeView: $e');
-          debugPrintStack(stackTrace: stackTrace);
-          return Center(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.error_outline, size: 64, color: Colors.red),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'エラーが発生しました',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    e.toString(),
-                    style: const TextStyle(fontSize: 12),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              ),
-            ),
-          );
-        }
-      },
+    return SingleChildScrollView(
+      controller: _scrollController,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildLatestYouTubeHistorySection(),
+          const SizedBox(height: 16),
+          _buildRecentPostsSection(),
+          const SizedBox(height: 16),
+          _buildPaidFollowContentSection(),
+          const SizedBox(height: 16),
+          _buildFollowingUsersRegistrationSection(),
+          const SizedBox(height: 16),
+          _buildNotificationsSection(),
+          const SizedBox(height: 16),
+          _buildNativeAd1(),
+          const SizedBox(height: 16),
+          _buildTrendingTopicsSection(),
+          const SizedBox(height: 16),
+          _buildFeaturedPlaylistsSection(),
+          const SizedBox(height: 16),
+          _buildNativeAd2(),
+          const SizedBox(height: 16),
+          _buildRecommendedStarsSection(),
+          const SizedBox(height: 16),
+          _buildNewStarsSection(),
+          const SizedBox(height: 16),
+          _buildTodayPickupSection(),
+          const SizedBox(height: 100),
+        ],
+      ),
     );
   }
 

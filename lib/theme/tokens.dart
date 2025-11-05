@@ -67,6 +67,14 @@ class AppShadows {
   ];
 }
 
+class AppMotion {
+  const AppMotion();
+
+  Duration get fast => const Duration(milliseconds: 120);
+  Duration get normal => const Duration(milliseconds: 200);
+  Duration get slow => const Duration(milliseconds: 360);
+}
+
 /// Theme extension for accessing design tokens
 class AppTokens extends ThemeExtension<AppTokens> {
   const AppTokens({
@@ -74,12 +82,14 @@ class AppTokens extends ThemeExtension<AppTokens> {
     required this.radius,
     required this.border,
     required this.elevations,
+    required this.motion,
   });
 
   final AppSpace spacing;
   final AppRadius radius;
   final AppBorder border;
   final AppElevations elevations;
+  final AppMotion motion;
 
   @override
   AppTokens copyWith({
@@ -87,12 +97,14 @@ class AppTokens extends ThemeExtension<AppTokens> {
     AppRadius? radius,
     AppBorder? border,
     AppElevations? elevations,
+    AppMotion? motion,
   }) {
     return AppTokens(
       spacing: spacing ?? this.spacing,
       radius: radius ?? this.radius,
       border: border ?? this.border,
       elevations: elevations ?? this.elevations,
+      motion: motion ?? this.motion,
     );
   }
 
@@ -103,6 +115,7 @@ class AppTokens extends ThemeExtension<AppTokens> {
       radius: AppRadius(),
       border: AppBorder(),
       elevations: AppElevations(),
+      motion: AppMotion(),
     );
   }
 
@@ -111,5 +124,6 @@ class AppTokens extends ThemeExtension<AppTokens> {
     radius: AppRadius(),
     border: AppBorder(),
     elevations: AppElevations(),
+    motion: AppMotion(),
   );
 }
