@@ -1,15 +1,15 @@
 {
   "name": "starlist-ocr-proxy",
   "version": "1.0.0",
-  "type": "module",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "dev": "node index.js"
+    "dev": "node index.js",
+    "test:process": "node test-process.js"
   },
   "dependencies": {
-    "@google-cloud/documentai": "^9.5.0",
-    "express": "^4.19.2",
-    "google-auth-library": "^9.15.1"
+    "@google-cloud/documentai": "^11.3.0",
+    "@google-cloud/storage": "^7.13.0",
+    "express": "^4.19.2"
   }
 }
