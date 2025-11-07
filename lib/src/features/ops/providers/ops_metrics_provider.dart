@@ -24,8 +24,7 @@ final opsMetricsSeriesProvider = FutureProvider<List<OpsMetricsSeriesPoint>>((re
   var query = client
       .from('v_ops_5min')
       .select()
-      .gte('bucket_5m', since.toUtc().toIso8601String())
-      .order('bucket_5m', ascending: true);
+      .gte('bucket_5m', since.toUtc().toIso8601String());
 
   if (filter.env != null && filter.env!.isNotEmpty) {
     query = query.eq('env', filter.env!);
@@ -36,6 +35,9 @@ final opsMetricsSeriesProvider = FutureProvider<List<OpsMetricsSeriesPoint>>((re
   if (filter.eventType != null && filter.eventType!.isNotEmpty) {
     query = query.eq('event', filter.eventType!);
   }
+
+  // order()は最後に呼び出す
+  query = query.order('bucket_5m', ascending: true);
 
   final response = await query;
   if (response.error != null) {
