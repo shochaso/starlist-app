@@ -23,16 +23,20 @@ Day6: OPS Dashboard 完全実装（UI + Provider + Test）
 - Reviewer: `@pm-tim`（承認済み）
 - Merge方式: `Squash & merge`
 
-### 📊 実装統計
+### 📊 実装統計（最終確定値）
 
 | 指標 | 内容 |
 |------|------|
-| コミット数 | 12件 |
-| 変更ファイル | 99ファイル |
-| コード変更量 | +5,520行 / -120行 |
+| コミット数 | 13件 |
+| 変更ファイル | 492ファイル |
+| コード変更量 | +32,640行 / -19,337行 |
 | DoD（Definition of Done） | 12/12 達成（100%） |
 | テスト結果 | ✅ 5/5 通過 |
 | PM承認 | 取得済み |
+| Merged | （マージ後に追記） |
+| Merge SHA | （マージ後に追記） |
+
+> **注記**: 上記の差分は `git diff --shortstat origin/main...HEAD` で確定した最終値です。Day5+Day6の実装を含みます。
 
 ### 🧩 マージ手順
 
@@ -85,6 +89,67 @@ Day6: OPS Dashboard 完全実装（UI + Provider + Test）
 CI緑化後、**Squash & merge実行 → Day7フェーズへ移行可能。**
 
 > すべての準備が整っています。PRを作成してマージしてください。
+
+---
+
+## 🧭 提出〜マージ運用（確定）
+
+### 1. PR作成
+- URL: https://github.com/shochaso/starlist-app/pull/new/feature/day5-telemetry-ops
+- Title: `Day6: OPS Dashboard 完全実装（UI + Provider + Test）`
+- Body: `PR_BODY.md` + `DAY6_SOT_DIFFS.md` を参照
+- Reviewer: `@pm-tim`（承認済み）
+- Labels: `feature`, `ops`, `dashboard`, `day6`
+- Milestone: `Day6 OPS Dashboard`
+
+### 2. 添付
+- [ ] Dataあり/空のスクショ2枚
+- [ ] `flutter test` 5/5 ログ
+- [ ] CI 緑化スクショ（`qa-e2e.yml`）
+
+### 3. マージ
+- CI緑化 → **Squash & merge**
+- マージ後、`DAY6_SOT_DIFFS.md` に以下を追記:
+  - `Merged: yes`
+  - `Merge SHA: <xxxx>`
+
+---
+
+## 🏷 Post-merge（3点だけ即）
+
+### 1. タグ作成
+```bash
+git checkout main
+git pull origin main
+git tag v0.6.0-ops-dashboard-beta -m 'feat(ops): Day6 OPS Dashboard filters+charts+auto-refresh'
+git push origin v0.6.0-ops-dashboard-beta
+```
+
+### 2. CHANGELOG更新
+`CHANGELOG.md` に Day6 要約追記:
+```
+## [0.6.0] - 2025-11-07
+### Added
+- /ops 監視ダッシュボード（β）公開
+  - フィルタ（env/app/event/期間）
+  - KPI（Total / Err% / p95 / Errors）
+  - p95折れ線 + 成功/失敗スタック棒、30秒Auto Refresh
+  - 空/エラー時のUI、Pull-to-refresh
+```
+
+### 3. 社内告知
+Slack `#release` に PRリンク・要約・スクショ2枚を投稿
+
+---
+
+## 🚀 Day7 キック（即着手メモ）
+
+- **ブランチ**: `feature/day7-ops-alert-automation`
+- **初手**: 
+  - Edge Function `ops-alert` に `p95/fail_rate` 閾値 & `dryRun`
+  - Flutter「Recent Alerts」セクション
+  - CI でダミー発火
+- **ドキュメント**: `OPS-ALERT-AUTOMATION-001.md` 新設（検証手順・通知ペイロード・スクショ欄）
 
 ---
 
