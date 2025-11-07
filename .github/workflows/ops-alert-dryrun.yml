@@ -33,8 +33,15 @@ jobs:
         run: |
           set -euo pipefail
           echo "[ops] dryrun start (direct)"
-          curl -fsS -H "Authorization: Bearer ${OPS_ALERT_TOKEN}" \
-               "${OPS_ALERT_URL}?dryRun=true&limit=50"
+          RESPONSE=$(curl --fail --show-error --retry 3 --retry-all-errors --max-time 30 \
+            -H "Authorization: Bearer ${OPS_ALERT_TOKEN}" \
+            "${OPS_ALERT_URL}?dryRun=true&limit=50")
+          
+          echo "Response:"
+          echo "$RESPONSE" | jq .
+          
+          # Verify response structure
+          echo "$RESPONSE" | jq -e '.ok != null' >/dev/null || exit 1
           echo "[ops] dryrun success (direct)"
 
       - name: DryRun via Supabase REST (B)
@@ -46,7 +53,8 @@ jobs:
           set -euo pipefail
           echo "[ops] dryrun start (supabase)"
           # Edge Function ops-alert を呼ぶ
-          RESPONSE=$(curl -fsS -X GET \
+          RESPONSE=$(curl --fail --show-error --retry 3 --retry-all-errors --max-time 30 \
+            -X GET \
             -H "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
             -H "Content-Type: application/json" \
             "${SUPABASE_URL}/functions/v1/ops-alert?dry_run=true&minutes=15")
