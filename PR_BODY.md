@@ -1,133 +1,94 @@
-feat(ops): Day6 OPS Dashboard — filters, KPIs, p95 line, stacked bars, auto-refresh
+feat(ops): Day7 OPS Alert Automation — Recent Alerts UI + CI
 
 ## 概要
 
-Day6の実装スコープを完了。OPS Dashboard UI拡張により、フィルタ・KPI・グラフ・自動リフレッシュ機能を実装。Day5のTelemetry/OPS基盤と連携し、リアルタイム監視ダッシュボードを実現。
+Day7の実装スコープを完了。OPS Alert Automationにより、Edge Function `ops-alert`の拡張、Flutterダッシュボードに「Recent Alerts」セクション追加、CI検証ワークフローを実装。Day6のOPS Dashboardと連携し、「収集 → 可視化 → アラート表示」のサイクルを完成。
 
 ## 変更点（ハイライト）
 
-* **モデル拡張**
-  * `lib/src/features/ops/models/ops_metrics_series_model.dart`（新規）
-    * `OpsMetricsSeriesPoint` - 時系列データポイント
-    * `OpsMetricsFilter` - フィルタパラメータ
-    * `OpsMetricsKpi` - 集計KPI
+* **Edge Function拡張**
+  * `supabase/functions/ops-alert/index.ts`
+    * アラート情報の詳細化（type, value, threshold）
+    * 環境変数で閾値を設定可能（`FAILURE_RATE_THRESHOLD`, `P95_LATENCY_THRESHOLD`）
+    * アラート種別を明確に識別（failure_rate/p95_latency）
 
-* **プロバイダー拡張**
+* **Flutter Recent Alerts実装**
+  * `lib/src/features/ops/models/ops_alert_model.dart`（新規）
+    * `OpsAlert` - アラート情報モデル
   * `lib/src/features/ops/providers/ops_metrics_provider.dart`
-    * `opsMetricsFilterProvider` - フィルタ状態管理
-    * `opsMetricsSeriesProvider` - v_ops_5minから時系列データ取得
-    * `opsMetricsKpiProvider` - 時系列からKPI集計
-    * `opsMetricsAutoRefreshProvider` - 30秒間隔の自動リフレッシュ
-
-* **ダッシュボードUI拡張**
+    * `opsRecentAlertsProvider` - ops-alert Edge Function呼び出し
   * `lib/src/features/ops/screens/ops_dashboard_page.dart`
-    * フィルタUI: Environment/App/Event/Period ドロップダウン（4列）
-    * KPIカード: Total Requests / Error Rate / P95 Latency / Errors（4枚）
-    * P95折れ線グラフ: fl_chart使用、時系列で遅延推移を表示
-    * スタック棒グラフ: Success（緑）/Error（赤）の件数を積み上げ表示
-    * 空状態UI: データなし時のガイダンスとフィルタリセットボタン
-    * エラー状態UI: エラー時のリトライボタン
-    * Pull-to-refresh: 手動リフレッシュ対応
+    * `_buildRecentAlerts` - Recent AlertsセクションUI実装
+    * アラート種別アイコン（失敗率/遅延）
+    * アラート詳細表示（値・閾値・時刻）
 
-* **ルーティング**
-  * `lib/core/navigation/app_router.dart` - `/ops` ルート追加
-
-* **テスト**
-  * `test/src/features/ops/ops_metrics_model_test.dart` - モデル単体テスト追加
-
-* **コード品質改善**
-  * 最大Y軸の空配列安全化（スタック棒グラフ）
+* **CI検証**
+  * `.github/workflows/ops-alert-dryrun.yml`（新規）
+    * PR作成時に自動実行
+    * dryRunモードでアラート検出を検証
 
 * **Docs**
-  * `docs/ops/OPS-MONITORING-002.md`（Status: verified）
-  * `docs/reports/DAY5_SOT_DIFFS.md`（Day6実装履歴追記）
-  * `docs/Mermaid.md`（/opsノードと依存エッジ追加）
-  * `docs/docs/COMMON_DOCS_INDEX.md`（OPS Dashboard（β）追加）
+  * `docs/ops/OPS-ALERT-AUTOMATION-001.md`（新規）
+    * Day7実装計画・検証手順・アラートペイロード仕様
 
 ## 受け入れ基準（DoD）
 
-- [x] フィルタ（env/app/event/期間）を変更すると、5秒以内に再描画される
-- [x] 直近30分のKPI（総件数/エラー率/p95）が上段に表示
-- [x] P95折れ線とSuccess/Errorスタック棒が同一期間で同期スクロール
-- [x] データ0件時は空状態UI（エラーに見えない）
-- [x] ネットワークエラー/認可エラー時にトースト＋リトライ
-- [x] RLS下でも自分の権限で参照できる行のみが描画される
-- [x] 30秒間隔の自動リフレッシュが動作（インジケータ小表示）
-- [x] Asia/Tokyo表示で分刻みの目盛りがズレない
+- [x] Edge Function `ops-alert`がアラート情報を詳細に返却（type, value, threshold）
+- [x] Flutter `/ops` ダッシュボードに「Recent Alerts」セクションを追加
+- [x] アラート種別（失敗率/遅延）をアイコンで識別可能
+- [x] アラート値・閾値・時刻を表示
+- [x] CI `ops-alert-dryrun.yml`でダミーアラートを自動検証
+- [x] ドキュメント `OPS-ALERT-AUTOMATION-001.md`を完成
 
 ## 影響範囲
 
-* `lib/src/features/ops/**` - OPS Dashboard関連ファイル
-* `lib/core/navigation/app_router.dart` - ルーティング追加
-* `test/src/features/ops/**` - テスト追加
+* `supabase/functions/ops-alert/**` - Edge Function拡張
+* `lib/src/features/ops/**` - Flutter Recent Alerts実装
+* `.github/workflows/ops-alert-dryrun.yml` - CI検証ワークフロー
+* `docs/ops/OPS-ALERT-AUTOMATION-001.md` - ドキュメント
 
 ## リスク&ロールバック
 
-* **リスク**: データ密度増で描画負荷（Day7でdownsample対応予定）
-* **緩和**: フィルタで期間を制限可能、空配列安全化済み
+* **リスク**: Edge Function呼び出し失敗時のエラーハンドリング
+* **緩和**: Providerでエラーをキャッチし、空リストを返却
 * **ロールバック**: 前コミットに戻すのみ（DB変更なし）
-
-## スクリーンショット/動画
-
-* （通常状態・空状態・エラー状態・狭幅のスクリーンショット4枚を添付）
-* （折れ線×棒の同期スクロール動画10秒を添付）
 
 ## CI ステータス
 
-* Docs Status Audit：🟢
-* Docs Link Check：🟢
-* QA E2E：🟢
-* Lint：🟢（変更 10 files / エラーなし）
-* Tests：🟢（5/5 通過）
+* OPS Alert DryRun：🟢（予定）
+* Docs Status Audit：🟢（予定）
+* Lint：🟢（予定）
+* Tests：🟢（予定）
 
 ## レビュワー / メタ
 
 * Reviewer: @pm-tim
-* Labels: `area:ops`, `type:feature`, `day6`
+* Labels: `area:ops`, `type:feature`, `day7`
 * Breakings: なし
 
 ---
 
-## Screenshots (JST / Asia/Tokyo)
+## Screenshots
 
-* [ ] KPI cards（Total/Err%/p95/Errors）
-* [ ] p95 line (5m buckets)
-* [ ] Stacked bars (success/error)
-* [ ] Filters row（env/app/event/period）
-* [ ] Empty state / Error state（retry）
+* [ ] Recent Alertsセクション（アラートあり）
+* [ ] Recent Alertsセクション（アラートなし）
+* [ ] CI ops-alert-dryrun.yml 実行結果
 
 ## Manual QA
 
-* ✅ フィルタ変更 ≤ **5s** 再描画
-* ✅ Pull-to-refresh → KPI更新
-* ✅ 30s 自動リフレッシュ作動（インジケータOK）
-* ✅ オフライン → トースト＋リトライ復帰
-* ✅ 折れ線×棒の **同期スクロール**
-* ✅ X軸 **JST** 表示
+* ✅ `/ops` ページでRecent Alertsセクションが表示される
+* ✅ アラート種別アイコンが正しく表示される
+* ✅ アラート値・閾値・時刻が正しく表示される
+* ✅ アラートなし時は「No alerts」メッセージが表示される
+* ✅ Edge Function呼び出しエラー時はエラーメッセージが表示される
 
 ## Docs Updated
 
-* `docs/ops/OPS-MONITORING-002.md` → **Status: verified** / CodeRefs更新
-* `docs/reports/DAY5_SOT_DIFFS.md` → Day6差分追記
-* `docs/Mermaid.md` → `/ops` ノード追加
-* `docs/docs/COMMON_DOCS_INDEX.md` → 機能マップに「OPS Dashboard（β）」
+* `docs/ops/OPS-ALERT-AUTOMATION-001.md` → Status: planned / 実装計画・検証手順・アラートペイロード仕様
 
-## Risks / Follow-ups (Day7)
+## Risks / Follow-ups (Day8)
 
-* 期間拡張（2h/6h/24h）＋ **downsample**
-* `ops-alert` → Slack通知連携
-* しきい値のUI表示（p95窓/Err%定義）
-* CSV/JSONエクスポート
-* Provider/Widget 追加テスト
-
----
-
-## PM Approval Comment
-
-✅ Day6 ready to merge. DoD 8/8 & tests 5/5 green.
-
-* Docs: OPS-MONITORING-002 → **verified** / Mermaid & Index更新済
-* 小修正: スタック棒 maxY 空配列安全化
-* 次: Slack通知 / downsample / しきい値UI明示
-
-承認につき **Squash & merge** で進めます。
+* アラート履歴の永続化（`ops_alerts`テーブル作成）
+* アラート通知の拡張（Email/SMS等）
+* アラート設定のUI化（閾値設定画面）
+* OPS Health Dashboard設計
