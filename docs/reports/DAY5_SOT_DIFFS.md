@@ -1,11 +1,11 @@
-Status:: in-progress  
+Status:: verified  
 Source-of-Truth:: docs/reports/DAY5_SOT_DIFFS.md  
 Spec-State:: 確定済み（実装履歴・CodeRefs）  
 Last-Updated:: 2025-11-07  
 
 # DAY5_SOT_DIFFS — Telemetry & Monitoring Sync Reality vs Spec
 
-Status: in-progress  
+Status: verified  
 Last-Updated: 2025-11-07  
 Source-of-Truth: Flutter code (`lib/core/telemetry/**`, `lib/features/**`) + Edge Functions + DB migrations
 
@@ -130,4 +130,22 @@ Source-of-Truth: Flutter code (`lib/core/telemetry/**`, `lib/features/**`) + Edg
 
 #### ルーティング
 - `/ops` ルート追加（`ops_dashboard` 名前付きルート）
+
+---
+
+## 🚀 Day6 PR マージ完了
+
+**PR #16**: feat(ops): Day6 OPS Dashboard — filters, KPIs, p95 line, stacked bars, auto-refresh
+
+- **Merged**: 2025-11-07
+- **Merge SHA**: `9db790c`
+- **Merge方式**: Squash & merge
+- **Tag**: `v0.6.0-ops-dashboard-beta`
+- **Status**: ✅ verified → merged
+
+### マージ後の状態
+- ✅ すべての必須CIチェックが通過
+- ✅ コードレビューの指摘事項を修正済み
+- ✅ タグ作成完了
+- ✅ ドキュメント更新完了
 
