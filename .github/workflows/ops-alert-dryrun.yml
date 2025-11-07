@@ -21,6 +21,9 @@ jobs:
         with:
           node-version: '20'
 
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+
       # ▼ どちらか一方を使う。A: 直接URL+Bearer / B: Supabase REST
       - name: DryRun via direct Edge URL (A)
         if: ${{ secrets.OPS_ALERT_URL && secrets.OPS_ALERT_TOKEN }}
