@@ -123,6 +123,31 @@ serve(async (req) => {
       console.log("[ops-alert] dryRun result:", JSON.stringify(result, null, 2));
     } else {
       console.log("[ops-alert] Alerts detected:", alerts);
+      
+      // Save alert history to ops_alerts_history table
+      if (alerts.length > 0) {
+        try {
+          const alertHistoryRecords = alerts.map(alert => ({
+            alert_type: alert.type,
+            value: alert.value,
+            threshold: alert.threshold,
+            period_minutes: minutes,
+            metrics: result.metrics,
+          }));
+
+          const { error: insertError } = await supabase
+            .from('ops_alerts_history')
+            .insert(alertHistoryRecords);
+
+          if (insertError) {
+            console.error("[ops-alert] Failed to save alert history:", insertError);
+          } else {
+            console.log("[ops-alert] Alert history saved:", alertHistoryRecords.length, "records");
+          }
+        } catch (historyError) {
+          console.error("[ops-alert] Error saving alert history:", historyError);
+        }
+      }
     }
 
     return new Response(
