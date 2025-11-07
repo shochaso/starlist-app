@@ -61,47 +61,60 @@ class _OpsDashboardPageState extends ConsumerState<OpsDashboardPage> with Single
     final seriesAsync = ref.watch(opsMetricsSeriesProvider);
     final kpi = ref.watch(opsMetricsKpiProvider);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('OPS Dashboard'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: () {
-              ref.refresh(opsMetricsSeriesProvider); // ignore: unused_result
-            },
-          ),
-        ],
-      ),
-      body: RefreshIndicator(
-        onRefresh: () async {
-          ref.refresh(opsMetricsSeriesProvider); // ignore: unused_result
-        },
-        child: seriesAsync.when(
-          data: (series) {
-            if (series.isEmpty) {
-              return _buildEmptyState(context);
-            }
-            return ListView(
-              padding: const EdgeInsets.all(16),
-              children: [
-                _buildFilterRow(context),
-                const SizedBox(height: 16),
-                _buildKpiCards(context, kpi),
-                const SizedBox(height: 16),
-                _buildP95Chart(context, series),
-                const SizedBox(height: 16),
-                _buildStackedBarChart(context, series),
-                const SizedBox(height: 16),
-                _buildRecentAlerts(context),
+          return Scaffold(
+            appBar: AppBar(
+              title: const Text('OPS Dashboard'),
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.refresh),
+                  onPressed: () {
+                    ref.refresh(opsMetricsSeriesProvider); // ignore: unused_result
+                  },
+                ),
               ],
-            );
-          },
-          loading: () => _buildLoadingState(),
-          error: (error, stack) => _buildErrorState(context, error),
-        ),
-      ),
-    );
+              bottom: TabBar(
+                controller: _tabController,
+                tabs: const [
+                  Tab(text: 'Metrics'),
+                  Tab(text: 'Health'),
+                ],
+              ),
+            ),
+            body: TabBarView(
+              controller: _tabController,
+              children: [
+                RefreshIndicator(
+                  onRefresh: () async {
+                    ref.refresh(opsMetricsSeriesProvider); // ignore: unused_result
+                  },
+                  child: seriesAsync.when(
+                    data: (series) {
+                      if (series.isEmpty) {
+                        return _buildEmptyState(context);
+                      }
+                      return ListView(
+                        padding: const EdgeInsets.all(16),
+                        children: [
+                          _buildFilterRow(context),
+                          const SizedBox(height: 16),
+                          _buildKpiCards(context, kpi),
+                          const SizedBox(height: 16),
+                          _buildP95Chart(context, series),
+                          const SizedBox(height: 16),
+                          _buildStackedBarChart(context, series),
+                          const SizedBox(height: 16),
+                          _buildRecentAlerts(context),
+                        ],
+                      );
+                    },
+                    loading: () => _buildLoadingState(),
+                    error: (error, stack) => _buildErrorState(context, error),
+                  ),
+                ),
+                _buildHealthTab(context),
+              ],
+            ),
+          );
   }
 
   Widget _buildFilterRow(BuildContext context) {
