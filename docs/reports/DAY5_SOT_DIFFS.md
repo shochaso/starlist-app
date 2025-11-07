@@ -84,3 +84,50 @@ Source-of-Truth: Flutter code (`lib/core/telemetry/**`, `lib/features/**`) + Edg
 #### CI統合
 - qa-e2e.yml作成：テレメトリPOST送信→ops-alert dryRun検証
 
+---
+
+## 2025-11-07: Day6 OPS Dashboard拡張実装完了
+
+- Spec: `docs/ops/OPS-MONITORING-002.md`
+- Status: planned → in-progress → aligned-with-Flutter（実装完了）
+- Reason: Day6実装フェーズ完了。OPS Dashboard UI拡張、フィルタ・グラフ・自動リフレッシュ機能を実装。
+- CodeRefs:
+  - **モデル**: `lib/src/features/ops/models/ops_metrics_series_model.dart:L1-L105` - OpsMetricsSeriesPoint, OpsMetricsFilter, OpsMetricsKpi
+  - **プロバイダー拡張**: `lib/src/features/ops/providers/ops_metrics_provider.dart:L12-L73` - フィルタ・時系列・KPI・自動リフレッシュ（30秒）
+  - **ダッシュボード拡張**: `lib/src/features/ops/screens/ops_dashboard_page.dart:L1-L500` - フィルタUI・KPIカード×4・P95折れ線・スタック棒グラフ・空状態・エラー状態
+  - **ルーティング**: `lib/core/navigation/app_router.dart:L106-L110` - `/ops` ルート追加
+  - **テスト**: `test/src/features/ops/ops_metrics_model_test.dart:L1-L70` - モデル単体テスト
+- Impact:
+  - ✅ v_ops_5minビューから時系列データを取得可能に
+  - ✅ フィルタ（env/app/event/期間）でデータを絞り込み可能に
+  - ✅ KPIカードで直近期間の集計値を可視化
+  - ✅ P95折れ線グラフで遅延推移を可視化
+  - ✅ スタック棒グラフでSuccess/Error件数を可視化
+  - ✅ 30秒間隔の自動リフレッシュでリアルタイム監視が可能に
+  - ✅ 空状態・エラー状態のUIでUX向上
+
+### 実装詳細
+
+#### モデル拡張
+- **OpsMetricsSeriesPoint**: v_ops_5minビューからの時系列データポイント
+- **OpsMetricsFilter**: フィルタパラメータ（env, app, eventType, sinceMinutes）
+- **OpsMetricsKpi**: 時系列データから集計したKPI（totalRequests, errorCount, errorRate, p95LatencyMs）
+
+#### プロバイダー拡張
+- **opsMetricsFilterProvider**: フィルタ状態管理（StateProvider）
+- **opsMetricsSeriesProvider**: v_ops_5minから時系列データ取得（FutureProvider）
+- **opsMetricsKpiProvider**: 時系列からKPI集計（Provider）
+- **opsMetricsAutoRefreshProvider**: 30秒間隔の自動リフレッシュ（StreamProvider）
+
+#### ダッシュボードUI拡張
+- **フィルタUI**: Environment/App/Event/Period ドロップダウン（4列）
+- **KPIカード**: Total Requests / Error Rate / P95 Latency / Errors（4枚）
+- **P95折れ線グラフ**: fl_chart使用、時系列で遅延推移を表示
+- **スタック棒グラフ**: Success（緑）/Error（赤）の件数を積み上げ表示
+- **空状態UI**: データなし時のガイダンスとフィルタリセットボタン
+- **エラー状態UI**: エラー時のリトライボタン
+- **Pull-to-refresh**: 手動リフレッシュ対応
+
+#### ルーティング
+- `/ops` ルート追加（`ops_dashboard` 名前付きルート）
+

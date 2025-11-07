@@ -1,7 +1,7 @@
-Status:: 
-Source-of-Truth:: (TBD)
-Spec-State:: 
-Last-Updated:: 
+Status:: aligned-with-Flutter  
+Source-of-Truth:: lib/src/features/ops/screens/ops_dashboard_page.dart, lib/src/features/ops/providers/ops_metrics_provider.dart, lib/src/features/ops/models/ops_metrics_series_model.dart  
+Spec-State:: 確定済み（Dashboard UI・フィルタ・グラフ・自動リフレッシュ）  
+Last-Updated:: 2025-11-07 
 
 
 # OPS-MONITORING-002 — OPSモニタリング拡張仕様
