@@ -1,3 +1,5 @@
+import "dart:async";
+
 import "package:http/http.dart" as http;
 import "app_error.dart";
 
@@ -11,7 +13,7 @@ class ErrorHandler {
       return NetworkError(
         "Network error: ${error.message}",
         code: "NETWORK_ERROR",
-        stackTrace: error.stackTrace,
+        stackTrace: StackTrace.current,
       );
     }
 
@@ -19,7 +21,7 @@ class ErrorHandler {
       return ValidationError(
         "Invalid data format: ${error.message}",
         code: "FORMAT_ERROR",
-        stackTrace: error.stackTrace,
+        stackTrace: StackTrace.current,
       );
     }
 
@@ -37,11 +39,11 @@ class ErrorHandler {
   }) async {
     int attempts = 0;
     while (attempts < maxAttempts) {
+      attempts++;
       try {
         return await operation();
       } catch (e) {
-        attempts++;
-        if (attempts == maxAttempts) {
+        if (attempts >= maxAttempts) {
           rethrow;
         }
         await Future.delayed(delay * attempts);
@@ -56,11 +58,11 @@ class ErrorHandler {
   }) async {
     try {
       return await operation().timeout(timeout);
-    } on TimeoutException catch (e) {
+    } on TimeoutException {
       throw NetworkError(
         "Operation timed out",
         code: "TIMEOUT_ERROR",
-        stackTrace: e.stackTrace,
+        stackTrace: StackTrace.current,
       );
     }
   }

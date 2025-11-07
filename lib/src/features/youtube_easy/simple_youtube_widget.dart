@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:starlist_app/services/image_url_builder.dart';
+import 'package:url_launcher/url_launcher.dart';
+
 import 'simple_youtube_service.dart';
 import 'simple_youtube_setup.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 /// スター専用：視聴履歴インポート画面
 class SimpleYouTubeWidget extends StatefulWidget {
@@ -152,7 +154,10 @@ class _SimpleYouTubeWidgetState extends State<SimpleYouTubeWidget> {
                 ClipRRect(
                   borderRadius: BorderRadius.circular(25),
                   child: Image.network(
-                    currentChannel!.imageUrl,
+                    ImageUrlBuilder.thumbnail(
+                      currentChannel!.imageUrl,
+                      width: 200,
+                    ),
                     width: 50,
                     height: 50,
                     fit: BoxFit.cover,
@@ -265,7 +270,10 @@ class _SimpleYouTubeWidgetState extends State<SimpleYouTubeWidget> {
               ClipRRect(
                 borderRadius: BorderRadius.circular(8),
                 child: Image.network(
-                  video.imageUrl,
+                  ImageUrlBuilder.thumbnail(
+                    video.imageUrl,
+                    width: 480,
+                  ),
                   width: 120,
                   height: 68,
                   fit: BoxFit.cover,

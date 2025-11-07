@@ -1,26 +1,31 @@
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
-import 'dart:io';
 import '../../../src/providers/theme_provider_enhanced.dart';
 import '../../../src/services/spotify_playlist_parser.dart';
 import '../../../src/services/spotify_history_parser.dart';
+import '../../../providers/music_history_provider.dart';
+import '../../../src/core/components/service_icons.dart';
 
 class YouTubeMusicImportScreen extends ConsumerStatefulWidget {
   const YouTubeMusicImportScreen({super.key});
 
   @override
-  ConsumerState<YouTubeMusicImportScreen> createState() => _YouTubeMusicImportScreenState();
+  ConsumerState<YouTubeMusicImportScreen> createState() =>
+      _YouTubeMusicImportScreenState();
 }
 
-class _YouTubeMusicImportScreenState extends ConsumerState<YouTubeMusicImportScreen> {
+class _YouTubeMusicImportScreenState
+    extends ConsumerState<YouTubeMusicImportScreen> {
   String selectedImportType = 'listening_history';
   final TextEditingController _textController = TextEditingController();
   bool isProcessing = false;
   List<Map<String, dynamic>> processedTracks = [];
   List<SpotifyTrack> extractedTracks = [];
-  File? selectedImage;
+  XFile? selectedImage;
+  Uint8List? selectedImageBytes;
   final ImagePicker _imagePicker = ImagePicker();
   bool showConfirmation = false;
   bool showPreview = false;
@@ -60,16 +65,19 @@ class _YouTubeMusicImportScreenState extends ConsumerState<YouTubeMusicImportScr
   }
 
   void _pickImage() async {
-    final pickedFile = await _imagePicker.pickImage(source: ImageSource.gallery);
+    final pickedFile =
+        await _imagePicker.pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
+      final bytes = await pickedFile.readAsBytes();
       setState(() {
-        selectedImage = File(pickedFile.path);
+        selectedImage = pickedFile;
+        selectedImageBytes = bytes;
       });
     }
   }
 
   void _processImageOCR() async {
-    if (selectedImage == null) return;
+    if (selectedImageBytes == null && selectedImage == null) return;
 
     setState(() {
       isProcessing = true;
@@ -96,23 +104,26 @@ class _YouTubeMusicImportScreenState extends ConsumerState<YouTubeMusicImportScr
 
     try {
       List<SpotifyTrack> parsedTracks = [];
-      
+
       // YouTube Musicは基本的にSpotifyと同じ形式で処理
       switch (selectedImportType) {
         case 'listening_history':
-          final historyItems = SpotifyHistoryParser.parseHistoryText(_textController.text);
+          final historyItems =
+              SpotifyHistoryParser.parseHistoryText(_textController.text);
           parsedTracks = historyItems.cast<SpotifyTrack>();
           break;
         case 'playlist':
         case 'liked_songs':
-          parsedTracks = SpotifyPlaylistParser.parsePlaylistText(_textController.text);
+          parsedTracks =
+              SpotifyPlaylistParser.parsePlaylistText(_textController.text);
           break;
         case 'artist':
         default:
-          parsedTracks = SpotifyPlaylistParser.parsePlaylistText(_textController.text);
+          parsedTracks =
+              SpotifyPlaylistParser.parsePlaylistText(_textController.text);
           break;
       }
-      
+
       setState(() {
         extractedTracks = parsedTracks;
         selectedTracks = List.filled(parsedTracks.length, true);
@@ -123,7 +134,8 @@ class _YouTubeMusicImportScreenState extends ConsumerState<YouTubeMusicImportScr
       if (parsedTracks.isEmpty) {
         _showErrorSnackBar('楽曲データを検出できませんでした。\nフォーマットを確認してください。');
       } else {
-        debugPrint('YouTube Music - 検出された楽曲数: ${parsedTracks.length} ($selectedImportType)');
+        debugPrint(
+            'YouTube Music - 検出された楽曲数: ${parsedTracks.length} ($selectedImportType)');
       }
     } catch (e) {
       setState(() {
@@ -145,19 +157,63 @@ class _YouTubeMusicImportScreenState extends ConsumerState<YouTubeMusicImportScr
     }
   }
 
-  void _confirmImport() {
-    final selectedMusicTracks = extractedTracks
+  Future<void> _confirmImport() async {
+    final selectedEntries = extractedTracks
         .asMap()
         .entries
         .where((entry) => selectedTracks[entry.key])
-        .map((entry) => entry.value.toMap())
         .toList();
+
+    if (selectedEntries.isEmpty) {
+      _showErrorSnackBar('取り込む楽曲を選択してください');
+      return;
+    }
+
+    final now = DateTime.now();
+    final sessionId = 'youtube_music_${now.millisecondsSinceEpoch}';
+
+    final selectedMusicTracks = selectedEntries
+        .map(
+          (entry) => {
+            ...entry.value.toMap(),
+            'serviceId': 'youtube_music',
+            'serviceName': 'YouTube Music',
+            'sessionId': sessionId,
+            'importedAt': now.toIso8601String(),
+          },
+        )
+        .toList();
+
+    final historyItems = selectedEntries
+        .map(
+          (entry) => MusicHistoryItem.fromTrack(
+            track: entry.value,
+            serviceId: 'youtube_music',
+            serviceName: 'YouTube Music',
+            addedAt: now,
+            sessionId: sessionId,
+          ),
+        )
+        .toList();
+
+    await ref
+        .read(musicHistoryProvider.notifier)
+        .addTracks('youtube_music', historyItems);
 
     setState(() {
       processedTracks = selectedMusicTracks;
       showPreview = false;
       showConfirmation = true;
     });
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('${selectedMusicTracks.length}件の楽曲を取り込みました'),
+          backgroundColor: const Color(0xFFFF0000),
+        ),
+      );
+    }
   }
 
   @override
@@ -165,13 +221,15 @@ class _YouTubeMusicImportScreenState extends ConsumerState<YouTubeMusicImportScr
     final isDark = ref.watch(themeProviderEnhanced).isDarkMode;
 
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF121212) : const Color(0xFFF8FAFC),
+      backgroundColor:
+          isDark ? const Color(0xFF121212) : const Color(0xFFF8FAFC),
       appBar: AppBar(
         title: const Text('YouTube Music データ取り込み'),
         backgroundColor: isDark ? const Color(0xFF1F1F1F) : Colors.white,
         foregroundColor: isDark ? Colors.white : Colors.black87,
         elevation: 0,
-        systemOverlayStyle: isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
+        systemOverlayStyle:
+            isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
@@ -183,16 +241,27 @@ class _YouTubeMusicImportScreenState extends ConsumerState<YouTubeMusicImportScr
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [Color(0xFFFF0000), Color(0xFFCC0000)], // YouTube Music レッド
+                  colors: [
+                    Color(0xFFFF0000),
+                    Color(0xFFCC0000)
+                  ], // YouTube Music レッド
                 ),
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Row(
                 children: [
-                  const Icon(
-                    Icons.music_note,
-                    color: Colors.white,
-                    size: 32,
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.all(8),
+                    child: ServiceIcons.buildIcon(
+                      serviceId: 'youtube_music',
+                      size: 32,
+                    ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -201,10 +270,13 @@ class _YouTubeMusicImportScreenState extends ConsumerState<YouTubeMusicImportScr
                       children: [
                         Text(
                           'YouTube Music',
-                          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
+                          style: Theme.of(context)
+                              .textTheme
+                              .headlineSmall
+                              ?.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
                         ),
                         const SizedBox(height: 4),
                         const Text(
@@ -236,7 +308,9 @@ class _YouTubeMusicImportScreenState extends ConsumerState<YouTubeMusicImportScr
             Wrap(
               spacing: 12,
               runSpacing: 12,
-              children: importTypes.map((type) => _buildTypeChip(type, isDark)).toList(),
+              children: importTypes
+                  .map((type) => _buildTypeChip(type, isDark))
+                  .toList(),
             ),
 
             const SizedBox(height: 24),
@@ -254,10 +328,13 @@ class _YouTubeMusicImportScreenState extends ConsumerState<YouTubeMusicImportScr
             Container(
               height: 200,
               decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF1A1A1A) : const Color(0xFFF8FAFC),
+                color:
+                    isDark ? const Color(0xFF1A1A1A) : const Color(0xFFF8FAFC),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: isDark ? const Color(0xFF444444) : const Color(0xFFE5E7EB),
+                  color: isDark
+                      ? const Color(0xFF444444)
+                      : const Color(0xFFE5E7EB),
                 ),
               ),
               child: TextField(
@@ -296,25 +373,27 @@ class _YouTubeMusicImportScreenState extends ConsumerState<YouTubeMusicImportScr
                 ),
               ),
               const SizedBox(height: 8),
-              if (selectedImage != null) ...[
+              if (selectedImageBytes != null) ...[
                 Container(
                   height: 200,
                   width: double.infinity,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: isDark ? const Color(0xFF444444) : const Color(0xFFE5E7EB),
+                      color: isDark
+                          ? const Color(0xFF444444)
+                          : const Color(0xFFE5E7EB),
                     ),
                   ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: Image.file(
-                      selectedImage!,
-                      fit: BoxFit.cover,
-                    ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Image.memory(
+                    selectedImageBytes!,
+                    fit: BoxFit.cover,
                   ),
                 ),
-                const SizedBox(height: 12),
+              ),
+              const SizedBox(height: 12),
               ],
               Row(
                 children: [
@@ -322,9 +401,11 @@ class _YouTubeMusicImportScreenState extends ConsumerState<YouTubeMusicImportScr
                     child: ElevatedButton.icon(
                       onPressed: _pickImage,
                       icon: const Icon(Icons.image, size: 18),
-                      label: Text(selectedImage == null ? '画像を選択' : '画像を変更'),
+                      label: Text(selectedImageBytes == null ? '画像を選択' : '画像を変更'),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: isDark ? const Color(0xFF444444) : const Color(0xFFF1F5F9),
+                        backgroundColor: isDark
+                            ? const Color(0xFF444444)
+                            : const Color(0xFFF1F5F9),
                         foregroundColor: isDark ? Colors.white : Colors.black87,
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(
@@ -334,18 +415,19 @@ class _YouTubeMusicImportScreenState extends ConsumerState<YouTubeMusicImportScr
                       ),
                     ),
                   ),
-                  if (selectedImage != null) ...[
+                  if (selectedImageBytes != null) ...[
                     const SizedBox(width: 12),
                     Expanded(
                       child: ElevatedButton.icon(
                         onPressed: isProcessing ? null : _processImageOCR,
-                        icon: isProcessing 
+                        icon: isProcessing
                             ? const SizedBox(
                                 width: 18,
                                 height: 18,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2,
-                                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                      Colors.white),
                                 ),
                               )
                             : const Icon(Icons.text_fields, size: 18),
@@ -389,7 +471,8 @@ class _YouTubeMusicImportScreenState extends ConsumerState<YouTubeMusicImportScr
                             height: 20,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                              valueColor:
+                                  AlwaysStoppedAnimation<Color>(Colors.white),
                             ),
                           ),
                           SizedBox(width: 12),
@@ -422,9 +505,11 @@ class _YouTubeMusicImportScreenState extends ConsumerState<YouTubeMusicImportScr
       label: Text(
         type['title']!,
         style: TextStyle(
-          color: isSelected 
-              ? Colors.white 
-              : isDark ? Colors.white70 : Colors.black87,
+          color: isSelected
+              ? Colors.white
+              : isDark
+                  ? Colors.white70
+                  : Colors.black87,
           fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
         ),
       ),
@@ -438,9 +523,11 @@ class _YouTubeMusicImportScreenState extends ConsumerState<YouTubeMusicImportScr
       selectedColor: const Color(0xFFFF0000),
       checkmarkColor: Colors.white,
       side: BorderSide(
-        color: isSelected 
+        color: isSelected
             ? const Color(0xFFFF0000)
-            : isDark ? const Color(0xFF444444) : const Color(0xFFE5E7EB),
+            : isDark
+                ? const Color(0xFF444444)
+                : const Color(0xFFE5E7EB),
       ),
     );
   }
@@ -460,9 +547,8 @@ class _YouTubeMusicImportScreenState extends ConsumerState<YouTubeMusicImportScr
         children: [
           Row(
             children: [
-              const Icon(
-                Icons.music_note,
-                color: Color(0xFFFF0000),
+              ServiceIcons.buildIcon(
+                serviceId: 'youtube_music',
                 size: 20,
               ),
               const SizedBox(width: 8),
@@ -479,12 +565,13 @@ class _YouTubeMusicImportScreenState extends ConsumerState<YouTubeMusicImportScr
                 onPressed: () {
                   setState(() {
                     final allSelected = selectedTracks.every((s) => s);
-                    selectedTracks = List.filled(selectedTracks.length, !allSelected);
+                    selectedTracks =
+                        List.filled(selectedTracks.length, !allSelected);
                   });
                 },
                 icon: Icon(
-                  selectedTracks.every((s) => s) 
-                      ? Icons.check_box 
+                  selectedTracks.every((s) => s)
+                      ? Icons.check_box
                       : Icons.check_box_outline_blank,
                   color: const Color(0xFFFF0000),
                   size: 20,
@@ -510,19 +597,25 @@ class _YouTubeMusicImportScreenState extends ConsumerState<YouTubeMusicImportScr
               itemBuilder: (context, index) {
                 final track = extractedTracks[index];
                 final isSelected = selectedTracks[index];
-                
+
                 return Container(
                   margin: const EdgeInsets.only(bottom: 8),
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: isSelected 
-                        ? (isDark ? const Color(0xFF1A1A1A) : const Color(0xFFF8FAFC))
-                        : (isDark ? const Color(0xFF404040).withOpacity( 0.3) : const Color(0xFFF1F5F9)),
+                    color: isSelected
+                        ? (isDark
+                            ? const Color(0xFF1A1A1A)
+                            : const Color(0xFFF8FAFC))
+                        : (isDark
+                            ? const Color(0xFF404040).withOpacity(0.3)
+                            : const Color(0xFFF1F5F9)),
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(
-                      color: isSelected 
+                      color: isSelected
                           ? const Color(0xFFFF0000)
-                          : (isDark ? const Color(0xFF525252) : const Color(0xFFE2E8F0)),
+                          : (isDark
+                              ? const Color(0xFF525252)
+                              : const Color(0xFFE2E8F0)),
                     ),
                   ),
                   child: Row(
@@ -584,7 +677,8 @@ class _YouTubeMusicImportScreenState extends ConsumerState<YouTubeMusicImportScr
                   },
                   style: OutlinedButton.styleFrom(
                     foregroundColor: isDark ? Colors.white54 : Colors.black54,
-                    side: BorderSide(color: isDark ? Colors.white54 : Colors.black54),
+                    side: BorderSide(
+                        color: isDark ? Colors.white54 : Colors.black54),
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
@@ -596,7 +690,9 @@ class _YouTubeMusicImportScreenState extends ConsumerState<YouTubeMusicImportScr
               const SizedBox(width: 12),
               Expanded(
                 child: ElevatedButton(
-                  onPressed: selectedTracks.any((selected) => selected) ? _confirmImport : null,
+                  onPressed: selectedTracks.any((selected) => selected)
+                      ? () async => _confirmImport()
+                      : null,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFFF0000),
                     foregroundColor: Colors.white,

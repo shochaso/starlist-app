@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:starlist_app/services/image_url_builder.dart';
+
 import '../../../data/models/amazon_models.dart';
 import '../providers/amazon_providers.dart';
 
@@ -89,7 +91,10 @@ class AmazonPurchaseDetailScreen extends ConsumerWidget {
       color: const Color(0xFF2A2A2A),
       child: purchase.imageUrl != null
           ? Image.network(
-              purchase.imageUrl!,
+              ImageUrlBuilder.thumbnail(
+                purchase.imageUrl!,
+                width: 720,
+              ),
               fit: BoxFit.contain,
               errorBuilder: (context, error, stackTrace) => _buildImagePlaceholder(),
             )

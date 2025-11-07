@@ -15,8 +15,10 @@ class ABConfig {
   }
 
   static String yesterdayJstKey() {
-    final now = DateTime.now().toUtc().add(const Duration(hours: 9)) -
-        const Duration(days: 1);
+    final now = DateTime.now()
+        .toUtc()
+        .add(const Duration(hours: 9))
+        .subtract(const Duration(days: 1));
     return '${now.year}-${_2(now.month)}-${_2(now.day)}';
   }
 

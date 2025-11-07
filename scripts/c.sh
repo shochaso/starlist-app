@@ -18,6 +18,12 @@ pkill -f "flutter_tools\.snapshot run -d chrome" || true
 pkill -f "browser-sync" || true
 sleep 2
 
+# Clear Flutter cache and build artifacts
+echo "🗑️  Clearing Flutter cache and build artifacts..."
+flutter clean
+flutter pub get
+echo "✅ Cache cleared and dependencies updated"
+
 # Run Flutter web on Chrome at port 8080 with hot reload (background)
 echo "🚀 Starting Flutter Web on Chrome (port 8080)..."
 echo "📝 Flutter log: logs/flutter.log"

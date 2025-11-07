@@ -437,7 +437,11 @@ class _AmazonFilterScreenState extends ConsumerState<AmazonFilterScreen> {
           Switch(
             value: value,
             onChanged: onChanged,
-            activeThumbColor: const Color(0xFFFF9900),
+            thumbColor: MaterialStateProperty.resolveWith<Color?>(
+              (states) => states.contains(MaterialState.selected)
+                  ? const Color(0xFFFF9900)
+                  : null,
+            ),
           ),
         ],
       ),

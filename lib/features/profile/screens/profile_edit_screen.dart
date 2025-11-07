@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:starlist_app/services/image_url_builder.dart';
 import '../../../src/features/auth/services/profile_service.dart';
 import '../../../src/features/auth/services/storage_service.dart';
 import '../../../providers/user_provider.dart';
@@ -265,7 +266,10 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
                       ? ClipRRect(
                           borderRadius: BorderRadius.circular(20),
                           child: Image.network(
-                            _selectedAvatarUrl!,
+                            ImageUrlBuilder.thumbnail(
+                              _selectedAvatarUrl!,
+                              width: 240,
+                            ),
                             fit: BoxFit.cover,
                           ),
                         )
@@ -662,7 +666,11 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
         Switch(
           value: value,
           onChanged: onChanged,
-          activeThumbColor: const Color(0xFF4ECDC4),
+          thumbColor: MaterialStateProperty.resolveWith<Color?>(
+            (states) => states.contains(MaterialState.selected)
+                ? const Color(0xFF4ECDC4)
+                : null,
+          ),
         ),
       ],
     );

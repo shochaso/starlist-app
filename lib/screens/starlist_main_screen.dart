@@ -1,27 +1,29 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:flutter/scheduler.dart';
+
 // 画面のインポート
 import '../features/search/screens/search_screen.dart';
 import '../features/mylist/screens/mylist_screen.dart';
 import '../features/profile/screens/profile_screen.dart';
 import '../features/data_integration/screens/data_import_screen.dart';
 import '../features/star/screens/star_dashboard_screen.dart';
-import '../src/features/subscription/screens/subscription_plans_screen.dart';
 import '../src/features/gacha/presentation/gacha_screen.dart';
 import '../features/content/screens/post_detail_screen.dart';
+import '../src/features/subscription/screens/subscription_plans_screen.dart';
+import '../src/features/points/screens/star_points_purchase_screen.dart';
 import 'login_status_screen.dart';
 import 'test_account_switcher_screen.dart';
-import '../src/features/points/screens/star_points_purchase_screen.dart';
-import '../features/premium/screens/premium_restriction_screen.dart';
 import 'star_data_view_page.dart';
+
 // プロバイダー・サービス
 import '../providers/user_provider.dart';
 import '../src/providers/theme_provider_enhanced.dart';
 import '../providers/youtube_history_provider.dart';
 import '../providers/posts_provider.dart';
 import '../services/access_control_service.dart';
+
 // ウィジェット・モデル
 import '../src/core/components/service_icons.dart';
 import '../src/widgets/post_card.dart';
@@ -566,7 +568,8 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
     );
   }
 
-  Widget _buildDrawer() {
+
+  Drawer _buildDrawer() {
     final currentUser = ref.watch(currentUserProvider);
     final themeState = ref.watch(themeProviderEnhanced);
     final isDark = themeState.isDarkMode;
@@ -633,11 +636,9 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
                     ),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.close,
-                        color: Colors.white70, size: 20),
+                    icon: const Icon(Icons.close, color: Colors.white70, size: 20),
                     onPressed: () => Navigator.of(context).pop(),
-                    constraints:
-                        const BoxConstraints(minWidth: 32, minHeight: 32),
+                    constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
                     padding: EdgeInsets.zero,
                   ),
                 ],
@@ -651,20 +652,16 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
                 _buildDrawerItem(Icons.home, 'ホーム', 0, null),
                 _buildDrawerItem(Icons.search, '検索', 1, null),
                 _buildDrawerItem(Icons.star, 'マイリスト', 3, null),
-                // スターのみ表示
                 if (currentUser.isStar) ...[
                   _buildDrawerItem(Icons.camera_alt, 'データ取込み', 2, null),
                   _buildDrawerItem(Icons.analytics, 'ダッシュボード', -1, 'dashboard'),
                 ],
                 _buildDrawerItem(Icons.person, 'マイページ', 4, null),
-                // ファンのみ課金プラン表示
                 if (currentUser.isFan) ...[
-                  _buildDrawerItem(
-                      Icons.credit_card, '課金プラン', -1, 'subscription'),
+                  _buildDrawerItem(Icons.credit_card, '課金プラン', -1, 'subscription'),
                   _buildDrawerItem(Icons.stars, 'スターポイント購入', -1, 'buy_points'),
                 ],
-                _buildDrawerItem(
-                    Icons.grid_view_rounded, 'スターリスト', -1, 'starlist'),
+                _buildDrawerItem(Icons.grid_view_rounded, 'スターリスト', -1, 'starlist'),
                 _buildDrawerItem(Icons.settings, '設定', -1, 'settings'),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 18, 16, 6),
@@ -706,16 +703,13 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
     );
   }
 
-  Widget _buildDrawerItem(
-      IconData icon, String title, int tabIndex, String? pageKey) {
+  Widget _buildDrawerItem(IconData icon, String title, int tabIndex, String? pageKey) {
     final selectedTab = ref.watch(selectedTabProvider);
     final selectedDrawerPage = ref.watch(selectedDrawerPageProvider);
     final themeState = ref.watch(themeProviderEnhanced);
     final isDark = themeState.isDarkMode;
 
-    // 選択状態の判定を修正：現在選択されているページまたはタブのみアクティブ
-    final isTabActive =
-        tabIndex != -1 && selectedTab == tabIndex && selectedDrawerPage == null;
+    final isTabActive = tabIndex != -1 && selectedTab == tabIndex && selectedDrawerPage == null;
     final isPageActive = pageKey != null && selectedDrawerPage == pageKey;
     final isActive = isTabActive || isPageActive;
 
@@ -770,8 +764,7 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
           Navigator.of(context).pop();
           if (tabIndex != -1) {
             ref.read(selectedTabProvider.notifier).state = tabIndex;
-            ref.read(selectedDrawerPageProvider.notifier).state =
-                null; // ドロワー選択をリセット
+            ref.read(selectedDrawerPageProvider.notifier).state = null;
           } else if (pageKey != null) {
             ref.read(selectedDrawerPageProvider.notifier).state = pageKey;
             _navigateToPage(pageKey);
@@ -782,6 +775,7 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
   }
 
   void _navigateToPage(String pageKey) {
+    final currentUser = ref.read(currentUserProvider);
     switch (pageKey) {
       case 'dashboard':
         Navigator.of(context).push(
@@ -806,19 +800,18 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
         final rootNavigator = Navigator.of(context, rootNavigator: true);
         SchedulerBinding.instance.addPostFrameCallback((_) {
           if (!mounted) return;
-          debugPrint(
-              '[StarlistMainScreen] Navigating to StarDataViewPage via rootNavigator');
           rootNavigator
               .push(
             MaterialPageRoute(
-              builder: (_) => const StarDataViewPage(),
+              builder: (_) => StarDataViewPage(
+                username: currentUser.name,
+              ),
               settings: const RouteSettings(name: '/starlist'),
             ),
           )
               .then((_) {
             if (!mounted) return;
             ref.read(selectedDrawerPageProvider.notifier).state = null;
-            debugPrint('[StarlistMainScreen] Returned from StarDataViewPage');
           });
         });
         return;
@@ -854,63 +847,41 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 最新YouTube履歴セクション（一番上）
           _buildLatestYouTubeHistorySection(),
           const SizedBox(height: 16),
-
-          // 新着投稿ダイジェスト（YouTube投稿除外）
           _buildRecentPostsSection(),
           const SizedBox(height: 16),
-
-          // 有料フォローコンテンツ
           _buildPaidFollowContentSection(),
           const SizedBox(height: 16),
-
-          // フォローユーザーの登録状況
           _buildFollowingUsersRegistrationSection(),
           const SizedBox(height: 16),
-
-          // 通知セクション
           _buildNotificationsSection(),
           const SizedBox(height: 16),
-
-          // 自然な広告1（おすすめアプリ）
           _buildNativeAd1(),
           const SizedBox(height: 16),
-
-          // トレンドトピックセクション
           _buildTrendingTopicsSection(),
           const SizedBox(height: 16),
-
-          // プレイリストセクション
           _buildFeaturedPlaylistsSection(),
           const SizedBox(height: 16),
-
-          // 自然な広告2（スポンサードコンテンツ）
           _buildNativeAd2(),
           const SizedBox(height: 16),
-
-          // おすすめスターセクション
           _buildRecommendedStarsSection(),
           const SizedBox(height: 16),
-
-          // 新しく参加したスターセクション
           _buildNewStarsSection(),
           const SizedBox(height: 16),
-
-          // 今日のピックアップセクション
           _buildTodayPickupSection(),
-          const SizedBox(height: 100), // ボトムナビゲーション用の余白
+          const SizedBox(height: 100),
         ],
       ),
     );
   }
 
   Widget _buildLatestYouTubeHistorySection() {
-    final themeState = ref.watch(themeProviderEnhanced);
-    final isDark = themeState.isDarkMode;
-    final youtubeHistoryGroups = ref.watch(groupedYoutubeHistoryProvider);
-    final youtubePosts = ref.watch(youtubePostsProvider);
+    try {
+      final themeState = ref.watch(themeProviderEnhanced);
+      final isDark = themeState.isDarkMode;
+      final youtubeHistoryGroups = ref.watch(groupedYoutubeHistoryProvider);
+      final youtubePosts = ref.watch(youtubePostsProvider);
 
     // YouTube履歴とYouTube投稿の両方が空の場合は、デフォルトデータを表示
     if (youtubeHistoryGroups.isEmpty && youtubePosts.isEmpty) {
@@ -1156,6 +1127,39 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
         ),
       ],
     );
+    } catch (e, stackTrace) {
+      debugPrint('[StarlistMainScreen] Error in _buildLatestYouTubeHistorySection: $e');
+      debugPrintStack(stackTrace: stackTrace);
+      final themeState = ref.watch(themeProviderEnhanced);
+      final isDark = themeState.isDarkMode;
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildSectionTitle('最新YouTube履歴'),
+          const SizedBox(height: 16),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                  color: isDark
+                      ? const Color(0xFF333333)
+                      : const Color(0xFFF3F4F6)),
+            ),
+            child: Center(
+              child: Text(
+                'エラーが発生しました: ${e.toString()}',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: isDark ? Colors.white54 : Colors.black54,
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
+    }
   }
 
   String _formatImportTime(DateTime time) {
@@ -2789,109 +2793,9 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
     }
   }
 
-  Widget _buildHanayamaMizukiPostsSection() {
-    final hanayamaPosts = ref.watch(hanayamaMizukiPostsProvider);
-    final currentUser = ref.watch(currentUserProvider);
-    final themeState = ref.watch(themeProviderEnhanced);
-
-    if (hanayamaPosts.isEmpty) {
-      return const SizedBox.shrink();
-    }
-
-    // アクセス制御を適用
-    final accessiblePosts = hanayamaPosts.where((post) {
-      if (post.accessLevel == AccessLevel.public) return true;
-      if (post.accessLevel == AccessLevel.light) {
-        return AccessControlService.canViewContent(
-          currentUser.fanPlanType,
-          ContentType.youtubeVideos,
-        );
-      }
-      return false;
-    }).toList();
-
-    // 制限された投稿も概要として表示
-    final restrictedPosts = hanayamaPosts.where((post) {
-      if (post.accessLevel == AccessLevel.public) return false;
-      if (post.accessLevel == AccessLevel.light) {
-        return !AccessControlService.canViewContent(
-          currentUser.fanPlanType,
-          ContentType.youtubeVideos,
-        );
-      }
-      return false;
-    }).toList();
-
-    final allDisplayPosts = <dynamic>[];
-    allDisplayPosts.addAll(accessiblePosts);
-
-    // 制限された投稿を概要として追加
-    if (restrictedPosts.isNotEmpty) {
-      allDisplayPosts.addAll(restrictedPosts.map((post) => {
-            'title': post.title, // 制限付きの表記を削除
-            'author': '花山瑞樹',
-            'time': '最近',
-            'type': 'restricted',
-            'thumbnail': const Color(0xFF9C27B0),
-            'accessLevel': post.accessLevel,
-            'isRestricted': true,
-            'originalPost': post,
-          }));
-    }
-
-    if (allDisplayPosts.isEmpty) {
-      return const SizedBox.shrink();
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildSectionTitle('花山瑞樹の投稿'),
-        const SizedBox(height: 16),
-        SizedBox(
-          height: 280,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            physics: const BouncingScrollPhysics(),
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            itemCount: allDisplayPosts.length,
-            itemBuilder: (context, index) {
-              final post = allDisplayPosts[index];
-
-              // 制限された投稿の場合
-              if (post is Map<String, dynamic> &&
-                  post['isRestricted'] == true) {
-                return _buildRestrictedPostCard(
-                    post, context, themeState.isDarkMode);
-              }
-
-              // 通常の投稿の場合
-              return Container(
-                width: 320,
-                margin: const EdgeInsets.only(right: 16),
-                child: PostCard(
-                  post: post as PostModel,
-                  isCompact: true,
-                  onTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => PostDetailScreen(post: post),
-                      ),
-                    );
-                  },
-                ),
-              );
-            },
-          ),
-        ),
-      ],
-    );
-  }
-
   Widget _buildSectionTitle(String title) {
     final themeState = ref.watch(themeProviderEnhanced);
-    final isDark = themeState.isDarkMode;
-
+    
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
@@ -2902,7 +2806,7 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: isDark ? Colors.white : Colors.black87,
+              color: themeState.isDarkMode ? Colors.white : Colors.black87,
             ),
           ),
           TextButton(
@@ -2916,125 +2820,6 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  /// 制限された投稿のカードを表示
-  Widget _buildRestrictedPostCard(
-      Map<String, dynamic> post, BuildContext context, bool isDark) {
-    return GestureDetector(
-      onTap: () {
-        // 閲覧制限画面に遷移
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (context) => PremiumRestrictionScreen(
-              contentTitle: post['title'] as String,
-              contentType: '投稿',
-              starName: post['author'] as String,
-              requiredPlan: post['accessLevel'] == AccessLevel.light
-                  ? 'ライトプラン以上'
-                  : 'プレミアムプラン以上',
-              contentTypeEnum: ContentType.premiumContent,
-            ),
-          ),
-        );
-      },
-      child: Container(
-        width: 320,
-        margin: const EdgeInsets.only(right: 16),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: (isDark ? Colors.black : Colors.black).withOpacity(0.08),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              height: 160,
-              decoration: BoxDecoration(
-                color: post['thumbnail'] as Color,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.lock,
-                      color: Colors.white,
-                      size: 32, // 48から32に縮小
-                    ),
-                    SizedBox(height: 8),
-                    Text(
-                      'プラン制限',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 10, // 12から10に縮小
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              post['title'] as String,
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: isDark ? Colors.white : Colors.black87,
-              ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              post['author'] as String,
-              style: TextStyle(
-                fontSize: 14,
-                color: isDark ? Colors.white70 : Colors.black54,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: Colors.blue.withOpacity(0.2), // オレンジから青に変更
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: Colors.blue.withOpacity(0.5), // オレンジから青に変更
-                  width: 1,
-                ),
-              ),
-              child: Text(
-                '${post['accessLevel'] == AccessLevel.light ? 'ライトプラン以上' : 'プレミアムプラン以上'}で閲覧可能',
-                style: TextStyle(
-                  fontSize: 10,
-                  color: Colors.blue.shade700, // オレンジから青に変更
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              post['time'] as String,
-              style: TextStyle(
-                fontSize: 12,
-                color: isDark ? Colors.white54 : Colors.black38,
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

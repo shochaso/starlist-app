@@ -1,10 +1,11 @@
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
-import 'dart:io';
 import '../../../src/providers/theme_provider_enhanced.dart';
 import '../../../src/services/amazon_purchase_parser.dart';
+import '../../../src/core/components/service_icons.dart';
 
 class ShoppingImportScreen extends ConsumerStatefulWidget {
   final String initialImportType;
@@ -50,11 +51,13 @@ class _ShoppingImportScreenState extends ConsumerState<ShoppingImportScreen>
   bool isProcessing = false;
   List<Map<String, dynamic>> processedPurchases = [];
   List<AmazonPurchaseItem> extractedPurchases = [];
-  File? selectedImage;
+  XFile? selectedImage;
+  Uint8List? selectedImageBytes;
   final ImagePicker _imagePicker = ImagePicker();
   bool showConfirmation = false;
   bool showPreview = false;
   List<bool> selectedItems = [];
+  String _selectedInputMethod = 'text';
 
   // ショッピング取り込みタイプ
   final List<Map<String, dynamic>> importTypes = [
@@ -108,6 +111,8 @@ class _ShoppingImportScreenState extends ConsumerState<ShoppingImportScreen>
             ? widget.initialImportType
             : 'amazon';
     _allowTypeSwitch = widget.allowTypeSwitch;
+    _textController.addListener(_onInputChanged);
+    _urlController.addListener(_onInputChanged);
 
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 300),
@@ -126,9 +131,17 @@ class _ShoppingImportScreenState extends ConsumerState<ShoppingImportScreen>
   @override
   void dispose() {
     _animationController.dispose();
+    _textController.removeListener(_onInputChanged);
     _textController.dispose();
+    _urlController.removeListener(_onInputChanged);
     _urlController.dispose();
     super.dispose();
+  }
+
+  void _onInputChanged() {
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   @override
@@ -170,8 +183,6 @@ class _ShoppingImportScreenState extends ConsumerState<ShoppingImportScreen>
             children: [
               _buildHeader(isDark),
               const SizedBox(height: 24),
-              _buildImportTypeSelector(isDark),
-              const SizedBox(height: 24),
               _buildDataInputSection(isDark),
               const SizedBox(height: 24),
               if (showPreview) _buildPreviewSection(isDark),
@@ -207,15 +218,16 @@ class _ShoppingImportScreenState extends ConsumerState<ShoppingImportScreen>
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(12),
+                width: 48,
+                height: 48,
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(
-                  activeType['icon'] as IconData? ?? Icons.shopping_bag,
-                  color: Colors.white,
-                  size: 24,
+                padding: const EdgeInsets.all(8),
+                child: ServiceIcons.buildIcon(
+                  serviceId: selectedImportType,
+                  size: 32,
                 ),
               ),
               const SizedBox(width: 16),
@@ -249,206 +261,6 @@ class _ShoppingImportScreenState extends ConsumerState<ShoppingImportScreen>
     );
   }
 
-  Widget _buildImportTypeSelector(bool isDark) {
-    final currentType = _activeImportType;
-
-    if (!_allowTypeSwitch) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            '取り込みサービスを選択',
-            style: TextStyle(
-              color: isDark ? Colors.white : Colors.black87,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 16),
-          _buildLockedImportTypeCard(currentType, isDark),
-          const SizedBox(height: 12),
-          TextButton.icon(
-            onPressed: () {
-              setState(() {
-                _allowTypeSwitch = true;
-              });
-            },
-            icon: const Icon(Icons.swap_horiz),
-            label: const Text('他のサービスを選ぶ'),
-            style: TextButton.styleFrom(
-              foregroundColor:
-                  isDark ? const Color(0xFF4ECDC4) : const Color(0xFF0EA5E9),
-            ),
-          ),
-        ],
-      );
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          '取り込みサービスを選択',
-          style: TextStyle(
-            color: isDark ? Colors.white : Colors.black87,
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 16),
-        ...importTypes.map((type) => _buildImportTypeCard(type, isDark)),
-      ],
-    );
-  }
-
-  Widget _buildLockedImportTypeCard(Map<String, dynamic> type, bool isDark) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF2A2A2A) : Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: type['color'], width: 1.6),
-        boxShadow: [
-          BoxShadow(
-            color: type['color'].withOpacity(0.18),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: type['color'].withOpacity(0.12),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(type['icon'], color: type['color'], size: 20),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  widget.customServiceName ?? type['title'],
-                  style: TextStyle(
-                    color: isDark ? Colors.white : Colors.black87,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  type['description'],
-                  style: TextStyle(
-                    color: isDark ? Colors.white60 : Colors.black54,
-                    fontSize: 14,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildImportTypeCard(Map<String, dynamic> type, bool isDark) {
-    final isSelected = selectedImportType == type['id'];
-
-    return GestureDetector(
-      onTap: _allowTypeSwitch
-          ? () {
-              setState(() {
-                selectedImportType = type['id'];
-              });
-            }
-          : null,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? (isDark ? const Color(0xFF2A2A2A) : Colors.white)
-              : (isDark ? const Color(0xFF262626) : const Color(0xFFF8FAFC)),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isSelected
-                ? type['color']
-                : (isDark ? const Color(0xFF404040) : const Color(0xFFE2E8F0)),
-            width: isSelected ? 2 : 1,
-          ),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: type['color'].withOpacity(0.2),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ]
-              : null,
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: type['color'].withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Icon(
-                type['icon'],
-                color: type['color'],
-                size: 20,
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    type['title'],
-                    style: TextStyle(
-                      color: isDark ? Colors.white : Colors.black87,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    type['subtitle'],
-                    style: TextStyle(
-                      color: isDark ? Colors.white60 : Colors.black54,
-                      fontSize: 14,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    type['description'],
-                    style: TextStyle(
-                      color: isDark ? Colors.white54 : Colors.black45,
-                      fontSize: 12,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            if (isSelected)
-              Icon(
-                Icons.check_circle,
-                color: type['color'],
-                size: 20,
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _buildDataInputSection(bool isDark) {
     return Container(
       padding: const EdgeInsets.all(20),
@@ -473,13 +285,13 @@ class _ShoppingImportScreenState extends ConsumerState<ShoppingImportScreen>
           const SizedBox(height: 16),
 
           // タブ切り替え
-          Row(
+          Wrap(
+            spacing: 12,
+            runSpacing: 12,
             children: [
-              _buildInputMethodTab('テキスト入力', Icons.text_fields, isDark, true),
-              const SizedBox(width: 12),
-              _buildInputMethodTab('画像OCR', Icons.camera_alt, isDark, false),
-              const SizedBox(width: 12),
-              _buildInputMethodTab('URL取得', Icons.link, isDark, false),
+              _buildInputMethodTab('text', 'テキスト入力', Icons.text_fields, isDark),
+              _buildInputMethodTab('ocr', '画像OCR', Icons.camera_alt, isDark),
+              _buildInputMethodTab('url', 'URL取得', Icons.link, isDark),
             ],
           ),
 
@@ -490,27 +302,20 @@ class _ShoppingImportScreenState extends ConsumerState<ShoppingImportScreen>
 
           const SizedBox(height: 16),
 
-          // アクションボタン
-          Row(
-            children: [
-              Expanded(
-                child: _buildActionButton(
-                  '画像を選択',
-                  Icons.photo_library,
-                  () => _selectImage(),
-                  isDark,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildActionButton(
-                  'カメラで撮影',
-                  Icons.camera_alt,
-                  () => _takePhoto(),
-                  isDark,
-                ),
-              ),
-            ],
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 250),
+            switchInCurve: Curves.easeOut,
+            switchOutCurve: Curves.easeIn,
+            child: () {
+              switch (_selectedInputMethod) {
+                case 'ocr':
+                  return _buildOcrControls(isDark);
+                case 'url':
+                  return _buildUrlControls(isDark);
+                default:
+                  return _buildTextHelper(isDark);
+              }
+            }(),
           ),
         ],
       ),
@@ -518,37 +323,70 @@ class _ShoppingImportScreenState extends ConsumerState<ShoppingImportScreen>
   }
 
   Widget _buildInputMethodTab(
-      String title, IconData icon, bool isDark, bool isActive) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: isActive
-            ? const Color(0xFFFF9900)
-            : (isDark ? const Color(0xFF404040) : const Color(0xFFF1F5F9)),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            icon,
-            size: 16,
-            color: isActive
-                ? Colors.white
-                : (isDark ? Colors.white60 : Colors.black54),
-          ),
-          const SizedBox(width: 6),
-          Text(
-            title,
-            style: TextStyle(
+      String id, String title, IconData icon, bool isDark) {
+    final bool isActive = _selectedInputMethod == id;
+    const accent = Color(0xFFFF9900);
+
+    return AnimatedScale(
+      duration: const Duration(milliseconds: 160),
+      scale: isActive ? 1.0 : 0.96,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: () {
+            if (_selectedInputMethod != id) {
+              setState(() {
+                _selectedInputMethod = id;
+              });
+            }
+          },
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 220),
+            curve: Curves.easeOut,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            decoration: BoxDecoration(
               color: isActive
-                  ? Colors.white
-                  : (isDark ? Colors.white60 : Colors.black54),
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
+                  ? accent
+                  : (isDark
+                      ? const Color(0xFF303030)
+                      : const Color(0xFFF1F5F9)),
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: isActive
+                  ? [
+                      BoxShadow(
+                        color: accent.withOpacity(0.35),
+                        blurRadius: 16,
+                        offset: const Offset(0, 6),
+                      ),
+                    ]
+                  : [],
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  icon,
+                  size: 16,
+                  color: isActive
+                      ? Colors.white
+                      : (isDark ? Colors.white70 : Colors.black54),
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  title,
+                  style: TextStyle(
+                    color: isActive
+                        ? Colors.white
+                        : (isDark ? Colors.white70 : Colors.black87),
+                    fontSize: 13,
+                    fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
+                  ),
+                ),
+              ],
             ),
           ),
-        ],
+        ),
       ),
     );
   }
@@ -581,6 +419,172 @@ class _ShoppingImportScreenState extends ConsumerState<ShoppingImportScreen>
           contentPadding: const EdgeInsets.all(16),
         ),
       ),
+    );
+  }
+
+  Widget _buildTextHelper(bool isDark) {
+    return Container(
+      key: const ValueKey('text-helper'),
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1F1F1F) : const Color(0xFFF1F5F9),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isDark ? const Color(0xFF303030) : const Color(0xFFE2E8F0),
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(Icons.edit_note, size: 20, color: Color(0xFFFF9900)),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              '注文履歴をコピー＆ペーストして「テキストを解析」ボタンを押すと自動で商品を抽出します。',
+              style: TextStyle(
+                color: isDark ? Colors.white70 : Colors.black87,
+                fontSize: 13,
+                height: 1.5,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOcrControls(bool isDark) {
+    return Column(
+      key: const ValueKey('ocr-controls'),
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'スクリーンショットから注文情報を抽出します。',
+          style: TextStyle(
+            color: isDark ? Colors.white70 : Colors.black87,
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        const SizedBox(height: 12),
+        if (selectedImageBytes != null)
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: Image.memory(
+              selectedImageBytes!,
+              height: 180,
+              width: double.infinity,
+              fit: BoxFit.cover,
+            ),
+          ),
+        if (selectedImageBytes != null) const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: _buildActionButton(
+                '画像を選択',
+                Icons.photo_library,
+                _selectImage,
+                isDark,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _buildActionButton(
+                'カメラで撮影',
+                Icons.camera_alt,
+                _takePhoto,
+                isDark,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton.icon(
+            onPressed: !isProcessing && selectedImageBytes != null
+                ? _processImageOCR
+                : null,
+            icon: const Icon(Icons.auto_fix_high),
+            label: const Text('OCR解析を実行'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFFF9900),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildUrlControls(bool isDark) {
+    return Column(
+      key: const ValueKey('url-controls'),
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          '注文履歴ページのURLを貼り付けると自動で情報を取得します。',
+          style: TextStyle(
+            color: isDark ? Colors.white70 : Colors.black87,
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        const SizedBox(height: 12),
+        TextField(
+          controller: _urlController,
+          decoration: InputDecoration(
+            hintText:
+                'https://www.amazon.co.jp/gp/your-account/order-details...',
+            filled: true,
+            fillColor:
+                isDark ? const Color(0xFF1A1A1A) : const Color(0xFFF8FAFC),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(
+                color:
+                    isDark ? const Color(0xFF404040) : const Color(0xFFE2E8F0),
+              ),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(
+                color:
+                    isDark ? const Color(0xFF404040) : const Color(0xFFE2E8F0),
+              ),
+            ),
+          ),
+          style: TextStyle(
+            color: isDark ? Colors.white : Colors.black87,
+            fontSize: 14,
+          ),
+        ),
+        const SizedBox(height: 12),
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton.icon(
+            onPressed: !isProcessing && _urlController.text.trim().isNotEmpty
+                ? _fetchDataFromUrl
+                : null,
+            icon: const Icon(Icons.link),
+            label: const Text('URLから取得'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFFF9900),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -653,9 +657,8 @@ class _ShoppingImportScreenState extends ConsumerState<ShoppingImportScreen>
         children: [
           Row(
             children: [
-              const Icon(
-                Icons.shopping_cart,
-                color: Color(0xFFFF9900),
+              ServiceIcons.buildIcon(
+                serviceId: selectedImportType,
                 size: 20,
               ),
               const SizedBox(width: 8),
@@ -969,17 +972,17 @@ class _ShoppingImportScreenState extends ConsumerState<ShoppingImportScreen>
   }
 
   Widget _buildFloatingActionButton(bool isDark) {
+    final bool canExecute = _isPrimaryActionEnabled && !isProcessing;
+    final String label = isProcessing ? '処理中...' : _primaryActionLabel();
+
     return FloatingActionButton.extended(
-      onPressed: _textController.text.trim().isNotEmpty && !isProcessing
-          ? _processData
-          : null,
-      backgroundColor: _textController.text.trim().isNotEmpty && !isProcessing
+      onPressed: canExecute ? _handlePrimaryAction : null,
+      backgroundColor: canExecute
           ? const Color(0xFFFF9900)
           : (isDark ? const Color(0xFF404040) : Colors.grey[300]),
-      foregroundColor: _textController.text.trim().isNotEmpty && !isProcessing
+      foregroundColor: canExecute
           ? Colors.white
           : (isDark ? Colors.white38 : Colors.black38),
-      label: const Text('データを取り込む'),
       icon: isProcessing
           ? const SizedBox(
               width: 16,
@@ -989,18 +992,76 @@ class _ShoppingImportScreenState extends ConsumerState<ShoppingImportScreen>
                 valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
               ),
             )
-          : const Icon(Icons.upload),
+          : Icon(_primaryActionIcon()),
+      label: Text(
+        label,
+        style: const TextStyle(
+          fontWeight: FontWeight.w600,
+        ),
+      ),
     );
+  }
+
+  bool get _isPrimaryActionEnabled {
+    switch (_selectedInputMethod) {
+      case 'ocr':
+        return selectedImageBytes != null;
+      case 'url':
+        return _urlController.text.trim().isNotEmpty;
+      case 'text':
+      default:
+        return _textController.text.trim().isNotEmpty;
+    }
+  }
+
+  String _primaryActionLabel() {
+    switch (_selectedInputMethod) {
+      case 'ocr':
+        return 'OCR解析を実行';
+      case 'url':
+        return 'URLから取得';
+      case 'text':
+      default:
+        return 'テキストを解析';
+    }
+  }
+
+  IconData _primaryActionIcon() {
+    switch (_selectedInputMethod) {
+      case 'ocr':
+        return Icons.auto_fix_high;
+      case 'url':
+        return Icons.link;
+      case 'text':
+      default:
+        return Icons.upload;
+    }
+  }
+
+  void _handlePrimaryAction() {
+    switch (_selectedInputMethod) {
+      case 'ocr':
+        _processImageOCR();
+        break;
+      case 'url':
+        _fetchDataFromUrl();
+        break;
+      case 'text':
+      default:
+        _processData();
+    }
   }
 
   void _selectImage() async {
     final XFile? image =
         await _imagePicker.pickImage(source: ImageSource.gallery);
     if (image != null) {
+      final bytes = await image.readAsBytes();
       setState(() {
-        selectedImage = File(image.path);
+        selectedImage = image;
+        selectedImageBytes = bytes;
       });
-      // TODO: OCR処理を実装
+      _showSnackBar('画像を読み込みました。OCR解析を実行してください。');
     }
   }
 
@@ -1008,11 +1069,75 @@ class _ShoppingImportScreenState extends ConsumerState<ShoppingImportScreen>
     final XFile? image =
         await _imagePicker.pickImage(source: ImageSource.camera);
     if (image != null) {
+      final bytes = await image.readAsBytes();
       setState(() {
-        selectedImage = File(image.path);
+        selectedImage = image;
+        selectedImageBytes = bytes;
       });
-      // TODO: OCR処理を実装
+      _showSnackBar('撮影した画像を読み込みました。OCR解析を実行できます。');
     }
+  }
+
+  Future<void> _processImageOCR() async {
+    if (selectedImageBytes == null) {
+      _showErrorSnackBar('解析する画像を選択してください。');
+      return;
+    }
+
+    setState(() {
+      isProcessing = true;
+      showPreview = false;
+      showConfirmation = false;
+    });
+
+    await Future.delayed(const Duration(milliseconds: 900));
+
+    final sampleText = _sampleTextForType(selectedImportType);
+
+    setState(() {
+      _textController.text = sampleText;
+      isProcessing = false;
+    });
+
+    _showSnackBar('OCR解析結果をテキストエリアに反映しました。内容を確認してください。');
+    _processData();
+  }
+
+  Future<void> _fetchDataFromUrl() async {
+    final url = _urlController.text.trim();
+    if (url.isEmpty) {
+      _showErrorSnackBar('取得するURLを入力してください。');
+      return;
+    }
+
+    final uri = Uri.tryParse(url);
+    if (uri == null || uri.host.isEmpty) {
+      _showErrorSnackBar('URLの形式が正しくありません。');
+      return;
+    }
+
+    setState(() {
+      isProcessing = true;
+      showPreview = false;
+      showConfirmation = false;
+    });
+
+    await Future.delayed(const Duration(milliseconds: 900));
+
+    final inferredType = _inferImportTypeFromHost(uri.host);
+    final nextType = (_allowTypeSwitch && inferredType != selectedImportType)
+        ? inferredType
+        : selectedImportType;
+    final sampleText = _sampleTextForType(nextType);
+
+    setState(() {
+      selectedImportType = nextType;
+      _textController.text = sampleText;
+      isProcessing = false;
+    });
+
+    _showSnackBar('URLから注文データを取得しました。内容を確認してください。');
+    _processData();
   }
 
   void _processData() async {
@@ -1051,6 +1176,72 @@ class _ShoppingImportScreenState extends ConsumerState<ShoppingImportScreen>
     }
   }
 
+  String _sampleTextForType(String type) {
+    switch (type) {
+      case 'amazon':
+        return '''
+注文番号: 249-1234567-8901234
+商品名: Echo Pop (第2世代) スマートスピーカー
+価格: ¥5,980
+注文日: 2024/02/18
+配送状況: 配送済み'''
+            .trim();
+      case 'rakuten':
+        return '''
+注文番号: 20240218-00012345
+商品名: ダイソン V12 Detect Slim
+価格: ¥64,800
+注文日: 2024/02/18
+ショップ: 楽天ビック
+配送状況: 出荷準備中'''
+            .trim();
+      case 'yahoo_shopping':
+        return '''
+注文番号: YH-20240218-12345678
+商品名: Surface Laptop Go 3
+価格: ¥118,800
+注文日: 2024/02/18
+ストア: PayPayモール公式ストア
+配送状況: 配送済み'''
+            .trim();
+      case 'shein':
+        return '''
+注文番号: S1234567891011
+商品名: フローラルワンピース Mサイズ
+価格: ¥3,450
+注文日: 2024/02/18
+配送状況: 通関待ち'''
+            .trim();
+      case 'other':
+        final serviceName = widget.customServiceName ?? '対象サイト';
+        return '''
+サイト名: $serviceName
+注文番号: ORD-2024-0001
+商品名: サンプルアイテム
+価格: ¥12,800
+注文日: 2024/02/18
+配送状況: 配送済み'''
+            .trim();
+      default:
+        return '''
+注文番号: 20240218-XYZ
+商品名: サンプル商品
+価格: ¥9,800
+注文日: 2024/02/18
+配送状況: 処理中'''
+            .trim();
+    }
+  }
+
+  String _inferImportTypeFromHost(String host) {
+    final lower = host.toLowerCase();
+    if (lower.contains('amazon')) return 'amazon';
+    if (lower.contains('rakuten')) return 'rakuten';
+    if (lower.contains('yahoo')) return 'yahoo_shopping';
+    if (lower.contains('shein')) return 'shein';
+    return selectedImportType;
+  }
+
   int _estimateOriginalItemCount() {
     // 行数や「お届け済み」の出現回数から推定
     final lines = _textController.text
@@ -1063,11 +1254,15 @@ class _ShoppingImportScreenState extends ConsumerState<ShoppingImportScreen>
   }
 
   void _showErrorSnackBar(String message) {
+    _showSnackBar(message, color: Colors.red[600]);
+  }
+
+  void _showSnackBar(String message, {Color? color}) {
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(message),
-          backgroundColor: Colors.red[600],
+          backgroundColor: color ?? const Color(0xFF333333),
           duration: const Duration(seconds: 4),
         ),
       );

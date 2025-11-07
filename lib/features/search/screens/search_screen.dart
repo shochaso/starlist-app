@@ -1659,7 +1659,11 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
                             fontSize: 12,
                           ),
                         ),
-                        activeThumbColor: const Color(0xFF4ECDC4),
+                        thumbColor: MaterialStateProperty.resolveWith<Color?>(
+                          (states) => states.contains(MaterialState.selected)
+                              ? const Color(0xFF4ECDC4)
+                              : null,
+                        ),
                         contentPadding: EdgeInsets.zero,
                       ),
                       

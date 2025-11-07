@@ -1,10 +1,19 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 import '../../../data/models/amazon_models.dart';
 import '../../../core/errors/app_exceptions.dart';
 import '../../../core/logging/logger.dart';
+
+const String _envAmazonAccessKey =
+    String.fromEnvironment('AMAZON_ACCESS_KEY', defaultValue: '');
+const String _envAmazonSecretKey =
+    String.fromEnvironment('AMAZON_SECRET_KEY', defaultValue: '');
+const String _envAmazonAssociateTag =
+    String.fromEnvironment('AMAZON_ASSOCIATE_TAG', defaultValue: '');
+
+String? _nullableEnv(String value) => value.isEmpty ? null : value;
 
 /// Amazon API連携サービス
 /// Amazon PA-API（Product Advertising API）またはOCR解析による購入履歴データ取得
@@ -26,9 +35,9 @@ class AmazonApiService {
     String region = 'us-east-1',
   })  : _httpClient = httpClient ?? http.Client(),
         _logger = logger ?? Logger(),
-        _accessKey = accessKey ?? dotenv.env['AMAZON_ACCESS_KEY'],
-        _secretKey = secretKey ?? dotenv.env['AMAZON_SECRET_KEY'],
-        _associateTag = associateTag ?? dotenv.env['AMAZON_ASSOCIATE_TAG'],
+        _accessKey = accessKey ?? _nullableEnv(_envAmazonAccessKey),
+        _secretKey = secretKey ?? _nullableEnv(_envAmazonSecretKey),
+        _associateTag = associateTag ?? _nullableEnv(_envAmazonAssociateTag),
         _region = region;
 
   /// Amazon購入履歴を取得（OCR経由でのダミー実装）

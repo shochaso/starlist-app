@@ -77,8 +77,11 @@ class AppRoutes {
         );
 
       case starData:
+        final username =
+            (settings.arguments is String ? settings.arguments as String : null) ??
+                'demo-star';
         return MaterialPageRoute(
-          builder: (context) => const StarDataViewPage(),
+          builder: (context) => StarDataViewPage(username: username),
         );
 
       case devPreview:

@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'dart:ui';
-import '../ui/app_button.dart';
-import '../theme/context_ext.dart';
 import 'star_registration_screen.dart';
 import 'login_screen.dart';
 

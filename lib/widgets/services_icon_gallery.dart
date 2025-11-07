@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart' as svg;
-
+import 'package:starlist_app/config/ui_flags.dart';
 import '../services/asset_image_index.dart';
 import '../services/service_icon_registry.dart';
+import 'service_icon.dart';
 
 class ServicesIconGallery extends StatefulWidget {
   const ServicesIconGallery({super.key});
@@ -17,7 +17,8 @@ class _ServicesIconGalleryState extends State<ServicesIconGallery> {
   @override
   void initState() {
     super.initState();
-    _imagesFuture = _loadImages();
+    _imagesFuture =
+        kHideImportImages ? Future.value(const <String>[]) : _loadImages();
   }
 
   Future<List<String>> _loadImages() async {
@@ -26,13 +27,16 @@ class _ServicesIconGalleryState extends State<ServicesIconGallery> {
     if (mapped.isNotEmpty) {
       return mapped;
     }
-    return AssetImageIndex.listImages();
+    return AssetIconIndex.listImages();
   }
-
-  bool _isSvg(String assetPath) => assetPath.toLowerCase().endsWith('.svg');
 
   @override
   Widget build(BuildContext context) {
+    if (kHideImportImages) {
+      return const Center(
+        child: Text('サービスアイコンギャラリーは非表示設定のため利用できません'),
+      );
+    }
     return FutureBuilder<List<String>>(
       future: _imagesFuture,
       builder: (context, snapshot) {
@@ -53,17 +57,16 @@ class _ServicesIconGalleryState extends State<ServicesIconGallery> {
             crossAxisCount: 4,
             mainAxisSpacing: 12,
             crossAxisSpacing: 12,
+            childAspectRatio: 1.0,
           ),
           itemCount: images.length,
           itemBuilder: (_, index) {
             final path = images[index];
-            final child = _isSvg(path)
-                ? _SvgOrFallback(assetPath: path)
-                : Image.asset(
-                    path,
-                    fit: BoxFit.contain,
-                    errorBuilder: (_, __, ___) => _errorBox('読み込み失敗'),
-                  );
+            final child = ServiceIcon.asset(
+              path,
+              size: 72,
+              fallback: Icons.error_outline,
+            );
             return DecoratedBox(
               decoration: BoxDecoration(
                 color: Colors.white,
@@ -89,24 +92,5 @@ class _ServicesIconGalleryState extends State<ServicesIconGallery> {
       alignment: Alignment.center,
       child: Text(message, style: const TextStyle(fontSize: 12)),
     );
-  }
-}
-
-class _SvgOrFallback extends StatelessWidget {
-  const _SvgOrFallback({required this.assetPath});
-
-  final String assetPath;
-
-  @override
-  Widget build(BuildContext context) {
-    try {
-      return svg.SvgPicture.asset(assetPath, fit: BoxFit.contain);
-    } catch (_) {
-      return Container(
-        color: Colors.black12,
-        alignment: Alignment.center,
-        child: const Text('SVG対応が無効です', style: TextStyle(fontSize: 12)),
-      );
-    }
   }
 }

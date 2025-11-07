@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:starlist_app/services/image_url_builder.dart';
+
 import 'star_activity_timeline_screen.dart';
 import '../models/star_activity.dart';
 import '../repositories/star_activity_repository.dart';
@@ -288,7 +290,10 @@ class StarTimelineSampleScreen extends ConsumerWidget {
                   children: [
                     // 画像
                     Image.network(
-                      star['imageUrl'],
+                      ImageUrlBuilder.thumbnail(
+                        star['imageUrl'] as String,
+                        width: 480,
+                      ),
                       fit: BoxFit.cover,
                     ),
                     
@@ -505,7 +510,10 @@ class StarTimelineSampleScreen extends ConsumerWidget {
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(8.0),
                     child: Image.network(
-                      activity.imageUrl!,
+                      ImageUrlBuilder.thumbnail(
+                        activity.imageUrl!,
+                        width: 640,
+                      ),
                       height: 180.0,
                       width: double.infinity,
                       fit: BoxFit.cover,
@@ -675,7 +683,10 @@ class StarTimelineSampleScreen extends ConsumerWidget {
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(12.0),
                         child: Image.network(
-                          activity.imageUrl!,
+                          ImageUrlBuilder.thumbnail(
+                            activity.imageUrl!,
+                            width: 720,
+                          ),
                           width: double.infinity,
                           fit: BoxFit.cover,
                         ),

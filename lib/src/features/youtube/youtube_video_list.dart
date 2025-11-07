@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:starlist_app/services/image_url_builder.dart';
+
 import '../data_integration/models/youtube_video.dart';
 
 /// YouTubeの動画リストを表示するウィジェット
@@ -58,7 +60,10 @@ class YouTubeVideoList extends StatelessWidget {
                     AspectRatio(
                       aspectRatio: 16 / 9,
                       child: Image.network(
-                        video.thumbnailUrl,
+                        ImageUrlBuilder.thumbnail(
+                          video.thumbnailUrl,
+                          width: 640,
+                        ),
                         fit: BoxFit.cover,
                         errorBuilder: (context, error, stackTrace) {
                           return Container(

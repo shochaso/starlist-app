@@ -161,7 +161,7 @@ class ServiceDefinitions {
       primaryColor: Color(0xFF00A8E1),
       secondaryColor: Color(0xFF232F3E),
       description: '映画・ドラマ・オリジナル作品',
-      svgPath: 'assets/icons/services/prime_video.svg',
+      svgPath: 'assets/icons/services/amazon_prime_video.svg',
     ),
     'disney_plus': const ServiceDefinition(
       id: 'disney_plus',
@@ -537,7 +537,17 @@ class ServiceDefinitions {
       primaryColor: Color(0xFF000000),
       secondaryColor: Color(0xFF333333),
       description: 'フードデリバリー',
-      svgPath: 'assets/icons/services/delivery.svg',
+      svgPath: 'assets/icons/services/uber_eats.svg',
+    ),
+    'demaecan': const ServiceDefinition(
+      id: 'demaecan',
+      name: '出前館',
+      category: ServiceCategory.food,
+      icon: FontAwesomeIcons.truck,
+      primaryColor: Color(0xFFFF7043),
+      secondaryColor: Color(0xFFFF5722),
+      description: 'フードデリバリー',
+      svgPath: 'assets/icons/services/demaecan.svg',
     ),
 
     // ゲーム・エンタメ
@@ -549,7 +559,7 @@ class ServiceDefinitions {
       primaryColor: Color(0xFF1B2838),
       secondaryColor: Color(0xFF2A475E),
       description: 'PCゲーム・購入履歴',
-      svgPath: 'assets/icons/services/games.svg',
+      svgPath: 'assets/icons/services/steam.svg',
     ),
     'playstation': const ServiceDefinition(
       id: 'playstation',
@@ -559,7 +569,7 @@ class ServiceDefinitions {
       primaryColor: Color(0xFF003087),
       secondaryColor: Color(0xFF0070D1),
       description: 'ゲーム・トロフィー',
-      svgPath: 'assets/icons/services/games.svg',
+      svgPath: 'assets/icons/services/playstation.svg',
     ),
     'nintendo': const ServiceDefinition(
       id: 'nintendo',
@@ -569,7 +579,7 @@ class ServiceDefinitions {
       primaryColor: Color(0xFFE60012),
       secondaryColor: Color(0xFF0066CC),
       description: 'ゲーム・マイニンテンドー',
-      svgPath: 'assets/icons/services/games.svg',
+      svgPath: 'assets/icons/services/nintendo.svg',
     ),
 
     // 読書・学習
@@ -581,7 +591,7 @@ class ServiceDefinitions {
       primaryColor: Color(0xFF232F3E),
       secondaryColor: Color(0xFF00A8E1),
       description: '電子書籍・読書履歴',
-      svgPath: 'assets/icons/services/books_manga.svg',
+      svgPath: 'assets/icons/services/kindle.svg',
     ),
     'bookwalker': const ServiceDefinition(
       id: 'bookwalker',

@@ -191,7 +191,11 @@ class _BirthdaySettingsScreenState extends ConsumerState<BirthdaySettingsScreen>
                         _notificationsEnabled = value;
                       });
                     },
-                    activeThumbColor: const Color(0xFF4ECDC4),
+                    thumbColor: MaterialStateProperty.resolveWith<Color?>(
+                      (states) => states.contains(MaterialState.selected)
+                          ? const Color(0xFF4ECDC4)
+                          : null,
+                    ),
                   ),
                 ],
               ),

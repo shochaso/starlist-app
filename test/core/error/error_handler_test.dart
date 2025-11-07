@@ -1,94 +1,106 @@
-import "package:firebase_auth/firebase_auth.dart";
-import "package:flutter_test/flutter_test.dart";
-import "package:starlist_app/src/core/error/app_error.dart";
-import "package:starlist_app/src/core/error/error_handler.dart";
+import 'dart:async';
+
+import 'package:flutter_test/flutter_test.dart';
+import 'package:http/http.dart' as http;
+
+import 'package:starlist_app/src/core/error/app_error.dart';
+import 'package:starlist_app/src/core/error/error_handler.dart';
+
+dynamic _wrapError(dynamic error) => ErrorHandler.handleError(error);
 
 void main() {
-  group("ErrorHandler", () {
-    test("handleFirebaseAuthException", () {
-      final error = FirebaseAuthException(
-        code: "user-not-found",
-        message: "User not found",
-      );
-      final result = ErrorHandler.handleFirebaseAuthException(error);
-      expect(result, isA<AuthError>());
-      expect(result.message, "ユーザーが見つかりません");
-      expect(result.code, "user-not-found");
+  group('ErrorHandler.handleError', () {
+    test('returns AppError as-is', () {
+      final appError = AppError('already handled', code: 'KNOWN');
+      final result = _wrapError(appError);
+      expect(identical(result, appError), isTrue);
     });
 
-    test("handleFirebaseException", () {
-      final error = FirebaseAuthException(
-        code: "invalid-email",
-        message: "Invalid email",
-      );
-      final result = ErrorHandler.handleFirebaseException(error);
-      expect(result, isA<AuthError>());
-      expect(result.message, "無効なメールアドレスです");
-      expect(result.code, "invalid-email");
-    });
-
-    test("handleNetworkException", () {
-      final error = Exception("Network error");
-      final result = ErrorHandler.handleNetworkException(error);
+    test('wraps ClientException as NetworkError', () {
+      final clientException = http.ClientException('socket closed');
+      final result = _wrapError(clientException);
       expect(result, isA<NetworkError>());
-      expect(result.message, "ネットワークエラーが発生しました");
-      expect(result.originalError, error);
+      expect(result.message, contains('socket closed'));
+      expect(result.code, 'NETWORK_ERROR');
     });
 
-    test("handleValidationException", () {
-      final error = Exception("Validation error");
-      final result = ErrorHandler.handleValidationException(error);
+    test('wraps FormatException as ValidationError', () {
+      final formatException = FormatException('bad JSON');
+      final result = _wrapError(formatException);
       expect(result, isA<ValidationError>());
-      expect(result.message, "入力値が無効です");
-      expect(result.originalError, error);
+      expect(result.message, contains('bad JSON'));
+      expect(result.code, 'FORMAT_ERROR');
     });
 
-    test("handlePaymentException", () {
-      final error = Exception("Payment error");
-      final result = ErrorHandler.handlePaymentException(error);
-      expect(result, isA<PaymentError>());
-      expect(result.message, "支払いエラーが発生しました");
-      expect(result.originalError, error);
-    });
-
-    test("handleSubscriptionException", () {
-      final error = Exception("Subscription error");
-      final result = ErrorHandler.handleSubscriptionException(error);
-      expect(result, isA<SubscriptionError>());
-      expect(result.message, "サブスクリプションエラーが発生しました");
-      expect(result.originalError, error);
-    });
-
-    test("handlePrivacyException", () {
-      final error = Exception("Privacy error");
-      final result = ErrorHandler.handlePrivacyException(error);
-      expect(result, isA<PrivacyError>());
-      expect(result.message, "プライバシー設定エラーが発生しました");
-      expect(result.originalError, error);
-    });
-
-    test("handleRankingException", () {
-      final error = Exception("Ranking error");
-      final result = ErrorHandler.handleRankingException(error);
-      expect(result, isA<RankingError>());
-      expect(result.message, "ランキングエラーが発生しました");
-      expect(result.originalError, error);
-    });
-
-    test("handleYouTubeException", () {
-      final error = Exception("YouTube error");
-      final result = ErrorHandler.handleYouTubeException(error);
-      expect(result, isA<YouTubeError>());
-      expect(result.message, "YouTube APIエラーが発生しました");
-      expect(result.originalError, error);
-    });
-
-    test("handleUnknownException", () {
-      final error = Exception("Unknown error");
-      final result = ErrorHandler.handleUnknownException(error);
+    test('wraps unknown error as AppError', () {
+      final error = StateError('something unexpected');
+      final result = _wrapError(error);
       expect(result, isA<AppError>());
-      expect(result.message, "予期せぬエラーが発生しました");
-      expect(result.originalError, error);
+      expect(result.message, contains('Unexpected error'));
+    });
+  });
+
+  group('ErrorHandler.withRetry', () {
+    test('retries operation until success', () async {
+      var attempts = 0;
+      final result = await ErrorHandler.withRetry(
+        operation: () async {
+          attempts++;
+          if (attempts < 3) throw Exception('fail');
+          return 'ok';
+        },
+        maxAttempts: 3,
+        delay: const Duration(milliseconds: 10),
+      );
+
+      expect(result, 'ok');
+      expect(attempts, 3);
+    });
+
+    test('rethrows after reaching maxAttempts', () async {
+      var attempts = 0;
+
+      try {
+        await ErrorHandler.withRetry(
+          operation: () async {
+            attempts++;
+            throw Exception('still failing');
+          },
+          maxAttempts: 2,
+          delay: const Duration(milliseconds: 10),
+        );
+      } catch (e) {
+        expect(e, isA<Exception>());
+      }
+
+      expect(attempts, 2);
+    });
+  });
+
+  group('ErrorHandler.withTimeout', () {
+    test('returns result before timeout', () async {
+      final value = await ErrorHandler.withTimeout(
+        operation: () async {
+          await Future.delayed(const Duration(milliseconds: 20));
+          return 42;
+        },
+        timeout: const Duration(milliseconds: 200),
+      );
+
+      expect(value, 42);
+    });
+
+    test('throws NetworkError on timeout', () async {
+      expect(
+        () => ErrorHandler.withTimeout(
+          operation: () async {
+            await Future.delayed(const Duration(milliseconds: 200));
+            return 'never';
+          },
+          timeout: const Duration(milliseconds: 50),
+        ),
+        throwsA(isA<NetworkError>()),
+      );
     });
   });
 }
