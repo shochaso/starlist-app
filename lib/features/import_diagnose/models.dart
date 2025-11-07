@@ -22,6 +22,7 @@ class ImportDiagnoseState {
         text: 'スターバックス\nアイスラテ 430\nチーズケーキ 520\n合計 950',
         confidence: 0.82,
         status: 'completed',
+        storagePath: 'private/originals/sample_receipt.jpg',
       ),
       enrichHits: 2,
       lastAnalyzed: DateTime.now(),
@@ -30,7 +31,17 @@ class ImportDiagnoseState {
 
   factory ImportDiagnoseState.fromJson(Map<String, dynamic> json) {
     final parsed = Map<String, dynamic>.from(json);
-    final ocrJson = (parsed['ocr'] as Map<String, dynamic>?) ?? parsed;
+    final ocrJson = Map<String, dynamic>.from(
+        (parsed['ocr'] as Map<String, dynamic>?) ?? parsed);
+    if (!ocrJson.containsKey('storage_path')) {
+      for (final key in ['storage_path', 'storagePath', 'path', 'resource']) {
+        final value = parsed[key];
+        if (value is String && value.isNotEmpty) {
+          ocrJson[key] = value;
+          break;
+        }
+      }
+    }
     final analyzedAt = parsed['analyzed_at'] ?? ocrJson['analyzed_at'];
     final enrich = parsed['enrich'];
     final enrichHits = () {
@@ -69,6 +80,7 @@ class ImportDiagnoseState {
   String get ocrText => ocr.text;
   double get confidence => ocr.confidence;
   String get status => ocr.status;
+  String get storagePath => ocr.storagePath;
 
   ImportDiagnoseState copyWith({
     OcrResult? ocr,
@@ -92,13 +104,15 @@ class OcrResult {
     required this.text,
     required this.confidence,
     required this.status,
+    required this.storagePath,
   });
 
   const OcrResult.empty()
       : imageUrl = '',
         text = '',
         confidence = 0,
-        status = 'pending';
+        status = 'pending',
+        storagePath = '';
 
   factory OcrResult.fromJson(Map<String, dynamic> json) {
     return OcrResult(
@@ -114,6 +128,7 @@ class OcrResult {
           (json['score'] as num?)?.toDouble() ??
           0,
       status: (json['status'] as String?)?.toLowerCase() ?? 'pending',
+      storagePath: _extractPath(json),
     );
   }
 
@@ -121,6 +136,7 @@ class OcrResult {
   final String text;
   final double confidence;
   final String status;
+  final String storagePath;
 
   bool get isCompleted => status == 'completed' || status == 'done';
   bool get isPending => status == 'pending' || status == 'processing';
@@ -130,12 +146,24 @@ class OcrResult {
     String? text,
     double? confidence,
     String? status,
+    String? storagePath,
   }) {
     return OcrResult(
       imageUrl: imageUrl ?? this.imageUrl,
       text: text ?? this.text,
       confidence: confidence ?? this.confidence,
       status: status ?? this.status,
+      storagePath: storagePath ?? this.storagePath,
     );
+  }
+
+  static String _extractPath(Map<String, dynamic> json) {
+    for (final key in ['storage_path', 'storagePath', 'path', 'resource']) {
+      final value = json[key];
+      if (value is String && value.isNotEmpty) {
+        return value;
+      }
+    }
+    return '';
   }
 }

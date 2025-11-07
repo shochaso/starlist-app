@@ -73,3 +73,11 @@ node_modules/
 # Development logs (c.sh script)
 logs/
 *.log
+
+# Ignore env files
+.env
+.env.*
+
+# Supabase CLI metadata
+supabase/.temp/
+.report/

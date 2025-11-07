@@ -1,0 +1,45 @@
+name: Docs Link Check
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  links:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm ci
+      - run: npm run lint:md
+      - name: Check relative links
+        run: |
+          echo "Checking relative links in markdown files..."
+          broken=0
+          git ls-files '*.md' | while read -r file; do
+            dir=$(dirname "$file")
+            awk -v dir="$dir" 'match($0,/\]\(([^):#?]+)(#[^)]+)?\)/,m) {
+              rel = m[1]
+              if (rel !~ /^https?:\/\// && rel !~ /^mailto:/ && rel !~ /^#/) {
+                if (rel ~ /^\//) {
+                  target = "." rel
+                } else {
+                  target = dir "/" rel
+                }
+                gsub(/\/\.\//, "/", target)
+                while (target ~ /\/[^\/]+\/\.\.\//) {
+                  gsub(/\/[^\/]+\/\.\.\//, "/", target)
+                }
+                if (!system("test -f \"" target "\" || test -d \"" target "\"")) {
+                  # Link is valid
+                } else {
+                  print FILENAME ": BROKEN LINK -> " rel
+                  exit 1
+                }
+              }
+            }' "$file" || broken=1
+          done
+          if [ $broken -eq 1 ]; then
+            exit 1
+          fi

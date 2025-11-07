@@ -184,7 +184,7 @@ class _ParentalConsentScreenState extends ConsumerState<ParentalConsentScreen> {
         
         // 続柄選択
         DropdownButtonFormField<String>(
-          initialValue: _selectedRelationship,
+          value: _selectedRelationship,
           decoration: const InputDecoration(
             labelText: '続柄 *',
             border: OutlineInputBorder(),

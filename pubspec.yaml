@@ -25,6 +25,7 @@ dependencies:
   otp: ^3.1.4
   qr_flutter: ^4.1.0
   simple_icons: ^14.6.1
+  image: ^4.2.0
   # Added for push notifications and monitoring
   firebase_core: ^2.24.2
   flutter_local_notifications: ^17.1.2
@@ -36,6 +37,10 @@ dependencies:
   shared_preferences: ^2.2.3
   intl: ^0.20.2
   crypto: ^3.0.6
+  http: ^1.2.1
+  auth0_flutter: ^1.4.0
+  mime: ^1.0.6
+  fl_chart: ^0.68.0
 
 dev_dependencies:
   flutter_test:
@@ -43,12 +48,12 @@ dev_dependencies:
   flutter_lints: ^4.0.0
   build_runner: ^2.6.0
   freezed: ^3.0.0-0.0.dev
+  mocktail: ^1.0.0
 
 flutter:
   uses-material-design: true
   assets:
-    - assets/images/
-    - assets/icons/
-    - assets/icons/services/
-    - assets/service_icons/
     - assets/config/service_icons.json
+    - assets/config/image_registry.json
+    - assets/service_icons/
+    - assets/icons/services/

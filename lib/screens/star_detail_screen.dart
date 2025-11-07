@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:starlist_app/services/image_url_builder.dart';
+
 import '../models/star.dart';
 import '../models/activity.dart';
 
@@ -71,7 +73,10 @@ class StarDetailScreen extends StatelessWidget {
                   fit: StackFit.expand,
                   children: [
                     Image.network(
-                      star.imageUrl,
+                      ImageUrlBuilder.thumbnail(
+                        star.imageUrl,
+                        width: 720,
+                      ),
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) {
                         return Center(

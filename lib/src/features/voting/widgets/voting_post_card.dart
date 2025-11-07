@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:starlist_app/services/image_url_builder.dart';
+
 import '../../../data/models/voting_models.dart';
 import '../providers/voting_providers.dart';
 import '../../../features/auth/providers/user_provider.dart';
@@ -221,7 +223,10 @@ class _VotingPostCardState extends ConsumerState<VotingPostCard> with SingleTick
                     ClipRRect(
                       borderRadius: BorderRadius.circular(8),
                       child: Image.network(
-                        imageUrl,
+                        ImageUrlBuilder.thumbnail(
+                          imageUrl,
+                          width: 240,
+                        ),
                         width: 60,
                         height: 60,
                         fit: BoxFit.cover,

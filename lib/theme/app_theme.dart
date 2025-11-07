@@ -1,17 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'tokens.dart';
 
 class AppTheme {
   static const Color primaryColor = AppColors.brand;
-  
+
   static ThemeData get lightTheme => buildTheme();
   static ThemeData get darkTheme => buildTheme(); // TODO: ダークテーマを実装
 }
 
 ThemeData buildTheme() {
-  final base = ThemeData(useMaterial3: true, fontFamily: 'NotoSansJP');
+  final base = ThemeData(useMaterial3: true);
   const tokens = AppTokens.defaultTokens;
-  
+  final textTheme = GoogleFonts.notoSansJpTextTheme(base.textTheme);
+
   return base.copyWith(
     scaffoldBackgroundColor: AppColors.bg,
     colorScheme: base.colorScheme.copyWith(
@@ -20,7 +22,7 @@ ThemeData buildTheme() {
       surface: AppColors.card,
       onSurface: AppColors.text,
     ),
-    textTheme: base.textTheme.apply(
+    textTheme: textTheme.apply(
       bodyColor: AppColors.text,
       displayColor: AppColors.text,
     ),
@@ -34,10 +36,10 @@ ThemeData buildTheme() {
       margin: EdgeInsets.all(tokens.spacing.md),
     ),
     inputDecorationTheme: InputDecorationTheme(
-      border:
-          const OutlineInputBorder(borderSide: BorderSide(color: AppColors.border)),
-      focusedBorder:
-          const OutlineInputBorder(borderSide: BorderSide(color: AppColors.brand)),
+      border: const OutlineInputBorder(
+          borderSide: BorderSide(color: AppColors.border)),
+      focusedBorder: const OutlineInputBorder(
+          borderSide: BorderSide(color: AppColors.brand)),
       contentPadding: EdgeInsets.all(tokens.spacing.md),
     ),
     extensions: const [AppTokens.defaultTokens],

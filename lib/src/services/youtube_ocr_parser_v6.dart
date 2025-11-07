@@ -90,14 +90,43 @@ class YouTubeOCRParserV6 {
               channel = channelInfo.trim();
             }
             
+            // 題名と投稿者が逆になっている可能性をチェック
+            // 題名がチャンネル名のように見える場合（短い、またはチャンネル名のパターン）
+            // 投稿者がタイトルのように見える場合（長い、または【】を含む）
+            bool shouldSwap = false;
+            
+            // 題名がチャンネル名のように見える場合
+            if (title.length < 20 && 
+                !title.contains('【') && 
+                !title.contains('】') &&
+                channel.length > 20) {
+              shouldSwap = true;
+            }
+            
+            // 投稿者がタイトルのように見える場合（【】を含む、または日付を含む）
+            if (channel.contains('【') || 
+                channel.contains('】') ||
+                RegExp(r'\d{4}[/-]\d{1,2}[/-]\d{1,2}').hasMatch(channel)) {
+              shouldSwap = true;
+            }
+            
+            // 題名がチャンネル名のパターンに一致する場合（「〇〇ロードショー」「〇〇TV」など）
+            if (RegExp(r'.+(?:ロードショー|TV|チャンネル)').hasMatch(title) &&
+                channel.length > title.length) {
+              shouldSwap = true;
+            }
+            
+            final finalTitle = shouldSwap ? channel : title;
+            final finalChannel = shouldSwap ? title : channel;
+            
             final video = VideoData(
-              title: title,
-              channel: channel,
+              title: finalTitle.trim(),
+              channel: finalChannel.trim(),
               viewCount: viewCount,
-              confidence: 0.95,
+              confidence: shouldSwap ? 0.85 : 0.95, // 入れ替えた場合は信頼度を下げる
             );
             videos.add(video);
-            print('  -> Structured video: $video');
+            print('  -> Structured video: $video (swapped: $shouldSwap)');
           }
         }
       }

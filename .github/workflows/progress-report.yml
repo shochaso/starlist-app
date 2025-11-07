@@ -1,0 +1,112 @@
+name: Progress Report
+
+on:
+  pull_request:
+    branches: [ develop, main, release/** ]
+    types: [opened, synchronize, reopened]
+  push:
+    branches: [ develop, main ]
+  schedule:
+    # 毎朝 09:00 JST = 00:00 UTC
+    - cron: "0 0 * * *"
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ensure ripgrep is available
+        run: |
+          if ! command -v rg >/dev/null 2>&1; then
+            sudo apt-get update -y
+            sudo apt-get install -y ripgrep
+          fi
+      - uses: actions/checkout@v4
+
+      - name: Collect repo stats
+        run: |
+          mkdir -p .report
+          echo "# 開発進捗レポート（自動生成）" > .report/report.md
+          echo "" >> .report/report.md
+
+          echo "## 📦 ブランチ / コミット" >> .report/report.md
+          echo "- ブランチ: \`$(git rev-parse --abbrev-ref HEAD)\`" >> .report/report.md
+          echo "- 最新コミット: \`$(git log -1 --pretty=%h)\` $(git log -1 --pretty=%s)" >> .report/report.md
+          echo "- 直近変更ファイル数(過去24h): $(git log --since='24 hours ago' --name-only --pretty='' | sort -u | wc -l)" >> .report/report.md
+          echo "" >> .report/report.md
+
+          echo "## 🧩 主な変更領域" >> .report/report.md
+          echo "- Supabase / Edge Functions: $(git diff --name-only HEAD~1..HEAD | grep -E '^supabase/functions' | wc -l) files" >> .report/report.md
+          echo "- Flutter / Web: $(git diff --name-only HEAD~1..HEAD | grep -E '(^lib/|^web/|^src/)' | wc -l) files" >> .report/report.md
+          echo "- CI/CD: $(git diff --name-only HEAD~1..HEAD | grep -E '^.github/workflows' | wc -l) files" >> .report/report.md
+          echo "" >> .report/report.md
+
+          echo "## ⚙️ ステータス（自動ヒント）" >> .report/report.md
+          echo "| 項目 | 状況 | 根拠 |" >> .report/report.md
+          echo "|---|---|---|" >> .report/report.md
+          test -f supabase/functions/exchange/index.ts && echo "| exchange関数(Line Auth交換) | ✅ | ファイル存在 |" >> .report/report.md || echo "| exchange関数(Line Auth交換) | ⏳ | ファイル未検出 |" >> .report/report.md
+          rg -n "Deno\.serve\(|Response\(" supabase/functions/exchange/index.ts 2>/dev/null && echo "| CORS/途中切断対策 | ✅ | CORS/Response検出 |" >> .report/report.md || echo "| CORS/途中切断対策 | ⏳ | 未検出 |" >> .report/report.md
+          command -v supabase >/dev/null && echo "| Supabase CLI | ✅ | CLI検出 |" >> .report/report.md || echo "| Supabase CLI | ⏳ | 未検出 |" >> .report/report.md
+          test -f .github/workflows/supabase.yml && echo "| SupabaseデプロイCI | ✅ | supabase.yml検出 |" >> .report/report.md || echo "| SupabaseデプロイCI | ⏳ | なし |" >> .report/report.md
+          echo "" >> .report/report.md
+
+          echo "## 🚨 TODO / FIXME（抜粋）" >> .report/report.md
+          (rg -n 'TODO|FIXME|NOTE:' -S --max-filesize 200K --glob '!**/dist/**' --glob '!**/build/**' | head -n 30) \
+            || echo "（該当なし）" >> .report/report.md
+          echo "" >> .report/report.md
+
+          echo "## 💬 次のアクション提案" >> .report/report.md
+          echo "1. exchange の JWT 期限短縮 & 401時の自動再交換" >> .report/report.md
+          echo "2. RLS ポリシーのE2Eテストを追加（自分以外のデータが読めないこと）" >> .report/report.md
+          echo "3. release/* → STG、自動→mainの本番ラインを1回通して検証" >> .report/report.md
+
+      - name: Summarize Flutter analyze/test
+        run: |
+          mkdir -p .report
+          (flutter analyze || true) | tee .report/analyze.txt
+          echo "" >> .report/report.md
+          echo "## 🧪 静的解析/テスト 要約" >> .report/report.md
+          echo "- analyze: $(grep -Eo '[0-9]+ (issues|warnings|info|infos)?' .report/analyze.txt | head -n1 || echo '結果要確認')" >> .report/report.md
+          (flutter test --reporter=compact || true) | tee .report/test.txt
+          echo "- test: $(grep -Eo '[0-9]+ passed, [0-9]+ failed' .report/test.txt | tail -n1 || echo '結果要確認')" >> .report/report.md
+
+      - name: Build Flutter bundle (assets only)
+        run: flutter build bundle --release
+
+      - name: Ensure legacy convenience icons removed
+        run: dart scripts/check_service_icon_manifest.dart build/flutter_assets/AssetManifest.json
+
+      - name: Build Flutter web bundle (no service worker)
+        run: flutter build web --release --pwa-strategy=none
+
+      - name: List Supabase functions (optional)
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN_STG }}
+        run: |
+          if command -v supabase >/dev/null 2>&1; then
+            supabase link --project-ref zjwvmoxpacbpwawlwbrd
+            echo "" >> .report/report.md
+            echo "## 🧱 Supabase Functions" >> .report/report.md
+            supabase functions list >> .report/report.md || true
+          fi
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: progress-report
+          path: .report/report.md
+          retention-days: 14
+
+      - name: Comment to PR (if PR)
+        if: github.event_name == 'pull_request'
+        uses: thollander/actions-comment-pull-request@v2
+        with:
+          message: |
+            <details><summary>📝 自動進捗レポート（クリックで展開）</summary>
+            
+            $(cat .report/report.md)
+            
+            </details>

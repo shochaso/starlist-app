@@ -2,9 +2,17 @@
   "name": "starlist-app",
   "version": "1.0.0",
   "description": "Flutter Web with BrowserSync for instant reload",
+  "engines": {
+    "node": ">=20 <21"
+  },
+  "engineStrict": true,
   "scripts": {
+    "preinstall": "node -e \"const v=process.versions.node.split('.')[0]; if(Number(v)<20){console.error('Node>=20 required. Run `nvm use`'); process.exit(1)}\"",
     "start:bs": "browser-sync start --config bs-config.js",
-    "dev": "echo 'Run: npm run start:bs in separate terminal, then ./scripts/c.sh'"
+    "dev": "echo 'Run: npm run start:bs in separate terminal, then ./scripts/c.sh'",
+    "report": "bash scripts/progress-report.sh",
+    "lint:md": "node scripts/ensure-node20.js && markdown-link-check -c .mlc.json -q **/*.md",
+    "lint:md:local": "bash scripts/lint-md-local.sh"
   },
   "keywords": [],
   "author": "",
@@ -13,4 +21,3 @@
     "browser-sync": "^2.29.3"
   }
 }
-

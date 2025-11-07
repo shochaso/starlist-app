@@ -7,6 +7,8 @@ import 'package:starlist_app/features/login/screens/password_reset_request_scree
 import 'package:starlist_app/features/login/screens/password_reset_screen.dart';
 // import 'package:starlist_app/screens/style_guide_page.dart'; // 一時的にコメントアウト
 import 'package:starlist_app/screens/star_data_view_page.dart';
+import 'package:starlist_app/features/star_data/domain/category.dart';
+import 'package:starlist_app/src/features/ops/screens/ops_dashboard_page.dart';
 import 'package:starlist_app/features/registration/presentation/screens/1_follower_check_screen.dart';
 import 'package:starlist_app/features/registration/presentation/screens/2_basic_info_screen.dart';
 import 'package:starlist_app/features/registration/presentation/screens/3_profile_info_screen.dart';
@@ -15,7 +17,7 @@ import 'package:starlist_app/features/registration/presentation/screens/5_sns_li
 import 'package:starlist_app/features/registration/presentation/screens/6_terms_screen.dart';
 import 'package:starlist_app/features/registration/presentation/screens/registration_complete_screen.dart';
 import 'package:starlist_app/screens/starlist_main_screen.dart';
-// import 'package:starlist_app/features/app/screens/settings_screen.dart'; // 一時的にコメントアウト
+import 'package:starlist_app/features/app/screens/settings_screen.dart';
 import 'package:starlist_app/screens/bootstrap_screen.dart';
 import 'package:starlist_app/screens/fan_register_screen.dart';
 import 'package:starlist_app/screens/star_teaser_screen.dart';
@@ -99,18 +101,29 @@ GoRouter createAppRouter() {
       ),
       GoRoute(
         path: '/settings',
-        builder: (context, state) => Scaffold(
-          appBar: AppBar(title: const Text('設定')),
-          body: const Center(child: Text('設定画面（一時的に無効化）')),
-        ),
+        builder: (context, state) => const SettingsScreen(),
       ),
       GoRoute(
-        path: '/starlist',
-        builder: (context, state) => const StarDataViewPage(),
+        path: '/ops',
+        name: 'ops_dashboard',
+        builder: (context, state) => const OpsDashboardPage(),
+      ),
+      GoRoute(
+        path: '/stars/:username/data',
+        builder: (context, state) {
+          final username = state.pathParameters['username'] ?? 'demo-star';
+          final categoryParam = state.uri.queryParameters['category'];
+          return StarDataViewPage(
+            username: username,
+            initialCategory: StarDataCategory.maybeFrom(categoryParam),
+          );
+        },
       ),
       GoRoute(
         path: '/star-data',
-        builder: (context, state) => const StarDataViewPage(),
+        builder: (context, state) => const StarDataViewPage(
+          username: 'demo-star',
+        ),
       ),
       // GoRoute(
       //   path: '/style-guide',

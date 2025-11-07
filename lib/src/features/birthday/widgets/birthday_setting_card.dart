@@ -65,7 +65,11 @@ class BirthdaySettingCard extends ConsumerWidget {
                   updatedAt: DateTime.now(),
                 ));
               },
-              activeThumbColor: const Color(0xFF4ECDC4),
+              thumbColor: MaterialStateProperty.resolveWith<Color?>(
+                (states) => states.contains(MaterialState.selected)
+                    ? const Color(0xFF4ECDC4)
+                    : null,
+              ),
             ),
           ),
           

@@ -118,7 +118,7 @@ class _LoginPageState extends State<LoginPage> {
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.person),
                 ),
-                initialValue: _selectedUserType,
+                value: _selectedUserType,
                 items: const [
                   DropdownMenuItem(
                     value: UserType.fan,

@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:http/http.dart' as http;
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 import '../../../data/models/netflix_models.dart';
 import '../../../core/errors/app_exceptions.dart';
 import '../../../core/logging/logger.dart';

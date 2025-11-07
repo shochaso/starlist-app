@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -19,29 +22,41 @@ class _DemoAccount {
 
 const List<_DemoAccount> _demoAccounts = [
   _DemoAccount(
-    email: 'star@demo.app',
-    password: 'star1234',
+    email: 'hanayama@gmail.com',
+    password: 'bokudareyo12',
     user: UserInfo(
-      id: 'demo-star',
-      name: 'デモスター',
-      email: 'star@demo.app',
+      id: 'test_star_creator',
+      name: '花山瑞樹',
+      email: 'hanayama@gmail.com',
       role: UserRole.star,
       currentMode: UserMode.star,
-      starCategory: 'テクノロジー',
-      followers: 128000,
+      starCategory: 'ファッション・ライフスタイル',
+      followers: 127000,
       isVerified: true,
     ),
   ),
   _DemoAccount(
-    email: 'fan@demo.app',
-    password: 'fan1234',
+    email: 'shomafree@gmail.com',
+    password: 'bokudareyo12',
     user: UserInfo(
-      id: 'demo-fan',
-      name: 'デモファン',
-      email: 'fan@demo.app',
+      id: 'test_free_fan',
+      name: '田中太郎',
+      email: 'shomafree@gmail.com',
       role: UserRole.fan,
       currentMode: UserMode.fan,
-      fanPlanType: FanPlanType.standard,
+      fanPlanType: FanPlanType.free,
+    ),
+  ),
+  _DemoAccount(
+    email: 'shomalight@gmail.com',
+    password: 'bokudareyo12',
+    user: UserInfo(
+      id: 'test_light_fan',
+      name: '佐藤花子',
+      email: 'shomalight@gmail.com',
+      role: UserRole.fan,
+      currentMode: UserMode.fan,
+      fanPlanType: FanPlanType.light,
     ),
   ),
 ];
@@ -59,10 +74,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   bool _isLoading = false;
   bool _autoLoginAttempted = false;
   bool _isPasswordVisible = false;
+  StreamSubscription<AuthState>? _authSubscription;
 
   @override
   void initState() {
     super.initState();
+    _authSubscription = Supabase.instance.client.auth.onAuthStateChange.listen((data) {
+      final event = data.event;
+      if (event == AuthChangeEvent.signedIn && mounted) {
+        context.go('/home');
+      }
+    });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!_autoLoginAttempted) {
         _autoLoginAttempted = true;
@@ -83,23 +105,28 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         return;
       }
 
-      // 自動ログインを一時的に無効化（認証情報が無効なため）
-      // final response = await client.auth.signInWithPassword(
-      //   email: 'shochaso@gmail.com',
-      //   password: 'password1234',
-      // );
+      _emailController.text = 'hanayama@gmail.com';
+      _passwordController.text = 'bokudareyo12';
 
-      // if (response.user != null) {
-      //   print(
-      //       '[AutoLogin] LoginScreen: auto-login successful, redirecting to /home');
-      //   if (mounted) context.go('/home');
-      // } else {
-      //   print('[AutoLogin] LoginScreen: auto-login failed - no user returned');
-      // }
+      // Supabase セッション付与を試みる（失敗しても demo login が続行）
+      try {
+        await Supabase.instance.client.auth.signInWithPassword(
+          email: 'hanayama@gmail.com',
+          password: 'bokudareyo12',
+        );
+      } catch (error) {
+        debugPrint('[AutoLogin] Supabase signIn failed: $error');
+      }
 
-      // 開発中は自動ログインをスキップしてログイン画面を表示
-      print(
-          '[AutoLogin] LoginScreen: auto-login skipped, showing login screen');
+      final demoAccount = _matchDemoAccount('hanayama@gmail.com', 'bokudareyo12');
+      if (demoAccount != null) {
+        await _signInAsDemo(demoAccount);
+        if (mounted) {
+          context.go('/home');
+        }
+      } else {
+        debugPrint('[AutoLogin] Demo account not found');
+      }
     } catch (e) {
       print('[AutoLogin] LoginScreen: auto-login error: $e');
       // 認証エラーの場合はログイン画面を表示（アプリを終了しない）
@@ -111,11 +138,29 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _authSubscription?.cancel();
     super.dispose();
   }
 
+  _DemoAccount? _matchDemoAccount(String email, String password) {
+    final lower = email.trim().toLowerCase();
+    for (final account in _demoAccounts) {
+      if (account.email.toLowerCase() == lower && account.password == password) {
+        return account;
+      }
+    }
+    return null;
+  }
+
   Future<void> _login() async {
-    if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
+    if (_isLoading) {
+      return;
+    }
+
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+
+    if (email.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('メールアドレスとパスワードを入力してください')),
       );
@@ -126,11 +171,21 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       _isLoading = true;
     });
 
+    final demoAccount = _matchDemoAccount(email, password);
+    if (demoAccount != null) {
+      await _signInAsDemo(demoAccount);
+      if (mounted) {
+        setState(() => _isLoading = false);
+        context.go('/home');
+      }
+      return;
+    }
+
     bool supabaseSuccess = false;
     try {
       final response = await Supabase.instance.client.auth.signInWithPassword(
-        email: _emailController.text,
-        password: _passwordController.text,
+        email: email,
+        password: password,
       );
 
       if (response.user != null) {
@@ -143,25 +198,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     } catch (e) {
       debugPrint('Supabaseログイン失敗: $e');
     } finally {
-      if (!supabaseSuccess) {
-        final demoLoggedIn = await _attemptDemoLogin(
-          email: _emailController.text,
-          password: _passwordController.text,
+      if (!supabaseSuccess && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('ログインに失敗しました')),
         );
-
-        if (!demoLoggedIn && mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('ログインに失敗しました')),
-          );
-        } else {
-          if (mounted && demoLoggedIn) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('デモアカウントでログインしました')), 
-            );
-          }
-        }
       }
-      
+
       if (mounted) {
         setState(() {
           _isLoading = false;
@@ -170,23 +212,42 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     }
   }
 
-  Future<bool> _attemptDemoLogin({
-    required String email,
-    required String password,
-  }) async {
-    _DemoAccount? matched;
-    for (final account in _demoAccounts) {
-      if (account.email.toLowerCase() == email.toLowerCase() &&
-          account.password == password) {
-        matched = account;
-        break;
+  Future<void> _signInWithOAuth(OAuthProvider provider) async {
+    if (_isLoading) {
+      return;
+    }
+    setState(() => _isLoading = true);
+    try {
+      final client = Supabase.instance.client;
+      await client.auth.signInWithOAuth(
+        provider, 
+        redirectTo: _resolveRedirectUrl(provider),
+      );
+      // Navigation is handled by the auth state listener.
+    } catch (error, stackTrace) {
+      debugPrint('OAuth login failed [$provider]: $error');
+      debugPrintStack(stackTrace: stackTrace);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('ログインに失敗しました: $error')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
       }
     }
+  }
 
-    if (matched == null) {
-      return false;
+  String? _resolveRedirectUrl(OAuthProvider provider) {
+    if (kIsWeb) {
+      final origin = Uri.base.origin;
+      return '$origin/#/auth-callback?provider=${provider.name}';
     }
+    return null;
+  }
 
+  Future<void> _signInAsDemo(_DemoAccount account) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool('is_logged_out', false);
@@ -195,7 +256,23 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       debugPrint('デモログイン時の状態保存に失敗: $e');
     }
 
-    ref.read(currentUserProvider.notifier).setUser(matched.user);
+    if (!mounted) return;
+    ref.read(currentUserProvider.notifier).setUser(account.user);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('${account.user.name}としてログインしました')),
+    );
+  }
+
+  Future<bool> _attemptDemoLogin({
+    required String email,
+    required String password,
+  }) async {
+    final matched = _matchDemoAccount(email, password);
+    if (matched == null) {
+      return false;
+    }
+
+    await _signInAsDemo(matched);
     if (mounted) context.go('/home');
     return true;
   }
@@ -351,19 +428,25 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           ),
           const SizedBox(height: 32),
           _buildTextField(
+            context: context,
             controller: _emailController,
             label: 'メールアドレスまたはユーザー名',
             hint: 'star@yourgalaxy.com',
             icon: Icons.alternate_email_outlined,
             keyboardType: TextInputType.emailAddress,
+            textInputAction: TextInputAction.next,
+            onSubmitted: (_) => FocusScope.of(context).nextFocus(),
           ),
           const SizedBox(height: 20),
           _buildTextField(
+            context: context,
             controller: _passwordController,
             label: 'パスワード',
             hint: '8文字以上が安心',
             icon: Icons.lock_outline,
             obscureText: !_isPasswordVisible,
+            textInputAction: TextInputAction.done,
+            onSubmitted: (_) => _login(),
             trailing: IconButton(
               onPressed: () {
                 setState(() {
@@ -465,12 +548,53 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               ],
             ),
           ),
+          const SizedBox(height: 32),
+          _buildOAuthSection(isWide),
         ],
       ),
     );
   }
 
+  Widget _buildOAuthSection(bool isWide) {
+    const separator = Row(
+      children: [
+        Expanded(child: Divider()),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 12),
+          child: Text('または'),
+        ),
+        Expanded(child: Divider()),
+      ],
+    );
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        separator,
+        const SizedBox(height: 16),
+        _OAuthButton(
+          label: 'Googleでログイン',
+          icon: Icons.mail_outline,
+          color: const Color(0xFF4285F4),
+          onPressed: _isLoading ? null : () => _signInWithOAuth(OAuthProvider.google),
+          isDense: isWide,
+        ),
+        const SizedBox(height: 12),
+        // LINE OAuth provider may not be available in latest Supabase
+        // TODO: Check available OAuth providers and re-enable if supported
+        // _OAuthButton(
+        //   label: 'LINEでログイン',
+        //   icon: Icons.chat_bubble_outline,
+        //   color: const Color(0xFF06C755),
+        //   onPressed: _isLoading ? null : () => _signInWithOAuth(OAuthProvider.line),
+        //   isDense: isWide,
+        // ),
+      ],
+    );
+  }
+
   Widget _buildTextField({
+    required BuildContext context,
     required TextEditingController controller,
     required String label,
     required String hint,
@@ -478,11 +602,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     bool obscureText = false,
     TextInputType? keyboardType,
     Widget? trailing,
+    TextInputAction textInputAction = TextInputAction.next,
+    void Function(String)? onSubmitted,
   }) {
     return TextFormField(
       controller: controller,
       keyboardType: keyboardType,
       obscureText: obscureText,
+      textInputAction: textInputAction,
+      onFieldSubmitted: onSubmitted,
       decoration: InputDecoration(
         labelText: label,
         hintText: hint,
@@ -686,6 +814,47 @@ class _HighlightItem extends StatelessWidget {
               const TextStyle(color: Colors.white, fontSize: 14, height: 1.5),
         ),
       ],
+    );
+  }
+}
+
+class _OAuthButton extends StatelessWidget {
+  const _OAuthButton({
+    required this.label,
+    required this.icon,
+    required this.color,
+    required this.onPressed,
+    this.isDense = false,
+  });
+
+  final String label;
+  final IconData icon;
+  final Color color;
+  final VoidCallback? onPressed;
+  final bool isDense;
+
+  @override
+  Widget build(BuildContext context) {
+    return OutlinedButton.icon(
+      style: OutlinedButton.styleFrom(
+        side: BorderSide(color: color.withOpacity(0.6)),
+        padding: EdgeInsets.symmetric(
+          vertical: isDense ? 14 : 16,
+          horizontal: 18,
+        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      ),
+      onPressed: onPressed,
+      icon: Icon(icon, color: color),
+      label: Text(
+        label,
+        style: TextStyle(
+          color: onPressed == null
+              ? Theme.of(context).textTheme.bodyMedium?.color
+              : color,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
     );
   }
 }

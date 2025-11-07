@@ -1,0 +1,16 @@
+name: Guard No Image Loaders
+on: [push, pull_request]
+jobs:
+  rg-guard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fail if image loaders exist in restricted areas
+        run: |
+          set -e
+          RG="rg -n \"Image\\.(asset|network)|CachedNetworkImage|NetworkImage|AssetImage|DecorationImage|SvgPicture\\.(asset|network)\" lib/features/data_integration lib/features/import_diagnose lib/services"
+          if eval $RG; then
+            echo "::error:: Image/SVG loaders found in restricted areas"
+            exit 1
+          fi
+          echo "No restricted image loaders found ✅"

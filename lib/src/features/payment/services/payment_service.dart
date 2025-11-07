@@ -6,8 +6,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter/foundation.dart';
 
 const String _kStripeSecretKey = String.fromEnvironment('STRIPE_SECRET_KEY');
-const String _kStripeWebhookSecret =
-    String.fromEnvironment('STRIPE_WEBHOOK_SECRET');
+const String _kStripeWebhookSecret = String.fromEnvironment('STRIPE_WEBHOOK_SECRET');
 
 abstract class PaymentService {
   Future<PaymentModel> createPayment({

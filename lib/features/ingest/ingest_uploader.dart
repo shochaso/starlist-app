@@ -4,6 +4,7 @@ import 'dart:html' as html;
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:starlist_app/widgets/signed_image.dart';
 
 class IngestUploader extends StatefulWidget {
   const IngestUploader(
@@ -118,28 +119,8 @@ class _IngestUploaderState extends State<IngestUploader> {
     });
   }
 
-  Future<void> _refreshSignedUrl() async {
-    final key = _storageKey;
-    if (key == null) return;
-    try {
-      final res = await http
-          .get(Uri.parse('${widget.baseUrl}/media/signed-url?key=$key'));
-      if (res.statusCode != 200) {
-        _log('refresh failed: ${res.statusCode}');
-        return;
-      }
-      final data = jsonDecode(res.body) as Map<String, dynamic>;
-      final url = data['signedUrl'] as String?;
-      if (url != null) {
-        setState(() => _previewUrl = url);
-      }
-    } catch (e) {
-      _log('refresh error: $e');
-    }
-  }
-
   Widget _preview() {
-    if (_previewUrl == null) {
+    if (_storageKey == null) {
       return const SizedBox.shrink();
     }
     return Column(
@@ -149,13 +130,17 @@ class _IngestUploaderState extends State<IngestUploader> {
         const SizedBox(height: 8),
         AspectRatio(
           aspectRatio: 1,
-          child: Image.network(
-            _previewUrl!,
+          child: SignedImage(
+            key: ValueKey(_storageKey!),
+            objectPath: _storageKey!,
+            initialUrl: _previewUrl,
             fit: BoxFit.contain,
-            errorBuilder: (_, __, ___) {
-              _refreshSignedUrl();
-              return const Center(child: Text('プレビュー再取得中...'));
-            },
+            placeholder: (_) => const Center(
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+            errorPlaceholder: (_) => const Center(
+              child: Text('プレビュー再取得中...'),
+            ),
           ),
         ),
       ],

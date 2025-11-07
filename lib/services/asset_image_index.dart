@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/services.dart' show rootBundle;
 
-class AssetImageIndex {
+class AssetIconIndex {
   static const _prefixes = <String>[
     'assets/icons/services/',
   ];

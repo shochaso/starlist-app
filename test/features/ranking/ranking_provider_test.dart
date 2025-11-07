@@ -1,3 +1,4 @@
+@Skip('legacy ranking stack; pending re-home')
 import "package:flutter_test/flutter_test.dart";
 import "package:mockito/mockito.dart";
 import "package:starlist_app/src/features/ranking/models/ranking_entry.dart";

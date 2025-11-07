@@ -23,6 +23,7 @@
 
   <!-- iOS meta tags & icons -->
   <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <meta name="apple-mobile-web-app-title" content="starlist">
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
@@ -52,7 +53,6 @@
   </script>
   <script>
     window.addEventListener('load', function(ev) {
-      // Download main.dart.js
       _flutter.loader.loadEntrypoint({
         serviceWorker: {
           serviceWorkerVersion: serviceWorkerVersion,
@@ -60,8 +60,14 @@
         onEntrypointLoaded: function(engineInitializer) {
           engineInitializer.initializeEngine().then(function(appRunner) {
             appRunner.runApp();
+          }).catch(function(error) {
+            console.error('Flutter engine initialization error:', error);
+            document.body.innerHTML = '<div style="display: flex; justify-content: center; align-items: center; height: 100vh; font-family: sans-serif;"><div style="text-align: center;"><h1>エラーが発生しました</h1><p>' + error.toString() + '</p></div></div>';
           });
         }
+      }).catch(function(error) {
+        console.error('Flutter loader error:', error);
+        document.body.innerHTML = '<div style="display: flex; justify-content: center; align-items: center; height: 100vh; font-family: sans-serif;"><div style="text-align: center;"><h1>エラーが発生しました</h1><p>' + error.toString() + '</p></div></div>';
       });
     });
   </script>
