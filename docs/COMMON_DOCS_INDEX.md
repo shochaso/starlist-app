@@ -44,6 +44,55 @@
 ## 次のアクション
 ## 1.4 データ連携／インポート詳細
 
+- **Flutter 側 UI**: `lib/src/features/data_integration/screens/` に各サービス用画面、`support_matrix.dart` で対応状況を管理。
+- **データ処理**: `lib/src/features/ingest/` でアップロード／解析、`lib/src/features/import_diagnose/` で診断フロー。
+- **補足資料**: `docs/reports/COMPLETE_FILE_MANAGEMENT_GUIDE.md` にファイル連携の全体像、旧資料 `docs/planning/Starlist まとめ.md` に要件記録。
+
+
+- **Flutter 側 UI**: `lib/src/features/data_integration/screens/` に各サービス用画面、`support_matrix.dart` で対応状況を管理。
+- **データ処理**: `lib/src/features/ingest/` でアップロード／解析、`lib/src/features/import_diagnose/` で診断フロー。
+- **補足資料**: `docs/reports/COMPLETE_FILE_MANAGEMENT_GUIDE.md` にファイル連携の全体像、旧資料 `docs/planning/Starlist まとめ.md` に要件記録。
+
+#### 🆕 Day3 Source of Truth 仕様（2025-11-07）
+
+| ID | タイトル | ドメイン | 概要 |
+|----|-----------|----------|------|
+| **ING-PIPE-CORE-001** | Ingestパイプラインコア | ingest | ingest_jobs / audit_ingest テーブル設計。pHash＋ファイルハッシュで重複防止。PIIマスキングと再試行制御を統一。 |
+| **ING-OCR-IMAGE-002** | OCR画像解析 | ingest | Google Cloud Vision API を使用。信頼度70%未満は再解析。レシートに加えYouTube／音楽／ゲーム／学習スクショなども対象。 |
+| **ING-SCREENSHOT-003** | スクリーンショット処理 | ingest | UI要素（ヘッダー・ナビゲーション）除去とレイアウト構造化。品質評価を自動＋手動で実施。 |
+| **ING-YT-PIPE-004** | YouTubeデータ連携 | ingest | Data API v3でチャンネル・動画メタデータ取得。OAuth統合済みでライブ配信も検知。 |
+| **共通機能** | - | - | 重複防止／PII自動マスキング／OCR信頼度閾値／再試行（タイムアウトのみ）／監査ログ保存。 |
+
+#### 📦 OCR入力の対象範囲
+
+OCR解析は「購買情報」だけでなく、日常行動の証跡となるスクリーンショット全般を対象とする。
+
+| 種類 | 例 | 主な抽出項目 |
+|------|----|--------------|
+| 🧾 レシート／明細書 | スーパー・Amazon・PayPay | 店舗名、日付、金額、商品名 |
+| 📺 YouTube視聴スクショ | 再生履歴・チャンネル画面 | 動画タイトル、チャンネル名、再生時間 |
+| 🎵 音楽アプリ | Spotify・Apple Music | 曲名、アーティスト、再生時間 |
+| 🎮 ゲームアプリ | Switch／Steam／PSN履歴 | ゲーム名、プレイ時間 |
+| 📚 学習・記事スクショ | note／Kindle／Udemy等 | タイトル、著者、学習時間 |
+
+#### 🔍 監査ログスキーマ（共通）
+
+```sql
+audit_ingest (
+  id uuid PK,
+  user_id uuid,
+  source_type text, -- receipt/screenshot/youtube/music/game/learn
+  result jsonb,
+  duration_ms int,
+  retries int,
+  error text,
+  created_at timestamptz
+)
+```
+
+> **更新履歴:** 2025-11-07 ティム（COO/PM） — Day3 ingest仕様を source_of_truth に昇格し、OCR対象範囲を拡張。
+
+
 ### データ取り込み仕様群（Day3完了）
 
 | 仕様ID | タイトル | ステータス | コード参照 | 最終更新 |
