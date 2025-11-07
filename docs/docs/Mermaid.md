@@ -1,32 +1,48 @@
 flowchart TB
-  A[COMMON_DOCS_INDEX.md<br/>共通ドキュメント索引<br/>＝中核インデックス]:::core
-  A --> B[STARLIST_OVERVIEW.md<br/>プロジェクト全体像/設計図]:::overview
-  A --> C[COMPANY_SETUP_GUIDE.md<br/>会社/環境セットアップ&オンボード]:::setup
-  A --> D[CHATGPT_SHARE_GUIDE.md<br/>AI共有SOP/提示順序/チェックリスト]:::share
+  A[docs/overview/COMMON_DOCS_INDEX.md<br/>共通ドキュメント索引]:::core
 
-  %% OVERVIEW の参照先（技術・機能）
-  B --> B1[アーキテクチャ概要<br/>FE/BE/Supabase/Storage/Stripe]:::tech
-  B --> B2[機能マップと進捗<br/>カテゴリ別ステータス]:::roadmap
-  B --> B3[ディレクトリ構成ハイライト<br/>lib/server/supabase/scripts/docs]:::dirs
+  A --> B[docs/overview/STARLIST_OVERVIEW.md<br/>プロダクト全景と要約]:::overview
+  A --> D[guides/CHATGPT_SHARE_GUIDE.md<br/>AI共有SOP]:::share
+  A --> C[docs/development/DEVELOPMENT_GUIDE.md<br/>開発環境ガイド]:::dev
+  A --> F[docs/architecture/<br/>システム構成図群]:::arch
+  A --> O[docs/ops/OPS-MONITORING-001.md<br/>監視・テレメトリ正準]:::ops
+  A --> P[docs/planning/Task.md<br/>計画/タスク]:::biz
+  A --> R[docs/reports/STARLIST_DEVELOPMENT_SUMMARY.md<br/>進捗レポート]:::biz
+  A --> R2[docs/reports/STARLIST_DAY5_SUMMARY.md<br/>Day5進行サマリー]:::biz
+  A --> G[guides/business/<br/>ビジネス戦略]:::guides
+  A --> U[guides/user-journey/<br/>カスタマージャーニー]:::guides
 
-  %% SETUP の参照先（運用・権限）
-  C --> C1[アカウント・権限チェックリスト<br/>GSuite/GitHub/Supabase/Stripe]:::ops
-  C --> C2[開発環境構築手順<br/>Flutter/Node/Docker/Supabase CLI]:::ops
-  C --> C3[環境変数/機密管理<br/>.env/Vault/direnv]:::ops
-  C --> C4[CI/CD・QA・リリース手順]:::ops
+  subgraph FE["docs/features/"]
+    H1[payment_current_state.md]:::feature2
+    H7[payment/PAY-STAR-SUBS-PER-STAR-PRICING.md]:::feature2
+    H3[day4/AUTH-OAUTH-001_impl_and_review.md]:::feature2
+    H4[day4/SEC-RLS-SYNC-001.md]:::feature2
+    H5[day4/UI-HOME-001.md]:::feature2
+    H6[day4/QA-E2E-001.md]:::feature2
+    H8[auth/AUTH-OAUTH-001.md]:::auth
+  end
+  A --> FE
 
-  %% SHARE の参照先（AI運用）
-  D --> D1[共有の目的定義<br/>目的/概要/対象領域の明示]:::share2
-  D --> D2[優先共有Markdown一覧<br/>機能別の推奨ドキュメント]:::share2
-  D --> D3[共有手順と順序<br/>概要→課題→抜粋→依頼]:::share2
-  D --> D4[大容量/外部共有方針<br/>Supabase Storage doc-share]:::share2
+  O -.-> SH[docs/features/day4/OPS-MONITORING-001.md<br/>Day4参照シェル]:::feature
+
+  H3 --> H4
+  H3 --> H5
+  H3 --> H6
+  H4 --> H6
+  H7 --> H4
+  H7 --> H5
+  H7 --> O
+  H7 --> H6
+  O --> H6
 
   classDef core fill:#6a5cff,stroke:#4b3df0,color:#fff;
   classDef overview fill:#f1efff,stroke:#6a5cff,color:#333;
-  classDef setup fill:#eafff7,stroke:#26a97a,color:#333;
   classDef share fill:#fff6e6,stroke:#ff9a22,color:#333;
-  classDef tech fill:#eef7ff,stroke:#2b7de9,color:#333;
-  classDef roadmap fill:#f9f0ff,stroke:#a24be6,color:#333;
-  classDef dirs fill:#f0fbff,stroke:#00a3c4,color:#333;
+  classDef dev fill:#e3f2fd,stroke:#1976d2,color:#0d47a1;
+  classDef arch fill:#ffe8f1,stroke:#d81b60,color:#6a0035;
+  classDef feature fill:#e8f5e9,stroke:#2e7d32,color:#1b5e20;
+  classDef feature2 fill:#f1fbf2,stroke:#43a047,color:#1b5e20;
+  classDef auth fill:#f0f4ff,stroke:#4a6ee0,color:#22315c;
   classDef ops fill:#e9fff2,stroke:#13a36e,color:#333;
-  classDef share2 fill:#fff6ea,stroke:#ff9a22,color:#333;
+  classDef biz fill:#fff5e1,stroke:#f57c00,color:#5d3300;
+  classDef guides fill:#fff0f5,stroke:#c2185b,color:#5d1030;

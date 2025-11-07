@@ -95,12 +95,13 @@ cd starlist
 
 ## 開発フローと QA
 
-- 日常の開発サイクル（ブランチ戦略、PR レビュー、CI/CD）。
-- テスト実行方法（ユニット, E2E, Lint）。
-- リリース手順またはデプロイ窓口。
-- QA チェックリストがあればリンク。
+- **Node.js**: v20 固定。`nvm use 20 && npm ci` が必須。`scripts/ensure-node20.js` が preinstall で検証します。  
+- **Lint / LinkCheck**: `npm run lint:md:local`（内部で Node20 を確認 → `markdown-link-check` 実行）。  
+- **CI**: `.github/workflows/docs-link-check.yml` が PR ごとに自動実行し、README のバッジに反映。  
+- **ブランチ戦略**: `feature/<topic>` → `PR` → `Node20 CI` → `main`。  
+- **QA**: `QA-E2E-001` で Telemetry/OPS の疎通 2 ケースを自動実行予定。
 
-> TODO: 実際のフロー、関連ドキュメントへのリンクを補足。
+> 具体的な作業フローやチェックリストは `docs/reports/STARLIST_DAY5_SUMMARY.md` と `docs/features/day4/AUTH-OAUTH-001_impl_and_review.md` を参照。
 
 ---
 
