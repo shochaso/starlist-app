@@ -1,57 +1,71 @@
-feat(ops): Day7 OPS Alert Automation — Recent Alerts UI + CI
+feat(ops): Day8 OPS Health Dashboard — DB + Edge + Flutter
 
 ## 概要
 
-Day7の実装スコープを完了。OPS Alert Automationにより、Edge Function `ops-alert`の拡張、Flutterダッシュボードに「Recent Alerts」セクション追加、CI検証ワークフローを実装。Day6のOPS Dashboardと連携し、「収集 → 可視化 → アラート表示」のサイクルを完成。
+Day8の実装スコープを完了。OPS Health Dashboardにより、アラート履歴からサービス健全性を可視化。DBマイグレーション、Edge Functions拡張、Flutter UI実装を完了し、「収集 → 可視化 → アラート表示 → ヘルスチェック」のサイクルを完成。
 
 ## 変更点（ハイライト）
 
+* **DBマイグレーション**
+  * `supabase/migrations/20251107_ops_alerts_history.sql`（新規）
+    * `ops_alerts_history`テーブル作成
+    * インデックス3本（alerted_at, type+env, app+env）
+    * RLSポリシー設定（SELECT/INSERT）
+
 * **Edge Function拡張**
   * `supabase/functions/ops-alert/index.ts`
-    * アラート情報の詳細化（type, value, threshold）
-    * 環境変数で閾値を設定可能（`FAILURE_RATE_THRESHOLD`, `P95_LATENCY_THRESHOLD`）
-    * アラート種別を明確に識別（failure_rate/p95_latency）
+    * アラート検出時に`ops_alerts_history`に履歴保存
+    * dryRunモードでは保存をスキップ
+  * `supabase/functions/ops-health/index.ts`（新規）
+    * 期間別・サービス別に集計
+    * 指標計算: uptime %, mean p95(ms), alert trend
 
-* **Flutter Recent Alerts実装**
-  * `lib/src/features/ops/models/ops_alert_model.dart`（新規）
-    * `OpsAlert` - アラート情報モデル
+* **Flutter実装**
+  * `lib/src/features/ops/models/ops_health_model.dart`（新規）
+    * `OpsHealthData` - ヘルスデータモデル
+    * `OpsHealthAggregation` - 集計データモデル
   * `lib/src/features/ops/providers/ops_metrics_provider.dart`
-    * `opsRecentAlertsProvider` - ops-alert Edge Function呼び出し
+    * `opsHealthProvider` - ops-health Edge Function呼び出し
+    * `opsHealthPeriodProvider` - 期間選択状態管理
   * `lib/src/features/ops/screens/ops_dashboard_page.dart`
-    * `_buildRecentAlerts` - Recent AlertsセクションUI実装
-    * アラート種別アイコン（失敗率/遅延）
-    * アラート詳細表示（値・閾値・時刻）
-
-* **CI検証**
-  * `.github/workflows/ops-alert-dryrun.yml`（新規）
-    * PR作成時に自動実行
-    * dryRunモードでアラート検出を検証
+    * TabBar追加（Metrics/Healthタブ）
+    * HealthタブUI実装:
+      * 期間選択（1h/6h/24h/7d）
+      * 稼働率グラフ（Uptime %）
+      * 平均応答時間グラフ（Mean P95 Latency）
+      * 異常率グラフ（Alert Trend）
 
 * **Docs**
-  * `docs/ops/OPS-ALERT-AUTOMATION-001.md`（新規）
-    * Day7実装計画・検証手順・アラートペイロード仕様
+  * `docs/ops/OPS-HEALTH-DASHBOARD-001.md`（新規）
+    * Day8実装計画・集計設計・UI設計
 
 ## 受け入れ基準（DoD）
 
-- [x] Edge Function `ops-alert`がアラート情報を詳細に返却（type, value, threshold）
-- [x] Flutter `/ops` ダッシュボードに「Recent Alerts」セクションを追加
-- [x] アラート種別（失敗率/遅延）をアイコンで識別可能
-- [x] アラート値・閾値・時刻を表示
-- [x] CI `ops-alert-dryrun.yml`でダミーアラートを自動検証
-- [x] ドキュメント `OPS-ALERT-AUTOMATION-001.md`を完成
+- [x] `ops_alerts_history`テーブルを作成し、RLSポリシーを設定
+- [x] Edge Function `ops-alert`でアラート検出時に履歴保存
+- [x] Edge Function `ops-health`で期間別・サービス別に集計
+- [x] Flutter `/ops`ダッシュボードにTabBar追加（Metrics/Healthタブ）
+- [x] Healthタブで期間選択（1h/6h/24h/7d）が動作
+- [x] 稼働率グラフ（Uptime %）が表示される
+- [x] 平均応答時間グラフ（Mean P95 Latency）が表示される
+- [x] 異常率グラフ（Alert Trend）が表示される
+- [x] グラフでサービス別（app/env）に識別可能
+- [x] アラートトレンド（increasing/decreasing/stable）が色分け表示される
+- [x] ドキュメント `OPS-HEALTH-DASHBOARD-001.md`を完成
 
 ## 影響範囲
 
+* `supabase/migrations/**` - DBマイグレーション追加
 * `supabase/functions/ops-alert/**` - Edge Function拡張
-* `lib/src/features/ops/**` - Flutter Recent Alerts実装
-* `.github/workflows/ops-alert-dryrun.yml` - CI検証ワークフロー
-* `docs/ops/OPS-ALERT-AUTOMATION-001.md` - ドキュメント
+* `supabase/functions/ops-health/**` - Edge Function新設
+* `lib/src/features/ops/**` - Flutter Health Dashboard実装
+* `docs/ops/OPS-HEALTH-DASHBOARD-001.md` - ドキュメント追加
 
 ## リスク&ロールバック
 
-* **リスク**: Edge Function呼び出し失敗時のエラーハンドリング
-* **緩和**: Providerでエラーをキャッチし、空リストを返却
-* **ロールバック**: 前コミットに戻すのみ（DB変更なし）
+* **リスク**: アラート履歴の蓄積によるDB容量増加
+* **緩和**: インデックス最適化、期間フィルタでクエリ効率化
+* **ロールバック**: 前コミットに戻すのみ（DB変更あり、マイグレーションロールバック必要）
 
 ## CI ステータス
 
@@ -63,32 +77,34 @@ Day7の実装スコープを完了。OPS Alert Automationにより、Edge Functi
 ## レビュワー / メタ
 
 * Reviewer: @pm-tim
-* Labels: `area:ops`, `type:feature`, `day7`
+* Labels: `area:ops`, `type:feature`, `day8`
 * Breakings: なし
 
 ---
 
 ## Screenshots
 
-* [ ] Recent Alertsセクション（アラートあり）
-* [ ] Recent Alertsセクション（アラートなし）
-* [ ] CI ops-alert-dryrun.yml 実行結果
+* [ ] Healthタブ（期間選択・3グラフ）
+* [ ] Uptime %グラフ（サービス別）
+* [ ] Mean P95 Latencyグラフ（サービス別）
+* [ ] Alert Trendグラフ（色分け表示）
 
 ## Manual QA
 
-* ✅ `/ops` ページでRecent Alertsセクションが表示される
-* ✅ アラート種別アイコンが正しく表示される
-* ✅ アラート値・閾値・時刻が正しく表示される
-* ✅ アラートなし時は「No alerts」メッセージが表示される
-* ✅ Edge Function呼び出しエラー時はエラーメッセージが表示される
+* ✅ `/ops` ページでTabBar（Metrics/Health）が表示される
+* ✅ Healthタブで期間選択（1h/6h/24h/7d）が動作する
+* ✅ 稼働率グラフが正しく表示される
+* ✅ 平均応答時間グラフが正しく表示される
+* ✅ 異常率グラフが正しく表示される
+* ✅ アラートトレンドが色分け表示される（increasing=赤、decreasing=緑、stable=橙）
 
 ## Docs Updated
 
-* `docs/ops/OPS-ALERT-AUTOMATION-001.md` → Status: planned / 実装計画・検証手順・アラートペイロード仕様
+* `docs/ops/OPS-HEALTH-DASHBOARD-001.md` → Status: planned / 設計方針・指標定義・集計ロジック
 
-## Risks / Follow-ups (Day8)
+## Risks / Follow-ups (Day9)
 
-* アラート履歴の永続化（`ops_alerts`テーブル作成）
-* アラート通知の拡張（Email/SMS等）
-* アラート設定のUI化（閾値設定画面）
-* OPS Health Dashboard設計
+* アラート履歴の自動アーカイブ（古いデータの削除/アーカイブ）
+* OPS Summary Email（週次レポート自動生成）
+* ヘルスチェックの閾値設定UI化
+* サービス別の詳細ダッシュボード
