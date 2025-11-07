@@ -103,7 +103,7 @@ Source-of-Truth: Edge Functions (`supabase/functions/ops-summary-email/`) + GitH
 - **Function revert**: 前バージョンのEdge Functionにロールバック
 - **Secrets削除**: メール送信用Secretsを削除して送信停止
 
-## 7. 参考リンク
+## 10. 参考リンク
 
 - `docs/ops/OPS-HEALTH-DASHBOARD-001.md` - OPS Health Dashboard仕様
 - `docs/ops/OPS-ALERT-AUTOMATION-001.md` - OPS Alert Automation仕様
