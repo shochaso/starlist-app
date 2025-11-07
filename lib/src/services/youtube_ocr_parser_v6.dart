@@ -111,7 +111,7 @@ class YouTubeOCRParserV6 {
             }
             
             // 題名がチャンネル名のパターンに一致する場合（「〇〇ロードショー」「〇〇TV」など）
-            if (RegExp(r'.+[ロードショー|TV|チャンネル]').hasMatch(title) &&
+            if (RegExp(r'.+(?:ロードショー|TV|チャンネル)').hasMatch(title) &&
                 channel.length > title.length) {
               shouldSwap = true;
             }
