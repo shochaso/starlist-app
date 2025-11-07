@@ -1,0 +1,18 @@
+name: Ops Alert DryRun
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  dryrun:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: DryRun placeholder
+        run: |
+          echo "[ops-alert] dryrun start"
+          # TODO: 実DryRun処理に置換（例：curlでEdge関数をdryRun=trueで叩く）
+          echo "[ops-alert] dryrun success"
