@@ -63,3 +63,4 @@ jobs:
           echo "$RESPONSE" | jq -e '.dryRun == true' || exit 1
           echo "ops-alert dryRun test passed"
 
+

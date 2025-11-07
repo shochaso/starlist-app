@@ -76,3 +76,4 @@ order by 1 desc;
 comment on table public.ops_metrics is 'OPS telemetry metrics storage';
 comment on view public.v_ops_5min is '5-minute aggregated telemetry metrics';
 
+

@@ -3,6 +3,9 @@
 // Spec-State:: 確定済み
 // Last-Updated:: 2025-11-07
 
+// Sentinel value for copyWith to distinguish between null and undefined
+const _undefined = Object();
+
 /// Time series data point from v_ops_5min view
 class OpsMetricsSeriesPoint {
   final DateTime bucketStart;
@@ -54,15 +57,15 @@ class OpsMetricsFilter {
   });
 
   OpsMetricsFilter copyWith({
-    String? env,
-    String? app,
-    String? eventType,
+    Object? env = _undefined,
+    Object? app = _undefined,
+    Object? eventType = _undefined,
     int? sinceMinutes,
   }) {
     return OpsMetricsFilter(
-      env: env ?? this.env,
-      app: app ?? this.app,
-      eventType: eventType ?? this.eventType,
+      env: env == _undefined ? this.env : env as String?,
+      app: app == _undefined ? this.app : app as String?,
+      eventType: eventType == _undefined ? this.eventType : eventType as String?,
       sinceMinutes: sinceMinutes ?? this.sinceMinutes,
     );
   }
@@ -103,4 +106,5 @@ class OpsMetricsKpi {
     );
   }
 }
+
 

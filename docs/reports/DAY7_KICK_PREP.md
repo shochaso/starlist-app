@@ -34,3 +34,4 @@
 - fl_chart 追加後の `flutter pub get` 実施をPR本文に明記
 - `/ops` 空データ系の回帰はスクショで担保（empty/data 両パターン）
 
+

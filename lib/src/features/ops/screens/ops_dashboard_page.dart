@@ -8,7 +8,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
 import '../providers/ops_metrics_provider.dart';
-import '../models/ops_metrics_model.dart';
 import '../models/ops_metrics_series_model.dart';
 
 class OpsDashboardPage extends ConsumerStatefulWidget {
@@ -23,6 +22,7 @@ class _OpsDashboardPageState extends ConsumerState<OpsDashboardPage> {
   String? _selectedApp;
   String? _selectedEvent;
   int _selectedMinutes = 30;
+  bool _autoRefreshListenerRegistered = false;
 
   @override
   void initState() {
@@ -35,12 +35,18 @@ class _OpsDashboardPageState extends ConsumerState<OpsDashboardPage> {
 
   @override
   Widget build(BuildContext context) {
-    // Auto-refresh trigger (30 seconds)
-    ref.listen(opsMetricsAutoRefreshProvider, (previous, next) {
-      next.whenData((_) {
-        ref.refresh(opsMetricsSeriesProvider);
+    // Auto-refresh trigger (30 seconds) - register once
+    // Note: ref.listen() automatically cancels previous listeners on rebuild
+    if (!_autoRefreshListenerRegistered) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ref.listen(opsMetricsAutoRefreshProvider, (previous, next) {
+          next.whenData((_) {
+            ref.refresh(opsMetricsSeriesProvider); // ignore: unused_result
+          });
+        });
+        _autoRefreshListenerRegistered = true;
       });
-    });
+    }
 
     final seriesAsync = ref.watch(opsMetricsSeriesProvider);
     final kpi = ref.watch(opsMetricsKpiProvider);
@@ -52,14 +58,14 @@ class _OpsDashboardPageState extends ConsumerState<OpsDashboardPage> {
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () {
-              ref.refresh(opsMetricsSeriesProvider);
+              ref.refresh(opsMetricsSeriesProvider); // ignore: unused_result
             },
           ),
         ],
       ),
       body: RefreshIndicator(
         onRefresh: () async {
-          ref.refresh(opsMetricsSeriesProvider);
+          ref.refresh(opsMetricsSeriesProvider); // ignore: unused_result
         },
         child: seriesAsync.when(
           data: (series) {
@@ -103,7 +109,7 @@ class _OpsDashboardPageState extends ConsumerState<OpsDashboardPage> {
             Row(
               children: [
                 Expanded(
-                  child: DropdownButtonFormField<String>(
+                  child: DropdownButtonFormField<String?>(
                     value: _selectedEnv,
                     decoration: const InputDecoration(
                       labelText: 'Environment',
@@ -111,10 +117,10 @@ class _OpsDashboardPageState extends ConsumerState<OpsDashboardPage> {
                       isDense: true,
                     ),
                     items: const [
-                      DropdownMenuItem(value: null, child: Text('All')),
-                      DropdownMenuItem(value: 'dev', child: Text('Dev')),
-                      DropdownMenuItem(value: 'stg', child: Text('Staging')),
-                      DropdownMenuItem(value: 'prod', child: Text('Production')),
+                      DropdownMenuItem<String?>(value: null, child: Text('All')),
+                      DropdownMenuItem<String?>(value: 'dev', child: Text('Dev')),
+                      DropdownMenuItem<String?>(value: 'stg', child: Text('Staging')),
+                      DropdownMenuItem<String?>(value: 'prod', child: Text('Production')),
                     ],
                     onChanged: (value) {
                       setState(() {
@@ -126,7 +132,7 @@ class _OpsDashboardPageState extends ConsumerState<OpsDashboardPage> {
                 ),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: DropdownButtonFormField<String>(
+                  child: DropdownButtonFormField<String?>(
                     value: _selectedApp,
                     decoration: const InputDecoration(
                       labelText: 'App',
@@ -134,8 +140,8 @@ class _OpsDashboardPageState extends ConsumerState<OpsDashboardPage> {
                       isDense: true,
                     ),
                     items: const [
-                      DropdownMenuItem(value: null, child: Text('All')),
-                      DropdownMenuItem(value: 'starlist', child: Text('Starlist')),
+                      DropdownMenuItem<String?>(value: null, child: Text('All')),
+                      DropdownMenuItem<String?>(value: 'starlist', child: Text('Starlist')),
                     ],
                     onChanged: (value) {
                       setState(() {
@@ -147,7 +153,7 @@ class _OpsDashboardPageState extends ConsumerState<OpsDashboardPage> {
                 ),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: DropdownButtonFormField<String>(
+                  child: DropdownButtonFormField<String?>(
                     value: _selectedEvent,
                     decoration: const InputDecoration(
                       labelText: 'Event',
@@ -155,10 +161,10 @@ class _OpsDashboardPageState extends ConsumerState<OpsDashboardPage> {
                       isDense: true,
                     ),
                     items: const [
-                      DropdownMenuItem(value: null, child: Text('All')),
-                      DropdownMenuItem(value: 'search.sla_missed', child: Text('Search SLA')),
-                      DropdownMenuItem(value: 'auth.login.success', child: Text('Auth Login')),
-                      DropdownMenuItem(value: 'rls.access.denied', child: Text('RLS Denied')),
+                      DropdownMenuItem<String?>(value: null, child: Text('All')),
+                      DropdownMenuItem<String?>(value: 'search.sla_missed', child: Text('Search SLA')),
+                      DropdownMenuItem<String?>(value: 'auth.login.success', child: Text('Auth Login')),
+                      DropdownMenuItem<String?>(value: 'rls.access.denied', child: Text('RLS Denied')),
                     ],
                     onChanged: (value) {
                       setState(() {
