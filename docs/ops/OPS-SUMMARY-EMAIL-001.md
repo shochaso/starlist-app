@@ -1,0 +1,104 @@
+Status:: planned  
+Source-of-Truth:: docs/ops/OPS-SUMMARY-EMAIL-001.md  
+Spec-State:: 確定済み（週次レポート自動送信）  
+Last-Updated:: 2025-11-07
+
+# OPS-SUMMARY-EMAIL-001 — OPS Summary Email仕様
+
+Status: planned  
+Last-Updated: 2025-11-07  
+Source-of-Truth: Edge Functions (`supabase/functions/ops-summary-email/`) + GitHub Actions (`.github/workflows/ops-summary-email.yml`)
+
+> 責任者: ティム（COO/PM）／実装: SRE/データチーム
+
+## 1. 目的
+
+- Day8で実装したOPS Health Dashboardのデータを週次レポートとして自動送信する。
+- 毎週月曜09:00 JSTにHTMLメールを自動生成・送信し、サービスの健全性を定期的に報告する。
+- 「収集 → 可視化 → アラート表示 → ヘルスチェック → レポート」のサイクルを完成させる。
+
+## 2. スコープ
+
+- **Edge Function**: `ops-summary-email`新設（週次レポート生成）
+- **GitHub Actions**: 週次スケジュール実行（毎週月曜09:00 JST）
+- **HTMLテンプレート**: 稼働率・平均応答時間・異常率を可視化
+- **メール送信**: SendGrid/Resend等のメールAPI連携
+
+## 3. 仕様要点
+
+### 3.1 Edge Function `ops-summary-email`
+
+#### 3.1.1 機能
+
+- 直近7日間のデータを集計
+- `ops-health` Edge Functionまたは直接DBクエリでメトリクス取得
+- HTMLテンプレートを生成
+- dryRunモードでプレビュー可能
+
+#### 3.1.2 出力指標
+
+- **Uptime %**: 稼働率（100 - failure_rate）
+- **Mean P95 Latency**: 平均P95遅延（ms）
+- **Alert Count**: アラート件数
+- **Alert Trend**: 前週比（↑/↓/→）
+
+### 3.2 GitHub Actionsワークフロー
+
+#### 3.2.1 スケジュール
+
+- 毎週月曜09:00 JST実行（UTC 0:00）
+- `workflow_dispatch`で手動実行も可能
+
+#### 3.2.2 実行モード
+
+- **DryRun**: 手動実行時はHTMLプレビューを返却
+- **Production**: スケジュール実行時はメール送信
+
+### 3.3 HTMLテンプレート
+
+- シンプルなHTMLメール形式
+- メトリクスをカード形式で表示
+- トレンドを色分け表示（緑=改善、赤=悪化）
+
+## 4. 実装詳細
+
+### 4.1 Edge Function実装
+
+- 期間指定（デフォルト7日間）
+- メトリクス集計（uptime, mean p95, alert count）
+- HTMLテンプレート生成
+- dryRunモード対応
+
+### 4.2 GitHub Actions実装
+
+- 週次スケジュール設定
+- 手動実行対応（dryRun）
+- Secrets管理（SUPABASE_URL, SUPABASE_ANON_KEY, RESEND_API_KEY等）
+
+### 4.3 メール送信（TODO）
+
+- SendGrid/Resend等のメールAPI連携
+- HTMLメール送信
+- 送信先設定（環境変数または設定ファイル）
+
+## 5. テスト観点
+
+- Edge Function `ops-summary-email`がdryRunモードでHTMLプレビューを返却すること
+- GitHub Actionsが週次スケジュールで実行されること
+- HTMLテンプレートが正しく生成されること
+- メール送信が正常に動作すること（実装後）
+
+## 6. 完了条件 (Day9)
+
+- Edge Function `ops-summary-email`を実装
+- GitHub Actionsワークフローを作成
+- HTMLテンプレートを生成
+- dryRunモードで動作確認
+- ドキュメント `OPS-SUMMARY-EMAIL-001.md`を完成
+
+## 7. 参考リンク
+
+- `docs/ops/OPS-HEALTH-DASHBOARD-001.md` - OPS Health Dashboard仕様
+- `docs/ops/OPS-ALERT-AUTOMATION-001.md` - OPS Alert Automation仕様
+- `supabase/functions/ops-health/index.ts` - ops-health Edge Function実装
+
