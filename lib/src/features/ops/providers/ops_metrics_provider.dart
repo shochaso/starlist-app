@@ -3,11 +3,75 @@
 // Spec-State:: 確定済み
 // Last-Updated:: 2025-11-07
 
+import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/config/supabase_client_provider.dart';
 import '../models/ops_metrics_model.dart';
+import '../models/ops_metrics_series_model.dart';
 
-/// Provider for OPS metrics
+/// Filter state provider
+final opsMetricsFilterProvider = StateProvider<OpsMetricsFilter>((ref) {
+  return const OpsMetricsFilter(sinceMinutes: 30);
+});
+
+/// Time series data provider (from v_ops_5min view)
+final opsMetricsSeriesProvider = FutureProvider<List<OpsMetricsSeriesPoint>>((ref) async {
+  final client = ref.read(supabaseClientProvider);
+  final filter = ref.watch(opsMetricsFilterProvider);
+  final now = DateTime.now();
+  final since = now.subtract(Duration(minutes: filter.sinceMinutes));
+
+  var query = client
+      .from('v_ops_5min')
+      .select()
+      .gte('bucket_5m', since.toUtc().toIso8601String())
+      .order('bucket_5m', ascending: true);
+
+  if (filter.env != null && filter.env!.isNotEmpty) {
+    query = query.eq('env', filter.env!);
+  }
+  if (filter.app != null && filter.app!.isNotEmpty) {
+    query = query.eq('app', filter.app!);
+  }
+  if (filter.eventType != null && filter.eventType!.isNotEmpty) {
+    query = query.eq('event', filter.eventType!);
+  }
+
+  final response = await query;
+  if (response.error != null) {
+    throw Exception('Failed to fetch metrics: ${response.error?.message}');
+  }
+  final data = (response.data ?? []) as List<dynamic>;
+  
+  return data.map((json) => OpsMetricsSeriesPoint.fromJson(json as Map<String, dynamic>)).toList();
+});
+
+/// KPI metrics provider (aggregated from series)
+final opsMetricsKpiProvider = Provider<OpsMetricsKpi>((ref) {
+  final seriesAsync = ref.watch(opsMetricsSeriesProvider);
+  return seriesAsync.when(
+    data: (series) => OpsMetricsKpi.fromSeries(series),
+    loading: () => OpsMetricsKpi(
+      totalRequests: 0,
+      errorCount: 0,
+      errorRate: 0.0,
+      p95LatencyMs: null,
+    ),
+    error: (_, __) => OpsMetricsKpi(
+      totalRequests: 0,
+      errorCount: 0,
+      errorRate: 0.0,
+      p95LatencyMs: null,
+    ),
+  );
+});
+
+/// Auto-refresh timer provider (30 seconds)
+final opsMetricsAutoRefreshProvider = StreamProvider<void>((ref) {
+  return Stream.periodic(const Duration(seconds: 30), (_) {});
+});
+
+/// Provider for OPS metrics (legacy - kept for backward compatibility)
 final opsMetricsProvider = FutureProvider<OpsMetrics>((ref) async {
   final client = ref.read(supabaseClientProvider);
   final now = DateTime.now();

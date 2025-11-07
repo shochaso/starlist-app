@@ -40,6 +40,7 @@ dependencies:
   http: ^1.2.1
   auth0_flutter: ^1.4.0
   mime: ^1.0.6
+  fl_chart: ^0.68.0
 
 dev_dependencies:
   flutter_test:

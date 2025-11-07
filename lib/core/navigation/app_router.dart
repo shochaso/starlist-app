@@ -8,6 +8,7 @@ import 'package:starlist_app/features/login/screens/password_reset_screen.dart';
 // import 'package:starlist_app/screens/style_guide_page.dart'; // 一時的にコメントアウト
 import 'package:starlist_app/screens/star_data_view_page.dart';
 import 'package:starlist_app/features/star_data/domain/category.dart';
+import 'package:starlist_app/src/features/ops/screens/ops_dashboard_page.dart';
 import 'package:starlist_app/features/registration/presentation/screens/1_follower_check_screen.dart';
 import 'package:starlist_app/features/registration/presentation/screens/2_basic_info_screen.dart';
 import 'package:starlist_app/features/registration/presentation/screens/3_profile_info_screen.dart';
@@ -101,6 +102,11 @@ GoRouter createAppRouter() {
       GoRoute(
         path: '/settings',
         builder: (context, state) => const SettingsScreen(),
+      ),
+      GoRoute(
+        path: '/ops',
+        name: 'ops_dashboard',
+        builder: (context, state) => const OpsDashboardPage(),
       ),
       GoRoute(
         path: '/stars/:username/data',
