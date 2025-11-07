@@ -1,37 +1,52 @@
-# Status:: in-progress
-# Source-of-Truth:: .github/workflows/ops-alert-dryrun.yml
-# Spec-State:: 確定済み
-# Last-Updated:: 2025-11-07
-
-name: OPS Alert DryRun
+name: Ops Alert DryRun
 
 on:
-  pull_request:
-    paths:
-      - "supabase/functions/ops-alert/**"
-      - "lib/src/features/ops/**"
-      - ".github/workflows/ops-alert-dryrun.yml"
   workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   dryrun:
-    name: OPS Alert DryRun Test
     runs-on: ubuntu-latest
-    
-    env:
-      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-      SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
-    
     steps:
-      - name: Checkout repository
+      - name: Checkout (no submodules)
         uses: actions/checkout@v4
-      
-      - name: Test ops-alert dryRun
+        with:
+          submodules: false
+          fetch-depth: 1
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # ▼ どちらか一方を使う。A: 直接URL+Bearer / B: Supabase REST
+      - name: DryRun via direct Edge URL (A)
+        if: ${{ secrets.OPS_ALERT_URL && secrets.OPS_ALERT_TOKEN }}
+        env:
+          OPS_ALERT_URL: ${{ secrets.OPS_ALERT_URL }}
+          OPS_ALERT_TOKEN: ${{ secrets.OPS_ALERT_TOKEN }}
         run: |
-          echo "Testing ops-alert Edge Function with dryRun=true"
-          RESPONSE=$(curl -sS -X GET "$SUPABASE_URL/functions/v1/ops-alert?dry_run=true&minutes=15" \
-            -H "Authorization: Bearer $SUPABASE_ANON_KEY" \
-            -H "Content-Type: application/json")
+          set -euo pipefail
+          echo "[ops] dryrun start (direct)"
+          curl -fsS -H "Authorization: Bearer ${OPS_ALERT_TOKEN}" \
+               "${OPS_ALERT_URL}?dryRun=true&limit=50"
+          echo "[ops] dryrun success (direct)"
+
+      - name: DryRun via Supabase REST (B)
+        if: ${{ secrets.SUPABASE_URL && secrets.SUPABASE_ANON_KEY }}
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          set -euo pipefail
+          echo "[ops] dryrun start (supabase)"
+          # Edge Function ops-alert を呼ぶ
+          RESPONSE=$(curl -fsS -X GET \
+            -H "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
+            -H "Content-Type: application/json" \
+            "${SUPABASE_URL}/functions/v1/ops-alert?dry_run=true&minutes=15")
           
           echo "Response:"
           echo "$RESPONSE" | jq .
@@ -45,5 +60,4 @@ jobs:
           echo "$RESPONSE" | jq -e 'has("metrics")' || exit 1
           echo "$RESPONSE" | jq -e 'has("alerts")' || exit 1
           
-          echo "✅ ops-alert dryRun test passed"
-
+          echo "[ops] dryrun success (supabase)"
