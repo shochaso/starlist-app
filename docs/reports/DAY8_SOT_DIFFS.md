@@ -86,6 +86,17 @@ CI緑化後、**Squash & merge実行 → Day9フェーズへ移行可能。**
 
 ---
 
+### 🧪 Day8 DryRun 実行結果（Ops Health）
+
+- Run ID: （実行後に追記）
+- ブランチ: feature/day8-ops-health-dashboard
+- 実行時刻(JST): （実行後に追記）
+- 呼び出し経路: （Direct Edge / Supabase REST）
+- 成功ログ抜粋: （実行後に追記）
+- 備考: submodules無効化、Secrets経由で認証通過、jqインストール追加
+
+---
+
 ## 2025-11-07: Day8 OPS Health Dashboard 実装完了
 
 - Spec: `docs/ops/OPS-HEALTH-DASHBOARD-001.md`
