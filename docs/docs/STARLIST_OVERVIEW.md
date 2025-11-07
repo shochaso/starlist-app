@@ -106,7 +106,7 @@ Starlist の全体像を短時間で共有するためのテンプレートで�
 
 ## 関連ドキュメント一覧
 
-- `docs/COMMON_DOCS_INDEX.md` … ドキュメント目次。
+- `docs/overview/COMMON_DOCS_INDEX.md` … ドキュメント目次。
 - `docs/COMPANY_SETUP_GUIDE.md` … オンボーディング手順（雛形）。
 - `docs/development/DEVELOPMENT_GUIDE.md` … 開発環境構築。
 - `docs/features/payment_current_state.md` … 決済実装の現状。

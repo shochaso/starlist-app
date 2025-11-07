@@ -7,7 +7,7 @@ Starlist 関連の情報を ChatGPT などの生成 AI に共有するときの�
 ## 1. 共有の目的を整理する
 
 1. **目的の明示**: 相談したい内容（例: 決済機能の改修案、API 設計レビュー）を冒頭で一言添える。  
-2. **プロジェクト概要**: `docs/COMMON_DOCS_INDEX.md` の概要を最初に提示し、リポジトリ構造と関連資料の位置づけを伝える。  
+2. **プロジェクト概要**: `docs/overview/COMMON_DOCS_INDEX.md` の概要を最初に提示し、リポジトリ構造と関連資料の位置づけを伝える。  
 3. **対象領域**: どの領域（フロントエンド／バックエンド／Supabase／データ連携 etc.）の情報が必要かを具体的に記載する。
 
 ---
@@ -16,11 +16,11 @@ Starlist 関連の情報を ChatGPT などの生成 AI に共有するときの�
 
 | 目的 | 推奨ファイル |
 | --- | --- |
-| リポジトリ全体の把握 | `docs/COMMON_DOCS_INDEX.md`, `docs/README.md` |
+| リポジトリ全体の把握 | `docs/overview/COMMON_DOCS_INDEX.md`, `docs/README.md` |
 | 開発フロー・環境構築 | `docs/development/DEVELOPMENT_GUIDE.md`, `docs/development/ICON_MANAGEMENT.md` |
 | 決済機能の現状 | `docs/features/payment_current_state.md`, `docs/api/PAYMENT_SYSTEM_INTEGRATION_STRATEGY.md` |
 | データ取り込み／ファイル運用 | `docs/reports/COMPLETE_FILE_MANAGEMENT_GUIDE.md`, `docs/planning/Starlist まとめ.md` |
-| ビジネス・タスクの背景 | `docs/planning/Task.md`, `docs/business/starlist_monetization_plan.md` など必要なもの |
+| ビジネス・タスクの背景 | `docs/planning/Task.md`, `guides/business/starlist_monetization_plan.md` など必要なもの |
 | 法的文書の参照 | `docs/legal/` 配下の各種ポリシー |
 
 > **Tip:** ファイルが多い場合は、関連する部分のみ抜粋して貼り付けるか、ZIP でまとめてアップロードして「docs/features/ 以下を参照して」と指示すると効率的。

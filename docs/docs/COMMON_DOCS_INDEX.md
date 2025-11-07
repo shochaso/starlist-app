@@ -8,19 +8,19 @@ Starlist 関連リポジトリ／プロジェクトに共通して参照した�
 
 | 区分 | 主な内容 | 代表ディレクトリ／参照ドキュメント |
 | --- | --- | --- |
-| フロントエンド | Flutter 製クライアントアプリ全般。画面・ウィジェット・状態管理・テーマ・マルチプラットフォームビルド。 | ディレクトリ: `lib/`, `android/`, `ios/`, `macos/`, `linux/`, `windows/`, `web/` / 主要資料: `docs/development/DEVELOPMENT_GUIDE.md`, `docs/design/site_specification/` |
+| フロントエンド | Flutter 製クライアントアプリ全般。画面・ウィジェット・状態管理・テーマ・マルチプラットフォームビルド。 | ディレクトリ: `lib/`, `android/`, `ios/`, `macos/`, `linux/`, `windows/`, `web/` / 主要資料: `docs/development/DEVELOPMENT_GUIDE.md`, `docs/features/design/` |
 | Web 実行補助 | Chrome 実行スクリプト、BrowserSync 設定、Codex 用ユーティリティなどローカル開発支援。 | ディレクトリ: `scripts/`, `run_chrome.sh`, `bs-config.js` / 補足: `scripts/README.md` |
 | バックエンド | NestJS ベースの API／ジョブ処理・メディア変換・メトリクス収集。 | ディレクトリ: `server/src/`（`app.module.ts`, `ingest/`, `media/`, `metrics/` 等） / 主要資料: `docs/architecture/`, `docs/development/DEPLOYMENT_CHECKLIST.md` |
 | Supabase | DB スキーマ、RLS ポリシー、エッジ関数。 | ディレクトリ: `supabase/migrations/`, `supabase/functions/` / 主要資料: `docs/api/PAYMENT_SYSTEM_INTEGRATION_STRATEGY.md`, `supabase_setup.sql` |
 | データ連携・インポート | 外部サービスからの取り込み UI／解析／診断ロジック。 | ディレクトリ: `lib/src/features/data_integration/`, `lib/src/features/ingest/`, `lib/src/features/import_diagnose/` / 主要資料: `docs/reports/COMPLETE_FILE_MANAGEMENT_GUIDE.md`, `docs/planning/Starlist まとめ.md` |
-| ビジネス・運用 | 事業計画、タスク管理、運用ガイドライン。 | ディレクトリ: `docs/business/`, `docs/planning/`, `docs/ops/`, `docs/tasks.md` |
-| ドキュメント群 | 設計／運用／ビジネス資料。 | ディレクトリ: `docs/`（本ファイルを含む） |
+| ビジネス・運用 | 事業計画、タスク管理、運用ガイドライン。 | ディレクトリ: `guides/business/`, `docs/planning/`, `docs/ops/`, `docs/journal/tasks.md` |
+| ドキュメント群 | 設計／運用／ビジネス資料。 | ディレクトリ: `docs/overview/`, `docs/features/`, `docs/architecture/`, `docs/development/`, `docs/ops/`, `docs/planning/`, `docs/reports/`, `guides/` |
 | 旧資料 | 旧版ドキュメント／過去の成果物アーカイブ。 | ディレクトリ: `repository/` |
 
 ### 1.1 フロントエンド詳細
 - **モジュール構成**: `lib/src/` に `features/`, `services/`, `providers/`, `core/` を配置。Riverpod ベースの状態管理と、`lib/widgets/` の UI コンポーネント群で構成。
 - **ターゲット**: モバイル・デスクトップ・Web に対応。Web 開発は `scripts/c.sh` で Chrome をキャッシュクリア後に起動。
-- **補足資料**: デザイン仕様は `docs/design/site_specification/`、ロゴ／アイコン管理は `docs/development/ICON_MANAGEMENT.md`。
+- **補足資料**: デザイン仕様は `docs/features/design/`、ロゴ／アイコン管理は `docs/development/ICON_MANAGEMENT.md`。
 
 ### 1.2 バックエンド（NestJS）詳細
 - **役割**: データ収集 (`server/src/ingest/`)、メディア処理 (`server/src/media/`)、ヘルスチェック (`server/src/health/`)、メトリクス提供 (`server/src/metrics/`) を担う。
@@ -38,11 +38,13 @@ Starlist 関連リポジトリ／プロジェクトに共通して参照した�
 - **補足資料**: `docs/reports/COMPLETE_FILE_MANAGEMENT_GUIDE.md` にファイル連携の全体像、旧資料 `docs/planning/Starlist まとめ.md` に要件記録。
 
 ### 1.5 ビジネス／運用ドキュメント詳細
-- **計画／タスク**: `docs/planning/Task.md`, `docs/planning/starlist_planning.md`, `docs/tasks.md`。
-- **ビジネス戦略**: `docs/business/` にポジショニング、マネタイズ、リスク分析など。
+- **計画／タスク**: `docs/planning/Task.md`, `docs/planning/starlist_planning.md`, `docs/journal/tasks.md`。
+- **ビジネス戦略**: `guides/business/` にポジショニング、マネタイズ、リスク分析など。
 - **運用レポート**: `docs/reports/`（例: `STARLIST_DEVELOPMENT_SUMMARY.md`, `MIGRATION_REPORT.md`）や `docs/ops/` の運用手順。
 - **ドキュメント共有運用**: Supabase Storage `doc-share` の手順は `docs/ops/supabase_byo_auth.md` の最後を参照。
 - **相関フロー（Mermaid）**: `docs/Mermaid.md` に主要ドキュメントの関係図（Mermaid）がある。
+- **監査イベント命名**: `auth.login.success/failure`, `auth.link.success`, `auth.reauth.triggered`, `auth.sync.dryrun`, `rls.access.denied`, `ops.subscription.price_set/price_changed/price_denied` で統一。
+- **Source of Truth原則**: Flutter実装を最優先とし、仕様は実装追従。RLS原則はSupabase AuthセッションとPostgres RLSを完全同期。
 
 ---
 
@@ -50,14 +52,14 @@ Starlist 関連リポジトリ／プロジェクトに共通して参照した�
 
 - `../README.md` … リポジトリ全体の概要とセットアップ要約。
 - `docs/README.md` … ドキュメント全体のフォルダ構成と利用ルール。
-- `docs/STARLIST_OVERVIEW.md` … プロジェクト全体像のサマリー。
+- `docs/overview/STARLIST_OVERVIEW.md` … プロジェクト全体像のサマリー。
 - `docs/COMPANY_SETUP_GUIDE.md` … アカウント発行・開発環境セットアップ手順。
 - `docs/development/DEVELOPMENT_GUIDE.md` … 開発環境構築と作業手順。
 - `docs/planning/Task.md` … 進行中のタスク一覧。
 - `docs/architecture/starlist_architecture_documentation.md.docx` … システム構成図と技術スタック（バイナリだが主要情報を保持）。
 - `docs/features/payment_current_state.md` … 現行の決済実装まとめ。
 - `docs/api/PAYMENT_SYSTEM_INTEGRATION_STRATEGY.md` … 決済連携の設計方針・DB スキーマ案。
-- `docs/design/site_specification/` … 画面仕様とコンポーネント指針。
+- `docs/features/design/` … 画面仕様とコンポーネント指針。
 - `docs/legal/` 配下 … 利用規約・プライバシーポリシーなど外部公開文書。
 
 （必要に応じて新しい資料を追加し、このリストを更新してください。）
@@ -86,6 +88,8 @@ Starlist 関連リポジトリ／プロジェクトに共通して参照した�
    - 廃止した資料は `repository/` などアーカイブフォルダに移動し、現行版との混在を避ける。
 4. **タグ・検索性**  
    - 冒頭に目的や最終更新日を入れ、目次やリンクで相互参照しやすくする。
+5. **配置ルール**  
+   - 仕様は `docs/features/`、運用は `docs/ops/`、図は `docs/architecture/`、読み物は `guides/` へ配置する。
 
 ---
 

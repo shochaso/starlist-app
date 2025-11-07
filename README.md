@@ -1,3 +1,6 @@
+![Docs Link Check](https://github.com/shochaso/starlist-app/actions/workflows/docs-link-check.yml/badge.svg)
+![QA E2E](https://github.com/shochaso/starlist-app/actions/workflows/qa-e2e.yml/badge.svg)
+
 **Starlist アプリ 要件定義書**
 
 **この要件定義書は、Starlistアプリの開発指針を体系的にまとめたものです。プロジェクト概要から技術スタック、差別化戦略までを網羅しています。**
