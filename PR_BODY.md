@@ -1,4 +1,4 @@
-feat(ops): Day6 OPS Dashboard filters+charts+auto-refresh
+feat(ops): Day6 OPS Dashboard — filters, KPIs, p95 line, stacked bars, auto-refresh
 
 ## 概要
 
@@ -85,3 +85,37 @@ Day6の実装スコープを完了。OPS Dashboard UI拡張により、フィル
 * Reviewer: @pm-tim
 * Labels: `area:ops`, `type:feature`, `day6`
 * Breakings: なし
+
+---
+
+## Screenshots (JST / Asia/Tokyo)
+
+* [ ] KPI cards（Total/Err%/p95/Errors）
+* [ ] p95 line (5m buckets)
+* [ ] Stacked bars (success/error)
+* [ ] Filters row（env/app/event/period）
+* [ ] Empty state / Error state（retry）
+
+## Manual QA
+
+* ✅ フィルタ変更 ≤ **5s** 再描画
+* ✅ Pull-to-refresh → KPI更新
+* ✅ 30s 自動リフレッシュ作動（インジケータOK）
+* ✅ オフライン → トースト＋リトライ復帰
+* ✅ 折れ線×棒の **同期スクロール**
+* ✅ X軸 **JST** 表示
+
+## Docs Updated
+
+* `docs/ops/OPS-MONITORING-002.md` → **Status: verified** / CodeRefs更新
+* `docs/reports/DAY5_SOT_DIFFS.md` → Day6差分追記
+* `docs/Mermaid.md` → `/ops` ノード追加
+* `docs/docs/COMMON_DOCS_INDEX.md` → 機能マップに「OPS Dashboard（β）」
+
+## Risks / Follow-ups (Day7)
+
+* 期間拡張（2h/6h/24h）＋ **downsample**
+* `ops-alert` → Slack通知連携
+* しきい値のUI表示（p95窓/Err%定義）
+* CSV/JSONエクスポート
+* Provider/Widget 追加テスト
