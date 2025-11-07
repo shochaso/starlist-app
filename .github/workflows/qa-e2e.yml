@@ -1,0 +1,19 @@
+name: QA E2E
+
+on:
+  workflow_dispatch:
+
+jobs:
+  qa-e2e:
+    runs-on: ubuntu-latest
+    env:
+      TELEMETRY_URL: ${{ secrets.TELEMETRY_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Post sample telemetry
+        run: |
+          curl -sS -X POST "$TELEMETRY_URL/telemetry" \
+            -H "Content-Type: application/json" \
+            -d '{"app":"starlist","env":"stg","event":"ping","ok":true,"latency_ms":123}'
+      - name: Ops alert dryRun
+        run: curl -sS "$TELEMETRY_URL/ops-alert" | grep '"dryRun":true'

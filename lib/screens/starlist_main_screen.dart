@@ -652,10 +652,19 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
                 _buildDrawerItem(Icons.home, 'ホーム', 0, null),
                 _buildDrawerItem(Icons.search, '検索', 1, null),
                 _buildDrawerItem(Icons.star, 'マイリスト', 3, null),
-                if (currentUser.isStar) ...[
-                  _buildDrawerItem(Icons.camera_alt, 'データ取込み', 2, null),
-                  _buildDrawerItem(Icons.analytics, 'ダッシュボード', -1, 'dashboard'),
-                ],
+                AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 250),
+                  child: currentUser.isStar
+                      ? Column(
+                          key: const ValueKey('drawer_star_section'),
+                          children: [
+                            _buildDrawerItem(Icons.camera_alt, 'データ取込み', 2, null),
+                            _buildDrawerItem(Icons.analytics, 'ダッシュボード', -1, 'dashboard'),
+                            _buildDrawerItem(Icons.monitor_heart, 'OPS Dashboard', -1, 'ops_dashboard'),
+                          ],
+                        )
+                      : const SizedBox.shrink(),
+                ),
                 _buildDrawerItem(Icons.person, 'マイページ', 4, null),
                 if (currentUser.isFan) ...[
                   _buildDrawerItem(Icons.credit_card, '課金プラン', -1, 'subscription'),
@@ -781,6 +790,9 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
         Navigator.of(context).push(
           MaterialPageRoute(builder: (context) => const StarDashboardScreen()),
         );
+        return;
+      case 'ops_dashboard':
+        if (mounted) context.go('/ops');
         return;
       case 'subscription':
         Navigator.of(context).push(
