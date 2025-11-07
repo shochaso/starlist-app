@@ -84,16 +84,26 @@ serve(async (req) => {
       ? latencies.sort((a, b) => a - b)[Math.floor(latencies.length * 0.95)]
       : null;
 
-    // 閾値チェック（例: 失敗率10%以上、p95遅延500ms以上）
-    const failureThreshold = 10.0; // 10%
-    const latencyThreshold = 500; // 500ms
+    // 閾値チェック（環境変数から取得、デフォルト値あり）
+    const failureThreshold = Number(Deno.env.get("FAILURE_RATE_THRESHOLD")) || 10.0; // 10%
+    const latencyThreshold = Number(Deno.env.get("P95_LATENCY_THRESHOLD")) || 500; // 500ms
 
-    const alerts: string[] = [];
+    const alerts: Array<{ type: string; message: string; value: number; threshold: number }> = [];
     if (failureRate >= failureThreshold) {
-      alerts.push(`High failure rate: ${failureRate.toFixed(2)}% (threshold: ${failureThreshold}%)`);
+      alerts.push({
+        type: "failure_rate",
+        message: `High failure rate: ${failureRate.toFixed(2)}%`,
+        value: failureRate,
+        threshold: failureThreshold,
+      });
     }
     if (p95Latency != null && p95Latency >= latencyThreshold) {
-      alerts.push(`High p95 latency: ${p95Latency}ms (threshold: ${latencyThreshold}ms)`);
+      alerts.push({
+        type: "p95_latency",
+        message: `High p95 latency: ${p95Latency}ms`,
+        value: p95Latency,
+        threshold: latencyThreshold,
+      });
     }
 
     const result = {
@@ -112,8 +122,6 @@ serve(async (req) => {
     if (dryRun) {
       console.log("[ops-alert] dryRun result:", JSON.stringify(result, null, 2));
     } else {
-      // 本番時はSlack Webhook等に通知
-      // TODO: Slack通知実装
       console.log("[ops-alert] Alerts detected:", alerts);
     }
 

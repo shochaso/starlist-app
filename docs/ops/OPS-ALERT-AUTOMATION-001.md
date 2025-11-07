@@ -1,6 +1,6 @@
 Status:: planned  
 Source-of-Truth:: docs/ops/OPS-ALERT-AUTOMATION-001.md  
-Spec-State:: 確定済み（Slack通知・Recent Alerts・CI検証）  
+Spec-State:: 確定済み（Recent Alerts・CI検証）  
 Last-Updated:: 2025-11-07
 
 # OPS-ALERT-AUTOMATION-001 — OPS Alert Automation仕様
@@ -13,52 +13,32 @@ Source-of-Truth: Edge Functions (`supabase/functions/ops-alert/`) + Flutter (`li
 
 ## 1. 目的
 
-- Day6で実装したOPS Dashboardにアラート通知機能を追加し、「収集 → 可視化 → 通知」の三位一体サイクルを完成させる。
-- 閾値超過時にSlack通知を自動送信し、FlutterダッシュボードでRecent Alertsを表示する。
-- CIでダミーアラートを自動検証し、通知パイプラインの動作を保証する。
+- Day6で実装したOPS Dashboardにアラート表示機能を追加し、「収集 → 可視化 → アラート表示」のサイクルを完成させる。
+- 閾値超過時にアラート情報を返却し、FlutterダッシュボードでRecent Alertsを表示する。
+- CIでダミーアラートを自動検証し、アラート検出パイプラインの動作を保証する。
 
 ## 2. スコープ
 
-- **Edge Function**: `ops-alert` の拡張（Slack Webhook連携）
+- **Edge Function**: `ops-alert` の拡張（閾値監視の強化、アラート情報の詳細化）
 - **Flutter**: `/ops` ダッシュボード下部に「Recent Alerts」セクション追加
 - **CI**: `ops-alert-dryrun.yml` にてダミー通知を自動検証
-- **Docs**: 検証手順・通知ペイロード仕様を文書化
+- **Docs**: 検証手順・アラートペイロード仕様を文書化
 
 ## 3. 仕様要点
 
 ### 3.1 Edge Function `ops-alert` 拡張
 
-#### 3.1.1 Slack通知連携
-
-- 環境変数: `SLACK_WEBHOOK_URL` を設定
-- 閾値超過時にSlack WebhookにPOSTリクエストを送信
-- 通知ペイロード形式:
-
-```json
-{
-  "text": "🚨 OPS Alert",
-  "blocks": [
-    {
-      "type": "section",
-      "text": {
-        "type": "mrkdwn",
-        "text": "*Alert Type:* High failure rate\n*Value:* 12.5%\n*Threshold:* 10.0%\n*Period:* 15 minutes"
-      }
-    }
-  ]
-}
-```
-
-#### 3.1.2 閾値監視
+#### 3.1.1 閾値監視の強化
 
 - **失敗率**: デフォルト10.0%（環境変数 `FAILURE_RATE_THRESHOLD` で設定可能）
 - **P95遅延**: デフォルト500ms（環境変数 `P95_LATENCY_THRESHOLD` で設定可能）
 - 監視期間: デフォルト15分（`minutes` パラメータで設定可能）
 
-#### 3.1.3 アラート履歴の保存
+#### 3.1.2 アラート情報の詳細化
 
-- `ops_alerts` テーブルにアラート履歴を保存（オプション）
-- 保存項目: `alerted_at`, `alert_type`, `value`, `threshold`, `period_minutes`
+- アラート種別（failure_rate/p95_latency）を明確に識別
+- アラート値と閾値を詳細に返却
+- レスポンス形式を統一
 
 ### 3.2 Flutter「Recent Alerts」セクション
 
@@ -88,35 +68,14 @@ Source-of-Truth: Edge Functions (`supabase/functions/ops-alert/`) + Flutter (`li
 
 ### 4.1 Edge Function拡張
 
-#### 4.1.1 Slack通知実装
+#### 4.1.1 アラート情報の詳細化
 
-```typescript
-// supabase/functions/ops-alert/index.ts
-const slackWebhookUrl = Deno.env.get("SLACK_WEBHOOK_URL");
-
-if (!dryRun && alerts.length > 0 && slackWebhookUrl) {
-  const slackPayload = {
-    text: "🚨 OPS Alert",
-    blocks: alerts.map(alert => ({
-      type: "section",
-      text: {
-        type: "mrkdwn",
-        text: `*${alert}*\n*Period:* ${minutes} minutes`
-      }
-    }))
-  };
-  
-  await fetch(slackWebhookUrl, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(slackPayload)
-  });
-}
-```
+- アラート種別（failure_rate/p95_latency）を明確に識別
+- アラート値と閾値を詳細に返却
+- レスポンス形式を統一
 
 #### 4.1.2 環境変数
 
-- `SLACK_WEBHOOK_URL`: Slack Webhook URL（オプション）
 - `FAILURE_RATE_THRESHOLD`: 失敗率閾値（デフォルト: 10.0）
 - `P95_LATENCY_THRESHOLD`: P95遅延閾値（デフォルト: 500）
 
@@ -217,16 +176,16 @@ jobs:
 
 ## 5. テスト観点
 
-- `ops-alert` Edge Functionが閾値超過時にSlack通知を送信すること
-- `dryRun=true` の場合は通知を送信しないこと
+- `ops-alert` Edge Functionが閾値超過時にアラート情報を正しく返却すること
+- `dryRun=true` の場合はアラート検出のみで通知は送信しないこと
 - FlutterダッシュボードでRecent Alertsが正しく表示されること
 - CIでダミーアラートが正しく検出されること
 
 ## 6. 完了条件 (Day7)
 
-- Edge Function `ops-alert` にSlack通知連携を実装
+- Edge Function `ops-alert` でアラート情報を詳細に返却
 - Flutter `/ops` ダッシュボードに「Recent Alerts」セクションを追加
-- CI `ops-alert-dryrun.yml` でダミー通知を自動検証
+- CI `ops-alert-dryrun.yml` でダミーアラートを自動検証
 - ドキュメント `OPS-ALERT-AUTOMATION-001.md` を完成
 
 ## 7. 検証手順
@@ -251,27 +210,33 @@ jobs:
 2. `ops-alert-dryrun.yml` が自動実行されることを確認
 3. ダミーアラートが正しく検出されることを確認
 
-## 8. 通知ペイロード仕様
+## 8. アラートペイロード仕様
 
-### 8.1 Slack通知フォーマット
+### 8.1 Edge Functionレスポンス形式
 
 ```json
 {
-  "text": "🚨 OPS Alert",
-  "blocks": [
+  "ok": true,
+  "dryRun": false,
+  "period_minutes": 15,
+  "metrics": {
+    "total": 1000,
+    "failures": 125,
+    "failure_rate": "12.50",
+    "p95_latency_ms": 650
+  },
+  "alerts": [
     {
-      "type": "section",
-      "text": {
-        "type": "mrkdwn",
-        "text": "*Alert Type:* High failure rate\n*Value:* 12.5%\n*Threshold:* 10.0%\n*Period:* 15 minutes\n*Environment:* production"
-      }
+      "type": "failure_rate",
+      "message": "High failure rate: 12.50%",
+      "value": 12.5,
+      "threshold": 10.0
     },
     {
-      "type": "section",
-      "text": {
-        "type": "mrkdwn",
-        "text": "*Alert Type:* High p95 latency\n*Value:* 650ms\n*Threshold:* 500ms\n*Period:* 15 minutes\n*Environment:* production"
-      }
+      "type": "p95_latency",
+      "message": "High p95 latency: 650ms",
+      "value": 650,
+      "threshold": 500
     }
   ]
 }

@@ -1,0 +1,49 @@
+# Status:: in-progress
+# Source-of-Truth:: .github/workflows/ops-alert-dryrun.yml
+# Spec-State:: 確定済み
+# Last-Updated:: 2025-11-07
+
+name: OPS Alert DryRun
+
+on:
+  pull_request:
+    paths:
+      - "supabase/functions/ops-alert/**"
+      - "lib/src/features/ops/**"
+      - ".github/workflows/ops-alert-dryrun.yml"
+  workflow_dispatch:
+
+jobs:
+  dryrun:
+    name: OPS Alert DryRun Test
+    runs-on: ubuntu-latest
+    
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Test ops-alert dryRun
+        run: |
+          echo "Testing ops-alert Edge Function with dryRun=true"
+          RESPONSE=$(curl -sS -X GET "$SUPABASE_URL/functions/v1/ops-alert?dry_run=true&minutes=15" \
+            -H "Authorization: Bearer $SUPABASE_ANON_KEY" \
+            -H "Content-Type: application/json")
+          
+          echo "Response:"
+          echo "$RESPONSE" | jq .
+          
+          # Verify dryRun flag
+          echo "$RESPONSE" | jq -e '.dryRun == true' || exit 1
+          
+          # Verify response structure
+          echo "$RESPONSE" | jq -e '.ok == true' || exit 1
+          echo "$RESPONSE" | jq -e '.period_minutes == 15' || exit 1
+          echo "$RESPONSE" | jq -e 'has("metrics")' || exit 1
+          echo "$RESPONSE" | jq -e 'has("alerts")' || exit 1
+          
+          echo "✅ ops-alert dryRun test passed"
+

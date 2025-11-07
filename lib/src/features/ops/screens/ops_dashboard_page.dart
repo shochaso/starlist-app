@@ -9,6 +9,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
 import '../providers/ops_metrics_provider.dart';
 import '../models/ops_metrics_series_model.dart';
+import '../models/ops_alert_model.dart';
 
 class OpsDashboardPage extends ConsumerStatefulWidget {
   const OpsDashboardPage({super.key});
@@ -448,6 +449,8 @@ class _OpsDashboardPageState extends ConsumerState<OpsDashboardPage> {
   }
 
   Widget _buildRecentAlerts(BuildContext context) {
+    final alertsAsync = ref.watch(opsRecentAlertsProvider);
+    
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -459,9 +462,52 @@ class _OpsDashboardPageState extends ConsumerState<OpsDashboardPage> {
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
-            const Text(
-              'Alert data will be integrated with ops-alert function',
-              style: TextStyle(color: Colors.grey),
+            alertsAsync.when(
+              data: (alerts) {
+                if (alerts.isEmpty) {
+                  return const Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: Text(
+                      'No alerts in the last 60 minutes',
+                      style: TextStyle(color: Colors.grey),
+                    ),
+                  );
+                }
+                return ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: alerts.length,
+                  itemBuilder: (context, index) {
+                    final alert = alerts[index];
+                    return ListTile(
+                      leading: Icon(
+                        alert.type == 'failure_rate' ? Icons.error : Icons.timer,
+                        color: Colors.red,
+                      ),
+                      title: Text(alert.message),
+                      subtitle: Text(
+                        'Value: ${alert.value.toStringAsFixed(2)}${alert.type == 'failure_rate' ? '%' : 'ms'} | Threshold: ${alert.threshold.toStringAsFixed(2)}${alert.type == 'failure_rate' ? '%' : 'ms'}',
+                        style: const TextStyle(fontSize: 12),
+                      ),
+                      trailing: Text(
+                        DateFormat('HH:mm').format(alert.alertedAt),
+                        style: const TextStyle(fontSize: 12, color: Colors.grey),
+                      ),
+                    );
+                  },
+                );
+              },
+              loading: () => const Padding(
+                padding: EdgeInsets.all(16.0),
+                child: Center(child: CircularProgressIndicator()),
+              ),
+              error: (error, stack) => Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Text(
+                  'Error loading alerts: $error',
+                  style: const TextStyle(color: Colors.red),
+                ),
+              ),
             ),
           ],
         ),

@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/config/supabase_client_provider.dart';
 import '../models/ops_metrics_model.dart';
 import '../models/ops_metrics_series_model.dart';
+import '../models/ops_alert_model.dart';
 
 /// Filter state provider
 final opsMetricsFilterProvider = StateProvider<OpsMetricsFilter>((ref) {
@@ -67,6 +68,50 @@ final opsMetricsKpiProvider = Provider<OpsMetricsKpi>((ref) {
 /// Auto-refresh timer provider (30 seconds)
 final opsMetricsAutoRefreshProvider = StreamProvider<void>((ref) {
   return Stream.periodic(const Duration(seconds: 30), (_) {});
+});
+
+/// Recent alerts provider (from ops-alert Edge Function)
+final opsRecentAlertsProvider = FutureProvider<List<OpsAlert>>((ref) async {
+  final client = ref.read(supabaseClientProvider);
+  
+  try {
+    // Call ops-alert Edge Function with dryRun=false to get current alerts
+    final response = await client.functions.invoke(
+      'ops-alert',
+      body: {
+        'dry_run': false,
+        'minutes': 60, // Check last 60 minutes
+      },
+    );
+
+    if (response.data == null) {
+      return [];
+    }
+
+    final data = response.data as Map<String, dynamic>;
+    final alerts = data['alerts'] as List<dynamic>?;
+    
+    if (alerts == null || alerts.isEmpty) {
+      return [];
+    }
+
+    // Convert to OpsAlert objects with current timestamp
+    final now = DateTime.now().toLocal();
+    return alerts.map((alertJson) {
+      final alert = alertJson as Map<String, dynamic>;
+      return OpsAlert(
+        type: alert['type'] as String,
+        message: alert['message'] as String,
+        value: (alert['value'] as num).toDouble(),
+        threshold: (alert['threshold'] as num).toDouble(),
+        alertedAt: now, // Use current time since Edge Function doesn't return timestamp
+      );
+    }).toList();
+  } catch (e) {
+    // If Edge Function call fails, return empty list
+    print('[opsRecentAlertsProvider] Error: $e');
+    return [];
+  }
 });
 
 /// Provider for OPS metrics (legacy - kept for backward compatibility)
