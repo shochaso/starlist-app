@@ -55,3 +55,9 @@
 | [SEC-RLS-TEST-001](features/__stubs__/SEC-RLS-TEST-001.spec.md) | source_of_truth | tests/rls/rls_e2e.spec.ts#L1-L220 | 2025-11-07 |
 | [PAY-POLICY-COMMON-001](features/__stubs__/PAY-POLICY-COMMON-001.spec.md) | source_of_truth | lib/features/payment/refund_policy.ts#L1-L50 | 2025-11-07 |
 
+
+| [ING-PIPE-CORE-001](features/__stubs__/ING-PIPE-CORE-001.spec.md) | source_of_truth | supabase/functions/ingest/index.ts#L1-L150 | 2025-11-07 |
+| [ING-OCR-IMAGE-002](features/__stubs__/ING-OCR-IMAGE-002.spec.md) | source_of_truth | supabase/functions/ocr/worker.ts#L1-L200 | 2025-11-07 |
+| [ING-SCREENSHOT-003](features/__stubs__/ING-SCREENSHOT-003.spec.md) | source_of_truth | lib/utils/phash.ts#L1-L80 | 2025-11-07 |
+| [ING-YT-PIPE-004](features/__stubs__/ING-YT-PIPE-004.spec.md) | source_of_truth | supabase/functions/ingest/retry.ts#L1-L100 | 2025-11-07 |
+
