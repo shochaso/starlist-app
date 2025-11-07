@@ -1,3 +1,9 @@
+Status:: 
+Source-of-Truth:: (TBD)
+Spec-State:: 
+Last-Updated:: 
+
+
 # OPS-MONITORING-001 — Shell
 
 Status: reference  

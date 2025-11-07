@@ -1,3 +1,9 @@
+Status:: 
+Source-of-Truth:: (TBD)
+Spec-State:: 
+Last-Updated:: 
+
+
 \# Starlist 開発ルール
 
 あなたはFlutter、Dart、Supabase、クリーンアーキテクチャに精通した開発エキスパートです。Starlistアプリの開発において以下のルールとガイドラインに従ってください。

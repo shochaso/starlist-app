@@ -1,3 +1,9 @@
+Status:: 
+Source-of-Truth:: (TBD)
+Spec-State:: 
+Last-Updated:: 
+
+
 # ドキュメント・コード同期完了レポート
 
 ## ✅ 実行日時

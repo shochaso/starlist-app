@@ -1,3 +1,9 @@
+Status:: 
+Source-of-Truth:: (TBD)
+Spec-State:: 
+Last-Updated:: 
+
+
 \# Starlistアプリ \[画面名\] 開発依頼
 
 \#\# 🎨 デザイン準拠  

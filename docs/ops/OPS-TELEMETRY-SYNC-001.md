@@ -1,3 +1,9 @@
+Status:: aligned-with-Flutter  
+Source-of-Truth:: supabase/migrations/20251107_ops_metrics.sql, supabase/functions/telemetry/index.ts, lib/src/features/ops/ops_telemetry.dart, lib/core/telemetry/prod_search_telemetry.dart  
+Spec-State:: 確定済み（DBスキーマ・Edge受口・Flutter送信ラッパ）/ 初期案（サンプリング戦略・しきい値）  
+Last-Updated:: 2025-11-07 
+
+
 # OPS-TELEMETRY-SYNC-001 — Telemetry実シンク仕様
 
 Status: draft  

@@ -1,3 +1,9 @@
+Status:: 
+Source-of-Truth:: (TBD)
+Spec-State:: 
+Last-Updated:: 
+
+
 # Starlist 開発・デザイン仕様書
 
 **🚀 Claude Code実行モード：制約なし継続開発**

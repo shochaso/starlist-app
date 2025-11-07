@@ -1,3 +1,9 @@
+Status:: 
+Source-of-Truth:: (TBD)
+Spec-State:: 
+Last-Updated:: 
+
+
 # UI-HOME-001 — Home / MyPage 統合UI仕様
 
 Status: aligned-with-Flutter  

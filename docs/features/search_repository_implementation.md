@@ -1,3 +1,9 @@
+Status:: 
+Source-of-Truth:: (TBD)
+Spec-State:: 
+Last-Updated:: 
+
+
 # Search Repository - Supabase Implementation
 
 ## 📋 Overview

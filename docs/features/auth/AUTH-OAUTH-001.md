@@ -1,3 +1,9 @@
+Status:: 
+Source-of-Truth:: (TBD)
+Spec-State:: 
+Last-Updated:: 
+
+
 # AUTH-OAUTH-001 — OAuth統合仕様（Supabase Auth + Google / Apple）
 
 Status: aligned-with-Flutter  

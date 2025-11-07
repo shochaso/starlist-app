@@ -1,3 +1,9 @@
+Status:: 
+Source-of-Truth:: (TBD)
+Spec-State:: 
+Last-Updated:: 
+
+
 # AUTH-OAUTH-001 Implementation & Review Kit
 
 `docs/features/auth/AUTH-OAUTH-001.md` を source_of_truth として運用するための **実装プロンプト**と**レビュー準備パッケージ**。マイン（実装担当）およびレビュワーはこのファイルを参照して即作業を開始できる。

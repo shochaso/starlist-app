@@ -1,3 +1,9 @@
+Status:: 
+Source-of-Truth:: (TBD)
+Spec-State:: 
+Last-Updated:: 
+
+
 # 実装済み機能一覧
 
 > 🔄 **自動生成**: このドキュメントは実際のDartコードから分析されています  

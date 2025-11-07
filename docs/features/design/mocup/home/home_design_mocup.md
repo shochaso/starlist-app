@@ -1,3 +1,9 @@
+Status:: 
+Source-of-Truth:: (TBD)
+Spec-State:: 
+Last-Updated:: 
+
+
 \<\!DOCTYPE html\>  
 \<html lang="ja"\>  
 \<head\>  

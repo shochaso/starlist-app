@@ -1,3 +1,9 @@
+Status:: 
+Source-of-Truth:: (TBD)
+Spec-State:: 
+Last-Updated:: 
+
+
 # ドキュメント再編成完了レポート
 
 ## ✅ 実行日時

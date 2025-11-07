@@ -1,3 +1,9 @@
+Status:: 
+Source-of-Truth:: (TBD)
+Spec-State:: 
+Last-Updated:: 
+
+
 # Supabase BYO Auth Exchange
 
 Notes for running the `exchange` edge function with external identity providers (Auth0 + LINE).

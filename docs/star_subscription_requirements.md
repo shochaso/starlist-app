@@ -1,3 +1,9 @@
+Status:: 
+Source-of-Truth:: (TBD)
+Spec-State:: 
+Last-Updated:: 
+
+
 # スター単位サブスクリプション全面移行 要件定義
 
 Supabase と Flutter を前提としたスター単位の定期課金モデルへ全面移行するための要件をまとめる。決済ゲートウェイは Stripe / KOMOJU / Paygent いずれにも対応できる抽象化層を設計する。

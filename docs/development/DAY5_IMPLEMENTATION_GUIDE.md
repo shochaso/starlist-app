@@ -1,3 +1,9 @@
+Status:: 
+Source-of-Truth:: (TBD)
+Spec-State:: 
+Last-Updated:: 
+
+
 # Day5 実装指示プロンプト（マイン向け）
 
 ## 🎯 実装目的

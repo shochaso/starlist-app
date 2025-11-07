@@ -1,3 +1,9 @@
+Status:: 
+Source-of-Truth:: (TBD)
+Spec-State:: 
+Last-Updated:: 
+
+
 # Starlist プロジェクト概要（雛形）
 
 Starlist の全体像を短時間で共有するためのテンプレートです。各章に最新情報を記入して利用してください。

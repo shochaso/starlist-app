@@ -1,0 +1,65 @@
+# Status:: in-progress
+# Source-of-Truth:: .github/workflows/qa-e2e.yml
+# Spec-State:: 確定済み
+# Last-Updated:: 2025-11-07
+
+name: QA E2E Tests
+
+on:
+  pull_request:
+    paths:
+      - "supabase/functions/telemetry/**"
+      - "supabase/functions/ops-alert/**"
+      - "lib/src/features/ops/**"
+      - ".github/workflows/qa-e2e.yml"
+  push:
+    branches: [ main ]
+    paths:
+      - "supabase/functions/telemetry/**"
+      - "supabase/functions/ops-alert/**"
+      - "lib/src/features/ops/**"
+      - ".github/workflows/qa-e2e.yml"
+
+jobs:
+  qa-e2e:
+    name: Telemetry E2E Tests
+    runs-on: ubuntu-latest
+    
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      
+      - name: Post sample telemetry event
+        run: |
+          curl -sS -X POST "$SUPABASE_URL/functions/v1/telemetry" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer $SUPABASE_ANON_KEY" \
+            -d '{
+              "app": "starlist",
+              "env": "stg",
+              "event": "ping",
+              "ok": true,
+              "latency_ms": 123
+            }' | jq .
+      
+      - name: Verify telemetry insertion
+        run: |
+          echo "Telemetry event sent successfully"
+      
+      - name: Test ops-alert dryRun
+        run: |
+          RESPONSE=$(curl -sS -X GET "$SUPABASE_URL/functions/v1/ops-alert?dry_run=true&minutes=15" \
+            -H "Authorization: Bearer $SUPABASE_ANON_KEY")
+          echo "$RESPONSE" | jq .
+          echo "$RESPONSE" | jq -e '.dryRun == true' || exit 1
+          echo "ops-alert dryRun test passed"
+

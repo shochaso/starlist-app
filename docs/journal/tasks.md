@@ -1,3 +1,9 @@
+Status:: planned
+Source-of-Truth:: (TBD)
+Spec-State:: 
+Last-Updated:: 
+
+
 # Tasks - やることリスト
 
 > ✅ 日々のタスク管理（軽量版）  

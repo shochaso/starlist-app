@@ -1,3 +1,9 @@
+Status:: 
+Source-of-Truth:: (TBD)
+Spec-State:: 
+Last-Updated:: 
+
+
 # Starlist 未実装機能リスト
 
 **作成日:** 2025年1月3日  

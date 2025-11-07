@@ -1,3 +1,9 @@
+Status:: 
+Source-of-Truth:: (TBD)
+Spec-State:: 
+Last-Updated:: 
+
+
 # PAY-STAR-SUBS-PER-STAR-PRICING — スター単位サブスク可変価格仕様
 
 Status: draft  

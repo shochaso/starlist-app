@@ -1,3 +1,9 @@
+Status:: 
+Source-of-Truth:: (TBD)
+Spec-State:: 
+Last-Updated:: 
+
+
 # **Starlistアプリ ログインフロー Flutter移植仕様書**
 
 ## **1\. はじめに**

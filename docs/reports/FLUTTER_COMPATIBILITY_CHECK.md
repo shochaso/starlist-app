@@ -1,3 +1,9 @@
+Status:: 
+Source-of-Truth:: (TBD)
+Spec-State:: 
+Last-Updated:: 
+
+
 # Flutter互換性チェック：ドキュメント整理の影響
 
 ## ✅ 結論: 完全に安全です

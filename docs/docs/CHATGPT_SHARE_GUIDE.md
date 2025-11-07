@@ -1,3 +1,9 @@
+Status:: 
+Source-of-Truth:: (TBD)
+Spec-State:: 
+Last-Updated:: 
+
+
 # ChatGPT 共有用ドキュメントまとめ
 
 Starlist 関連の情報を ChatGPT などの生成 AI に共有するときの手順と、優先して渡すべき資料をまとめる。

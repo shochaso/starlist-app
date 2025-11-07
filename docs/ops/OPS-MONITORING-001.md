@@ -1,3 +1,9 @@
+Status:: 
+Source-of-Truth:: (TBD)
+Spec-State:: 
+Last-Updated:: 
+
+
 # OPS-MONITORING-001 — 監視・テレメトリ統合仕様
 
 Status: aligned-with-Flutter  

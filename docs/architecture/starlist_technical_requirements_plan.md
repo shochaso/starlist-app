@@ -1,3 +1,9 @@
+Status:: 
+Source-of-Truth:: (TBD)
+Spec-State:: 
+Last-Updated:: 
+
+
 **11. 技術要件詳細**
 
 **11.1 フロントエンド技術要件**

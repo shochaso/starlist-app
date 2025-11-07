@@ -1,3 +1,9 @@
+Status:: 
+Source-of-Truth:: (TBD)
+Spec-State:: 
+Last-Updated:: 
+
+
 # OPS-MONITORING-002 — OPSモニタリング拡張仕様
 
 Status: draft  

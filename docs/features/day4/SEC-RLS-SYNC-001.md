@@ -1,3 +1,9 @@
+Status:: 
+Source-of-Truth:: (TBD)
+Spec-State:: 
+Last-Updated:: 
+
+
 # SEC-RLS-SYNC-001 — RLS同期強化仕様
 
 Status: aligned-with-Flutter  

@@ -1,3 +1,9 @@
+Status:: planned
+Source-of-Truth:: (TBD)
+Spec-State:: 
+Last-Updated:: 
+
+
 # Bugs - バグ・懸念事項リスト
 
 > 🐛 発見したバグや懸念点を記録  

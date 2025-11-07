@@ -1,3 +1,9 @@
+Status:: 
+Source-of-Truth:: (TBD)
+Spec-State:: 
+Last-Updated:: 
+
+
 # Codex Request History
 
 - 2025-09-28 10:43:26 — 「Starlist-appの中にこちらから依頼のプロンプトを一言でまとめて、時間も残して、履歴として残したい。そのためのファイルを作成して。」

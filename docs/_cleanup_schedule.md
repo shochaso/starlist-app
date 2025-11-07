@@ -1,3 +1,9 @@
+Status:: 
+Source-of-Truth:: (TBD)
+Spec-State:: 
+Last-Updated:: 
+
+
 # Docs Cleanup Schedule
 
 - docs/COMMON_DOCS_INDEX.md (legacy redirect) → delete after 2026-02-05 once all references move to docs/overview/COMMON_DOCS_INDEX.md.

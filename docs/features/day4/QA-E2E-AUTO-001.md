@@ -1,3 +1,9 @@
+Status:: 
+Source-of-Truth:: (TBD)
+Spec-State:: 
+Last-Updated:: 
+
+
 # QA-E2E-AUTO-001 — E2E自動化仕様
 
 Status: draft  

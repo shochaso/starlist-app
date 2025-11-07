@@ -1,3 +1,9 @@
+Status:: 
+Source-of-Truth:: (TBD)
+Spec-State:: 
+Last-Updated:: 
+
+
 # AI秘書機能 PoC実装計画
 
 ## 📅 実装スケジュール

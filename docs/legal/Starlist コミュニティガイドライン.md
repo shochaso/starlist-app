@@ -1,3 +1,9 @@
+Status:: 
+Source-of-Truth:: (TBD)
+Spec-State:: 
+Last-Updated:: 
+
+
 ## **Starlist コミュニティガイドライン**
 
 **最終更新日: 2025年5月19日**

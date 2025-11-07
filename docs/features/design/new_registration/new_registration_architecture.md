@@ -1,3 +1,9 @@
+Status:: 
+Source-of-Truth:: (TBD)
+Spec-State:: 
+Last-Updated:: 
+
+
 ## 新規登録アーキテクチャ
 
 このドキュメントでは、Starlistの新規登録フローに関する技術的なアーキテクチャを定義します。

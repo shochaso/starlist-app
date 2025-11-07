@@ -1,3 +1,9 @@
+Status:: 
+Source-of-Truth:: (TBD)
+Spec-State:: 
+Last-Updated:: 
+
+
 # STARLIST ドキュメント
 
 このフォルダには、STARLIST プロジェクトに関するすべてのドキュメントが含まれています。  

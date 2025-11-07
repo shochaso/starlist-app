@@ -1,3 +1,9 @@
+Status:: 
+Source-of-Truth:: (TBD)
+Spec-State:: 
+Last-Updated:: 
+
+
 # アイコン管理ポリシー
 
 ## 問題解決プロンプト（MP）に基づく法的安全性確保

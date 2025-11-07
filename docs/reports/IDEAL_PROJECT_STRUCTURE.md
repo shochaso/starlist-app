@@ -1,3 +1,9 @@
+Status:: 
+Source-of-Truth:: (TBD)
+Spec-State:: 
+Last-Updated:: 
+
+
 # 理想的なプロジェクト管理構造
 
 ## 🎯 基本方針

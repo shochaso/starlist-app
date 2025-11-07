@@ -8,6 +8,12 @@ class FeatureFlags {
     defaultValue: 'false',
   ) == 'true';
 
+  /// Enable production telemetry when `STARLIST_FF_PROD_TELEMETRY=true` is supplied.
+  static const bool enableProdTelemetry = String.fromEnvironment(
+    'STARLIST_FF_PROD_TELEMETRY',
+    defaultValue: 'false',
+  ) == 'true';
+
   /// Hide service icons on the import screens when launching with `--dart-define=HIDE_IMPORT_ICONS=true`.
   static const bool hideImportIcons = String.fromEnvironment(
     'HIDE_IMPORT_ICONS',

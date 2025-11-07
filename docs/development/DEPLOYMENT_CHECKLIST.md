@@ -1,3 +1,9 @@
+Status:: 
+Source-of-Truth:: (TBD)
+Spec-State:: 
+Last-Updated:: 
+
+
 # 🚀 Starlist デプロイメントチェックリスト
 
 ## 📅 実施日: 2025-10-06

@@ -1,3 +1,9 @@
+Status:: 
+Source-of-Truth:: (TBD)
+Spec-State:: 
+Last-Updated:: 
+
+
 \# Starlist タスク管理
 
 このファイルはStarlistプロジェクトの開発タスクを管理・追跡するために使用します。タスクは優先度と開発フェーズに基づいて整理されています。

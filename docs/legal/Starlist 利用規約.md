@@ -1,3 +1,9 @@
+Status:: 
+Source-of-Truth:: (TBD)
+Spec-State:: 
+Last-Updated:: 
+
+
 ## **Starlist 利用規約**
 
 発効日: 2025年5月22日

@@ -1,3 +1,9 @@
+Status:: planned
+Source-of-Truth:: (TBD)
+Spec-State:: 
+Last-Updated:: 
+
+
 # Daily Log - 日々の進捗記録
 
 > 📅 毎日の作業内容を記録するログ  

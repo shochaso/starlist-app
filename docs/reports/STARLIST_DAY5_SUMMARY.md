@@ -1,3 +1,9 @@
+Status:: 
+Source-of-Truth:: (TBD)
+Spec-State:: 
+Last-Updated:: 
+
+
 # STARLIST Day5 実装進行サマリー
 
 Status: in-progress  

@@ -1,3 +1,9 @@
+Status:: 
+Source-of-Truth:: (TBD)
+Spec-State:: 
+Last-Updated:: 
+
+
 # 花山瑞樹 Starlistアカウント作成完了
 
 ## ✅ **実装完了事項**

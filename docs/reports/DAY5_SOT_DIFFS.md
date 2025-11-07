@@ -1,8 +1,13 @@
+Status:: in-progress  
+Source-of-Truth:: docs/reports/DAY5_SOT_DIFFS.md  
+Spec-State:: 確定済み（実装履歴・CodeRefs）  
+Last-Updated:: 2025-11-07  
+
 # DAY5_SOT_DIFFS — Telemetry & Monitoring Sync Reality vs Spec
 
 Status: in-progress  
 Last-Updated: 2025-11-07  
-Source-of-Truth: Flutter code (`lib/core/telemetry/**`, `lib/features/**`) + Planned Edge Functions
+Source-of-Truth: Flutter code (`lib/core/telemetry/**`, `lib/features/**`) + Edge Functions + DB migrations
 
 | ID | 領域 | コードで確認できる挙動 | 仕様との差分 / 修正方針 | 参照ファイル |
 | -- | --- | --- | --- | --- |
@@ -38,4 +43,44 @@ Source-of-Truth: Flutter code (`lib/core/telemetry/**`, `lib/features/**`) + Pla
 > - Cloudflare Analytics統合の優先度（Supabase Logsのみで十分か）  
 > - PagerDuty連携の閾値設定（Sign-in Success Rate < 95%で十分か）  
 > - テレメトリサンプリング率の最適値（10%で十分か、5%に下げるべきか）
+
+---
+
+## 2025-11-07: Day5 実装完了（DB → Edge → Flutter → CI）
+
+- Spec: `docs/ops/OPS-TELEMETRY-SYNC-001.md`, `docs/features/day4/QA-E2E-AUTO-001.md`, `docs/ops/OPS-MONITORING-002.md`
+- Status: planned → in-progress → aligned-with-Flutter（実装完了）
+- Reason: Day5実装フェーズ完了。DBマイグレーション、Edge Functions、Flutter実装、CI統合を完了。
+- CodeRefs:
+  - **DB**: `supabase/migrations/20251107_ops_metrics.sql:L1-L60` - ops_metricsテーブル + v_ops_5minビュー作成、RLSポリシー設定
+  - **Edge Telemetry**: `supabase/functions/telemetry/index.ts:L1-L70` - POST受信→DB挿入実装
+  - **Edge Alert**: `supabase/functions/ops-alert/index.ts:L1-L80` - 失敗率/遅延閾値チェック（dryRun実装）
+  - **Flutter OpsTelemetry**: `lib/src/features/ops/ops_telemetry.dart:L1-L80` - テレメトリ送信クライアント実装
+  - **Flutter ProdSearchTelemetry**: `lib/core/telemetry/prod_search_telemetry.dart:L1-L35` - SearchTelemetry実装、サンプリング制御
+  - **CI**: `.github/workflows/qa-e2e.yml:L1-L50` - テレメトリPOST/ops-alert dryRun検証
+- Impact: 
+  - ✅ ops_metricsテーブルでテレメトリデータを永続化可能に
+  - ✅ Edge Functions経由でFlutter→DBのデータフロー確立
+  - ✅ ProdSearchTelemetryでSLA超過/重複検出イベントを送信可能に
+  - ✅ CIで自動E2E検証が可能に
+  - ⏸️ UI Dashboardは未実装（次フェーズ）
+
+### 実装詳細
+
+#### DBマイグレーション (`20251107_ops_metrics.sql`)
+- `ops_metrics`テーブル作成（id, ts_ingested, app, env, event, ok, latency_ms, err_code, extra）
+- インデックス3本（ts_ingested, event+ts_ingested, ok+ts_ingested）
+- RLSポリシー：authenticatedロールからのINSERT/SELECT許可
+- `v_ops_5min`ビュー：5分バケット集計（total, avg_latency_ms, p95_latency_ms, failure_rate）
+
+#### Edge Functions
+- **telemetry**: POST受信→バリデーション→ops_metrics挿入→201返却
+- **ops-alert**: 直近N分のデータ取得→失敗率/p95遅延計算→閾値チェック→dryRunログ出力
+
+#### Flutter実装
+- **OpsTelemetry**: HTTP POSTでEdge Functionに送信、環境別ファクトリ（prod/staging/dev）
+- **ProdSearchTelemetry**: SearchTelemetry実装、SLA超過時100%サンプリング、重複検出時10%サンプリング
+
+#### CI統合
+- qa-e2e.yml作成：テレメトリPOST送信→ops-alert dryRun検証
 

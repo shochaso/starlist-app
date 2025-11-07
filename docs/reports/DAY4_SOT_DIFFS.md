@@ -1,3 +1,9 @@
+Status:: 
+Source-of-Truth:: (TBD)
+Spec-State:: 
+Last-Updated:: 
+
+
 # DAY4_SOT_DIFFS — Flutter Reality vs Spec Drift
 
 Status: in-progress  

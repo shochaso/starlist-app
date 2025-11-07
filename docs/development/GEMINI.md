@@ -1,3 +1,9 @@
+Status:: 
+Source-of-Truth:: (TBD)
+Spec-State:: 
+Last-Updated:: 
+
+
 問題解決プロンプト
 <complex_thinking_task>
 <problem_statement>

@@ -1,3 +1,9 @@
+Status:: planned
+Source-of-Truth:: (TBD)
+Spec-State:: 
+Last-Updated:: 
+
+
 # Ideas - アイデアメモ
 
 > 💡 思いついたアイデアを気軽に書き留める場所  

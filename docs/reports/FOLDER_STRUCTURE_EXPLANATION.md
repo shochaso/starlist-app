@@ -1,3 +1,9 @@
+Status:: 
+Source-of-Truth:: (TBD)
+Spec-State:: 
+Last-Updated:: 
+
+
 # フォルダ構造の説明：削除なし版
 
 ## 🎯 重要な確認
