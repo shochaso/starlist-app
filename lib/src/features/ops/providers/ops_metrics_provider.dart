@@ -9,6 +9,7 @@ import '../../../core/config/supabase_client_provider.dart';
 import '../models/ops_metrics_model.dart';
 import '../models/ops_metrics_series_model.dart';
 import '../models/ops_alert_model.dart';
+import '../models/ops_health_model.dart';
 
 /// Filter state provider
 final opsMetricsFilterProvider = StateProvider<OpsMetricsFilter>((ref) {
@@ -111,6 +112,33 @@ final opsRecentAlertsProvider = FutureProvider<List<OpsAlert>>((ref) async {
     // If Edge Function call fails, return empty list
     print('[opsRecentAlertsProvider] Error: $e');
     return [];
+  }
+});
+
+/// Health period provider
+final opsHealthPeriodProvider = StateProvider<String>((ref) => '24h');
+
+/// Health data provider (from ops-health Edge Function)
+final opsHealthProvider = FutureProvider<OpsHealthData>((ref) async {
+  final client = ref.read(supabaseClientProvider);
+  final period = ref.watch(opsHealthPeriodProvider);
+  
+  try {
+    final response = await client.functions.invoke(
+      'ops-health',
+      body: {
+        'period': period,
+      },
+    );
+
+    if (response.data == null) {
+      return OpsHealthData.empty();
+    }
+
+    return OpsHealthData.fromJson(response.data as Map<String, dynamic>);
+  } catch (e) {
+    print('[opsHealthProvider] Error: $e');
+    return OpsHealthData.empty();
   }
 });
 
