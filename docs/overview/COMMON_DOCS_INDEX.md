@@ -43,7 +43,7 @@ Starlist 関連リポジトリ／プロジェクトに共通して参照した�
 - **運用レポート**: `docs/reports/`（例: `STARLIST_DEVELOPMENT_SUMMARY.md`, `MIGRATION_REPORT.md`）や `docs/ops/` の運用手順。
 - **ドキュメント共有運用**: Supabase Storage `doc-share` の手順は `docs/ops/supabase_byo_auth.md` の最後を参照。
 - **相関フロー（Mermaid）**: `docs/Mermaid.md` に主要ドキュメントの関係図（Mermaid）がある。
-- **監査イベント命名**: `auth.login.success/failure`, `auth.link.success`, `auth.reauth.triggered`, `auth.sync.dryrun`, `rls.access.denied`, `ops.subscription.price_selected/price_confirmed` で統一。
+- **監査イベント命名**: `auth.login.success/failure`, `auth.link.success`, `auth.reauth.triggered`, `auth.sync.dryrun`, `rls.access.denied`, `ops.subscription.price_selected/price_confirmed` の6系統で統一。
 
 ---
 
@@ -88,8 +88,8 @@ Starlist 関連リポジトリ／プロジェクトに共通して参照した�
    - 廃止した資料は `repository/` などアーカイブフォルダに移動し、現行版との混在を避ける。
 4. **タグ・検索性**  
    - 冒頭に目的や最終更新日を入れ、目次やリンクで相互参照しやすくする。
-5. **配置ルール**  
-   - 仕様は `docs/features/`、運用は `docs/ops/`、図は `docs/architecture/`、読み物は `guides/` へ配置する。
+5. **情報設計の原則**  
+   - 仕様は `docs/features/`、運用は `docs/ops/`、図は `docs/architecture/`、対外/読み物は `guides/` に配置する。その他のファイルはこの原則に従って整理する。
 
 ---
 

@@ -8,6 +8,7 @@ flowchart TB
   A --> O[docs/ops/OPS-MONITORING-001.md<br/>監視・テレメトリ正準]:::ops
   A --> P[docs/planning/Task.md<br/>計画/タスク]:::biz
   A --> R[docs/reports/STARLIST_DEVELOPMENT_SUMMARY.md<br/>進捗レポート]:::biz
+  A --> R2[docs/reports/STARLIST_DAY5_SUMMARY.md<br/>Day5進行サマリー]:::biz
   A --> G[guides/business/<br/>ビジネス戦略]:::guides
   A --> U[guides/user-journey/<br/>カスタマージャーニー]:::guides
 
@@ -19,13 +20,10 @@ flowchart TB
     H5[day4/UI-HOME-001.md]:::feature2
     H6[day4/QA-E2E-001.md]:::feature2
     H8[auth/AUTH-OAUTH-001.md]:::auth
-    H9[day4/QA-E2E-AUTO-001.md<br/>⚡E2E自動化]:::feature2
   end
   A --> FE
 
   O -.-> SH[docs/features/day4/OPS-MONITORING-001.md<br/>Day4参照シェル]:::feature
-  O --> O2[docs/ops/OPS-TELEMETRY-SYNC-001.md<br/>⚡Telemetry実シンク]:::ops
-  O --> O3[docs/ops/OPS-MONITORING-002.md<br/>⚡OPSモニタリング拡張]:::ops
 
   H3 --> H4
   H3 --> H5
@@ -33,29 +31,9 @@ flowchart TB
   H4 --> H6
   H7 --> H4
   H7 --> H5
-  H7 -.-> O
+  H7 --> O
   H7 --> H6
-  H8 --> H7
-  H4 --> H7
-  H5 --> H7
-  H6 --> H7
-  O -.-> H6
-  O2 --> O
-  O2 --> O3
-  O3 --> O
-  H9 --> O2
-  H9 --> O3
-  H9 --> H6
-  H6 --> H9
-
-  %% LEGEND
-  subgraph LEGEND["凡例"]
-    L1[実線 = 正準参照]:::legend
-    L2[点線 = 参照シェル]:::legend
-    L3[★ = Source of Truth]:::legend
-    L4[⚡ = Telemetry Live]:::legend
-    L5[◎ = E2E統合済]:::legend
-  end
+  O --> H6
 
   classDef core fill:#6a5cff,stroke:#4b3df0,color:#fff;
   classDef overview fill:#f1efff,stroke:#6a5cff,color:#333;
@@ -68,4 +46,3 @@ flowchart TB
   classDef ops fill:#e9fff2,stroke:#13a36e,color:#333;
   classDef biz fill:#fff5e1,stroke:#f57c00,color:#5d3300;
   classDef guides fill:#fff0f5,stroke:#c2185b,color:#5d1030;
-  classDef legend fill:#f5f5f5,stroke:#999,color:#333;

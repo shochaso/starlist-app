@@ -22,6 +22,7 @@ Starlist 関連の情報を ChatGPT などの生成 AI に共有するときの�
 | データ取り込み／ファイル運用 | `docs/reports/COMPLETE_FILE_MANAGEMENT_GUIDE.md`, `docs/planning/Starlist まとめ.md` |
 | ビジネス・タスクの背景 | `docs/planning/Task.md`, `guides/business/starlist_monetization_plan.md` など必要なもの |
 | 法的文書の参照 | `docs/legal/` 配下の各種ポリシー |
+| 実装進捗レビュー（Day5） | `docs/reports/STARLIST_DAY5_SUMMARY.md` |
 
 > **Tip:** ファイルが多い場合は、関連する部分のみ抜粋して貼り付けるか、ZIP でまとめてアップロードして「docs/features/ 以下を参照して」と指示すると効率的。
 

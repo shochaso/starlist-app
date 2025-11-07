@@ -1,0 +1,28 @@
+name: Docs Status Audit
+
+on:
+  pull_request:
+    paths:
+      - "docs/**/*.md"
+      - "scripts/audit/**"
+  push:
+    branches: [ main ]
+    paths:
+      - "docs/**/*.md"
+      - "scripts/audit/**"
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Node 20 (consistency)
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Make scripts executable
+        run: chmod +x scripts/audit/*.sh
+      - name: Apply headers (idempotent)
+        run: scripts/audit/md_header_apply.sh docs
+      - name: Run header checks
+        run: scripts/audit/md_header_check.sh docs
