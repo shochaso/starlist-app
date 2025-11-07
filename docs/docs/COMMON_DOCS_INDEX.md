@@ -60,6 +60,7 @@ Starlist 関連リポジトリ／プロジェクトに共通して参照した�
 - `docs/api/PAYMENT_SYSTEM_INTEGRATION_STRATEGY.md` … 決済連携の設計方針・DB スキーマ案。
 - `docs/features/design/` … 画面仕様とコンポーネント指針。
 - `docs/reports/STARLIST_DAY5_SUMMARY.md` … Day5 実装進行サマリー。
+- `docs/ops/OPS-MONITORING-002.md` … OPS Dashboard（β）機能マップ。
 - `docs/legal/` 配下 … 利用規約・プライバシーポリシーなど外部公開文書。
 
 （必要に応じて新しい資料を追加し、このリストを更新してください。）

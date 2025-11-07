@@ -31,6 +31,9 @@ flowchart TB
   %% OPS
   A --> O[docs/ops/OPS-MONITORING-001.md<br/>監視・テレメトリ正準]:::ops
   O -.-> SH[docs/features/day4/OPS-MONITORING-001.md<br/>参照シェル]:::feature
+  A --> O2[docs/ops/OPS-MONITORING-002.md<br/>OPS Dashboard拡張（β）]:::ops
+  O2 --> O
+  O2 --> O3[docs/ops/OPS-TELEMETRY-SYNC-001.md<br/>Telemetry実シンク]:::ops
 
   %% PLANNING & REPORTS
   A --> P[docs/planning/Task.md<br/>計画/タスク]:::biz
@@ -57,6 +60,8 @@ flowchart TB
   H7 --> O
   H7 --> H6
   O --> H6
+  O2 --> H6
+  O3 --> O2
 
   classDef core fill:#6a5cff,stroke:#4b3df0,color:#fff;
   classDef overview fill:#f1efff,stroke:#6a5cff,color:#333;

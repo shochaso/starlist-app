@@ -358,7 +358,10 @@ class _OpsDashboardPageState extends ConsumerState<OpsDashboardPage> {
       return const SizedBox.shrink();
     }
 
-    final maxValue = series.map((p) => p.total).reduce((a, b) => a > b ? a : b);
+    // Safe max calculation: handle empty series
+    final maxValue = series.isEmpty
+        ? 0
+        : series.map((p) => p.total).reduce((a, b) => a > b ? a : b);
 
     return Card(
       child: Padding(
