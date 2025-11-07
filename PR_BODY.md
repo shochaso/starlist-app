@@ -86,10 +86,6 @@ Day6の実装スコープを完了。OPS Dashboard UI拡張により、フィル
 * Labels: `area:ops`, `type:feature`, `day6`
 * Breakings: なし
 
-## 概要
-
-Day5+Day6の実装スコープを完了。Telemetry収集〜Opsアラート〜ダッシュボード可視化までを、DB/Edge/Flutter/CI/Docsで一貫整備。`STARLIST_FF_PROD_TELEMETRY=true` で本番相当のサンプリング収集を有効化。Day6でOPS Dashboard UIを拡張し、フィルタ・KPI・グラフ・自動リフレッシュ機能を実装。
-
 ## 変更点（ハイライト）
 
 ### Day5: Telemetry/OPS基盤
