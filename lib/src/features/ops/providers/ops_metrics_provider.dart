@@ -5,7 +5,7 @@
 
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../core/config/supabase_client_provider.dart';
+import '../../../core/config/supabase_client_provider.dart';
 import '../models/ops_metrics_model.dart';
 import '../models/ops_metrics_series_model.dart';
 
@@ -37,13 +37,9 @@ final opsMetricsSeriesProvider = FutureProvider<List<OpsMetricsSeriesPoint>>((re
   }
 
   // order()は最後に呼び出す
-  query = query.order('bucket_5m', ascending: true);
-
-  final response = await query;
-  if (response.error != null) {
-    throw Exception('Failed to fetch metrics: ${response.error?.message}');
-  }
-  final data = (response.data ?? []) as List<dynamic>;
+  final response = await query.order('bucket_5m', ascending: true);
+  
+  final data = (response ?? []) as List<dynamic>;
   
   return data.map((json) => OpsMetricsSeriesPoint.fromJson(json as Map<String, dynamic>)).toList();
 });
@@ -87,7 +83,7 @@ final opsMetricsProvider = FutureProvider<OpsMetrics>((ref) async {
       .gte('ts_ingested', last24h.toIso8601String())
       .like('event', 'auth.login.%');
 
-  final authLoginMetrics = (authLoginResponse.data ?? []) as List<dynamic>;
+  final authLoginMetrics = (authLoginResponse ?? []) as List<dynamic>;
   final authLoginSuccess = authLoginMetrics.where((m) => m['ok'] == true).length;
   final authLoginTotal = authLoginMetrics.length;
   final signInSuccessRate = authLoginTotal > 0
@@ -102,7 +98,7 @@ final opsMetricsProvider = FutureProvider<OpsMetrics>((ref) async {
       .gte('ts_ingested', last24h.toIso8601String())
       .like('event', 'auth.reauth.%');
 
-  final reauthMetrics = (reauthResponse.data ?? []) as List<dynamic>;
+  final reauthMetrics = (reauthResponse ?? []) as List<dynamic>;
   final reauthSuccess = reauthMetrics.where((m) => m['ok'] == true).length;
   final reauthTotal = reauthMetrics.length;
   final reauthSuccessRate = reauthTotal > 0
@@ -116,7 +112,7 @@ final opsMetricsProvider = FutureProvider<OpsMetrics>((ref) async {
       .gte('ts_ingested', last24h.toIso8601String())
       .eq('event', 'rls.access.denied');
 
-  final rlsDenials24h = ((rlsResponse.data ?? []) as List<dynamic>).length;
+  final rlsDenials24h = ((rlsResponse ?? []) as List<dynamic>).length;
 
   // Total requests for RLS denial rate calculation
   final totalRequestsResponse = await client
@@ -124,7 +120,7 @@ final opsMetricsProvider = FutureProvider<OpsMetrics>((ref) async {
       .select()
       .gte('ts_ingested', last24h.toIso8601String());
 
-  final totalRequests = ((totalRequestsResponse.data ?? []) as List<dynamic>).length;
+  final totalRequests = ((totalRequestsResponse ?? []) as List<dynamic>).length;
   final rlsDenialRate = totalRequests > 0
       ? (rlsDenials24h / totalRequests) * 100
       : 0.0;
@@ -136,7 +132,7 @@ final opsMetricsProvider = FutureProvider<OpsMetrics>((ref) async {
       .gte('ts_ingested', last24h.toIso8601String())
       .eq('event', 'ops.subscription.price_set');
 
-  final priceSetEvents24h = ((priceSetResponse.data ?? []) as List<dynamic>).length;
+  final priceSetEvents24h = ((priceSetResponse ?? []) as List<dynamic>).length;
 
   final priceDeniedResponse = await client
       .from('ops_metrics')
@@ -144,7 +140,7 @@ final opsMetricsProvider = FutureProvider<OpsMetrics>((ref) async {
       .gte('ts_ingested', last24h.toIso8601String())
       .eq('event', 'ops.subscription.price_denied');
 
-  final priceDeniedEvents24h = ((priceDeniedResponse.data ?? []) as List<dynamic>).length;
+  final priceDeniedEvents24h = ((priceDeniedResponse ?? []) as List<dynamic>).length;
 
   final priceDeniedRate = (priceSetEvents24h + priceDeniedEvents24h) > 0
       ? (priceDeniedEvents24h / (priceSetEvents24h + priceDeniedEvents24h)) * 100
@@ -157,7 +153,7 @@ final opsMetricsProvider = FutureProvider<OpsMetrics>((ref) async {
       .gte('ts_ingested', last1h.toIso8601String())
       .eq('event', 'search.sla_missed');
 
-  final searchSlaMissed1h = ((searchSlaResponse.data ?? []) as List<dynamic>).length;
+  final searchSlaMissed1h = ((searchSlaResponse ?? []) as List<dynamic>).length;
 
   // Average response time (from latency_ms)
   final latencyResponse = await client
@@ -166,7 +162,7 @@ final opsMetricsProvider = FutureProvider<OpsMetrics>((ref) async {
       .gte('ts_ingested', last24h.toIso8601String())
       .not('latency_ms', 'is', null);
 
-  final latencies = ((latencyResponse.data ?? []) as List<dynamic>)
+  final latencies = ((latencyResponse ?? []) as List<dynamic>)
       .map((m) => m['latency_ms'] as int?)
       .whereType<int>()
       .toList();
