@@ -81,20 +81,27 @@ Source-of-Truth: Edge Functions (`supabase/functions/ops-summary-email/`) + GitH
 - HTMLメール送信
 - 送信先設定（環境変数または設定ファイル）
 
-## 5. テスト観点
+## 7. テスト観点
 
 - Edge Function `ops-summary-email`がdryRunモードでHTMLプレビューを返却すること
 - GitHub Actionsが週次スケジュールで実行されること
 - HTMLテンプレートが正しく生成されること
-- メール送信が正常に動作すること（実装後）
+- Resend/SendGridでメール送信が正常に動作すること
+- 前週比計算が正しく動作すること
 
-## 6. 完了条件 (Day9)
+## 8. 受け入れ基準（DoD for Day9）
 
-- Edge Function `ops-summary-email`を実装
-- GitHub Actionsワークフローを作成
-- HTMLテンプレートを生成
-- dryRunモードで動作確認
-- ドキュメント `OPS-SUMMARY-EMAIL-001.md`を完成
+- [ ] DryRun（手動）でHTMLプレビューが200 / `.ok==true`
+- [ ] 任意の宛先で手動送信テストが成功（Resend or SendGrid）
+- [ ] 週次スケジュール（月曜09:00 JST）で自動実行が成功
+- [ ] `docs/ops/OPS-SUMMARY-EMAIL-001.md`に本文サンプル・指標定義・ロールバックを追記
+- [ ] `DAY9_SOT_DIFFS.md`に実行ログ・プレビュー画像を貼付
+
+## 9. ロールバック手順
+
+- **ワークフロー無効化**: GitHub Actionsでワークフローを無効化
+- **Function revert**: 前バージョンのEdge Functionにロールバック
+- **Secrets削除**: メール送信用Secretsを削除して送信停止
 
 ## 7. 参考リンク
 

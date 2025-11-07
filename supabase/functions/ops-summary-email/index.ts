@@ -100,8 +100,17 @@ serve(async (req) => {
       : null;
 
     const alertCount = alerts?.length || 0;
-    // Compare with previous period (simplified: assume 50% of current for demo)
-    const previousAlertCount = Math.round(alertCount * 1.2); // Placeholder
+    
+    // Compare with previous period (7 days before the current period)
+    const previousSince = new Date(Date.now() - days * 2 * 24 * 60 * 60 * 1000).toISOString();
+    const { data: previousAlerts } = await supabase
+      .from("ops_alerts_history")
+      .select("*")
+      .gte("alerted_at", previousSince)
+      .lt("alerted_at", since)
+      .order("alerted_at", { ascending: false });
+    
+    const previousAlertCount = previousAlerts?.length || 0;
     const alertTrend = alertCount < previousAlertCount ? "↓" : alertCount > previousAlertCount ? "↑" : "→";
     const alertChange = Math.abs(alertCount - previousAlertCount);
 
@@ -168,18 +177,101 @@ serve(async (req) => {
       );
     }
 
-    // Send email (TODO: implement with SendGrid/Resend/etc)
-    const emailApiKey = Deno.env.get("RESEND_API_KEY") || Deno.env.get("SENDGRID_API_KEY");
-    if (emailApiKey) {
-      // TODO: Implement email sending
-      console.log("[ops-summary-email] Email sending not yet implemented");
+    // Send email via Resend or SendGrid
+    const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+    const RESEND_FROM = Deno.env.get("RESEND_FROM") ?? "STARLIST OPS <ops@starlist.jp>";
+    const RESEND_TO_LIST = (Deno.env.get("RESEND_TO_LIST") ?? "").split(",").map(s => s.trim()).filter(Boolean);
+
+    const SENDGRID_API_KEY = Deno.env.get("SENDGRID_API_KEY");
+    const SENDGRID_FROM = Deno.env.get("SENDGRID_FROM") ?? "ops@starlist.jp";
+    const SENDGRID_TO_LIST = (Deno.env.get("SENDGRID_TO_LIST") ?? "").split(",").map(s => s.trim()).filter(Boolean);
+
+    let emailSent = false;
+    let emailError: string | null = null;
+
+    // Try Resend first (preferred)
+    if (RESEND_API_KEY && RESEND_TO_LIST.length > 0) {
+      try {
+        const payload = {
+          from: RESEND_FROM,
+          to: RESEND_TO_LIST,
+          subject: `STARLIST OPS Weekly (${new Date().toISOString().slice(0, 10)})`,
+          html,
+        };
+
+        const res = await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${RESEND_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        });
+
+        if (!res.ok) {
+          const text = await res.text();
+          throw new Error(`Resend error: ${res.status} ${text}`);
+        }
+
+        const result = await res.json();
+        emailSent = true;
+        console.log("[ops-summary-email] Email sent via Resend:", result);
+      } catch (e) {
+        emailError = String(e);
+        console.error("[ops-summary-email] Resend error:", e);
+      }
+    }
+
+    // Fallback to SendGrid if Resend failed or not configured
+    if (!emailSent && SENDGRID_API_KEY && SENDGRID_TO_LIST.length > 0) {
+      try {
+        const sgPayload = {
+          personalizations: [{ to: SENDGRID_TO_LIST.map(e => ({ email: e })) }],
+          from: { email: SENDGRID_FROM, name: "STARLIST OPS" },
+          subject: `STARLIST OPS Weekly (${new Date().toISOString().slice(0, 10)})`,
+          content: [{ type: "text/html", value: html }],
+        };
+
+        const res = await fetch("https://api.sendgrid.com/v3/mail/send", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${SENDGRID_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(sgPayload),
+        });
+
+        if (!res.ok) {
+          const text = await res.text();
+          throw new Error(`SendGrid error: ${res.status} ${text}`);
+        }
+
+        emailSent = true;
+        console.log("[ops-summary-email] Email sent via SendGrid");
+      } catch (e) {
+        emailError = String(e);
+        console.error("[ops-summary-email] SendGrid error:", e);
+      }
+    }
+
+    if (!emailSent) {
+      return new Response(
+        JSON.stringify({
+          ok: false,
+          error: emailError || "No email service configured. Set RESEND_API_KEY or SENDGRID_API_KEY.",
+        }),
+        {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 500,
+        }
+      );
     }
 
     return new Response(
       JSON.stringify({
         ok: true,
-        sent: false, // TODO: set to true when email is sent
-        message: "Email sending not yet implemented",
+        sent: true,
+        message: "Email sent successfully",
       }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
