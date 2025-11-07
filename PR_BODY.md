@@ -119,3 +119,15 @@ Day6の実装スコープを完了。OPS Dashboard UI拡張により、フィル
 * しきい値のUI表示（p95窓/Err%定義）
 * CSV/JSONエクスポート
 * Provider/Widget 追加テスト
+
+---
+
+## PM Approval Comment
+
+✅ Day6 ready to merge. DoD 8/8 & tests 5/5 green.
+
+* Docs: OPS-MONITORING-002 → **verified** / Mermaid & Index更新済
+* 小修正: スタック棒 maxY 空配列安全化
+* 次: Slack通知 / downsample / しきい値UI明示
+
+承認につき **Squash & merge** で進めます。
