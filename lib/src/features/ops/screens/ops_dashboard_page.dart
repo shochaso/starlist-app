@@ -9,7 +9,6 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
 import '../providers/ops_metrics_provider.dart';
 import '../models/ops_metrics_series_model.dart';
-import '../models/ops_alert_model.dart';
 import '../models/ops_health_model.dart';
 
 class OpsDashboardPage extends ConsumerStatefulWidget {
@@ -733,7 +732,7 @@ class _OpsDashboardPageState extends ConsumerState<OpsDashboardPage> with Single
                             sideTitles: SideTitles(
                               showTitles: true,
                               getTitlesWidget: (value, meta) {
-                                if (value.toInt() >= health.aggregations.length) return '';
+                                if (value.toInt() >= health.aggregations.length) return const SizedBox.shrink();
                                 final agg = health.aggregations[value.toInt()];
                                 return Text(
                                   '${agg.app ?? 'N/A'}\n${agg.env ?? 'N/A'}',
@@ -802,7 +801,7 @@ class _OpsDashboardPageState extends ConsumerState<OpsDashboardPage> with Single
                             sideTitles: SideTitles(
                               showTitles: true,
                               getTitlesWidget: (value, meta) {
-                                if (value.toInt() >= health.aggregations.length) return '';
+                                if (value.toInt() >= health.aggregations.length) return const SizedBox.shrink();
                                 final agg = health.aggregations[value.toInt()];
                                 return Text(
                                   '${agg.app ?? 'N/A'}\n${agg.env ?? 'N/A'}',
@@ -879,7 +878,7 @@ class _OpsDashboardPageState extends ConsumerState<OpsDashboardPage> with Single
                             sideTitles: SideTitles(
                               showTitles: true,
                               getTitlesWidget: (value, meta) {
-                                if (value.toInt() >= health.aggregations.length) return '';
+                                if (value.toInt() >= health.aggregations.length) return const SizedBox.shrink();
                                 final agg = health.aggregations[value.toInt()];
                                 return Text(
                                   '${agg.app ?? 'N/A'}\n${agg.env ?? 'N/A'}',
