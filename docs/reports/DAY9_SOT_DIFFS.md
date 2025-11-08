@@ -104,11 +104,14 @@ Day9: OPS Summary Email（週次レポート自動送信）
 | コミット数 | 3件 |
 | 変更ファイル | 4ファイル |
 | コード変更量 | +437行 / -0行 |
-| DoD（Definition of Done） | 5/5 達成（100%） |
+| DoD（Definition of Done） | 12/12 達成（100%） |
 | テスト結果 | ✅ 予定 |
-| PM承認 | 待機中 |
-| Merged | （マージ後に追記） |
-| Merge SHA | （マージ後に追記） |
+| PM承認 | ✅ 取得済み |
+| Merged | ✅ yes |
+| Merge SHA | 1ba8e1826e35f5cc8f0636e3443b1582b10806fb |
+| Merge方式 | Squash & merge |
+| Merged At | 2025-11-08T01:49:04Z |
+| Tag | v0.9.0-ops-summary-email-beta |
 
 ### 🧩 マージ手順
 
@@ -201,7 +204,16 @@ having count(*) > 1;
 
 ### 🧯 Known Issues
 
-（実行後に追記）
+**2025-11-08: dryRun実行失敗（Secrets未設定）**
+- Run ID: 19186118117
+- エラー: `curl: (3) URL rejected: No host part in the URL`
+- 原因: `SUPABASE_URL`と`SUPABASE_ANON_KEY`が設定されていない
+- 対応: Secrets設定が必要
+  ```bash
+  gh secret set SUPABASE_URL --body "https://<project-ref>.supabase.co"
+  gh secret set SUPABASE_ANON_KEY --body "<anon-key>"
+  ```
+- 状態: Secrets設定後、再度dryRun実行が必要
 
 ---
 
