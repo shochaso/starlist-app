@@ -213,7 +213,17 @@ having count(*) > 1;
   gh secret set SUPABASE_URL --body "https://<project-ref>.supabase.co"
   gh secret set SUPABASE_ANON_KEY --body "<anon-key>"
   ```
-- 状態: Secrets設定後、再度dryRun実行が必要
+- 状態: ✅ Secrets設定完了
+
+**2025-11-08: dryRun実行失敗（ホスト解決エラー）**
+- Run ID: 19189278382
+- エラー: `curl: (6) Could not resolve host: ***`
+- 原因: `SUPABASE_URL`の値が正しくない可能性（ホスト名が解決できない）
+- 対応: 
+  - `SUPABASE_URL`の値を確認（`https://<project-ref>.supabase.co`形式であること）
+  - Edge Functionがデプロイされているか確認
+  - Supabaseプロジェクトが存在するか確認
+- 状態: 調査中
 
 ---
 
