@@ -473,13 +473,81 @@ echo "$(date -Iseconds) BACKOUT executed by <oncall@name>" >> logs/day11/launch_
 
 ---
 
-## 📌 本日の運転表（再掲・極短）
+## 📌 本日の運転表（再掲・極短・最終版）
+
+```bash
+# 実行 → 検証 → 要約 → 判定 → ログ刻印
+AUDIT_LOOKBACK_HOURS=48 ./FINAL_INTEGRATION_SUITE.sh \
+ && make verify && make summarize && make gonogo \
+ && echo "$(date -Iseconds) GO greenlight by <PM@name>" >> logs/day11/launch_decision.log
+```
 
 1. `AUDIT_LOOKBACK_HOURS=48 ./FINAL_INTEGRATION_SUITE.sh`
 2. `make verify && make summarize`
 3. `make gonogo` → **Goなら** Slack宣言、**No-Goなら** Exitコード別是正
 4. 必要なら `make day11` / `make pricing`（T+0〜45m）
 5. **T+45m** 成功判定 or バックアウト（テンプレ実行）
+
+### 緊急停止フラグ（無停止で即"送信停止"に切り替え）
+
+事故時は `STARLIST_SEND_DISABLED=1` をCI/ローカルでセット → **即座に無害化**して監査のみ継続。
+
+```bash
+STARLIST_SEND_DISABLED=1 ./FINAL_INTEGRATION_SUITE.sh
+```
+
+---
+
+## 🔐 最終ミクロ強化（可観測性と可逆性の向上）
+
+### 1) 署名付きリリースタグ（監査票ひも付け・改ざん防止）
+
+```bash
+# 監査票への固定リンクを含むリリースノート生成後に
+git tag -s "launch-$(date +%Y%m%d-%H%M)" -m "Launch: see docs/reports/<YYYY-MM-DD>_*"
+git push --tags
+```
+
+* 監査票（DAY11/PRICING）への相対リンクをリリースノートへ記載 → **証跡の不変参照**が可能に。
+
+### 2) "10分ウォッチ"の即席ヘルスチェック（成功判定を数値で補強）
+
+```bash
+# p95/成功率の即席サマリ（send.jsonベース）
+jq '
+  def p(v;n):(v|sort)[(length*n|floor)];
+  . as $r | {
+    count: ($r|length),
+    ok:    ($r|map(select((.status//200)==200))|length),
+    p95_latency_ms: ( ($r|map(.latency_ms//null)|del(.[]|select(.==null))) as $L | p($L;0.95) )
+  }' tmp/audit_day11/send.json
+```
+
+* Go判定後の**10分間**で2回実行し、p95が増加していないかを簡易確認（KPIトレンドの即見）。
+
+### 3) Secrets"指紋"の瞬間保存（差し替え監査の見える化）
+
+```bash
+# 値そのものは保存しない。環境変数のsha256だけ保存
+printf "SLACK=%s\nSTRIPE=%s\nSUPABASE=%s\n" \
+  "${SLACK_WEBHOOK_URL:-x}" "${STRIPE_API_KEY:-x}" "${SUPABASE_ACCESS_TOKEN:-x}" \
+| shasum -a 256 >> logs/day11/launch_decision.log
+```
+
+* `launch_decision.log` に**ハッシュのみ**を追記 → ローテや差し替えの**時点証跡**に。
+
+### 4) 発射時スナップショット（最小アーカイブ）
+
+```bash
+STAMP=$(date +%Y%m%d-%H%M)
+tar czf "artifacts/audit_${STAMP}.tar.gz" \
+  docs/reports/*_DAY11_AUDIT_*.md \
+  docs/reports/*_PRICING_AUDIT.md \
+  tmp/audit_day11/*.json tmp/audit_stripe/*.json tmp/audit_edge/*.log \
+  logs/day11/launch_decision.log 2>/dev/null || true
+```
+
+* CIのArtifactsと合わせ、**手元復元**もできる保険を1ファイルで確保。
 
 ---
 
