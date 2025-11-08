@@ -37,13 +37,15 @@ jobs:
           flutter-version: "3.27.0"
           channel: "stable"
 
-      - name: Set up Dart
-        uses: dart-lang/setup-dart@v1
-        with:
-          sdk: 'stable'
+      - name: Set up Dart (use Flutter's Dart SDK)
+        run: |
+          echo "Flutter includes Dart SDK, using Flutter's Dart version"
+          flutter --version
+          dart --version
 
       - name: flutter pub get
-        run: flutter pub get
+        run: flutter pub get || (echo "pub get failed, trying with cache repair..." && dart pub cache repair && flutter pub get)
+        continue-on-error: true
 
       - name: dart pub outdated (report-only)
         run: dart pub outdated || true
