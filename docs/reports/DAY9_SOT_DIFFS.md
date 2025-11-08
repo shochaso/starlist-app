@@ -216,14 +216,20 @@ having count(*) > 1;
 - 状態: ✅ Secrets設定完了
 
 **2025-11-08: dryRun実行失敗（ホスト解決エラー）**
-- Run ID: 19189278382
+- Run ID: 19189278382, 19189297679
 - エラー: `curl: (6) Could not resolve host: ***`
 - 原因: `SUPABASE_URL`の値が正しくない可能性（ホスト名が解決できない）
 - 対応: 
   - `SUPABASE_URL`の値を確認（`https://<project-ref>.supabase.co`形式であること）
   - Edge Functionがデプロイされているか確認
   - Supabaseプロジェクトが存在するか確認
-- 状態: 調査中
+- 状態: 調査中（Secrets設定済みだが、URL解決エラーが継続）
+
+**次の対応手順:**
+1. Supabase Dashboardで`ops-summary-email` Edge Functionがデプロイされているか確認
+2. `SUPABASE_URL`の値を再確認（正しいプロジェクト参照IDを使用）
+3. Edge Functionが未デプロイの場合は、デプロイを実行
+4. デプロイ後、再度dryRun実行
 
 ---
 
