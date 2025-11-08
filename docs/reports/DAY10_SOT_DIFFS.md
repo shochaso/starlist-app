@@ -543,6 +543,21 @@ limit 10;
 - ネットワーク一時失敗時: リトライ（最大3回、指数バックオフ）で対応、それでも失敗時は `delivered=false` でログ保存
 - しきい値調整: 1週間運用後、誤検知率に基づいて調整予定
 
+## 🧯 ロールバック手順（失敗時）
+
+1. **GitHub Actions を `Disable`**
+   - GitHub → Actions → Ops Slack Notify → Disable workflow
+
+2. **Supabase `ops-slack-notify` を前バージョンへロールバック or 無効化**
+   - Supabase Dashboard → Edge Functions → ops-slack-notify → 前バージョンにロールバック
+   - または、Secrets `SLACK_WEBHOOK_OPS` を削除して無効化
+
+3. **`ops_slack_notify_logs` は保持して振り返り分析に活用**
+   - ログテーブルは削除せず、事後分析に使用
+
+4. **代替：Day9の週次メール運用のみで継続**
+   - Day9の `ops-summary-email` は継続運用可能
+
 ---
 
 ## 📋 受け入れ基準（DoD）
