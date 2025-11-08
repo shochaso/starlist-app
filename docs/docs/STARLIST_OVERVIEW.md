@@ -55,7 +55,7 @@ Starlist の全体像を短時間で共有するためのテンプレートで�
 | --- | --- | --- |
 | フロントエンド | Flutter (Dart) + Riverpod | モバイル/デスクトップ/Web を単一コードベースで提供。Chrome 開発用に `scripts/c.sh` を使用。 |
 | バックエンド | NestJS (TypeScript) | `server/src/` 配下で ingest・media・metrics モジュールを提供。 |
-| データ基盤 | Supabase (Postgres, Edge Functions) | マイグレーションで RLS を管理し、`exchange`/`sign-url` 関数を稼働。 |
+| データ基盤 | Supabase (Postgres, Edge Functions) | マイグレーションで RLS を管理し、`exchange`/`sign-url`/`ops-alert`/`ops-health`/`ops-summary-email`/`ops-slack-notify` 関数を稼働。 |
 | ストレージ | Supabase Storage | `doc-share` バケットを大容量資料共有向けに追加予定。 |
 | 決済 | Stripe | サブスク課金・返金 API を利用。将来はコンビニ/キャリア決済を追加計画。 |
 
@@ -79,7 +79,7 @@ Starlist の全体像を短時間で共有するためのテンプレートで�
 | `lib/src/` | Flutter コア実装 | `features/`, `services/`, `providers/` に機能を分割。 |
 | `server/` | NestJS バックエンド | `ingest/`, `media/`, `metrics/`, `health/` 等をモジュール化。 |
 | `supabase/migrations/` | DB スキーマ | RLS・トリガー・ビューの SQL 定義を管理。 |
-| `supabase/functions/` | Edge Functions | `exchange`, `sign-url` など Supabase Functions。 |
+| `supabase/functions/` | Edge Functions | `exchange`, `sign-url`, `ops-alert`, `ops-health`, `ops-summary-email`, `ops-slack-notify` など Supabase Functions。 |
 | `docs/` | ドキュメント群 | `COMMON_DOCS_INDEX.md`, `STARLIST_OVERVIEW.md`, `COMPANY_SETUP_GUIDE.md` を格納。 |
 | `scripts/` | 開発/運用スクリプト | `c.sh`, `deploy.sh`, `progress-report.sh` など。 |
 
@@ -95,7 +95,8 @@ Starlist の全体像を短時間で共有するためのテンプレートで�
 | 決済/サブスク | Stripe ベースの Payment/Subscription Service を実装。 | コンビニ・キャリア決済の仕様検討と実装着手。 |
 | 分析/レポート | ランキング/スターデータ画面の初期バージョンを提供。 | 指標ダッシュボード強化とテスト追加。 |
 | AI/自動化 | AI 秘書・スケジューラの設計ドキュメントを作成済み。 | PoC 実装とインテグレーションのロードマップ策定。 |
-| Day5 Telemetry/OPS | キックオフ（DB/Edge 設計完了、Node20/CI ガード整備済み）。 | DB→Edge→Flutter→UI→CI の順で実装し、`ops-alert` dryRun と QA E2E を完了。 |
+| Day5-9 Telemetry/OPS | Day5: キックオフ（DB/Edge 設計完了）。Day6: OPS Dashboard（フィルタ・KPI・グラフ・自動リフレッシュ）。Day7: OPS Alert Automation（Slack通知準備）。Day8: OPS Health Dashboard（uptime/p95/alert trend）。Day9: OPS Summary Email（週次レポート自動送信）。 | Day10: OPS Slack Notify（日次通知・即時アラート）実装完了。本番デプロイ準備完了。 |
+| Day10 OPS Slack Notify | 実装・テスト完了（Edge Function + GitHub Actions + DB監査ログ連携済み）。 | 本番デプロイ + 運用チューニング（1週間運用後、しきい値調整予定）。 |
 
 > TODO: PM/各担当と進捗を整合。
 
@@ -127,8 +128,9 @@ Starlist の全体像を短時間で共有するためのテンプレートで�
 
 ## ロードマップ・今後の課題
 
-- **Day5 (現フェーズ)**: Telemetry/OPS 実装（`ops_metrics` / `v_ops_5min` / Edge `telemetry` & `ops-alert`）、CI `QA E2E` の緑化。  
-- **Day6 (予告)**: 監視フェーズ拡張（OPS-002）。通知チューニングと BizOps レポート連携。  
+- **Day5-9 (完了)**: Telemetry/OPS 実装（`ops_metrics` / `v_ops_5min` / Edge `telemetry` & `ops-alert`）、OPS Dashboard、Alert Automation、Health Dashboard、Summary Email。  
+- **Day10 (完了)**: OPS Slack Notify（日次通知・即時アラート）実装完了。本番デプロイ準備完了。  
+- **Day11 (予告)**: 閾値自動チューニング、Dashboard統合、即時アラート（Webhook連携）。  
 - **技術的負債**: Edge Dry-run API 設計、スター単位課金の DB 拡張、Mermaid Day5 ノードの最終確定。
 
 ---
@@ -139,3 +141,4 @@ Starlist の全体像を短時間で共有するためのテンプレートで�
 | --- | --- | --- |
 | 2025-10-?? | 作成者名 | 雛形作成 |
 | 2025-11-07 | Tim | Day5 Telemetry/OPS サマリーとロードマップを更新。 |
+| 2025-11-08 | Tim | Day10 OPS Slack Notify 実装完了。機能マップとロードマップを更新。 |

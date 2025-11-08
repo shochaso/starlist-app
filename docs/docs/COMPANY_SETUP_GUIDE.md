@@ -106,6 +106,15 @@ cd starlist
 - リリース手順またはデプロイ窓口。
 - QA チェックリストがあればリンク。
 
+### OPS監視・通知運用（Day10）
+
+- **Slack通知**: `#ops-monitor` チャンネルに日次通知（毎日09:00 JST自動実行）
+- **Edge Function**: `ops-slack-notify`（しきい値判定、Slack送信、監査ログ保存）
+- **GitHub Actions**: `.github/workflows/ops-slack-notify.yml`（スケジュール実行 + 手動実行）
+- **監査ログ**: `ops_slack_notify_logs` テーブルに送信結果を記録
+- **運用ルール**: 初見者 `👀`、担当 `🛠`、解消 `✅`。スレッドに原因/対処/再発防止を記録
+- **参考ドキュメント**: `DAY10_DEPLOYMENT_RUNBOOK.md`, `docs/reports/DAY10_SOT_DIFFS.md`
+
 > TODO: 実際のフロー、関連ドキュメントへのリンクを補足。
 
 ---
@@ -139,5 +148,6 @@ cd starlist
 | 日付 | 更新者 | 変更概要 |
 | --- | --- | --- |
 | 2025-10-?? | 作成者名 | 初版雛形 |
+| 2025-11-08 | Tim | Day10 OPS Slack Notify 運用を追加。 |
 
 > TODO: 変更時はここに追記。

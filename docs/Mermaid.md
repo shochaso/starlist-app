@@ -34,6 +34,9 @@ flowchart TB
   A --> O2[docs/ops/OPS-MONITORING-002.md<br/>OPS Dashboard拡張（β）]:::ops
   O2 --> O
   O2 --> O3[docs/ops/OPS-TELEMETRY-SYNC-001.md<br/>Telemetry実シンク]:::ops
+  A --> O4[docs/reports/DAY10_SOT_DIFFS.md<br/>OPS Slack Notify（Day10）]:::ops
+  O4 --> O2
+  O4 --> O5[DAY10_DEPLOYMENT_RUNBOOK.md<br/>デプロイ実行ランブック]:::ops
 
   %% PLANNING & REPORTS
   A --> P[docs/planning/Task.md<br/>計画/タスク]:::biz
@@ -62,6 +65,8 @@ flowchart TB
   O --> H6
   O2 --> H6
   O3 --> O2
+  O4 --> O2
+  O5 --> O4
 
   classDef core fill:#6a5cff,stroke:#4b3df0,color:#fff;
   classDef overview fill:#f1efff,stroke:#6a5cff,color:#333;

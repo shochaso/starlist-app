@@ -23,6 +23,7 @@ Starlist 関連の情報を ChatGPT などの生成 AI に共有するときの�
 | ビジネス・タスクの背景 | `docs/planning/Task.md`, `guides/business/starlist_monetization_plan.md` など必要なもの |
 | 法的文書の参照 | `docs/legal/` 配下の各種ポリシー |
 | 実装進捗レビュー（Day5） | `docs/reports/STARLIST_DAY5_SUMMARY.md` |
+| OPS監視・通知（Day10） | `docs/reports/DAY10_SOT_DIFFS.md`, `DAY10_DEPLOYMENT_RUNBOOK.md`, `DAY10_GONOGO_CHECKLIST.md` |
 
 > **Tip:** ファイルが多い場合は、関連する部分のみ抜粋して貼り付けるか、ZIP でまとめてアップロードして「docs/features/ 以下を参照して」と指示すると効率的。
 
@@ -67,5 +68,30 @@ Starlist 関連の情報を ChatGPT などの生成 AI に共有するときの�
 - [ ] 会話ログや回答をチームと共有し、必要ならドキュメントへ反映したか？
 
 ---
+
+## 6. 進捗共有の模範例（Day10）
+
+Day10「OPS Slack Notify」の実装完了を共有する際の例：
+
+```
+【目的】Day10 OPS Slack Notify の実装完了を共有します。
+
+【背景】
+- Day5-9で構築したOPS監視基盤を拡張し、Slackへ日次通知を実装
+- 異常（失敗率上昇・遅延悪化）を数分以内に検知→共有→初動できる状態を構築
+
+【実装内容】
+- Edge Function: ops-slack-notify（しきい値判定、Slack送信、dryRun対応）
+- GitHub Actions: 日次スケジュール（09:00 JST）+ 手動実行
+- DB Migration: ops_slack_notify_logs（監査ログ）
+- ドキュメント: DAY10_SOT_DIFFS.md, DAY10_DEPLOYMENT_RUNBOOK.md
+
+【次のステップ】
+- 本番デプロイ + 運用チューニング（1週間運用後、しきい値調整予定）
+
+【参考ドキュメント】
+- docs/reports/DAY10_SOT_DIFFS.md（実装詳細）
+- DAY10_DEPLOYMENT_RUNBOOK.md（デプロイ手順）
+```
 
 このガイドを基に、テーマごとに必要な Markdown を選択し、効率的に ChatGPT へ情報提供してください。

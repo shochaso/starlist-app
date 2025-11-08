@@ -29,7 +29,7 @@ Starlist 関連リポジトリ／プロジェクトに共通して参照した�
 
 ### 1.3 Supabase 詳細
 - **マイグレーション**: `supabase/migrations/` に時系列で SQL が配置（例: `20250101000000_create_base_tables.sql`, `20250716000002_user_security_2fa.sql`）。
-- **エッジ関数**: `supabase/functions/sign-url/` が署名付き URL 発行、`supabase/functions/exchange/` がポイント交換などの処理を担当。
+- **エッジ関数**: `supabase/functions/sign-url/` が署名付き URL 発行、`supabase/functions/exchange/` がポイント交換、`supabase/functions/ops-slack-notify/` が日次Slack通知などの処理を担当。
 - **補足**: `supabase_setup.sql` で初期セットアップ、`docs/api/SUPABASE_RLS_REVIEW.md` に RLS 設計レビュー。
 
 ### 1.4 データ連携／インポート詳細
@@ -61,6 +61,9 @@ Starlist 関連リポジトリ／プロジェクトに共通して参照した�
 - `docs/features/design/` … 画面仕様とコンポーネント指針。
 - `docs/reports/STARLIST_DAY5_SUMMARY.md` … Day5 実装進行サマリー。
 - `docs/ops/OPS-MONITORING-002.md` … OPS Dashboard（β）機能マップ。
+- `docs/reports/DAY10_SOT_DIFFS.md` … Day10 OPS Slack Notify 実装詳細・運用手順。
+- `DAY10_DEPLOYMENT_RUNBOOK.md` … Day10 デプロイ実行ランブック。
+- `DAY10_GONOGO_CHECKLIST.md` … Day10 Go/No-Go チェックリスト。
 - `docs/legal/` 配下 … 利用規約・プライバシーポリシーなど外部公開文書。
 
 （必要に応じて新しい資料を追加し、このリストを更新してください。）
