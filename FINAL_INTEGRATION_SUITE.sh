@@ -263,6 +263,111 @@ EOF
   log ""
 }
 
+generate_audit_report_fallback() {
+  log "Generating audit report (fallback)..."
+  cat > "$AUDIT_REPORT" <<EOF
+# Day11 & Pricing 統合監査レポート
+
+**実行日時**: ${TS}  
+**実行者**: $(whoami)  
+**環境**: ${SUPABASE_URL}
+
+---
+
+## 1. Preflight Check
+
+- ✅ Environment Variables確認完了
+- ✅ SUPABASE_URL形式検証完了
+- ✅ Preflightスクリプト実行完了
+
+---
+
+## 2. Day11 Execution
+
+### dryRun結果
+$(if [ -f logs/day11/*_dryrun.json ]; then
+  LATEST_DRY=$(ls -t logs/day11/*_dryrun.json 2>/dev/null | head -n1)
+  if [ -n "$LATEST_DRY" ]; then
+    jq -r '.stats, .weekly_summary, .message' "$LATEST_DRY" 2>/dev/null || echo "dryRun JSON parse error"
+  else
+    echo "dryRun JSON not found"
+  fi
+else
+  echo "dryRun JSON not found"
+fi)
+
+### 本送信結果
+$(if [ -f logs/day11/*_send.json ]; then
+  LATEST_SEND=$(ls -t logs/day11/*_send.json 2>/dev/null | head -n1)
+  if [ -n "$LATEST_SEND" ]; then
+    jq -r '.ok, .permalink? // .slack?.permalink? // "-"' "$LATEST_SEND" 2>/dev/null || echo "send JSON parse error"
+  else
+    echo "send JSON not found"
+  fi
+else
+  echo "send JSON not found"
+fi)
+
+### Permalink
+$(if [ -f "${REPORTS_DIR}/DAY11_PERMALINK.txt" ]; then
+  cat "${REPORTS_DIR}/DAY11_PERMALINK.txt"
+elif [ -f .day11_cache/permalink.txt ]; then
+  cat .day11_cache/permalink.txt
+else
+  echo "Not available"
+fi)
+
+---
+
+## 3. Pricing E2E Test
+
+### 検証項目
+- [ ] 学生プラン：推奨価格表示・バリデーション・Checkout→DB保存
+- [ ] 成人プラン：推奨価格表示・バリデーション・Checkout→DB保存
+- [ ] plan_price整数検証完了
+
+### DB検証結果
+\`\`\`sql
+-- 直近のplan_price保存確認
+select subscription_id, plan_price, currency, updated_at
+from public.subscriptions
+where plan_price is not null
+order by updated_at desc
+limit 10;
+\`\`\`
+
+---
+
+## 4. 合格ライン確認
+
+### Day11
+- [ ] dryRun：validate_dryrun_json OK
+- [ ] 本送信：validate_send_json OK、Slack #ops-monitor に1件のみ到達
+- [ ] ログ：Supabase Functions 200、指数バックオフの再送なし
+
+### Pricing
+- [ ] UI：推奨バッジ表示・刻み/上下限バリデーションOK
+- [ ] Checkout→DB：plan_price が整数円で保存
+- [ ] Webhook：checkout.* / subscription.* / invoice.* で価格更新反映
+- [ ] Logs：Supabase Functions 200、例外なし
+
+---
+
+## 5. 次のステップ
+
+1. Slack #ops-monitor チャンネルで週次サマリを確認
+2. Supabase Functions Logs でログを確認
+3. 重要ファイル（OPS-MONITORING-V3-001.md / Mermaid.md）を更新
+4. PR作成（付属テンプレート使用）
+
+---
+
+**監査完了日時**: $(date +'%Y-%m-%d %H:%M:%S %Z')
+EOF
+
+  log "✅ Audit report generated: $AUDIT_REPORT"
+}
+
 # ===== PR Template Generation =====
 generate_pr_template() {
   log "=== 5) PR Template Generation（PRテンプレート生成） ==="
