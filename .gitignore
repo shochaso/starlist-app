@@ -74,6 +74,12 @@ node_modules/
 logs/
 *.log
 
+# Audit artifacts (keep reports, exclude raw logs/JSON)
+tmp/audit_*/
+logs/day11/*.json
+logs/day11/*.log
+.day11_cache/*.last
+
 # Ignore env files
 .env
 .env.*
