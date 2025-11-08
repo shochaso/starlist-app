@@ -230,6 +230,140 @@ export P95_LATENCY_BUDGET_MS=2000
 
 ---
 
+---
+
+## ✅ Ready-to-Launch 最終確認（追加チェック 8つ）
+
+1. **変更凍結ウィンドウ**：ローンチ前後±2時間はデプロイ停止（CIの手動承認を必須化）
+2. **バックアウトタイマー**：Go宣言から**45分**で"成功判定 or バックアウト"を自動促す
+3. **Secretsローテーション計画**：Slack/Stripe/Supabaseのキー更新日を記録（下記参照）
+4. **Artifacts保存SLA**：90日保持→**120日**へ引き上げ（必要ならActions設定を更新）
+5. **監査票バッジ**：READMEに「直近監査ステータス」バッジ（CI結果）を追加
+6. **オンコール体制**：当日1名（主要）＋バックアップ1名の連絡先と応答SLA（5分）
+7. **エスカレーション表**：障害レベルごとの連絡順（Slack → 電話）を記載
+8. **事後レビュー雛形**：軽量ポストモーテム（5項目）テンプレを準備
+
+---
+
+## 🕒 D-Day 運用ミニ・ランブック（貼って即運用）
+
+### D-0 直前（T-15m）
+
+```bash
+# スモーク（48h・JST・Front-Matter検証）
+make schema && AUDIT_LOOKBACK_HOURS=48 ./FINAL_INTEGRATION_SUITE.sh && make verify && make summarize
+```
+
+**判定**：`make gonogo` で10項目ALL PASS → **Go宣言**（Slackで時刻を残す）
+
+### D-0 実行（T+0〜45m）
+
+```bash
+# Day11のみ/ Pricingのみの分割実行（必要に応じて）
+make day11 HOURS=48
+make pricing HOURS=48
+
+# バックアウトタイマー（45分後に自動プロンプト）
+( sleep 2700 && echo "[NOTICE] 45m経過。成功判定 or バックアウトを選択してください。" ) &
+```
+
+### 成功判定（T+≤45m）
+
+- 監査票に **4面要約（Slack/Edge/Stripe/DB）** が整い、**不一致0**、**p95予算内**を確認
+- PRテンプレのチェックボックスを**全て☑** → マージ
+
+### バックアウト（T+45m）
+
+```bash
+# 直近送信の無効化マーキング（ログに残す）
+echo "$(date -Iseconds) mark send as invalid (rollback)" >> logs/day11/recovery_marks.log
+
+# 復旧テンプレ実行
+./DAY11_RECOVERY_TEMPLATE.sh
+```
+
+Slackに**バックアウト宣言**（permalinkを監査票に追記）→ 48h後に再Try（根因つぶし後）
+
+---
+
+## 🔐 秘密情報・安全網の最終メモ
+
+- 監査票は**Git管理**、元JSON/ログは**Git外＋Artifacts**（レダクション済みの要約のみMDに掲載）
+- `scripts/utils/redact.sh` を **EdgeログとStripe要約に常時適用**
+- `schemas/audit_report.schema.json` に**必須キー**（`supabase_ref / git_sha / artifacts / checks`）を固定
+- `make verify` が**赤**なら即No-Go（例外なし）
+
+---
+
+## 📈 KPI ミニ定義（次の可視化用）
+
+| 区分      | 指標          | 目安                                     |
+| ------- | ----------- | -------------------------------------- |
+| Day11   | Slack投稿成功率  | 99%+                                   |
+| Day11   | p95 latency | **< 2,000ms**（`P95_LATENCY_BUDGET_MS`） |
+| Pricing | Checkout成功率 | 96%+                                   |
+| Pricing | 不一致検知       | 0件連続 **14日**                           |
+
+---
+
+## 📝 事後レビュー（軽量テンプレ：5分で書ける）
+
+```markdown
+# Postmortem (MM-DD)
+
+- 何が起きた？（1行）
+- 影響範囲（ユーザー/時間）
+- 根因（技術/運用）
+- 是正（コード/Runbook/CI）
+- 再発防止（期限/担当）
+```
+
+---
+
+## 🔄 Secretsローテーション計画
+
+| サービス      | キー名                    | 最終更新日   | 次回更新予定日 | 担当者 |
+| --------- | ---------------------- | -------- | -------- | ---- |
+| Slack     | SLACK_WEBHOOK_OPS_SUMMARY | YYYY-MM-DD | YYYY-MM-DD | -    |
+| Stripe    | STRIPE_API_KEY         | YYYY-MM-DD | YYYY-MM-DD | -    |
+| Supabase  | SUPABASE_ACCESS_TOKEN  | YYYY-MM-DD | YYYY-MM-DD | -    |
+
+---
+
+## 📞 オンコール体制
+
+| 役割     | 担当者 | 連絡先        | 応答SLA |
+| ------ | --- | ---------- | ------ |
+| 主要     | -   | Slack/電話   | 5分    |
+| バックアップ | -   | Slack/電話   | 5分    |
+
+---
+
+## 🚨 エスカレーション表
+
+| 障害レベル | 連絡順序              | 対応SLA |
+| ----- | ----------------- | ------ |
+| P0    | Slack → 電話（主要）    | 5分    |
+| P1    | Slack → 電話（バックアップ） | 15分   |
+| P2    | Slack              | 1時間   |
+
+---
+
+## 🎯 クイックコマンド（3本）
+
+```bash
+# 監査 → 検証 → 要約（30秒）
+AUDIT_LOOKBACK_HOURS=48 ./FINAL_INTEGRATION_SUITE.sh && make verify && make summarize
+
+# Go/No-Go（10項目）
+make gonogo
+
+# 失敗時の再生成（レダクション適用）
+make redact && ./FINAL_INTEGRATION_SUITE.sh --audit-only
+```
+
+---
+
 **最終更新**: 2025-11-08  
 **責任者**: Ops Team
 
