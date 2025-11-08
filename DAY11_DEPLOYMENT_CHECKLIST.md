@@ -1,122 +1,140 @@
-# Day11「ops-slack-summary」本番デプロイ チェックリスト
+# Day11「ops-slack-summary」本番デプロイ & 受け入れ確認チェックリスト（実行版）
 
-## ✅ 事前チェック
+## 0) 前提と環境変数（Preflight）
 
-- [ ] Secrets名称の統一確認（`SLACK_WEBHOOK_OPS_SUMMARY`）
-- [ ] DBビュー `v_ops_notify_stats` の存在確認
-- [ ] Edge Function `ops-slack-summary` のデプロイ準備
+まずは実行端末で環境を揃えます。
+
+```bash
+# 置き換え必須：<project-ref> と <anon-key>
+export SUPABASE_URL="https://<project-ref>.supabase.co"
+export SUPABASE_ANON_KEY="<anon-key>"
+
+# 既に設定済みのはずだが再確認（GitHubとSupabase両方）
+# GitHub Actions Secret: SLACK_WEBHOOK_OPS_SUMMARY
+# Supabase Edge Secret: slack_webhook_ops_summary
+```
+
+**確認コマンド:**
+```bash
+echo "SUPABASE_URL: ${SUPABASE_URL}"
+echo "SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY:0:20}..." # 最初の20文字のみ表示
+```
 
 ---
 
-## 1) DBビューの適用（14日集計）
+## 1) DBビューの作成/更新（v_ops_notify_stats）
 
-**Supabase SQL Editor で実行:**
+Supabase Dashboard → SQL Editor でマイグレーション内容を貼付・実行。CLI派は以下でもOKです。
 
+```bash
+# SQLファイルがある前提。直貼りでも可。
+supabase db execute --file supabase/migrations/20251108_v_ops_notify_stats.sql
+```
+
+**確認ポイント:**
+- [ ] 14日対象の集計が返ること（期間外がNULL/0補完）
+- [ ] 欠損日の0埋めロジックがあること
+
+**確認SQL:**
 ```sql
 -- v_ops_notify_stats の存在確認
 SELECT table_name
 FROM information_schema.views
 WHERE table_name = 'v_ops_notify_stats';
 
--- 存在しない場合のみ、以下を実行
--- （supabase/migrations/20251108_v_ops_notify_stats.sql の内容）
+-- ビューの内容確認（サンプル）
+SELECT * FROM v_ops_notify_stats
+ORDER BY day DESC, level
+LIMIT 10;
 ```
 
-**実行結果:**
-- [ ] ビューが存在することを確認
-- [ ] または、ビュー作成SQLが正常に実行されたことを確認
-
 ---
 
-## 2) Edge Function デプロイ
+## 2) Edge Function デプロイ（ops-slack-summary）
 
-**Supabase Dashboard → Edge Functions → `ops-slack-summary` → Deploy**
+ダッシュボードから Deploy。CLI派は：
 
-**確認事項:**
-- [ ] Edge Function `ops-slack-summary` がデプロイされている
-- [ ] Secrets設定が反映されている（`slack_webhook_ops_summary`）
-
----
-
-## 3) Secrets 設定
-
-**GitHub Actions Secrets:**
-- [ ] `SLACK_WEBHOOK_OPS_SUMMARY` が設定されている
-
-**Supabase Edge Function Secrets:**
-- [ ] `slack_webhook_ops_summary` が設定されている（小文字スネークケース）
-
-**注意:** 両方の環境で設定が必要です。
-
----
-
-## 4) dryRun（計算ロジック検証）
-
-**実行コマンド:**
 ```bash
-curl -sS -X POST "https://<project-ref>.supabase.co/functions/v1/ops-slack-summary?dryRun=true&period=14d" \
-  -H "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
-  -H "apikey: ${SUPABASE_ANON_KEY}" \
+supabase functions deploy ops-slack-summary
+```
+
+**Secrets 確認（Supabase側）**
+- [ ] `slack_webhook_ops_summary` が設定済み（小文字スネークケース）
+- [ ] `supabase_url` が設定済み
+- [ ] `supabase_anon_key` が設定済み
+
+**確認方法:**
+- Supabase Dashboard → Edge Functions → `ops-slack-summary` → Settings → Secrets
+
+---
+
+## 3) dryRun 実行（JSON検証を自動チェック）
+
+### 3-1. 直接 invoke（Supabase）
+
+```bash
+curl -sS -X POST "$SUPABASE_URL/functions/v1/ops-slack-summary?dryRun=true&period=14d" \
+  -H "Authorization: Bearer $SUPABASE_ANON_KEY" \
+  -H "apikey: $SUPABASE_ANON_KEY" \
   -H "Content-Type: application/json" \
-  -d '{}' | jq
+  -d '{}' | tee /tmp/day11_dryrun.json | jq
 ```
 
-**期待値:**
-```json
-{
-  "ok": true,
-  "dryRun": true,
-  "period": "14d",
-  "stats": {
-    "mean_notifications": 37.2,
-    "std_dev": 4.8,
-    "new_threshold": 46.8,
-    "critical_threshold": 51.6
-  },
-  "weekly_summary": {
-    "normal": 42,
-    "warning": 3,
-    "critical": 1,
-    "normal_change": "+6.3%",
-    "warning_change": "±0",
-    "critical_change": "-50%"
-  },
-  "message": "📊 OPS Summary Report..."
-}
+### 3-2. 受け入れの自動検証（jq）
+
+```bash
+# 必須フィールドの存在
+jq -e 'has("ok") and has("period") and has("stats") and has("weekly_summary") and has("message")' /tmp/day11_dryrun.json
+
+# 期待値：ok==true / σが数値 or 0 / 閾値（new_threshold, critical_threshold）存在
+jq -e '.ok == true and (.stats.std_dev | type) == "number" and (.stats.new_threshold and .stats.critical_threshold)' /tmp/day11_dryrun.json
+
+# WoWの0除算防御：前週0件でもNaNになっていないこと
+jq -e '(.weekly_summary | objects) and (.weekly_summary.normal_change | (type=="string"))' /tmp/day11_dryrun.json
+
+# メッセージの有無（実装で preview 等を返している場合）
+jq -e 'has("message") and (.message | type == "string")' /tmp/day11_dryrun.json
 ```
 
-**確認事項:**
-- [ ] `ok: true` が返る
-- [ ] `dryRun: true` が返る
-- [ ] `stats` に `mean_notifications`, `std_dev`, `new_threshold`, `critical_threshold` が含まれる
-- [ ] `weekly_summary` に `normal`, `warning`, `critical`, `normal_change`, `warning_change`, `critical_change` が含まれる
-- [ ] `message` に週次サマリが含まれる
-- [ ] σ=0 のデータでもエラーにならない（データが0件の場合）
+**dryRun 合格条件（Acceptance）**
+- [ ] `ok: true`
+- [ ] `stats.mean_notifications`, `stats.std_dev`, `stats.new_threshold`, `stats.critical_threshold` が数値（σ=0許容）
+- [ ] `weekly_summary` にNaN/Infinityがない（nullまたは数値/文字列）
+- [ ] `message` が含まれ、週次サマリの形式が正しい
 
 **実行結果ログ:**
 ```
 Run ID: （実行後に追記）
 実行時刻 (JST): （実行後に追記）
-レスポンス: （実行後に追記）
+レスポンス: （/tmp/day11_dryrun.json を参照）
 ```
 
 ---
 
-## 5) 本送信（手動実行）
+## 4) 本送信テスト（Slack #ops-monitor へ実送信）
 
-**GitHub Actions から手動実行:**
+### 4-1. SupabaseからInvoke
+
+```bash
+curl -sS -X POST "$SUPABASE_URL/functions/v1/ops-slack-summary?dryRun=false&period=14d" \
+  -H "Authorization: Bearer $SUPABASE_ANON_KEY" \
+  -H "apikey: $SUPABASE_ANON_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{}' | tee /tmp/day11_send.json | jq
+```
+
+### 4-2. GitHub Actionsから（任意）
+
 ```bash
 gh workflow run ops-slack-summary.yml -f dryRun=false
 ```
 
-**または、Supabase Dashboard → Edge Functions → `ops-slack-summary` → Invoke**
-
-**確認事項:**
-- [ ] Slack `#ops-monitor` に週次サマリが投稿される
-- [ ] メッセージに正常通知・警告通知・重大通知の件数が表示される
-- [ ] 前週比のパーセンテージが表示される
-- [ ] 通知平均・標準偏差・新閾値が表示される
-- [ ] 次回自動閾値再算出日（翌週月曜JST）が表示される
+**Slackメッセージの期待形**
+- [ ] 見出し：対象週（例：2025-W45）
+- [ ] 指標：正常通知/警告通知/重大通知の件数
+- [ ] 前週比：WoW%（前週0件の項目は "±0" もしくは "+100%" 表示）
+- [ ] 閾値：μ+2σ / μ+3σ
+- [ ] 次回自動実行日：翌週月曜 09:00 JST
 
 **実行結果ログ:**
 ```
@@ -128,13 +146,15 @@ Slack投稿時刻: （実行後に追記）
 
 ---
 
-## 6) 監査・ログ確認
+## 5) ログ・トレース確認（成功トレイル）
 
-**GitHub Actions:**
-- [ ] `ops-slack-summary.yml` の最新 Job が成功（緑）
+**Supabase Logs**
+- [ ] 200応答で完了、再送ロジック（指数バックオフ）が発火していない
+- [ ] エラー時：Slack 4xx/5xx が無い
 
-**Supabase Functions Logs:**
-- [ ] `ops-slack-summary` の200到達を1行確認
+**GitHub Actions（使った場合）**
+- [ ] `SLACK_WEBHOOK_OPS_SUMMARY` がマスクされている
+- [ ] `dryRun=false` で 200 / `ok:true`
 
 **確認コマンド:**
 ```bash
@@ -142,54 +162,117 @@ Slack投稿時刻: （実行後に追記）
 gh run list --workflow=ops-slack-summary.yml --limit 5
 
 # Supabase Functions Logs は Dashboard で確認
+# Supabase Dashboard → Edge Functions → ops-slack-summary → Logs
 ```
 
 ---
 
-## 7) スケジュール稼働確認
+## 6) 失敗時の即応（主なシナリオと対処）
 
-**確認事項:**
-- [ ] Cron設定: `0 0 * * 1`（毎週月曜09:00 JST）が正しく設定されている
-- [ ] 直近の月曜の自動実行後、Slack到達とActionsの自動トリガー成功を確認
-
-**注意:** 初回実行は次回月曜まで待つ必要があります。
-
----
-
-## ✅ 受け入れ基準（Acceptance Criteria）
-
-- [ ] `?dryRun=true` で JSON が返る（`mu/σ/threshold/WoW%` を含む）
-- [ ] `?dryRun=false` で Slack に週次サマリが投稿される（HTTP 200）
-- [ ] 欠損日の0補完・σ=0時の防御が効く（エラーにならない）
-- [ ] WoW% が正しく算出される（分母ゼロ時は適切に処理される）
-- [ ] 次回再算出日（**翌週月曜（JST）**）がメッセージに表示される
-- [ ] Actions / Functions のログで成功判定が追跡できる
+| 症状 | 典型原因 | 即時対処 |
+|------|----------|----------|
+| `Missing SLACK_WEBHOOK_OPS_SUMMARY` | Secret未設定/キー名誤り | GitHub: `Settings > Secrets > Actions` で再登録。Supabase側も `slack_webhook_ops_summary` を確認 |
+| Slack 400/404 | Webhook URL無効/チャンネル権限 | Webhook再発行。Private CHならBot招待 or 新Webhook |
+| σ=null | データ欠損/ビュー0補完漏れ | `v_ops_notify_stats`の0埋めSQLを確認し再デプロイ |
+| WoW% NaN | 前週0件扱い漏れ | 実装の0除算防御（分母0 → null/"—"）が動作しているか確認 |
 
 ---
 
-## 🧯 よくあるエラーと対処
+## 7) ロールバック
 
-| 症状 | 原因 | 対処 |
-|------|------|------|
-| 500: Missing SLACK_WEBHOOK_OPS_SUMMARY | Secrets未設定/キー名相違 | キー名を `SLACK_WEBHOOK_OPS_SUMMARY` に統一して再実行 |
-| Slack 400/404 | Webhook URL間違い / 権限失効 | 正しいワークスペースの新規Webhookで差し替え |
-| JSONでσが`null` | 集計0件／CAST漏れ | ビュー側で0補完＆CAST、関数側でε代入を確認 |
-| WoW% がInfinity/NaN | 前週0件の割り算 | 分母0の分岐処理を実装どおりに（0% or N/A） |
-| cronが走らない | UTC換算の取り違え | `0 0 * * 1` はJST 09:00、運用曜時の期待と一致を再確認 |
+**Edge Function:**
+- Supabase Dashboard → Edge Functions → `ops-slack-summary` → 直前バージョンにロールバック
+
+**DB:**
+```sql
+-- 当該ビューを削除
+DROP VIEW IF EXISTS v_ops_notify_stats;
+
+-- 直前SQLで再作成（必要に応じて）
+-- supabase/migrations/20251108_v_ops_notify_stats.sql を再実行
+```
+
+**GitHub Actions / Cron:**
+- GitHub Actions: `.github/workflows/ops-slack-summary.yml` の `schedule` 行をコメントアウト
+- Supabase: Edge Function の Invoke を一時停止
 
 ---
 
-## 🔁 ロールバック手順（安全停止）
+## 8) 成果物の記録（DoD充足）
 
-1. GitHub Actions：`ops-slack-summary.yml` の `schedule` 行をコメントアウト
-2. Supabase：`ops-slack-summary` を前タグへロールバック or 一時無効化
-3. DB：`v_ops_notify_stats` を旧定義に差し戻し（必要時のみ）
+**`docs/reports/DAY11_SOT_DIFFS.md`:**
+- [ ] dryRunレスポンス（/tmp/day11_dryrun.json の要約）
+- [ ] 本送信のHTTP 200ログ、Slackスクショ（メッセージID/時刻）
+
+**`docs/ops/OPS-MONITORING-V3-001.md`:**
+- [ ] 稼働開始日、オーナー、障害時連絡先
+
+**`docs/Mermaid.md`:**
+- [ ] Day11ノードをDay10直下に追加
 
 ---
 
-## 📝 ドキュメント反映（完了後）
+## 9) Go/No-Go 判定基準（最終）
 
-- [ ] `docs/reports/DAY11_SOT_DIFFS.md`：dryRunレス・本送信スクショ・ログ断片を貼付
-- [ ] `docs/ops/OPS-MONITORING-V3-001.md`：**稼働開始日／運用責任者／レビュー頻度** を追記
-- [ ] `Mermaid.md`：Day11ノード確定（Day10直下）＆"自動閾値調整"の注記
+- [ ] dryRun 合格（上記jq検証がすべてパス）
+- [ ] 本送信が #ops-monitor に到達（KPI/閾値/WoW%/次回日付の体裁OK）
+- [ ] ログにエラー/再送痕跡なし（通常経路で200完了）
+- [ ] ドキュメント3点の更新完了（SOT/運用/Mermaid）
 
+---
+
+## 📋 実行順序サマリー
+
+1. **環境変数設定**（0）
+2. **DBビュー作成**（1）
+3. **Edge Functionデプロイ**（2）
+4. **dryRun実行**（3）
+5. **本送信テスト**（4）
+6. **ログ確認**（5）
+7. **成果物記録**（8）
+8. **Go/No-Go判定**（9）
+
+---
+
+## 🚀 クイック実行コマンド（まとめ）
+
+```bash
+# 1. 環境変数設定
+export SUPABASE_URL="https://<project-ref>.supabase.co"
+export SUPABASE_ANON_KEY="<anon-key>"
+
+# 2. DBビュー作成（Supabase Dashboard または CLI）
+supabase db execute --file supabase/migrations/20251108_v_ops_notify_stats.sql
+
+# 3. Edge Functionデプロイ（Supabase Dashboard または CLI）
+supabase functions deploy ops-slack-summary
+
+# 4. dryRun実行
+curl -sS -X POST "$SUPABASE_URL/functions/v1/ops-slack-summary?dryRun=true&period=14d" \
+  -H "Authorization: Bearer $SUPABASE_ANON_KEY" \
+  -H "apikey: $SUPABASE_ANON_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{}' | tee /tmp/day11_dryrun.json | jq
+
+# 5. dryRun検証
+jq -e 'has("ok") and has("period") and has("stats") and has("weekly_summary") and has("message")' /tmp/day11_dryrun.json
+jq -e '.ok == true and (.stats.std_dev | type) == "number"' /tmp/day11_dryrun.json
+
+# 6. 本送信テスト
+curl -sS -X POST "$SUPABASE_URL/functions/v1/ops-slack-summary?dryRun=false&period=14d" \
+  -H "Authorization: Bearer $SUPABASE_ANON_KEY" \
+  -H "apikey: $SUPABASE_ANON_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{}' | tee /tmp/day11_send.json | jq
+
+# 7. Slackチャンネル #ops-monitor で確認
+```
+
+---
+
+## 📝 注意事項
+
+- Supabase Edge Function Secrets は小文字スネークケース（`slack_webhook_ops_summary`）
+- GitHub Actions Secrets は大文字スネークケース（`SLACK_WEBHOOK_OPS_SUMMARY`）
+- 両方の環境で設定が必要です
+- dryRun実行時は`slack_webhook_ops_summary`が未設定でもエラーになりません（dryRunモードではSlack送信をスキップ）
