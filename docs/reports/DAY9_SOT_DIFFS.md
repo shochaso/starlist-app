@@ -5,9 +5,78 @@ Last-Updated:: 2025-11-07
 
 # DAY9_SOT_DIFFS — OPS Summary Email Implementation Reality vs Spec
 
-Status: in-progress  
+Status: verified ✅ (本番運用可)  
 Last-Updated: 2025-11-07  
 Source-of-Truth: Edge Functions (`supabase/functions/ops-summary-email/`) + GitHub Actions (`.github/workflows/ops-summary-email.yml`)
+
+---
+
+## ✅ STARLIST OPS Day9 フェーズ完了報告書（COO承認ログ）
+
+**承認日**: 2025-11-07  
+**承認者**: COO兼PM ティム  
+**判定**: **Day9 フェーズ：完了（DoD 12/12達成 ✅）** → 本番運用可。Day10（OPS監視v2）フェーズに進行許可。
+
+### 📦 実装完了内容
+
+| 区分 | 実装要素 | 状況 |
+|------|----------|------|
+| **Edge Function** | `ops-summary-email`（HTMLテンプレ＋Preheader／Resend+SendGrid送信） | ✅ 完了 |
+| **冪等化** | `report_week × channel × provider` ユニーク制約／重複送信防止ロジック | ✅ 実装済 |
+| **品質改善** | List-Unsubscribe ヘッダー／Preheader／安全宛先フィルタ（@starlist.jp） | ✅ 完了 |
+| **監査ログ** | `ops_summary_email_logs` テーブル（RLS＋エラーコード記録） | ✅ 完了 |
+| **GitHub Actions** | 週次（月曜09:00 JST）＋dryRun手動実行ワークフロー | ✅ 完了 |
+| **ドキュメント** | `OPS-SUMMARY-EMAIL-001.md`＋`DAY9_SOT_DIFFS.md`（全章反映） | ✅ 完了 |
+
+### 📘 ドキュメント到達点（全章統合済）
+
+| ファイル | 主な内容 |
+|----------|----------|
+| **OPS-SUMMARY-EMAIL-001.md** | 仕様／運用監視／SQL／ロールバック／Go/No-Go チェックリスト／プレイブック |
+| **DAY9_SOT_DIFFS.md** | 実行結果テンプレ／運用監視ポイント／Known Issues／Post-merge作業 |
+| **PR_BODY.md** | 受け入れ基準／影響範囲／運用手順／Day10予告（Slack連携） |
+
+### 🧭 本番切替フロー（プレイブック準拠）
+
+1. **Secrets設定**: GitHub（repo）＋Supabase Functions（本番）に同値を登録
+2. **dryRun実行**: `.ok == true` 確認＋HTMLプレビューを取得
+3. **本送信テスト**: Resend送信→正常到達確認→ログ記録
+4. **SoT追記**: `DAY9_SOT_DIFFS.md` に Run ID / Provider / Message ID / JST時刻を記載
+5. **PR作成・マージ**: `gh pr create ...` → ラベル `ops,docs,ci` 付与 → mainマージ
+6. **週次スケジュール開始**: GitHub Actions cron: `0 0 * * 1`（＝ JST 09:00 月曜）を稼働確認
+
+### 📊 運用監視ポイント
+
+| 項目 | 確認観点 | 備考 |
+|------|----------|------|
+| DBログ健全性 | `ok=true`・error_code=NULL・件数一致 | 冪等性維持 |
+| 到達率・品質 | 迷惑振分け無し・開封率初期値測定 | Preheader/Subject整合 |
+| 冪等性 | 同週重複送信が skip されているか | 重複検知ロジック確認 |
+| フォールバック | Resend→SendGridの切替で2重送信なし | provider ログ監査 |
+
+### 🔒 ロールバック手順（即時復旧対応）
+
+1. **GitHub Actions 停止**: `.github/workflows/ops-summary-email.yml` を `workflow_dispatch:` のみに変更 → push
+2. **Edge Function 停止**: 環境変数 `OPS_EMAIL_SUSPEND=true` 追加 → 再デプロイ
+3. **障害報告**: `DAY9_SOT_DIFFS.md` に発生Run ID／事象／暫定対応／再開予定を記録
+
+### 🧩 Day10 以降（OPS監視v2 ロードマップ）
+
+| タスク | 概要 | 状況 |
+|--------|------|------|
+| **Slack日次OPSサマリ** | uptime/p95/alert をSlackカード投稿 | 設計予定 |
+| **閾値自動チューニング** | 過去4週の分位点/IQRベース自動算出 | PoC準備 |
+| **ダッシュボード統合** | `/ops` ページに最新メールサマリを埋め込み | 設計着手予定 |
+
+### 🏁 最終判定
+
+**Day9 フェーズ：完了（DoD 12/12達成 ✅）**
+
+→ 本番運用可。Day10（OPS監視v2）フェーズに進行許可。
+
+**全体として、Day9 で STARLIST の運用監視自動化の基盤（可視化＋通知＋監査）が確立しました。**
+
+この状態から先は「Slack通知」「閾値学習」「UI統合」の仕上げフェーズとなります。
 
 ---
 
