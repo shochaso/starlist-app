@@ -1,8 +1,5 @@
-import 'dart:io' show Platform;
-
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 /// 安全なプリファレンス保存ラッパー
 /// 
@@ -20,7 +17,7 @@ class SecurePrefs {
     'session_token',
   };
 
-  static final _secure = const FlutterSecureStorage(
+  static const _secure = FlutterSecureStorage(
     aOptions: AndroidOptions(encryptedSharedPreferences: true),
   );
 
