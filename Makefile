@@ -1,4 +1,4 @@
-.PHONY: db-push db-pull fn-deploy fn-logs fn-serve day11 pricing audit all smoke verify schema lint redact gonogo smoke-test
+.PHONY: db-push db-pull fn-deploy fn-logs fn-serve day11 pricing audit all smoke verify verify-v2 schema lint redact gonogo smoke-test gen-fake smoke-fake watch-10min fingerprint dash-dev dash-build kpi-seed
 
 ## Supabase DB を dev 環境へ反映
 db-push:
@@ -96,3 +96,44 @@ gonogo:
 smoke-test:
 	chmod +x scripts/smoke_test.sh
 	scripts/smoke_test.sh
+
+## Front-matter schema validation (v2)
+verify-v2:
+	@which ajv >/dev/null || npm i -g ajv-cli >/dev/null
+	@FILE=$$(ls -1 docs/reports/*_AUDIT_*.md 2>/dev/null | tail -n1); \
+	[ -n "$$FILE" ] || { echo "No audit file"; exit 2; }; \
+	awk '/^---$$/{f++} f==1{print} /^---$$/{if(f==2) exit}' "$$FILE" | sed '1d;$$d' | yq -o=json \
+	| ajv validate -s schemas/audit_report.v2.schema.json -d /dev/stdin
+
+## Generate fake audit data
+gen-fake:
+	chmod +x scripts/generate_fake_audit_data.sh
+	./scripts/generate_fake_audit_data.sh
+
+## Smoke test with fake data
+smoke-fake:
+	make gen-fake && ./FINAL_INTEGRATION_SUITE.sh --audit-only && make verify && make summarize
+
+## 10-minute watch (p95/成功率確認)
+watch-10min:
+	chmod +x scripts/watch_10min.sh
+	./scripts/watch_10min.sh
+
+## Generate secrets fingerprint
+fingerprint:
+	@printf "SLACK=%s\nSTRIPE=%s\nSUPABASE=%s\n" \
+	  "$${SLACK_WEBHOOK_URL:-x}" "$${STRIPE_API_KEY:-x}" "$${SUPABASE_ACCESS_TOKEN:-x}" \
+	| shasum -a 256 | awk '{print $$1}' | tee -a logs/day11/launch_decision.log
+
+## Dashboard development
+dash-dev:
+	@echo "Run: npm run dev (if Next.js project exists)"
+
+## Dashboard build
+dash-build:
+	@echo "Run: npm run build && npm run start (if Next.js project exists)"
+
+## Seed KPI data
+kpi-seed:
+	@mkdir -p dashboard/data
+	@[ -f dashboard/data/latest.json ] || cp dashboard/data/latest.json.example dashboard/data/latest.json 2>/dev/null || echo "{}" > dashboard/data/latest.json
