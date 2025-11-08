@@ -16,6 +16,21 @@ interface SummaryQuery {
   period?: string; // '7d' (default)
 }
 
+// Get ISO week number (YYYY-Wnn format)
+function getReportWeek(date: Date): string {
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  const dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  const weekNum = Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+  return `${d.getUTCFullYear()}-W${weekNum.toString().padStart(2, '0')}`;
+}
+
+// Convert UTC to JST (UTC+9)
+function toJST(utcDate: Date): Date {
+  return new Date(utcDate.getTime() + 9 * 60 * 60 * 1000);
+}
+
 serve(async (req) => {
   // CORS preflight
   if (req.method === "OPTIONS") {
@@ -114,20 +129,29 @@ serve(async (req) => {
     const alertTrend = alertCount < previousAlertCount ? "↓" : alertCount > previousAlertCount ? "↑" : "→";
     const alertChange = Math.abs(alertCount - previousAlertCount);
 
-    // Generate HTML template
+    // Generate HTML template with List-Unsubscribe header and preheader
+    const reportWeek = getReportWeek(new Date());
+    const preheader = `Uptime: ${uptimePercent.toFixed(2)}% | Mean P95: ${meanP95Ms ? `${meanP95Ms}ms` : 'N/A'} | Alerts: ${alertCount} (${alertTrend}${alertChange} WoW)`;
+    
     const html = `
 <!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Preheader (hidden text for email clients) -->
+  <div style="display: none; font-size: 1px; color: #fefefe; line-height: 1px; font-family: Arial, sans-serif; max-height: 0px; max-width: 0px; opacity: 0; overflow: hidden;">
+    ${preheader}
+  </div>
   <style>
-    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
     .header { background: #2563eb; color: white; padding: 20px; text-align: center; }
     .content { padding: 20px; }
     .metric { margin: 20px 0; padding: 15px; background: #f3f4f6; border-radius: 8px; }
     .metric-label { font-weight: bold; color: #6b7280; }
     .metric-value { font-size: 24px; color: #111827; margin-top: 5px; }
     .trend { color: ${alertCount < previousAlertCount ? "#10b981" : alertCount > previousAlertCount ? "#ef4444" : "#6b7280"}; }
+    .footer { padding: 20px; text-align: center; color: #6b7280; font-size: 12px; }
   </style>
 </head>
 <body>
@@ -152,9 +176,38 @@ serve(async (req) => {
       </div>
     </div>
   </div>
+  <div class="footer">
+    <p>STARLIST OPS Team</p>
+    <p><a href="mailto:ops@starlist.jp?subject=Unsubscribe">Unsubscribe</a> | <a href="https://starlist.jp/ops">View Dashboard</a></p>
+  </div>
 </body>
 </html>
     `.trim();
+
+    // Check idempotency: prevent duplicate sends for the same week
+    const { data: existingLog } = await supabase
+      .from("ops_summary_email_logs")
+      .select("*")
+      .eq("report_week", reportWeek)
+      .eq("channel", "email")
+      .limit(1)
+      .single();
+
+    if (existingLog && existingLog.ok) {
+      console.log(`[ops-summary-email] Skipped: already sent for week ${reportWeek}`);
+      return new Response(
+        JSON.stringify({
+          ok: true,
+          skipped: true,
+          message: `Already sent for week ${reportWeek}`,
+          existing_log: existingLog,
+        }),
+        {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200,
+        }
+      );
+    }
 
     if (dryRun) {
       return new Response(
@@ -272,6 +325,13 @@ serve(async (req) => {
         ok: true,
         sent: true,
         message: "Email sent successfully",
+        provider: emailProvider,
+        message_id: emailMessageId,
+        to_count: emailToCount,
+        report_week: reportWeek,
+        sent_at_utc: sentAtUtc.toISOString(),
+        sent_at_jst: sentAtJst.toISOString(),
+        duration_ms: durationMs,
       }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
