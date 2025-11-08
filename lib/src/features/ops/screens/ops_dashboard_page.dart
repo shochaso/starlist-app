@@ -9,6 +9,8 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
 import '../providers/ops_metrics_provider.dart';
 import '../models/ops_metrics_series_model.dart';
+import '../models/ops_alert_model.dart';
+import '../models/ops_health_model.dart';
 
 class OpsDashboardPage extends ConsumerStatefulWidget {
   const OpsDashboardPage({super.key});
@@ -17,20 +19,28 @@ class OpsDashboardPage extends ConsumerStatefulWidget {
   ConsumerState<OpsDashboardPage> createState() => _OpsDashboardPageState();
 }
 
-class _OpsDashboardPageState extends ConsumerState<OpsDashboardPage> {
+class _OpsDashboardPageState extends ConsumerState<OpsDashboardPage> with SingleTickerProviderStateMixin {
   String? _selectedEnv;
   String? _selectedApp;
   String? _selectedEvent;
   int _selectedMinutes = 30;
   bool _autoRefreshListenerRegistered = false;
+  late TabController _tabController;
 
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: 2, vsync: this);
     // Initialize filter
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _updateFilter();
     });
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
   }
 
   @override
@@ -62,34 +72,47 @@ class _OpsDashboardPageState extends ConsumerState<OpsDashboardPage> {
             },
           ),
         ],
-      ),
-      body: RefreshIndicator(
-        onRefresh: () async {
-          ref.refresh(opsMetricsSeriesProvider); // ignore: unused_result
-        },
-        child: seriesAsync.when(
-          data: (series) {
-            if (series.isEmpty) {
-              return _buildEmptyState(context);
-            }
-            return ListView(
-              padding: const EdgeInsets.all(16),
-              children: [
-                _buildFilterRow(context),
-                const SizedBox(height: 16),
-                _buildKpiCards(context, kpi),
-                const SizedBox(height: 16),
-                _buildP95Chart(context, series),
-                const SizedBox(height: 16),
-                _buildStackedBarChart(context, series),
-                const SizedBox(height: 16),
-                _buildRecentAlerts(context),
-              ],
-            );
-          },
-          loading: () => _buildLoadingState(),
-          error: (error, stack) => _buildErrorState(context, error),
+        bottom: TabBar(
+          controller: _tabController,
+          tabs: const [
+            Tab(text: 'Metrics'),
+            Tab(text: 'Health'),
+          ],
         ),
+      ),
+      body: TabBarView(
+        controller: _tabController,
+        children: [
+          RefreshIndicator(
+            onRefresh: () async {
+              ref.refresh(opsMetricsSeriesProvider); // ignore: unused_result
+            },
+            child: seriesAsync.when(
+              data: (series) {
+                if (series.isEmpty) {
+                  return _buildEmptyState(context);
+                }
+                return ListView(
+                  padding: const EdgeInsets.all(16),
+                  children: [
+                    _buildFilterRow(context),
+                    const SizedBox(height: 16),
+                    _buildKpiCards(context, kpi),
+                    const SizedBox(height: 16),
+                    _buildP95Chart(context, series),
+                    const SizedBox(height: 16),
+                    _buildStackedBarChart(context, series),
+                    const SizedBox(height: 16),
+                    _buildRecentAlerts(context),
+                  ],
+                );
+              },
+              loading: () => _buildLoadingState(),
+              error: (error, stack) => _buildErrorState(context, error),
+            ),
+          ),
+          _buildHealthTab(context),
+        ],
       ),
     );
   }
@@ -448,6 +471,8 @@ class _OpsDashboardPageState extends ConsumerState<OpsDashboardPage> {
   }
 
   Widget _buildRecentAlerts(BuildContext context) {
+    final alertsAsync = ref.watch(opsRecentAlertsProvider);
+    
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -459,9 +484,52 @@ class _OpsDashboardPageState extends ConsumerState<OpsDashboardPage> {
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
-            const Text(
-              'Alert data will be integrated with ops-alert function',
-              style: TextStyle(color: Colors.grey),
+            alertsAsync.when(
+              data: (alerts) {
+                if (alerts.isEmpty) {
+                  return const Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: Text(
+                      'No alerts in the last 60 minutes',
+                      style: TextStyle(color: Colors.grey),
+                    ),
+                  );
+                }
+                return ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: alerts.length,
+                  itemBuilder: (context, index) {
+                    final alert = alerts[index];
+                    return ListTile(
+                      leading: Icon(
+                        alert.type == 'failure_rate' ? Icons.error : Icons.timer,
+                        color: Colors.red,
+                      ),
+                      title: Text(alert.message),
+                      subtitle: Text(
+                        'Value: ${alert.value.toStringAsFixed(2)}${alert.type == 'failure_rate' ? '%' : 'ms'} | Threshold: ${alert.threshold.toStringAsFixed(2)}${alert.type == 'failure_rate' ? '%' : 'ms'}',
+                        style: const TextStyle(fontSize: 12),
+                      ),
+                      trailing: Text(
+                        DateFormat('HH:mm').format(alert.alertedAt),
+                        style: const TextStyle(fontSize: 12, color: Colors.grey),
+                      ),
+                    );
+                  },
+                );
+              },
+              loading: () => const Padding(
+                padding: EdgeInsets.all(16.0),
+                child: Center(child: CircularProgressIndicator()),
+              ),
+              error: (error, stack) => Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Text(
+                  'Error loading alerts: $error',
+                  style: const TextStyle(color: Colors.red),
+                ),
+              ),
             ),
           ],
         ),
@@ -536,6 +604,301 @@ class _OpsDashboardPageState extends ConsumerState<OpsDashboardPage> {
             child: const Text('Retry'),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildHealthTab(BuildContext context) {
+    final healthAsync = ref.watch(opsHealthProvider);
+    
+    return RefreshIndicator(
+      onRefresh: () async {
+        ref.refresh(opsHealthProvider); // ignore: unused_result
+      },
+      child: healthAsync.when(
+        data: (health) {
+          if (health.aggregations.isEmpty) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.health_and_safety, size: 64, color: Colors.grey),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'No health data available',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Try adjusting the time period',
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                ],
+              ),
+            );
+          }
+          return ListView(
+            padding: const EdgeInsets.all(16),
+            children: [
+              _buildHealthPeriodSelector(context),
+              const SizedBox(height: 16),
+              _buildUptimeChart(context, health),
+              const SizedBox(height: 16),
+              _buildMeanP95Chart(context, health),
+              const SizedBox(height: 16),
+              _buildAlertTrendChart(context, health),
+            ],
+          );
+        },
+        loading: () => _buildLoadingState(),
+        error: (error, stack) => _buildErrorState(context, error),
+      ),
+    );
+  }
+
+  Widget _buildHealthPeriodSelector(BuildContext context) {
+    final period = ref.watch(opsHealthPeriodProvider);
+    
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Period',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            SegmentedButton<String>(
+              segments: const [
+                ButtonSegment(value: '1h', label: Text('1h')),
+                ButtonSegment(value: '6h', label: Text('6h')),
+                ButtonSegment(value: '24h', label: Text('24h')),
+                ButtonSegment(value: '7d', label: Text('7d')),
+              ],
+              selected: {period},
+              onSelectionChanged: (Set<String> newSelection) {
+                ref.read(opsHealthPeriodProvider.notifier).state = newSelection.first;
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildUptimeChart(BuildContext context, OpsHealthData health) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Uptime %',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              height: 200,
+              child: health.aggregations.isEmpty
+                  ? const Center(child: Text('No data'))
+                  : BarChart(
+                      BarChartData(
+                        barGroups: health.aggregations.map((agg) {
+                          final index = health.aggregations.indexOf(agg);
+                          return BarChartGroupData(
+                            x: index,
+                            barRods: [
+                              BarChartRodData(
+                                toY: agg.uptimePercent,
+                                color: agg.uptimePercent >= 99.0 ? Colors.green : Colors.orange,
+                                width: 20,
+                              ),
+                            ],
+                          );
+                        }).toList(),
+                        titlesData: FlTitlesData(
+                          leftTitles: AxisTitles(
+                            sideTitles: SideTitles(
+                              showTitles: true,
+                              reservedSize: 40,
+                              getTitlesWidget: (value, meta) {
+                                return Text('${value.toInt()}%', style: const TextStyle(fontSize: 10));
+                              },
+                            ),
+                          ),
+                          bottomTitles: AxisTitles(
+                            sideTitles: SideTitles(
+                              showTitles: true,
+                              getTitlesWidget: (value, meta) {
+                                if (value.toInt() >= health.aggregations.length) return '';
+                                final agg = health.aggregations[value.toInt()];
+                                return Text(
+                                  '${agg.app ?? 'N/A'}\n${agg.env ?? 'N/A'}',
+                                  style: const TextStyle(fontSize: 10),
+                                  textAlign: TextAlign.center,
+                                );
+                              },
+                            ),
+                          ),
+                          topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                          rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                        ),
+                        gridData: const FlGridData(show: true),
+                        borderData: FlBorderData(show: false),
+                      ),
+                    ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMeanP95Chart(BuildContext context, OpsHealthData health) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Mean P95 Latency (ms)',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              height: 200,
+              child: health.aggregations.isEmpty
+                  ? const Center(child: Text('No data'))
+                  : BarChart(
+                      BarChartData(
+                        barGroups: health.aggregations.map((agg) {
+                          final index = health.aggregations.indexOf(agg);
+                          return BarChartGroupData(
+                            x: index,
+                            barRods: [
+                              BarChartRodData(
+                                toY: agg.meanP95Ms?.toDouble() ?? 0,
+                                color: (agg.meanP95Ms ?? 0) < 500 ? Colors.green : Colors.red,
+                                width: 20,
+                              ),
+                            ],
+                          );
+                        }).toList(),
+                        titlesData: FlTitlesData(
+                          leftTitles: AxisTitles(
+                            sideTitles: SideTitles(
+                              showTitles: true,
+                              reservedSize: 40,
+                              getTitlesWidget: (value, meta) {
+                                return Text('${value.toInt()}ms', style: const TextStyle(fontSize: 10));
+                              },
+                            ),
+                          ),
+                          bottomTitles: AxisTitles(
+                            sideTitles: SideTitles(
+                              showTitles: true,
+                              getTitlesWidget: (value, meta) {
+                                if (value.toInt() >= health.aggregations.length) return '';
+                                final agg = health.aggregations[value.toInt()];
+                                return Text(
+                                  '${agg.app ?? 'N/A'}\n${agg.env ?? 'N/A'}',
+                                  style: const TextStyle(fontSize: 10),
+                                  textAlign: TextAlign.center,
+                                );
+                              },
+                            ),
+                          ),
+                          topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                          rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                        ),
+                        gridData: const FlGridData(show: true),
+                        borderData: FlBorderData(show: false),
+                      ),
+                    ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAlertTrendChart(BuildContext context, OpsHealthData health) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Alert Trend',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              height: 200,
+              child: health.aggregations.isEmpty
+                  ? const Center(child: Text('No data'))
+                  : BarChart(
+                      BarChartData(
+                        barGroups: health.aggregations.map((agg) {
+                          final index = health.aggregations.indexOf(agg);
+                          Color color;
+                          if (agg.alertTrend == 'increasing') {
+                            color = Colors.red;
+                          } else if (agg.alertTrend == 'decreasing') {
+                            color = Colors.green;
+                          } else {
+                            color = Colors.orange;
+                          }
+                          return BarChartGroupData(
+                            x: index,
+                            barRods: [
+                              BarChartRodData(
+                                toY: agg.alertCount.toDouble(),
+                                color: color,
+                                width: 20,
+                              ),
+                            ],
+                          );
+                        }).toList(),
+                        titlesData: FlTitlesData(
+                          leftTitles: AxisTitles(
+                            sideTitles: SideTitles(
+                              showTitles: true,
+                              reservedSize: 40,
+                              getTitlesWidget: (value, meta) {
+                                return Text('${value.toInt()}', style: const TextStyle(fontSize: 10));
+                              },
+                            ),
+                          ),
+                          bottomTitles: AxisTitles(
+                            sideTitles: SideTitles(
+                              showTitles: true,
+                              getTitlesWidget: (value, meta) {
+                                if (value.toInt() >= health.aggregations.length) return '';
+                                final agg = health.aggregations[value.toInt()];
+                                return Text(
+                                  '${agg.app ?? 'N/A'}\n${agg.env ?? 'N/A'}',
+                                  style: const TextStyle(fontSize: 10),
+                                  textAlign: TextAlign.center,
+                                );
+                              },
+                            ),
+                          ),
+                          topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                          rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                        ),
+                        gridData: const FlGridData(show: true),
+                        borderData: FlBorderData(show: false),
+                      ),
+                    ),
+            ),
+          ],
+        ),
       ),
     );
   }
