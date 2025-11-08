@@ -8,6 +8,13 @@
 
 set -Eeuo pipefail
 
+# 緊急停止フラグ（無停止で即"送信停止"に切り替え）
+: "${STARLIST_SEND_DISABLED:=0}"
+if [ "$STARLIST_SEND_DISABLED" = "1" ]; then
+  echo "[SAFE MODE] Sending is disabled. Generating audit only."
+  # 送信系をスキップし、監査票生成だけ実行
+fi
+
 # --- 基本設定 ---
 : "${TZ:=Asia/Tokyo}"
 export TZ
