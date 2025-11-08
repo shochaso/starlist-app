@@ -161,13 +161,7 @@ Source-of-Truth: Edge Functions (`supabase/functions/ops-summary-email/`) + GitH
 4. **メール受信確認**: 宛先にメールが届くことを確認
 5. **メトリクス検証**: メール内のメトリクスが正しいことを確認
 
-## 9. ロールバック手順
-
-- **ワークフロー無効化**: GitHub Actionsでワークフローを無効化
-- **Function revert**: 前バージョンのEdge Functionにロールバック
-- **Secrets削除**: メール送信用Secretsを削除して送信停止
-
-## 10. 参考リンク
+## 12. 参考リンク
 
 - `docs/ops/OPS-HEALTH-DASHBOARD-001.md` - OPS Health Dashboard仕様
 - `docs/ops/OPS-ALERT-AUTOMATION-001.md` - OPS Alert Automation仕様
