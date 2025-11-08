@@ -145,7 +145,20 @@ Slack／Edge Functions／Stripe／DB の 4面監査を自動化し、
 
 ---
 
+---
+
+## 📚 関連ドキュメント
+
+* **フルエンタープライズ版**: `docs/ops/AUDIT_SYSTEM_ENTERPRISE.md` - 詳細なアーキテクチャ・パイプライン・判定ロジック
+* **本番運用チェックリスト**: `docs/ops/LAUNCH_CHECKLIST.md` - D-Day運用フロー・リカバリ手順
+* **受け入れ基準**: `docs/ops/AUDIT_DOD.md` - DoD定義・検証項目
+* **リカバリガイド**: `docs/ops/RECOVERY_GUIDE.md` - Exitコード別対応手順
+* **事後レビューテンプレート**: `docs/ops/POSTMORTEM_TEMPLATE.md` - 5分完結形式
+
+---
+
 **最終更新**: 2025-11-08  
 **責任者**: Ops Team  
-**承認**: COO兼PM ティム
+**承認**: COO兼PM ティム  
+**バージョン**: Summary Edition
 
