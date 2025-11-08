@@ -30,6 +30,7 @@ class TierCard extends ConsumerStatefulWidget {
 class _TierCardState extends ConsumerState<TierCard> {
   late final TextEditingController _controller;
   String? _errorMessage;
+  bool _initialized = false;
 
   @override
   void initState() {
@@ -57,8 +58,9 @@ class _TierCardState extends ConsumerState<TierCard> {
         final limits = limitsFromConfig(config, isAdult: widget.isAdult);
 
         // 初期値設定（初回のみ）
-        if (_controller.text.isEmpty) {
+        if (!_initialized) {
           _controller.text = recommended.toString();
+          _initialized = true;
         }
 
         return Card(

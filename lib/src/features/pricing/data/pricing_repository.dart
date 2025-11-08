@@ -14,13 +14,15 @@ final pricingConfigProvider = FutureProvider<Map<String, dynamic>>((ref) async {
     final res = await supabase.rpc('get_app_setting', params: {'p_key': 'pricing.recommendations'});
 
     if (res == null) {
-      // フォールバック（同値）
-      return _fallbackConfig();
+      throw Exception('config null');
     }
 
     return Map<String, dynamic>.from(res as Map);
-  } catch (e) {
+  } catch (e, st) {
     // エラー時はフォールバックを返す
+    // TODO: ログ基盤（e.g. logger / crashlytics）に送る想定
+    // ignore: avoid_print
+    // print('Failed to fetch pricing config: $e');
     return _fallbackConfig();
   }
 });

@@ -89,5 +89,33 @@ void main() {
       expect(recommendedFor(config, tier: 'premium', isAdult: true), 4980);
     });
   });
+
+  group('price limits & step', () {
+    test('should validate price limits and step correctly', () {
+      final limits = PricingLimits(min: 300, max: 29999, step: 10);
+
+      expect(validatePrice(value: 290, limits: limits), isNotNull); // 下限違反
+      expect(validatePrice(value: 300, limits: limits), isNull); // OK
+      expect(validatePrice(value: 305, limits: limits), isNotNull); // 刻み違反
+      expect(validatePrice(value: 30000, limits: limits), isNotNull); // 上限違反
+      expect(validatePrice(value: 310, limits: limits), isNull); // OK（刻み一致）
+    });
+  });
+
+  group('recommended value read', () {
+    test('should read recommended value correctly', () {
+      final cfg = {
+        "tiers": {"light": {"student": 100, "adult": 480}},
+        "limits": {
+          "student": {"min": 100, "max": 9999},
+          "adult": {"min": 300, "max": 29999},
+          "step": 10
+        }
+      };
+
+      expect(recommendedFor(cfg, tier: 'light', isAdult: true), 480);
+      expect(recommendedFor(cfg, tier: 'light', isAdult: false), 100);
+    });
+  });
 }
 
