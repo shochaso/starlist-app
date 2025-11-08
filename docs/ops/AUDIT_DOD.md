@@ -1,5 +1,7 @@
 # 監査票受け入れ基準（DoD: Definition of Done）
 
+> **クイックリファレンス**: [LAUNCH_CHECKLIST.md](./LAUNCH_CHECKLIST.md) も参照してください。
+
 ## 1. 再現性
 
 - [ ] 同一Lookbackで監査票が**同一Front-Matter**（report_id以外）を再現

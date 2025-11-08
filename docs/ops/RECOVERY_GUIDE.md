@@ -1,5 +1,7 @@
 # リカバリ即応ガイド（現場メモ）
 
+> **クイックリファレンス**: [LAUNCH_CHECKLIST.md](./LAUNCH_CHECKLIST.md) も参照してください。
+
 ## Exit Code別リカバリ手順
 
 ### Exit 21: Permalink未取得
