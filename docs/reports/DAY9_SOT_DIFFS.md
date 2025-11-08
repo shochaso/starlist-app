@@ -91,9 +91,48 @@ CI緑化後、**Squash & merge実行 → Day10フェーズへ移行可能。**
 - Run ID: （実行後に追記）
 - 実行時刻 (JST): （実行後に追記）
 - 経路: Resend（本送信）/ SendGrid（フォールバック）/ dryRun
+- Provider: （Resend or SendGrid）
+- Message ID: （実行後に追記）
+- To件数: （実行後に追記）
 - 送信結果: success（messageId: ...）/ failure（エラー要約）
 - プレビュー（抜粋 or 画像）: （実行後に追記）
 - 備考: 期間=7d、指標=uptime/mean p95/alert trend、前週比=...%
+
+### 🔍 運用監視ポイント（初週）
+
+- [ ] DBログの健全性: 同一`report_week × channel × provider`が1行のみ
+- [ ] 到達率・品質: 迷惑振分けゼロ、開封率確認
+- [ ] 冪等性: 手動再送しても同週はskipログになることを確認
+
+### 🧰 運用SQLコマンド
+
+**直近10件の送信ログ（JST整形）**
+```sql
+select run_id, provider, message_id, to_count,
+       (sent_at_utc at time zone 'Asia/Tokyo') as sent_at_jst,
+       ok, error_code
+from ops_summary_email_logs
+order by sent_at_utc desc
+limit 10;
+```
+
+**今週分が既に送られているか確認**
+```sql
+select count(*) from ops_summary_email_logs
+where report_week = '2025-W45' and channel='email' and ok = true;
+```
+
+**二重送信の有無（安全確認）**
+```sql
+select report_week, channel, provider, count(*) as cnt
+from ops_summary_email_logs
+group by 1,2,3
+having count(*) > 1;
+```
+
+### 🧯 Known Issues
+
+（実行後に追記）
 
 ---
 
