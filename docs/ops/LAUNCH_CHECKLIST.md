@@ -1,5 +1,15 @@
 # 本番ローンチ運用チェックリスト（1ページ完結）
 
+## ✅ 最終グリーンライト（PM最終確認：3点だけ）
+
+1. `make gonogo` が **ALL PASS**
+2. 直近監査票に **Slack/Edge/Stripe/DB** の4面要約と **Front-Matter必須キー**（`supabase_ref / git_sha / artifacts / checks`）が揃っている
+3. `integration-audit.yml` の **Artifacts保存（if: always()）が有効**（直近Runで確認）
+
+→ 3点ともOKで**Go**判定です。
+
+---
+
 ## 🚀 すぐ使える最短3コマンド（本番直前）
 
 ```bash
@@ -7,6 +17,25 @@ AUDIT_LOOKBACK_HOURS=48 ./FINAL_INTEGRATION_SUITE.sh
 make verify && make summarize
 make gonogo
 ```
+
+---
+
+## 📅 本日ローンチの段取り（推奨）
+
+* **T-15分**：上記3コマンド → SlackでGo宣言（時刻を残す）
+* **T+0〜45分**：必要に応じて
+  ```bash
+  make day11 HOURS=48
+  make pricing HOURS=48
+  ```
+* **T+45分**：成功判定 or バックアウト
+  * 成功ならPRテンプレのチェックを**全て☑**→マージ
+  * バックアウトなら
+    ```bash
+    echo "$(date -Iseconds) mark send as invalid (rollback)" >> logs/day11/recovery_marks.log
+    ./DAY11_RECOVERY_TEMPLATE.sh
+    ```
+    Slackにバックアウト宣言（permalinkを監査票に追記）
 
 ---
 
@@ -111,21 +140,21 @@ make audit HOURS=48
 
 ---
 
-## 🧯 即応リカバリ（Exit Code 別）
+## 🧯 運用リスクの最終つぶし（超要点）
 
-### Exit 21: Permalink未取得
-- **症状**: Slack Webhook 429/5xx/Secret不一致の可能性
+### Permalink未取得（Exit 21）
+- **症状**: Slack Webhookの429/5xx・Secret不一致
 - **対処**: Secret再設定
 - **再実行**: `make day11`
 
-### Exit 22: Stripe 0件
+### Stripe 0件（Exit 22）
 - **症状**: Stripeイベントが抽出されない
-- **対処**: `HOURS=72` に延長／`STRIPE_API_KEY`（読み取り権限）確認
+- **対処**: `HOURS=72` へ一時延長 + API KeyのRead権限確認
 - **再実行**: `make pricing HOURS=72`
 
-### Exit 23: send空
+### send空（Exit 23）
 - **症状**: Day11 sendが空、実行失敗
-- **対処**: `logs/day11/*_send.json` のHTTP/JSON整合を確認、`ops-slack-summary` 末尾ログでエラー確認
+- **対処**: `*_send.json` と `ops-slack-summary` 末尾ログでHTTP/JSON整合確認
 - **再実行**: `make day11`
 
 ### 機微情報懸念
@@ -361,6 +390,21 @@ make gonogo
 # 失敗時の再生成（レダクション適用）
 make redact && ./FINAL_INTEGRATION_SUITE.sh --audit-only
 ```
+
+---
+
+---
+
+## 📌 最後の運用メモ（恒常化）
+
+### 定期実行
+- **毎週 月曜 09:05 JST** 自動実行（失敗でもArtifacts保存）
+
+### 可視化の次ステップ（任意）
+- `p95 latency / 成功率 / 不一致ゼロ連続日数` をダッシュボードにカード追加
+
+### Secrets管理
+- Slack/Stripe/Supabaseの更新日を `LAUNCH_CHECKLIST.md` 末尾に追記（ローテ計画）
 
 ---
 
