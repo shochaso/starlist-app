@@ -419,12 +419,45 @@ jobs:
 
 ## ✅ Day10: Ops Slack Notify — 実行結果
 
+### Go/No-Go チェック結果
+
+**稼働開始日時**: 2025-11-08（実装完了）
+
+**Edge Function配置確認**:
+- ✅ `ops-slack-notify` ファイル作成済み
+- ⏳ Supabase Dashboardでのデプロイ待ち
+- ⏳ Secrets設定（`SLACK_WEBHOOK_OPS`）待ち
+
+**GitHub Actions設定確認**:
+- ✅ ワークフローファイル作成済み（`.github/workflows/ops-slack-notify.yml`）
+- ✅ Cron設定: `0 0 * * *`（毎日09:00 JST）
+- ✅ 手動実行対応（dryRunオプション付き）
+
+**DB/RLS確認**:
+- ✅ マイグレーションファイル作成済み（`20251108_ops_slack_notify_logs.sql`）
+- ⏳ Supabaseでのマイグレーション実行待ち
+
+### スモークテスト結果
+
+**dryRun実行**:
 - Run ID: （実行後に追記）
 - 実行時刻 (JST): （実行後に追記）
 - Level: NORMAL / WARNING / CRITICAL
+- 期待レスポンス: `{ ok: true, dryRun: true, level: "...", metrics: {...}, message: "..." }`
+
+**本送信テスト**:
+- Run ID: （実行後に追記）
+- 実行時刻 (JST): （実行後に追記）
 - Delivered: true / false
-- メッセージプレビュー: （実行後に追記）
-- 備考: 期間=24h、しきい値=Critical<98.0%/p95>=1500ms、Warning<99.5%/p95>=1000ms
+- Slackチャンネル: `#ops-monitor`
+- メッセージサンプル: （実行後に追記）
+
+**備考**: 
+- 期間=24h
+- しきい値:
+  - Critical: `success_rate < 98.0%` OR `p95_ms >= 1500ms`
+  - Warning: `98.0% ≤ success_rate < 99.5%` OR `1000 ≤ p95_ms < 1500ms`
+  - Normal: 上記以外
 
 ---
 
@@ -433,6 +466,20 @@ jobs:
 - [ ] Slack通知の到達率: `delivered=true` の割合
 - [ ] しきい値の適切性: 誤検知・過検知の有無
 - [ ] 監査ログの健全性: `ops_slack_notify_logs` に正常に記録されているか
+
+### 運用ルール（Slack）
+
+- **チャンネル**: `#ops-monitor`
+- **重大度アイコン規約**: ✅Normal / ⚠️Warning / 🔥Critical
+- **反応規約**: 初見者が `👀`、担当者が `🛠`、解消で `✅` を付与
+- **スレッド**: 原因/対処/再発防止の3点メモを最低1行で残す
+- **誤検知**: 3回/週を超えたらしきい値見直し
+
+### チューニング計画（1週間運用後）
+
+- `success_rate` しきい値: `98.0% / 99.5%` を±0.2pp で再評価
+- `p95_ms`: `1000/1500ms` をトラフィック帯に応じ±100ms 調整
+- 主要エンドポイント別の重み付け（例：`/api/ocr` は警告閾値を厳しめ）をオプション化
 
 ---
 
@@ -445,6 +492,23 @@ select level, success_rate, p95_ms, error_count, delivered,
 from ops_slack_notify_logs
 order by inserted_at desc
 limit 10;
+```
+
+**日別の重大度サマリ（直近7日）**
+```sql
+select date_trunc('day', inserted_at) AS d, level, count(*) 
+from ops_slack_notify_logs
+where inserted_at >= now() - interval '7 days'
+group by 1,2
+order by 1 desc, 2;
+```
+
+**最新1件のペイロード確認**
+```sql
+select payload
+from ops_slack_notify_logs
+order by inserted_at desc
+limit 1;
 ```
 
 **Critical/Warningの発生頻度**
@@ -469,7 +533,15 @@ limit 10;
 
 ## 🧯 Known Issues
 
-（実行後に追記）
+**2025-11-08: 実装完了（デプロイ待ち）**
+- Edge Function未デプロイ: Supabase Dashboardでのデプロイが必要
+- Secrets未設定: `SLACK_WEBHOOK_OPS` の設定が必要
+- DB Migration未実行: `ops_slack_notify_logs` テーブルの作成が必要
+
+**既知の注意点**:
+- Webhook回数制限: Slack Incoming Webhookのレート制限に注意（通常は1秒あたり1リクエスト）
+- ネットワーク一時失敗時: リトライ（最大3回、指数バックオフ）で対応、それでも失敗時は `delivered=false` でログ保存
+- しきい値調整: 1週間運用後、誤検知率に基づいて調整予定
 
 ---
 
