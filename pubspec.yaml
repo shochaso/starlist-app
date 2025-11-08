@@ -48,7 +48,7 @@ dev_dependencies:
     sdk: flutter
   test: ^1.24.0
   flutter_lints: ^4.0.0
-  build_runner: ^2.6.0
+  build_runner: ^2.4.14  # Dart >=3.7 を要求しない最終安定帯（Flutter 3.27.x / Dart 3.6.x 対応）
   freezed: ^3.0.0-0.0.dev
   mocktail: ^1.0.0
 
