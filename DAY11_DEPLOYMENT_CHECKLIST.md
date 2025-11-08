@@ -234,6 +234,23 @@ DROP VIEW IF EXISTS v_ops_notify_stats;
 
 ---
 
+## 🚀 自動実行スクリプト
+
+`DAY11_DEPLOY_EXECUTE.sh` を実行すると、上記の手順を自動で進めます：
+
+```bash
+# 環境変数設定
+export SUPABASE_URL="https://<project-ref>.supabase.co"
+export SUPABASE_ANON_KEY="<anon-key>"
+
+# スクリプト実行
+./DAY11_DEPLOY_EXECUTE.sh
+```
+
+スクリプトは各ステップで確認を求め、dryRun検証を自動実行します。
+
+---
+
 ## 🚀 クイック実行コマンド（まとめ）
 
 ```bash
