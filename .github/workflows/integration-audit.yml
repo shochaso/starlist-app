@@ -12,6 +12,9 @@ on:
 
 jobs:
   audit:
+    environment:
+      name: production
+      url: https://app.starlist.jp
     runs-on: ubuntu-latest
     env:
       TZ: Asia/Tokyo
@@ -54,7 +57,7 @@ jobs:
             tmp/audit_day11/*.json
             tmp/audit_stripe/*.json
             tmp/audit_edge/*.log
-          retention-days: 90
+          retention-days: 120
       
       - name: Summarize to PR
         if: ${{ github.event.pull_request.number }}

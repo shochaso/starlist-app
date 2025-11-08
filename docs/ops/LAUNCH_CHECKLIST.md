@@ -357,6 +357,12 @@ Slackに**バックアウト宣言**（permalinkを監査票に追記）→ 48h�
 | Stripe    | STRIPE_API_KEY         | YYYY-MM-DD | YYYY-MM-DD | -    |
 | Supabase  | SUPABASE_ACCESS_TOKEN  | YYYY-MM-DD | YYYY-MM-DD | -    |
 
+### Secrets Rotation Log
+
+- 2025-11-08: Slack Webhook 更新（管理者：@xxx）/ 次回レビュー：2026-01-15
+- 2025-11-08: STRIPE_API_KEY Read-Only 確認（@xxx）/ 次回レビュー：2026-02-01
+- 2025-11-08: Supabase Access Token（CI）更新（@xxx）/ 次回レビュー：2026-02-01
+
 ---
 
 ## 📞 オンコール体制
@@ -370,11 +376,11 @@ Slackに**バックアウト宣言**（permalinkを監査票に追記）→ 48h�
 
 ## 🚨 エスカレーション表
 
-| 障害レベル | 連絡順序              | 対応SLA |
-| ----- | ----------------- | ------ |
-| P0    | Slack → 電話（主要）    | 5分    |
-| P1    | Slack → 電話（バックアップ） | 15分   |
-| P2    | Slack              | 1時間   |
+| Sev | 例 | 連絡順 | SLA |
+| --- | --- | --- | --- |
+| P0 | 決済不可/監査壊滅 | On-call→PM→全体Slack/電話 | 5分内対応/45分判定 |
+| P1 | 一部遅延/部分不一致 | On-call→PM | 15分内初動/当日中是正 |
+| P2 | 軽微/表示のみ | 担当者内共有 | 翌営業日内 |
 
 ---
 
@@ -389,6 +395,44 @@ make gonogo
 
 # 失敗時の再生成（レダクション適用）
 make redact && ./FINAL_INTEGRATION_SUITE.sh --audit-only
+```
+
+### バックアウト45分タイマー（ワンライナー）
+
+```bash
+( sleep 2700 && echo "[NOTICE] 45m経過。成功判定 or バックアウトを選択してください。" ) &
+```
+
+---
+
+## 💬 Slackアナウンステンプレ（コピペ用）
+
+### Go宣言（T-15m）
+
+```
+:rocket: [GO] Day11 & Pricing 本番実行開始（JST）
+- Scope: 過去48h
+- 監査票: <link to _DAY11_AUDIT_*.md> / <link to _PRICING_AUDIT.md>
+- On-call: 主要 <@user> / Backups <@user>
+- バックアウト判定: T+45m
+```
+
+### 成功判定（T+≤45m）
+
+```
+:white_check_mark: 成功判定（p95予算内／不一致0／監査票4面OK）
+- PRチェック全☑ → マージ
+- 監査KPI: Slack成功率, p95, Checkout成功率, 不一致ゼロ連続日数
+```
+
+### バックアウト（T+45m）
+
+```
+:warning: Backout 実施
+- 理由: <短く>
+- 監査票: <link>
+- 対応: 無効化マーキング + 復旧テンプレ実行
+- 再実行目安: 48h後（是正完了後）
 ```
 
 ---
