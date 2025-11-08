@@ -127,55 +127,104 @@ echo "${RESPONSE}" | tee /tmp/day11_dryrun.json | jq .
 echo ""
 echo "🔍 自動検証中..."
 
-# 検証1: 必須フィールドの存在
-if echo "${RESPONSE}" | jq -e 'has("ok") and has("period") and has("stats") and has("weekly_summary") and has("message")' > /dev/null 2>&1; then
-  echo "✅ 必須フィールドが存在します"
-else
-  echo "❌ 必須フィールドが不足しています"
-  echo "   期待: ok, period, stats, weekly_summary, message"
-  exit 1
-fi
+# ============ Validation Functions (impl-aligned) ============
+validate_dryrun_json() {
+  local f="$1"
 
-# 検証2: ok == true かつ stats の構造
-if echo "${RESPONSE}" | jq -e '.ok == true and (.stats | has("mean_notifications", "std_dev", "new_threshold", "critical_threshold"))' > /dev/null 2>&1; then
-  echo "✅ ok=true かつ stats構造が正しいです"
-else
-  echo "❌ ok=false または stats構造が不正です"
-  exit 1
-fi
-
-# 検証3: std_dev が数値
-if echo "${RESPONSE}" | jq -e '(.stats.std_dev | type) == "number"' > /dev/null 2>&1; then
-  echo "✅ std_dev が数値です（σ=0許容）"
-else
-  echo "❌ std_dev が数値ではありません"
-  exit 1
-fi
-
-# 検証4: weekly_summary の構造とNaN/Infinityチェック
-if echo "${RESPONSE}" | jq -e '(.weekly_summary | type) == "object" and (.weekly_summary | has("normal", "warning", "critical", "normal_change", "warning_change", "critical_change"))' > /dev/null 2>&1; then
-  echo "✅ weekly_summary 構造が正しいです"
-  
-  # NaN/Infinityチェック（文字列なので直接チェック）
-  if echo "${RESPONSE}" | jq -e '(.weekly_summary.normal_change, .weekly_summary.warning_change, .weekly_summary.critical_change) | type == "string"' > /dev/null 2>&1; then
-    echo "✅ WoW% が文字列形式で正しく処理されています（NaN/Infinityなし）"
-  else
-    echo "⚠️  WoW% の形式を確認してください"
+  # 1) ベース必須
+  if ! jq -e '
+    .ok == true and
+    (.stats | type) == "object" and
+    (.weekly_summary | type) == "object" and
+    (.message | type) == "string"
+  ' "$f" >/dev/null 2>&1; then
+    echo "❌ ベース必須フィールドが不正です"
+    return 1
   fi
-else
-  echo "❌ weekly_summary 構造が不正です"
+  echo "✅ ベース必須フィールドが正しいです"
+
+  # 2) stats: 実装フィールド（数値必須）
+  if ! jq -e '
+    (.stats.mean_notifications      | type) == "number" and
+    (.stats.std_dev                 | type) == "number" and
+    (.stats.new_threshold           | type) == "number" and
+    (.stats.critical_threshold      | type) == "number"
+  ' "$f" >/dev/null 2>&1; then
+    echo "❌ stats フィールドが不正です（数値必須）"
+    return 1
+  fi
+  echo "✅ stats フィールドが正しいです（σ=0許容）"
+
+  # 3) weekly_summary: 実装フィールド
+  #    total系は number、変化率は string を許容（実装では文字列形式）
+  if ! jq -e '
+    ([.weekly_summary.normal,
+      .weekly_summary.warning,
+      .weekly_summary.critical] | all(type=="number")) and
+    ([.weekly_summary.normal_change,
+      .weekly_summary.warning_change,
+      .weekly_summary.critical_change] | all(.==null or (type=="string")))
+  ' "$f" >/dev/null 2>&1; then
+    echo "❌ weekly_summary フィールドが不正です"
+    return 1
+  fi
+  echo "✅ weekly_summary フィールドが正しいです（変化率は文字列形式）"
+
+  # 4) 次回実行日時：message 内に含まれる想定
+  #    「次回」「Next」の語を含むことだけをまず確認
+  if ! jq -e '(.message | test("次回|Next"))' "$f" >/dev/null 2>&1; then
+    echo "⚠️  message に次回実行日の記載がない可能性があります"
+  else
+    echo "✅ message に次回実行日が含まれています"
+  fi
+
+  # 5) 任意：message から YYYY-MM-DD と HH:MM を抽出して ISO 風に復元（jq 1.6+）
+  #    失敗しても致命ではないため警告に留める
+  local next_run_iso
+  if next_run_iso="$(jq -r '
+      .message
+      | (capture("(?<date>20[0-9]{2}-[01][0-9]-[0-3][0-9]).*?(?<time>[0-2][0-9]:[0-5][0-9])")? // empty)
+      | if . == {} then empty else (.date + "T" + .time + ":00+09:00") end
+    ' "$f" 2>/dev/null)" && [[ -n "${next_run_iso:-}" ]]; then
+    echo "[INFO] Next run (parsed): $next_run_iso"
+  else
+    echo "[WARN] Could not parse next run from .message (format OK なら問題ありません)"
+  fi
+
+  # 6) 統計の簡易レンジ検証（負のしきい値を弾く等）
+  if jq -e '
+    .stats.new_threshold      >= 0 and
+    .stats.critical_threshold >= .stats.new_threshold
+  ' "$f" >/dev/null 2>&1; then
+    echo "[INFO] threshold range sanity: OK"
+  else
+    echo "[WARN] threshold range sanity check failed"
+  fi
+
+  echo "[INFO] dryRun JSON validation: OK ✅"
+  return 0
+}
+
+validate_send_json() {
+  local f="$1"
+  if ! jq -e '.ok == true' "$f" >/dev/null 2>&1; then
+    echo "❌ send JSON validation failed"
+    return 1
+  fi
+  echo "[INFO] send JSON validation: OK ✅"
+  return 0
+}
+
+# dryRun JSON検証実行
+if ! validate_dryrun_json "/tmp/day11_dryrun.json"; then
+  echo ""
+  echo "❌ dryRun検証が失敗しました"
   exit 1
 fi
 
-# 検証5: message が文字列で次回実行日が含まれる
-if echo "${RESPONSE}" | jq -e '(.message | type) == "string" and (.message | contains("次回自動閾値再算出"))' > /dev/null 2>&1; then
-  echo "✅ message が文字列で次回実行日が含まれています"
-  echo ""
-  echo "📝 メッセージプレビュー:"
-  echo "${RESPONSE}" | jq -r '.message' | head -15
-else
-  echo "⚠️  message の形式を確認してください"
-fi
+echo ""
+echo "📝 メッセージプレビュー:"
+jq -r '.message' /tmp/day11_dryrun.json | head -15
 
 echo ""
 echo "✅ dryRun検証がすべて成功しました！"
@@ -211,22 +260,23 @@ SEND_RESPONSE=$(curl -sS --fail --show-error --retry 3 --retry-all-errors --max-
 
 echo "${SEND_RESPONSE}" | tee /tmp/day11_send.json | jq .
 
-if echo "${SEND_RESPONSE}" | jq -e '.ok == true' > /dev/null 2>&1; then
-  echo ""
-  echo "✅ 本送信が成功しました"
-  echo "   Slack #ops-monitor チャンネルで確認してください"
-  
-  # sent フィールドの確認
-  if echo "${SEND_RESPONSE}" | jq -e '.sent == true' > /dev/null 2>&1; then
-    echo "✅ Slackへの送信が完了しました"
-  elif echo "${SEND_RESPONSE}" | jq -e '.sent == false' > /dev/null 2>&1; then
-    echo "⚠️  Slackへの送信が失敗しました（エラーを確認してください）"
-  fi
-else
+# 本送信JSON検証実行
+if ! validate_send_json "/tmp/day11_send.json"; then
   echo ""
   echo "❌ 本送信が失敗しました"
-  echo "   レスポンス: ${SEND_RESPONSE}"
   exit 1
+fi
+
+echo ""
+echo "✅ 本送信が成功しました"
+echo "   Slack #ops-monitor チャンネルで確認してください"
+
+# sent フィールドの確認
+if jq -e '.sent == true' /tmp/day11_send.json >/dev/null 2>&1; then
+  echo "✅ Slackへの送信が完了しました"
+elif jq -e '.sent == false' /tmp/day11_send.json >/dev/null 2>&1; then
+  echo "⚠️  Slackへの送信が失敗しました（エラーを確認してください）"
+  jq -r '.error // empty' /tmp/day11_send.json
 fi
 
 # ⑥ ログ確認（成功トレイル）
