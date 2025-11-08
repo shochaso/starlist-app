@@ -1,0 +1,115 @@
+name: OPS Slack Summary (Weekly)
+
+on:
+  schedule:
+    - cron: '0 0 * * 1'   # 09:00 JST (00:00 UTC) - Every Monday
+  workflow_dispatch:
+    inputs:
+      dryRun:
+        description: 'Dry run (no Slack post)'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+
+permissions:
+  contents: read
+
+jobs:
+  summary:
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: false
+          fetch-depth: 1
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+
+      - name: Validate required secrets
+        run: |
+          required=(SUPABASE_URL SUPABASE_ANON_KEY)
+          missing=0
+          for v in "${required[@]}"; do
+            if [ -z "${!v}" ]; then
+              echo "::error title=Missing secret::$v is empty"
+              missing=1
+            fi
+          done
+          if [ $missing -ne 0 ]; then exit 1; fi
+
+      - name: Normalize and resolve host
+        id: dns
+        shell: bash
+        run: |
+          RAW_URL="$SUPABASE_URL"
+          URL_TRIMMED="$(printf '%s' "$RAW_URL" | tr -d '\r' | sed -E 's/^[[:space:]]+|[[:space:]]+$//g')"
+          URL_NOSLASH="$(printf '%s' "$URL_TRIMMED" | sed -E 's#/*$##')"
+          HOST="$(printf '%s' "$URL_NOSLASH" | sed -E 's#^https?://([^/]+).*#\1#')"
+
+          echo "SUPABASE_URL(normalized)=$URL_NOSLASH"
+          echo "HOST=$HOST"
+
+          if ! echo "$URL_NOSLASH" | grep -Eq '^https://[a-z0-9-]+\.supabase\.co$'; then
+            echo "::error title=URL format error::Expected https://<project-ref>.supabase.co"
+            exit 1
+          fi
+
+          getent hosts "$HOST" || { echo "::error title=DNS error::Failed to resolve $HOST"; exit 1; }
+
+      - name: DryRun (preview summary)
+        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.dryRun == 'true' }}
+        run: |
+          set -euo pipefail
+          BASE="$SUPABASE_URL"
+          URL="${BASE%/}/functions/v1/ops-slack-summary?period=14d&dryRun=true"
+          
+          RESPONSE=$(curl -sS --fail --show-error --retry 3 --retry-all-errors --max-time 30 \
+            -H "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
+            -H "apikey: ${SUPABASE_ANON_KEY}" \
+            -H "Content-Type: application/json" \
+            -X POST \
+            "$URL" \
+            -d '{}')
+          
+          echo "Response:"
+          echo "$RESPONSE" | jq .
+          
+          echo "$RESPONSE" | jq -e '.ok == true and .dryRun == true' || exit 1
+          echo "[ops-slack-summary] dryrun success"
+
+      - name: Send Weekly Summary (prod)
+        if: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.event.inputs.dryRun == 'false') }}
+        run: |
+          set -euo pipefail
+          BASE="$SUPABASE_URL"
+          URL="${BASE%/}/functions/v1/ops-slack-summary?period=14d"
+          
+          RESPONSE=$(curl -sS --fail --show-error --retry 3 --retry-all-errors --max-time 30 \
+            -H "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
+            -H "apikey: ${SUPABASE_ANON_KEY}" \
+            -H "Content-Type: application/json" \
+            -X POST \
+            "$URL" \
+            -d '{}')
+          
+          echo "Response:"
+          echo "$RESPONSE" | jq .
+          
+          echo "$RESPONSE" | jq -e '.ok == true' || exit 1
+          
+          SENT=$(echo "$RESPONSE" | jq -r '.sent // false')
+          if [ "$SENT" != "true" ]; then
+            echo "::warning title=Slack delivery failed::Slack summary was not delivered (check logs)"
+          fi
+          
+          echo "[ops-slack-summary] weekly summary sent"
+
