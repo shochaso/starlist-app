@@ -189,6 +189,16 @@ make redact && ./FINAL_INTEGRATION_SUITE.sh --audit-only
 
 ---
 
+## 🔄 ロールバック最短手順（5分復旧）
+
+1. **緊急停止**：`export STARLIST_SEND_DISABLED=1`（CIは環境秘密に設定）
+2. **影響遮断**：送信系ジョブを一時停止（CIスケジュールOFF）
+3. **証跡確保**：`make fingerprint` で Secrets指紋を1行追記（必ず）
+4. **原因切り分け**：`/dashboard/audit` と `ARTIFACTS` の当該スナップショットを照合
+5. **復旧判定**：p95/失敗率の正常化・差分パッチ適用 → `watch-10min` で2連安定後に再開検討
+
+---
+
 ## 🛡️ 運用の要点（再確認）
 
 ### 網羅性
@@ -490,15 +500,35 @@ echo "$(date -Iseconds) BACKOUT executed by <oncall@name>" >> logs/day11/launch_
 ```bash
 # 実行 → 検証 → 要約 → 判定 → ログ刻印
 AUDIT_LOOKBACK_HOURS=48 ./FINAL_INTEGRATION_SUITE.sh \
- && make verify && make summarize && make gonogo \
+ && make verify-v2 && make summarize && make gonogo \
  && echo "$(date -Iseconds) GO greenlight by <PM@name>" >> logs/day11/launch_decision.log
 ```
 
 1. `AUDIT_LOOKBACK_HOURS=48 ./FINAL_INTEGRATION_SUITE.sh`
-2. `make verify && make summarize`
+2. `make verify-v2 && make summarize`
 3. `make gonogo` → **Goなら** Slack宣言、**No-Goなら** Exitコード別是正
 4. 必要なら `make day11` / `make pricing`（T+0〜45m）
 5. **T+45m** 成功判定 or バックアウト（テンプレ実行）
+
+### 本番入りの最短3コマンド（確定版）
+
+```bash
+AUDIT_LOOKBACK_HOURS=48 ./FINAL_INTEGRATION_SUITE.sh
+make verify-v2 && make summarize && make gonogo
+# Goなら：
+npm run build && npm run start   # もしくは デプロイCIを発火
+```
+
+※ **No-Go判定**なら `STARLIST_SEND_DISABLED=1` を付けたまま監査のみ継続。変更差分の原因が潰れるまで**送信系は再開不可**の原則。
+
+### 当日の役割分担（RACI・最小）
+
+* **Responsible（実行）**：Ops当番
+* **Accountable（最終承認）**：PM
+* **Consulted（助言）**：Dev（Edge/Flutter担当）, DBA
+* **Informed（周知）**：Stakeholder（Biz/CS）
+
+承認は**`make gonogo` の結果＋ダッシュボード4指標**を画面共有で確認→PMが口頭で「Go/No-Go」宣言。
 
 ### 緊急停止フラグ（無停止で即"送信停止"に切り替え）
 

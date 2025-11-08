@@ -1,6 +1,19 @@
 # ✅ 最終合格（Go/No-Go）チェック — Dashboard編（8項）
 
-## チェックリスト
+## 最終Go/No-Goクイックチェック（当日用・60秒）
+
+* ✅ `make verify-v2` 成功（v2スキーマ／整合OK）
+* ✅ `dashboard/data/latest.json` が**本日**の `updated_at`
+* ✅ `/dashboard/audit` の4指標（成功率/件数/p95/不一致）表示OK
+* ✅ 10分ウォッチ2回で**p95悪化ナシ**（`make watch-10min` ×2）
+* ✅ PIIなし（`latest.json` は**集計のみ**）、Artifacts 120日保全設定反映
+* ✅ 任意：`/api/audit/latest` = 200 & `latest.json` と一致
+* ✅ `STARLIST_SEND_DISABLED=1` で**即時送信停止＋監査のみ**へ切替可
+* ✅ CIの `integration-audit.yml` 実行後に `latest.json` 自動更新を確認
+
+→ **8/8 合格で Go**。1つでも欠ければ **No-Go（Safe Modeで監査のみ）**。
+
+## チェックリスト（詳細版）
 
 1. **v2スキーマ検証**：`make verify-v2` が成功（`tz=Asia/Tokyo`/必須キー充足）。
 2. **KPIスナップショット**：`dashboard/data/latest.json` が**存在**し、`updated_at` が当日。
@@ -95,14 +108,50 @@ npm run dev   # http://localhost:3000/dashboard/audit
 
 ---
 
-## 🧭 本番入りの最短3ステップ（ダッシュボード込み）
+## 🧭 本番入りの最短3ステップ（ダッシュボード込み・確定版）
 
 ```bash
 AUDIT_LOOKBACK_HOURS=48 ./FINAL_INTEGRATION_SUITE.sh
 make verify-v2 && make summarize && make gonogo
-# Goなら
-npm run build && npm run start   # or デプロイCI
+# Goなら：
+npm run build && npm run start   # もしくは デプロイCIを発火
 ```
+
+※ **No-Go判定**なら `STARLIST_SEND_DISABLED=1` を付けたまま監査のみ継続。変更差分の原因が潰れるまで**送信系は再開不可**の原則でお願いいたします。
+
+---
+
+## 👥 当日の役割分担（RACI・最小）
+
+* **Responsible（実行）**：Ops当番
+* **Accountable（最終承認）**：PM（私）
+* **Consulted（助言）**：Dev（Edge/Flutter担当）, DBA
+* **Informed（周知）**：Stakeholder（Biz/CS）
+
+承認は**`make gonogo` の結果＋ダッシュボード4指標**を画面共有で確認→PMが口頭で「Go/No-Go」宣言。
+
+---
+
+## 🔄 ロールバック最短手順（5分復旧）
+
+1. **緊急停止**：`export STARLIST_SEND_DISABLED=1`（CIは環境秘密に設定）
+2. **影響遮断**：送信系ジョブを一時停止（CIスケジュールOFF）
+3. **証跡確保**：`make fingerprint` で Secrets指紋を1行追記（必ず）
+4. **原因切り分け**：`/dashboard/audit` と `ARTIFACTS` の当該スナップショットを照合
+5. **復旧判定**：p95/失敗率の正常化・差分パッチ適用 → `watch-10min` で2連安定後に再開検討
+
+---
+
+---
+
+## ✅ 仕上げ済みポイント（再確認）
+
+* **網羅**：Slack／Edge／Stripe／DBの4面監査
+* **再現**：JST＋Schema v2＋冪等オペ
+* **証跡**：Front-Matter／署名タグ／Artifacts／Logs／Secrets指紋
+* **安全**：改竄検知、レダクション、Safe Mode、緊急停止フラグ
+* **可観測**：KPIダッシュボード＋10分ウォッチ
+* **ガバナンス**：Retention/Glossary/RACI一体運用
 
 ---
 
