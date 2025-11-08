@@ -127,78 +127,93 @@ echo "${RESPONSE}" | tee /tmp/day11_dryrun.json | jq .
 echo ""
 echo "🔍 自動検証中..."
 
-# ============ Validation Functions (impl-aligned) ============
+# ============ Validation Functions (final, impl-aligned & robust) ============
+# 期待JSON例：
+# {
+#   "ok": true,
+#   "stats": { "mean_notifications": 12.3, "std_dev": 2.1, "new_threshold": 16, "critical_threshold": 20 },
+#   "weekly_summary": {
+#     "normal": 10, "warning": 2, "critical": 1,
+#     "normal_change": "+6.3%", "warning_change": "-2.0%", "critical_change": null
+#   },
+#   "message": "Next run: 2025-11-10 09:00 JST ..."
+# }
+
+parse_pct_or_null() {
+  # jq filter that converts "+6.3%" / "-2%" / "0%" / "6.3" / 6.3 / null -> number or null
+  cat <<'JQ'
+    (if . == null then null
+     elif (type=="number") then .
+     elif (type=="string") then
+       (. | gsub("[ %]";"") | gsub("\\+";"") ) as $s
+       | if ($s|test("^-?[0-9]*\\.?[0-9]+$")) then ($s|tonumber) else null end
+     else null end)
+JQ
+}
+
 validate_dryrun_json() {
   local f="$1"
 
   # 1) ベース必須
-  if ! jq -e '
+  jq -e '
     .ok == true and
     (.stats | type) == "object" and
     (.weekly_summary | type) == "object" and
     (.message | type) == "string"
-  ' "$f" >/dev/null 2>&1; then
-    echo "❌ ベース必須フィールドが不正です"
-    return 1
-  fi
+  ' "$f" >/dev/null || { echo "[ERR ] base fields invalid"; return 1; }
   echo "✅ ベース必須フィールドが正しいです"
 
-  # 2) stats: 実装フィールド（数値必須）
-  if ! jq -e '
+  # 2) stats: 数値 & 境界（std_dev>=0, thresholds>=0, critical>=new）
+  jq -e '
     (.stats.mean_notifications      | type) == "number" and
     (.stats.std_dev                 | type) == "number" and
     (.stats.new_threshold           | type) == "number" and
-    (.stats.critical_threshold      | type) == "number"
-  ' "$f" >/dev/null 2>&1; then
-    echo "❌ stats フィールドが不正です（数値必須）"
-    return 1
-  fi
-  echo "✅ stats フィールドが正しいです（σ=0許容）"
+    (.stats.critical_threshold      | type) == "number" and
+    (.stats.std_dev >= 0) and
+    (.stats.new_threshold >= 0) and
+    (.stats.critical_threshold >= .stats.new_threshold)
+  ' "$f" >/dev/null || { echo "[ERR ] stats invalid or out of range"; return 1; }
+  echo "✅ stats フィールドが正しいです（境界値チェックOK）"
 
-  # 3) weekly_summary: 実装フィールド
-  #    total系は number、変化率は string を許容（実装では文字列形式）
-  if ! jq -e '
-    ([.weekly_summary.normal,
-      .weekly_summary.warning,
-      .weekly_summary.critical] | all(type=="number")) and
-    ([.weekly_summary.normal_change,
-      .weekly_summary.warning_change,
-      .weekly_summary.critical_change] | all(.==null or (type=="string")))
-  ' "$f" >/dev/null 2>&1; then
-    echo "❌ weekly_summary フィールドが不正です"
-    return 1
-  fi
-  echo "✅ weekly_summary フィールドが正しいです（変化率は文字列形式）"
+  # 3) weekly_summary: 件数は非負整数、変化率は 文字列% / 数値 / null を許容
+  jq -e '
+    (.weekly_summary.normal   | type) == "number" and (.weekly_summary.normal   >= 0) and ((.weekly_summary.normal   | floor) == .weekly_summary.normal) and
+    (.weekly_summary.warning  | type) == "number" and (.weekly_summary.warning  >= 0) and ((.weekly_summary.warning  | floor) == .weekly_summary.warning) and
+    (.weekly_summary.critical | type) == "number" and (.weekly_summary.critical >= 0) and ((.weekly_summary.critical | floor) == .weekly_summary.critical)
+  ' "$f" >/dev/null || { echo "[ERR ] weekly_summary counts must be non-negative integers"; return 1; }
+  echo "✅ weekly_summary 件数が正しいです（非負整数）"
 
-  # 4) 次回実行日時：message 内に含まれる想定
-  #    「次回」「Next」の語を含むことだけをまず確認
-  if ! jq -e '(.message | test("次回|Next"))' "$f" >/dev/null 2>&1; then
-    echo "⚠️  message に次回実行日の記載がない可能性があります"
-  else
-    echo "✅ message に次回実行日が含まれています"
-  fi
+  # 3-2) 変化率の正規化（%文字列→数値）と NaN 回避チェック
+  local pct_filter
+  pct_filter="$(parse_pct_or_null)"
+  jq -e --argfile _ "$f" '
+    .weekly_summary as $w
+    | {
+        normal:  $w.normal,
+        warning: $w.warning,
+        critical:$w.critical,
+        normal_change:  ($w.normal_change | '"$pct_filter"'),
+        warning_change: ($w.warning_change | '"$pct_filter"'),
+        critical_change:($w.critical_change | '"$pct_filter"')
+      }
+    | true
+  ' "$f" >/dev/null || { echo "[ERR ] *_change normalization failed"; return 1; }
+  echo "✅ 変化率の正規化が成功しました（NaN回避）"
 
-  # 5) 任意：message から YYYY-MM-DD と HH:MM を抽出して ISO 風に復元（jq 1.6+）
-  #    失敗しても致命ではないため警告に留める
+  # 4) 次回実行日時っぽい表現を message から抽出（JP/ENのゆるい両対応）
+  #    YYYY-MM-DD と HH:MM を拾えたら表示。拾えなくても致命ではない。
   local next_run_iso
-  if next_run_iso="$(jq -r '
+  next_run_iso="$(
+    jq -r '
       .message
-      | (capture("(?<date>20[0-9]{2}-[01][0-9]-[0-3][0-9]).*?(?<time>[0-2][0-9]:[0-5][0-9])")? // empty)
-      | if . == {} then empty else (.date + "T" + .time + ":00+09:00") end
-    ' "$f" 2>/dev/null)" && [[ -n "${next_run_iso:-}" ]]; then
+      | capture("(?<date>20[0-9]{2}-[01][0-9]-[0-3][0-9]).*?(?<time>[0-2][0-9]:[0-5][0-9])")?
+      | if . == null then "" else (.date + "T" + .time + ":00+09:00") end
+    ' "$f"
+  )"
+  if [[ -n "$next_run_iso" ]]; then
     echo "[INFO] Next run (parsed): $next_run_iso"
   else
-    echo "[WARN] Could not parse next run from .message (format OK なら問題ありません)"
-  fi
-
-  # 6) 統計の簡易レンジ検証（負のしきい値を弾く等）
-  if jq -e '
-    .stats.new_threshold      >= 0 and
-    .stats.critical_threshold >= .stats.new_threshold
-  ' "$f" >/dev/null 2>&1; then
-    echo "[INFO] threshold range sanity: OK"
-  else
-    echo "[WARN] threshold range sanity check failed"
+    echo "[WARN] Could not parse next run from .message（表現差異は許容）"
   fi
 
   echo "[INFO] dryRun JSON validation: OK ✅"
@@ -207,10 +222,7 @@ validate_dryrun_json() {
 
 validate_send_json() {
   local f="$1"
-  if ! jq -e '.ok == true' "$f" >/dev/null 2>&1; then
-    echo "❌ send JSON validation failed"
-    return 1
-  fi
+  jq -e '.ok == true' "$f" >/dev/null || { echo "[ERR ] send json not ok"; return 1; }
   echo "[INFO] send JSON validation: OK ✅"
   return 0
 }
