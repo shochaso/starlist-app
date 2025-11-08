@@ -91,11 +91,75 @@ Source-of-Truth: Edge Functions (`supabase/functions/ops-summary-email/`) + GitH
 
 ## 8. 受け入れ基準（DoD for Day9）
 
-- [ ] DryRun（手動）でHTMLプレビューが200 / `.ok==true`
-- [ ] 任意の宛先で手動送信テストが成功（Resend or SendGrid）
-- [ ] 週次スケジュール（月曜09:00 JST）で自動実行が成功
-- [ ] `docs/ops/OPS-SUMMARY-EMAIL-001.md`に本文サンプル・指標定義・ロールバックを追記
-- [ ] `DAY9_SOT_DIFFS.md`に実行ログ・プレビュー画像を貼付
+- [x] Edge Function `ops-summary-email`を実装
+- [x] GitHub Actionsワークフローを作成
+- [x] HTMLテンプレートを生成
+- [x] Resend/SendGridでメール送信実装
+- [x] dryRunモードで動作確認可能
+- [ ] DryRun（手動）でHTMLプレビューが200 / `.ok==true`（実行待ち）
+- [ ] 任意の宛先で手動送信テストが成功（Resend or SendGrid）（実行待ち）
+- [ ] 週次スケジュール（月曜09:00 JST）で自動実行が成功（次週確認）
+- [x] `docs/ops/OPS-SUMMARY-EMAIL-001.md`に本文サンプル・指標定義・ロールバックを追記
+- [ ] `DAY9_SOT_DIFFS.md`に実行ログ・プレビュー画像を貼付（実行後）
+
+## 9. ロールバック手順
+
+- **ワークフロー無効化**: GitHub Actionsでワークフローを無効化
+- **Function revert**: 前バージョンのEdge Functionにロールバック
+- **Secrets削除**: メール送信用Secretsを削除して送信停止
+
+## 10. 本文サンプル
+
+### HTMLメールプレビュー
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+    .header { background: #2563eb; color: white; padding: 20px; text-align: center; }
+    .content { padding: 20px; }
+    .metric { margin: 20px 0; padding: 15px; background: #f3f4f6; border-radius: 8px; }
+    .metric-label { font-weight: bold; color: #6b7280; }
+    .metric-value { font-size: 24px; color: #111827; margin-top: 5px; }
+    .trend { color: #10b981; } /* 改善時は緑、悪化時は赤 */
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>STARLIST OPS Weekly Summary</h1>
+    <p>Period: Last 7 days</p>
+  </div>
+  <div class="content">
+    <div class="metric">
+      <div class="metric-label">Uptime</div>
+      <div class="metric-value">99.95%</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">Mean P95 Latency</div>
+      <div class="metric-value">420ms</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">Alerts</div>
+      <div class="metric-value">
+        12 
+        <span class="trend">(↓2 WoW)</span>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+```
+
+## 11. 到達性テスト手順
+
+1. **dryRun実行**: GitHub Actionsで手動実行し、HTMLプレビューを確認
+2. **本送信テスト**: テスト宛先でメール送信を確認
+3. **スケジュール確認**: 次週月曜09:00 JSTに自動実行されることを確認
+4. **メール受信確認**: 宛先にメールが届くことを確認
+5. **メトリクス検証**: メール内のメトリクスが正しいことを確認
 
 ## 9. ロールバック手順
 

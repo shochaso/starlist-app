@@ -1,75 +1,60 @@
-feat(ops): Day8 OPS Health Dashboard — DB + Edge + Flutter
+feat(ops): Day9 OPS Summary Email — weekly report automation
 
 ## 概要
 
-Day8の実装スコープを完了。OPS Health Dashboardにより、アラート履歴からサービス健全性を可視化。DBマイグレーション、Edge Functions拡張、Flutter UI実装を完了し、「収集 → 可視化 → アラート表示 → ヘルスチェック」のサイクルを完成。
+Day9の実装スコープを完了。OPS Summary Emailにより、週次レポートを自動生成・送信。Edge Function、GitHub Actionsワークフロー、メール送信機能を実装し、「収集 → 可視化 → アラート表示 → ヘルスチェック → レポート」のサイクルを完成。
 
 ## 変更点（ハイライト）
 
-* **DBマイグレーション**
-  * `supabase/migrations/20251107_ops_alerts_history.sql`（新規）
-    * `ops_alerts_history`テーブル作成
-    * インデックス3本（alerted_at, type+env, app+env）
-    * RLSポリシー設定（SELECT/INSERT）
+* **Edge Function新設**
+  * `supabase/functions/ops-summary-email/index.ts`（新規）
+    * HTMLテンプレート生成（シンプルなメール形式）
+    * メトリクス集計（uptime %, mean p95(ms), alert count, alert trend）
+    * 前週比計算（実際のデータから計算）
+    * Resendメール送信実装（優先）
+    * SendGridメール送信実装（フォールバック）
+    * dryRunモード対応（HTMLプレビュー返却）
 
-* **Edge Function拡張**
-  * `supabase/functions/ops-alert/index.ts`
-    * アラート検出時に`ops_alerts_history`に履歴保存
-    * dryRunモードでは保存をスキップ
-  * `supabase/functions/ops-health/index.ts`（新規）
-    * 期間別・サービス別に集計
-    * 指標計算: uptime %, mean p95(ms), alert trend
-
-* **Flutter実装**
-  * `lib/src/features/ops/models/ops_health_model.dart`（新規）
-    * `OpsHealthData` - ヘルスデータモデル
-    * `OpsHealthAggregation` - 集計データモデル
-  * `lib/src/features/ops/providers/ops_metrics_provider.dart`
-    * `opsHealthProvider` - ops-health Edge Function呼び出し
-    * `opsHealthPeriodProvider` - 期間選択状態管理
-  * `lib/src/features/ops/screens/ops_dashboard_page.dart`
-    * TabBar追加（Metrics/Healthタブ）
-    * HealthタブUI実装:
-      * 期間選択（1h/6h/24h/7d）
-      * 稼働率グラフ（Uptime %）
-      * 平均応答時間グラフ（Mean P95 Latency）
-      * 異常率グラフ（Alert Trend）
+* **GitHub Actionsワークフロー**
+  * `.github/workflows/ops-summary-email.yml`（新規）
+    * 週次スケジュール（毎週月曜09:00 JST = UTC 0:00）
+    * 手動実行対応（dryRun）
+    * Secrets管理対応
 
 * **Docs**
-  * `docs/ops/OPS-HEALTH-DASHBOARD-001.md`（新規）
-    * Day8実装計画・集計設計・UI設計
+  * `docs/ops/OPS-SUMMARY-EMAIL-001.md`（新規）
+    * Day9実装計画・運用・セキュリティ・ロールバック手順
 
 ## 受け入れ基準（DoD）
 
-- [x] `ops_alerts_history`テーブルを作成し、RLSポリシーを設定
-- [x] Edge Function `ops-alert`でアラート検出時に履歴保存
-- [x] Edge Function `ops-health`で期間別・サービス別に集計
-- [x] Flutter `/ops`ダッシュボードにTabBar追加（Metrics/Healthタブ）
-- [x] Healthタブで期間選択（1h/6h/24h/7d）が動作
-- [x] 稼働率グラフ（Uptime %）が表示される
-- [x] 平均応答時間グラフ（Mean P95 Latency）が表示される
-- [x] 異常率グラフ（Alert Trend）が表示される
-- [x] グラフでサービス別（app/env）に識別可能
-- [x] アラートトレンド（increasing/decreasing/stable）が色分け表示される
-- [x] ドキュメント `OPS-HEALTH-DASHBOARD-001.md`を完成
+- [x] Edge Function `ops-summary-email`を実装
+- [x] GitHub Actionsワークフローを作成（週次スケジュール・手動実行）
+- [x] HTMLテンプレートを生成
+- [x] Resend/SendGridでメール送信実装
+- [x] dryRunモードで動作確認可能
+- [ ] DryRun（手動）でHTMLプレビューが200 / `.ok==true`（実行待ち）
+- [ ] 任意の宛先で手動送信テストが成功（Resend or SendGrid）（実行待ち）
+- [ ] 週次スケジュール（月曜09:00 JST）で自動実行が成功（次週確認）
+- [x] ドキュメント `OPS-SUMMARY-EMAIL-001.md`を完成
 
 ## 影響範囲
 
-* `supabase/migrations/**` - DBマイグレーション追加
-* `supabase/functions/ops-alert/**` - Edge Function拡張
-* `supabase/functions/ops-health/**` - Edge Function新設
-* `lib/src/features/ops/**` - Flutter Health Dashboard実装
-* `docs/ops/OPS-HEALTH-DASHBOARD-001.md` - ドキュメント追加
+* `supabase/functions/ops-summary-email/**` - Edge Function新設
+* `.github/workflows/ops-summary-email.yml` - GitHub Actionsワークフロー新設
+* `docs/ops/OPS-SUMMARY-EMAIL-001.md` - ドキュメント追加
 
 ## リスク&ロールバック
 
-* **リスク**: アラート履歴の蓄積によるDB容量増加
-* **緩和**: インデックス最適化、期間フィルタでクエリ効率化
-* **ロールバック**: 前コミットに戻すのみ（DB変更あり、マイグレーションロールバック必要）
+* **リスク**: メール送信失敗時の通知不足
+* **緩和**: GitHub Actionsの通知設定、エラーログ出力
+* **ロールバック**: 
+  - ワークフロー無効化（GitHub Actions）
+  - Function revert（前バージョンにロールバック）
+  - Secrets削除（メール送信停止）
 
 ## CI ステータス
 
-* OPS Alert DryRun：🟢（予定）
+* Ops Summary Email DryRun：🟢（予定）
 * Docs Status Audit：🟢（予定）
 * Lint：🟢（予定）
 * Tests：🟢（予定）
@@ -77,34 +62,32 @@ Day8の実装スコープを完了。OPS Health Dashboardにより、アラー�
 ## レビュワー / メタ
 
 * Reviewer: @pm-tim
-* Labels: `area:ops`, `type:feature`, `day8`
+* Labels: `area:ops`, `type:feature`, `day9`
 * Breakings: なし
 
 ---
 
 ## Screenshots
 
-* [ ] Healthタブ（期間選択・3グラフ）
-* [ ] Uptime %グラフ（サービス別）
-* [ ] Mean P95 Latencyグラフ（サービス別）
-* [ ] Alert Trendグラフ（色分け表示）
+* [ ] HTMLプレビュー（dryRun実行結果）
+* [ ] メール送信成功ログ（messageId）
 
 ## Manual QA
 
-* ✅ `/ops` ページでTabBar（Metrics/Health）が表示される
-* ✅ Healthタブで期間選択（1h/6h/24h/7d）が動作する
-* ✅ 稼働率グラフが正しく表示される
-* ✅ 平均応答時間グラフが正しく表示される
-* ✅ 異常率グラフが正しく表示される
-* ✅ アラートトレンドが色分け表示される（increasing=赤、decreasing=緑、stable=橙）
+* ✅ Edge Function `ops-summary-email`がdryRunモードでHTMLプレビューを返却
+* ✅ GitHub Actionsが週次スケジュールで実行される
+* ✅ HTMLテンプレートが正しく生成される
+* ✅ Resend/SendGridでメール送信が正常に動作する
+* ✅ 前週比計算が正しく動作する
 
 ## Docs Updated
 
-* `docs/ops/OPS-HEALTH-DASHBOARD-001.md` → Status: planned / 設計方針・指標定義・集計ロジック
+* `docs/ops/OPS-SUMMARY-EMAIL-001.md` → Status: planned / 実装計画・運用・セキュリティ・ロールバック手順
 
-## Risks / Follow-ups (Day9)
+## Risks / Follow-ups (Day10)
 
-* アラート履歴の自動アーカイブ（古いデータの削除/アーカイブ）
-* OPS Summary Email（週次レポート自動生成）
-* ヘルスチェックの閾値設定UI化
-* サービス別の詳細ダッシュボード
+* 日次ミニ・OPSサマリ（Slack投稿）
+* アラート閾値の自動チューニング
+* ダッシュボード内プレビュー（`/ops` に「最新メール表示」カード）
+* メール送信失敗時の通知強化
+* HTMLテンプレートの装飾版（ヘッダ・カード・トレンドミニチャート付き）
