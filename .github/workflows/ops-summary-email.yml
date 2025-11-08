@@ -11,6 +11,12 @@ permissions:
 jobs:
   send:
     runs-on: ubuntu-latest
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+      RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+      RESEND_FROM: ${{ secrets.RESEND_FROM }}
+      RESEND_TO_LIST: ${{ secrets.RESEND_TO_LIST }}
     steps:
       - name: Checkout (no submodules)
         uses: actions/checkout@v4
@@ -26,22 +32,66 @@ jobs:
       - name: Install jq
         run: sudo apt-get update && sudo apt-get install -y jq
 
+      - name: Show workflow ref
+        run: |
+          echo "GITHUB_REF_NAME=${GITHUB_REF_NAME}"
+
+      - name: Validate required secrets
+        run: |
+          required=(SUPABASE_URL SUPABASE_ANON_KEY)
+          missing=0
+          for v in "${required[@]}"; do
+            if [ -z "${!v}" ]; then
+              echo "::error title=Missing secret::$v is empty"
+              missing=1
+            fi
+          done
+          if [ $missing -ne 0 ]; then exit 1; fi
+
+      - name: Normalize and resolve host
+        id: dns
+        shell: bash
+        run: |
+          RAW_URL="$SUPABASE_URL"
+          # 前後の空白・改行を除去
+          URL_TRIMMED="$(printf '%s' "$RAW_URL" | tr -d '\r' | sed -E 's/^[[:space:]]+|[[:space:]]+$//g')"
+          # 末尾のスラッシュ除去
+          URL_NOSLASH="$(printf '%s' "$URL_TRIMMED" | sed -E 's#/*$##')"
+          # ホスト名抽出
+          HOST="$(printf '%s' "$URL_NOSLASH" | sed -E 's#^https?://([^/]+).*#\1#')"
+
+          echo "SUPABASE_URL(normalized)=$URL_NOSLASH"
+          echo "HOST=$HOST"
+
+          # 形式検査
+          if ! echo "$URL_NOSLASH" | grep -Eq '^https://[a-z0-9-]+\.supabase\.co$'; then
+            echo "::error title=URL format error::Expected https://<project-ref>.supabase.co"
+            exit 1
+          fi
+
+          # DNS解決
+          getent hosts "$HOST" || { echo "::error title=DNS error::Failed to resolve $HOST"; exit 1; }
+
       - name: DryRun (preview HTML)
         if: ${{ github.event_name == 'workflow_dispatch' }}
-        env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
         run: |
           set -euo pipefail
-          RESPONSE=$(curl --fail --show-error --retry 3 --retry-all-errors --max-time 30 \
+          set -x
+          BASE="$SUPABASE_URL"
+          URL="${BASE%/}/functions/v1/ops-summary-email?dryRun=true"
+          curl -sS -D /tmp/h -o /tmp/body \
             -H "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
+            -H "apikey: ${SUPABASE_ANON_KEY}" \
             -H "Content-Type: application/json" \
-            "${SUPABASE_URL}/functions/v1/ops-summary-email?dryRun=true")
-          
-          echo "Response:"
-          echo "$RESPONSE" | jq .
-          
-          echo "$RESPONSE" | jq -e '.ok == true and (.preview|length>0)' || exit 1
+            "$URL" || exit 1
+          set +x
+          echo "--- headers ---"
+          cat /tmp/h
+          echo "--- body ---"
+          cat /tmp/body
+          echo ""
+          echo "--- validation ---"
+          cat /tmp/body | jq -e '.ok == true and (.preview|length>0)' || exit 1
           echo "[ops-summary-email] dryrun success"
 
       - name: Send Weekly Email (prod)
