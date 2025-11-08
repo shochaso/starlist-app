@@ -1,70 +1,48 @@
 name: security-audit
 
 on:
-  pull_request:
   push:
-    branches: [ main, develop ]
-
-permissions:
-  contents: read
-  security-events: write
+    branches: [ main, fix/security-hardening-web-csp-lock ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
-  deps-and-scan:
+  security-audit:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9
-
-      - name: Setup Node.js
+      - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'pnpm'
+          node-version: 20
 
-      - name: Install Node.js dependencies
+      - name: Install pnpm
         run: |
-          if [ -f "package.json" ]; then
-            pnpm install --frozen-lockfile || pnpm install
-          else
-            echo "No package.json found, skipping pnpm install"
-          fi
+          corepack enable
+          corepack prepare pnpm@latest --activate
 
-      - name: Audit Node.js dependencies
-        if: hashFiles('package.json') != ''
+      - name: Install JS deps (if any)
         run: |
-          if [ -f "pnpm-lock.yaml" ]; then
-            pnpm audit --prod || true
-          else
-            echo "pnpm-lock.yaml not found, skipping audit"
-          fi
-        continue-on-error: true
+          if [ -f package.json ]; then pnpm install; fi
 
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
+      - name: pnpm audit (report-only)
+        run: |
+          if [ -f pnpm-lock.yaml ]; then pnpm audit --audit-level=moderate || true; fi
+
+      - name: Set up Dart
+        uses: dart-lang/setup-dart@v1
         with:
-          flutter-version: '3.24.0'
-          channel: 'stable'
+          sdk: stable
 
-      - name: Install Flutter dependencies
-        run: flutter pub get
+      - name: dart pub get
+        run: dart pub get
 
-      - name: Audit Dart dependencies
-        run: |
-          dart pub outdated --no-dev || true
-        continue-on-error: true
+      - name: dart pub outdated (report-only)
+        run: dart pub outdated || true
 
-      - name: Run Semgrep (OSS)
+      - name: Run semgrep (report-only)
         uses: returntocorp/semgrep-action@v1
         with:
-          config: p/ci
-        continue-on-error: true
-
-      - name: Check for security issues
-        run: |
-          echo "Security audit completed. Review any warnings above."
-
+          args: --config=p/ci || true
