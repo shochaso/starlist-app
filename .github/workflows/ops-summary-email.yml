@@ -18,11 +18,12 @@ jobs:
       RESEND_FROM: ${{ secrets.RESEND_FROM }}
       RESEND_TO_LIST: ${{ secrets.RESEND_TO_LIST }}
     steps:
-      - name: Checkout (no submodules)
+      - name: Checkout repository
         uses: actions/checkout@v4
         with:
           submodules: false
           fetch-depth: 1
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Use Node.js 20
         uses: actions/setup-node@v4
