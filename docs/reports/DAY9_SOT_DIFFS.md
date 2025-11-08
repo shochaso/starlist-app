@@ -226,10 +226,23 @@ having count(*) > 1;
 - 状態: 調査中（Secrets設定済みだが、URL解決エラーが継続）
 
 **次の対応手順:**
-1. Supabase Dashboardで`ops-summary-email` Edge Functionがデプロイされているか確認
-2. `SUPABASE_URL`の値を再確認（正しいプロジェクト参照IDを使用）
-3. Edge Functionが未デプロイの場合は、デプロイを実行
-4. デプロイ後、再度dryRun実行
+1. ✅ Checkoutステップ修正完了（git cloneエラー解決）
+2. ✅ URL形式検証・DNS解決成功確認
+3. ❌ Edge Function未デプロイが判明（404 NOT_FOUND）
+4. Supabase Dashboardで`ops-summary-email` Edge Functionがデプロイされているか確認
+5. Edge Functionが未デプロイの場合は、デプロイを実行:
+   ```bash
+   supabase functions deploy ops-summary-email
+   ```
+   または Supabase Dashboard → Edge Functions → Deploy
+6. デプロイ後、再度dryRun実行
+
+**2025-11-08: dryRun実行失敗（Edge Function未デプロイ）**
+- Run ID: 19189493121
+- エラー: `HTTP/2 404` / `{"code":"NOT_FOUND","message":"Requested function was not found"}`
+- 原因: `ops-summary-email` Edge FunctionがSupabaseにデプロイされていない
+- 対応: Edge Functionをデプロイする必要がある
+- 状態: デプロイ待ち
 
 ---
 
