@@ -91,14 +91,14 @@ day11_execution() {
     exit 1
   }
   
-  # permalink保存
-  TMP_SEND="/tmp/day11_send.json"
-  if [ -f "$TMP_SEND" ]; then
-    PERMALINK=$(jq -r '.permalink? // .slack?.permalink? // "-"' "$TMP_SEND" 2>/dev/null || echo "-")
-    if [[ "$PERMALINK" != "-" ]]; then
-      echo "$PERMALINK" > "${REPORTS_DIR}/DAY11_PERMALINK.txt"
-      log "✅ Permalink saved: $PERMALINK"
-    fi
+  # permalink保存（DAY11_GO_LIVE.shが生成したキャッシュから取得）
+  PERMALINK_FILE=".day11_cache/permalink.txt"
+  if [ -f "$PERMALINK_FILE" ]; then
+    PERMALINK=$(cat "$PERMALINK_FILE")
+    echo "$PERMALINK" > "${REPORTS_DIR}/DAY11_PERMALINK.txt"
+    log "✅ Permalink saved: $PERMALINK"
+  else
+    warn "Permalink not found in cache"
   fi
   
   log "✅ Day11 execution completed"
@@ -179,15 +179,25 @@ generate_audit_report() {
 ## 2. Day11 Execution
 
 ### dryRun結果
-$(if [ -f /tmp/day11_dryrun.json ]; then
-  jq -r '.stats, .weekly_summary, .message' /tmp/day11_dryrun.json 2>/dev/null || echo "dryRun JSON not found"
+$(if [ -f logs/day11/*_dryrun.json ]; then
+  LATEST_DRY=$(ls -t logs/day11/*_dryrun.json 2>/dev/null | head -n1)
+  if [ -n "$LATEST_DRY" ]; then
+    jq -r '.stats, .weekly_summary, .message' "$LATEST_DRY" 2>/dev/null || echo "dryRun JSON parse error"
+  else
+    echo "dryRun JSON not found"
+  fi
 else
   echo "dryRun JSON not found"
 fi)
 
 ### 本送信結果
-$(if [ -f /tmp/day11_send.json ]; then
-  jq -r '.ok, .permalink? // .slack?.permalink? // "-"' /tmp/day11_send.json 2>/dev/null || echo "send JSON not found"
+$(if [ -f logs/day11/*_send.json ]; then
+  LATEST_SEND=$(ls -t logs/day11/*_send.json 2>/dev/null | head -n1)
+  if [ -n "$LATEST_SEND" ]; then
+    jq -r '.ok, .permalink? // .slack?.permalink? // "-"' "$LATEST_SEND" 2>/dev/null || echo "send JSON parse error"
+  else
+    echo "send JSON not found"
+  fi
 else
   echo "send JSON not found"
 fi)
@@ -195,6 +205,8 @@ fi)
 ### Permalink
 $(if [ -f "${REPORTS_DIR}/DAY11_PERMALINK.txt" ]; then
   cat "${REPORTS_DIR}/DAY11_PERMALINK.txt"
+elif [ -f .day11_cache/permalink.txt ]; then
+  cat .day11_cache/permalink.txt
 else
   echo "Not available"
 fi)
