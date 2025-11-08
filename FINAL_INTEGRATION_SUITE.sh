@@ -159,6 +159,22 @@ generate_audit_report() {
   log "=== 4) Audit Report Generation（監査一式を保存） ==="
   log ""
   
+  # 監査票自動生成スクリプトを使用（存在する場合）
+  if [ -f ./generate_audit_report.sh ]; then
+    chmod +x ./generate_audit_report.sh
+    log "Using generate_audit_report.sh for detailed audit report..."
+    ./generate_audit_report.sh --date "$DATE_DIR" || {
+      warn "generate_audit_report.sh failed, using fallback"
+      generate_audit_report_fallback
+    }
+  else
+    generate_audit_report_fallback
+  fi
+  log ""
+}
+
+generate_audit_report_fallback() {
+  log "Generating audit report (fallback)..."
   cat > "$AUDIT_REPORT" <<EOF
 # Day11 & Pricing 統合監査レポート
 
