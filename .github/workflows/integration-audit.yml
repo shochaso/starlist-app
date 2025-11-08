@@ -29,8 +29,9 @@ jobs:
       - name: Setup CLIs
         run: |
           sudo apt-get update && sudo apt-get install -y jq
-          npm i -g supabase
+          npm i -g supabase ajv-cli
           curl -fsSL https://cli.stripe.com/install.sh | bash
+          sudo snap install yq || echo "yq install failed (may need manual install)"
       
       - name: Auth CLIs
         run: |
@@ -54,10 +55,25 @@ jobs:
             tmp/audit_edge/*.log
           retention-days: 90
       
+      - name: Summarize to PR
+        if: ${{ github.event.pull_request.number }}
+        run: |
+          FILE=$(ls docs/reports/*_DAY11_AUDIT_*.md 2>/dev/null | tail -n1 || echo "")
+          if [ -n "$FILE" ]; then
+            TITLE=$(grep -m1 '^# ' "$FILE" | sed 's/^# //' || echo "Audit Report")
+            COUNT=$(awk '/^## 1. 件数サマリ/{flag=1;next}/^## /{flag=0}flag' "$FILE" | tr -d '\n' | head -c 200 || echo "N/A")
+            echo "### ${TITLE}" > pr_audit.md
+            echo "" >> pr_audit.md
+            echo "**Scope:** ${AUDIT_LOOKBACK_HOURS}h  |  TZ: ${TZ}" >> pr_audit.md
+            echo "" >> pr_audit.md
+            echo "**Counts:** \`${COUNT}\`" >> pr_audit.md
+          fi
+      
       - name: PR comment (optional)
-        if: ${{ github.event_name == 'workflow_dispatch' }}
+        if: ${{ github.event.pull_request.number }}
         uses: marocchino/sticky-pull-request-comment@v2
         with:
           recreate: true
-          path: docs/reports
+          path: pr_audit.md
+          message_path: pr_audit.md
 

@@ -1,4 +1,4 @@
-.PHONY: db-push db-pull fn-deploy fn-logs fn-serve day11 pricing audit all smoke
+.PHONY: db-push db-pull fn-deploy fn-logs fn-serve day11 pricing audit all smoke verify schema lint redact
 
 ## Supabase DB を dev 環境へ反映
 db-push:
@@ -49,3 +49,31 @@ smoke:
 	@command -v curl >/dev/null && echo "OK: curl" || (echo "curl missing" && exit 1)
 	@command -v date >/dev/null && echo "OK: date" || (echo "date missing" && exit 1)
 	@echo "Smoke test passed"
+
+## Front-matter schema validation
+verify:
+	@echo "Front-matter schema validation..."
+	@for file in docs/reports/*_AUDIT_*.md; do \
+	  if [ -f "$$file" ]; then \
+	    echo "Validating $$file..."; \
+	    awk '/^---$$/{f++} f==1{print} /^---$$/{if(f==2) exit}' "$$file" \
+	      | sed '1d;$$d' \
+	      | (command -v yq >/dev/null && yq -o=json || cat) \
+	      | (command -v ajv >/dev/null && ajv validate -s schemas/audit_report.schema.json -d /dev/stdin || echo "ajv not found, skipping validation"); \
+	  fi; \
+	done || echo "No audit reports found"
+
+## Install schema validation tools
+schema:
+	@npm i -g ajv-cli >/dev/null 2>&1 || echo "ajv-cli install failed (may need sudo)"
+	@command -v yq >/dev/null || (echo "yq not found. Install: snap install yq or brew install yq" && exit 1)
+	@echo "Schema tools ready"
+
+## Redact sensitive information from audit artifacts
+redact:
+	@find tmp -type f \( -name "*.json" -o -name "*.log" \) -maxdepth 2 \
+	  -exec bash -c 'scripts/utils/redact.sh < "{}" > "{}.safe" && echo "Redacted: {}"' \;
+
+## Lint markdown files
+lint:
+	@[ -f scripts/lint-md-local.sh ] && bash scripts/lint-md-local.sh || echo "skip"

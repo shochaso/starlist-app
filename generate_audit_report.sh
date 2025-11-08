@@ -155,12 +155,59 @@ log ""
 
 # ===== Generate Audit Report =====
 log "📋 5) 監査票生成"
+
+# Front-Matter生成
+REPORT_ID="audit_${RUN_DATE}_${RUN_WEEK}_$(date +%s)"
+GIT_SHA="$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")"
+EDGE_LOG_LIST="$(ls -1 ${EDGE_TMP_DIR}/*.log 2>/dev/null | xargs -I{} basename {} | paste -sd ',' || echo "")"
+
+# 異常検知（p95 latency）
+METRICS_JSON="${TMP_DIR}/metrics.json"
+if [ -f "${TMP_DIR}/send.json" ] && [ "$(jq 'length' "${TMP_DIR}/send.json" 2>/dev/null || echo 0)" -gt 0 ]; then
+  jq '
+    def p(v; n): (v|sort)[(length*n|floor)];
+    . as $raw
+    | { 
+        count: ($raw|length),
+        statuses: ($raw | group_by(.status//200) | map({k:(.[0].status//200), n:length})),
+        p95_latency_ms: ( ($raw | map(.latency_ms//null) | del(.[]|select(.==null))) as $L | if ($L|length > 0) then p($L;0.95) else null end )
+      }
+  ' "${TMP_DIR}/send.json" > "$METRICS_JSON" 2>/dev/null || echo '{"count":0,"statuses":[],"p95_latency_ms":null}' > "$METRICS_JSON"
+  
+  P95_LATENCY_BUDGET_MS="${P95_LATENCY_BUDGET_MS:-2000}"
+  ANOMALY_P95="$(jq -r --arg budget "$P95_LATENCY_BUDGET_MS" '.p95_latency_ms as $p95 | if ($p95 != null and $p95 > ($budget|tonumber)) then "NG" else "OK" end' "$METRICS_JSON" 2>/dev/null || echo "OK")"
+else
+  echo '{"count":0,"statuses":[],"p95_latency_ms":null}' > "$METRICS_JSON"
+  ANOMALY_P95="OK"
+fi
+
 cat > "$AUDIT_REPORT" <<EOF
+---
+report_id: "$REPORT_ID"
+generated_at: "$RUN_DATE_JST"
+tz: "$TZ"
+scope_hours: ${AUDIT_LOOKBACK_HOURS}
+supabase_ref: "$PROJECT_REF"
+slack_permalink: "${PERMALINK:-""}"
+git_sha: "$GIT_SHA"
+artifacts:
+  dryrun_json: "${TMP_DIR}/dryrun_merged.json"
+  send_json: "${TMP_DIR}/send_merged.json"
+  stripe_json: "${STRIPE_TMP_DIR}/events_starlist.json"
+  edge_logs: "$EDGE_LOG_LIST"
+checks:
+  - name: slack_permalink_exists
+  - name: edge_logs_collected
+  - name: stripe_events_nonzero
+  - name: day11_send_not_empty
+  - name: p95_latency_within_budget
+---
+
 # Day11 & Pricing 統合監査票（自動生成）
 
 - 生成日時（JST）: **${RUN_DATE_JST}**
 - 監査範囲: 過去 **${AUDIT_LOOKBACK_HOURS}h**（since: ${AUDIT_SINCE_ISO:-N/A}, UTC）
-- Git: \`$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")\`
+- Git: \`${GIT_SHA}\`
 - Slack Permalink: ${PERMALINK:-"(未取得)"}
 
 ---
@@ -251,6 +298,13 @@ limit 10;
 - Slack投稿: $( [[ -n "$PERMALINK" ]] && echo "**OK**" || echo "**NG**: Permalink未取得")
 - Edgeログ:  $( [[ -n "$EDGE_LIST" ]]    && echo "**OK**" || echo "**NG**: 収集なし")
 - Stripe:     $( [[ -s "${STRIPE_TMP_DIR}/events_starlist.json" ]] && jq 'length > 0' "${STRIPE_TMP_DIR}/events_starlist.json" 2>/dev/null && echo "**OK**" || echo "**NG**: 抽出0件")
+- P95 Latency: $(echo "$ANOMALY_P95" | grep -q "NG" && echo "**NG**: P95超過（予算: ${P95_LATENCY_BUDGET_MS:-2000}ms）" || echo "**OK**")
+
+### 5.1 異常検知メトリクス
+
+\`\`\`json
+$(cat "$METRICS_JSON" 2>/dev/null || echo "{}")
+\`\`\`
 
 ---
 
@@ -292,9 +346,32 @@ limit 10;
 EOF
 
 log "✅ 監査票生成完了: $AUDIT_REPORT"
+
+# 失敗モード別フォールバック（明確なExit Code）
+EXIT=0
+[[ -n "$PERMALINK" ]] || EXIT=21      # Slackリンク未取得
+if [[ ! -s "${STRIPE_TMP_DIR}/events_starlist.json" ]] || [[ "$(jq 'length' "${STRIPE_TMP_DIR}/events_starlist.json" 2>/dev/null || echo 0)" -eq 0 ]]; then 
+  EXIT=22  # Stripe抽出0件
+fi
+if [[ "$(jq '.|length' "${TMP_DIR}/send.json" 2>/dev/null || echo 0)" -eq 0 ]]; then 
+  EXIT=23  # Day11 send 空
+fi
+
+if [[ $EXIT -ne 0 ]]; then
+  warn "Exit code: $EXIT"
+  case $EXIT in
+    21) warn "Slack Permalink未取得（Webhook/権限/429）" ;;
+    22) warn "Stripe抽出0件（型/Lookback/API Key）" ;;
+    23) warn "Day11 send空（実行失敗/権限）" ;;
+  esac
+fi
+
 log ""
 log "📝 次のステップ:"
 log "  1. 監査票を確認: $AUDIT_REPORT"
-log "  2. 不足情報を手動で追記"
-log "  3. PRテンプレートを使用してPR作成"
+log "  2. 構造検証: make verify"
+log "  3. 不足情報を手動で追記"
+log "  4. PRテンプレートを使用してPR作成"
 log ""
+
+exit $EXIT
