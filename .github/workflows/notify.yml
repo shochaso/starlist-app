@@ -1,8 +1,7 @@
 name: Slack Notification with Debounce
 
 on:
-  pull_request:
-    types: [opened, synchronize, reopened, labeled, unlabeled]
+  # pull_request の自動実行を外し、PRゲートから切り離す
   issue_comment:
     types: [created]
   pull_request_review_comment:

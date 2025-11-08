@@ -1,0 +1,57 @@
+name: security-audit
+
+on:
+  push:
+    branches: [ main, fix/security-hardening-web-csp-lock ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  security-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@latest --activate
+
+      - name: Install JS deps (if any)
+        run: |
+          if [ -f package.json ]; then pnpm install; fi
+
+      - name: pnpm audit (report-only)
+        run: |
+          if [ -f pnpm-lock.yaml ]; then pnpm audit --audit-level=moderate || true; fi
+
+      - name: Setup Flutter 3.27.0
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.27.0"
+          channel: "stable"
+
+      - name: Set up Dart (use Flutter's Dart SDK)
+        run: |
+          echo "Flutter includes Dart SDK, using Flutter's Dart version"
+          flutter --version
+          dart --version
+
+      - name: flutter pub get
+        run: flutter pub get || (echo "pub get failed, trying with cache repair..." && dart pub cache repair && flutter pub get)
+        continue-on-error: true
+
+      - name: dart pub outdated (report-only)
+        run: dart pub outdated || true
+
+      - name: Run semgrep (report-only)
+        uses: returntocorp/semgrep-action@v1
+        with:
+          config: p/ci
+        continue-on-error: true

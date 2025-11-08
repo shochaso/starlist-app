@@ -1,0 +1,43 @@
+# Gitleaks configuration for Starlist
+# Detects secrets and credentials in code
+
+title = "Starlist Gitleaks Config"
+
+[extend]
+# Use default rules
+useDefault = true
+
+[[rules]]
+id = "starlist-supabase-service-role"
+description = "Supabase Service Role Key"
+regex = '''(?i)(supabase[_-]?service[_-]?role[_-]?key|SUPABASE_SERVICE_ROLE_KEY)\s*[=:]\s*['"]?[a-zA-Z0-9_-]{40,}['"]?'''
+tags = ["key", "supabase", "secret"]
+
+[[rules]]
+id = "starlist-stripe-secret"
+description = "Stripe Secret Key"
+regex = '''(?i)(stripe[_-]?secret[_-]?key|STRIPE_SECRET_KEY|sk_[a-zA-Z0-9]{24,})\s*[=:]\s*['"]?[a-zA-Z0-9_-]{40,}['"]?'''
+tags = ["key", "stripe", "secret"]
+
+[[rules]]
+id = "starlist-slack-webhook"
+description = "Slack Webhook URL"
+regex = '''https://hooks\.slack\.com/services/[a-zA-Z0-9]+/[a-zA-Z0-9]+/[a-zA-Z0-9]+'''
+tags = ["webhook", "slack", "secret"]
+
+[[rules]]
+id = "starlist-ops-service-secret"
+description = "OPS Service Secret"
+regex = '''(?i)(OPS_SERVICE_SECRET|ops[_-]?service[_-]?secret)\s*[=:]\s*['"]?[a-zA-Z0-9]{32,}['"]?'''
+tags = ["secret", "ops"]
+
+[allowlist]
+description = "Allowlist for known false positives"
+paths = [
+  '''\.md$''',
+  '''\.example$''',
+  '''\.template$',
+  '''SECURITY_SWEEP\.txt$''',
+  '''docs/''',
+]
+

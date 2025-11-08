@@ -21,6 +21,24 @@
   <meta name="description" content="Starlist: 消費習慣を記録・共有するアプリ">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+  <!-- Report-Only CSP: まずは運用観察フェーズ -->
+  <meta http-equiv="Content-Security-Policy-Report-Only"
+        content="
+          default-src 'self';
+          script-src 'self';
+          connect-src 'self' https://*.supabase.co https://api.segment.io https://sentry.io https://*.sentry.io;
+          img-src 'self' data: blob: https:;
+          style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+          font-src 'self' https://fonts.gstatic.com data:;
+          frame-ancestors 'none';
+          object-src 'none';
+          base-uri 'self';
+          report-uri /_/csp-report;
+        ">
+  <meta http-equiv="X-Frame-Options" content="DENY">
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+
   <!-- iOS meta tags & icons -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
