@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# 監査票自動生成スクリプト（permalink・Edgeログ・Stripeイベントを集約）
-# Usage: ./generate_audit_report.sh [--date YYYYMMDD]
+# 監査票自動生成スクリプト（permalink・Edgeログ・Stripeイベントを集約・強化版）
+# Usage: ./generate_audit_report.sh [--date YYYYMMDD] [--lookback HOURS]
 
 set -Eeuo pipefail
 
@@ -22,199 +22,210 @@ require_cmd date
 require_env SUPABASE_URL
 
 # ===== Setup =====
+: "${AUDIT_LOOKBACK_HOURS:=36}"         # 必要に応じて延長
+: "${TZ:=Asia/Tokyo}"                   # 監査票はJSTで固める
+export TZ
+
+AUDIT_SINCE_ISO="$(date -u -d "-${AUDIT_LOOKBACK_HOURS} hours" +"%Y-%m-%dT%H:%M:%SZ" 2>/dev/null || date -u -v-${AUDIT_LOOKBACK_HOURS}H +"%Y-%m-%dT%H:%M:%SZ" 2>/dev/null || echo "")"
+RUN_DATE_JST="$(TZ="$TZ" date +"%Y-%m-%d %H:%M:%S %Z")"
+
 DATE_DIR="${1:-$(date +'%Y%m%d')}"
 if [[ "$DATE_DIR" == "--date" ]]; then
   DATE_DIR="${2:-$(date +'%Y%m%d')}"
 fi
+if [[ "$DATE_DIR" == "--lookback" ]]; then
+  AUDIT_LOOKBACK_HOURS="${2:-36}"
+  DATE_DIR="$(date +'%Y%m%d')"
+fi
 
 TS="$(date +'%Y-%m-%dT%H:%M:%S%z')"
 REPORTS_DIR="docs/reports/${DATE_DIR}"
-mkdir -p "$REPORTS_DIR"
+TMP_DIR="tmp/audit_day11"
+STRIPE_TMP_DIR="tmp/audit_stripe"
+EDGE_TMP_DIR="tmp/audit_edge"
+mkdir -p "$REPORTS_DIR" "$TMP_DIR" "$STRIPE_TMP_DIR" "$EDGE_TMP_DIR"
 
 AUDIT_REPORT="${REPORTS_DIR}/AUDIT_REPORT_${TS}.md"
 
+# ===== Helper Functions =====
+checksum() {
+  if command -v shasum >/dev/null 2>&1; then
+    shasum -a 256 "$1" 2>/dev/null | awk '{print $1}'
+  elif command -v sha256sum >/dev/null 2>&1; then
+    sha256sum "$1" 2>/dev/null | awk '{print $1}'
+  else
+    echo "n/a"
+  fi
+}
+
+get_permalink() {
+  for f in ".day11_cache/permalink.txt" "docs/reports/${DATE_DIR}/DAY11_PERMALINK.txt" "logs/day11/permalink.txt"; do
+    [[ -s "$f" ]] && { cat "$f"; return 0; }
+  done
+  # JSONログからURLっぽいものを抽出（保険）
+  grep -rhoE "https://.*slack.com/archives/[A-Z0-9]+/p[0-9]+" logs/day11 2>/dev/null | head -n1 || true
+}
+
+collect_edge_logs() {
+  local project_ref="${SUPABASE_PROJECT_REF:-$(basename "$SUPABASE_URL" .supabase.co)}"
+  local edge_funcs=("ops-slack-summary" "ops-summary-email")
+  
+  if ! command -v supabase >/dev/null 2>&1; then
+    warn "Supabase CLI not found, skipping Edge logs"
+    return 0
+  fi
+  
+  for fn in "${edge_funcs[@]}"; do
+    log "Collecting Edge logs for $fn..."
+    supabase functions logs --project-ref "$project_ref" --function-name "$fn" --since "$AUDIT_LOOKBACK_HOURS hours" \
+      > "${EDGE_TMP_DIR}/${fn}.log" 2>&1 || warn "Failed to collect logs for $fn"
+  done
+}
+
+collect_stripe_events() {
+  if ! command -v stripe >/dev/null 2>&1; then
+    warn "Stripe CLI not found, skipping Stripe events"
+    return 0
+  fi
+  
+  : "${STRIPE_EVENT_TYPES:=checkout.session.completed payment_intent.succeeded customer.subscription.updated}"
+  : "${STRIPE_LOOKBACK_SEC:=$((AUDIT_LOOKBACK_HOURS*3600))}"
+  
+  local created_since=$(date -u +%s --date="-${AUDIT_LOOKBACK_HOURS} hours" 2>/dev/null || date -u -v-${AUDIT_LOOKBACK_HOURS}H +%s 2>/dev/null || echo "")
+  
+  log "Collecting Stripe events..."
+  stripe events list \
+    --limit 100 \
+    ${created_since:+--created "gte=$created_since"} \
+    -j > "${STRIPE_TMP_DIR}/events.json" 2>&1 || warn "Failed to collect Stripe events"
+  
+  # Starlist対象のみ抽出（メタデータ/価格ID/通貨など任意条件）
+  if [ -f "${STRIPE_TMP_DIR}/events.json" ]; then
+    jq '
+      .data
+      | map(select(
+          ( .data.object.metadata.app // "" ) == "starlist"
+          or ( .data.object.currency // "" ) == "jpy"
+          or ( .type | contains("checkout.session") )
+        ))
+    ' "${STRIPE_TMP_DIR}/events.json" > "${STRIPE_TMP_DIR}/events_starlist.json" 2>/dev/null || echo "[]" > "${STRIPE_TMP_DIR}/events_starlist.json"
+  fi
+}
+
+merge_day11_logs() {
+  log "Merging Day11 JSON logs..."
+  jq -s 'flatten' logs/day11/*_dryrun.json 2>/dev/null > "${TMP_DIR}/dryrun_merged.json" || echo "[]" > "${TMP_DIR}/dryrun_merged.json"
+  jq -s 'flatten' logs/day11/*_send.json   2>/dev/null > "${TMP_DIR}/send_merged.json"   || echo "[]" > "${TMP_DIR}/send_merged.json"
+}
+
 # ===== Collect Data =====
-log "=== 監査票自動生成 ==="
+log "=== 監査票自動生成（強化版） ==="
+log "監査範囲: 過去 ${AUDIT_LOOKBACK_HOURS}h（since: ${AUDIT_SINCE_ISO:-N/A}, UTC）"
 log ""
 
 # 1) Permalink収集
 log "📋 1) Permalink収集"
-PERMALINK=""
-if [ -f ".day11_cache/permalink.txt" ]; then
-  PERMALINK=$(cat ".day11_cache/permalink.txt")
-  log "✅ Permalink found: $PERMALINK"
-elif [ -f "${REPORTS_DIR}/DAY11_PERMALINK.txt" ]; then
-  PERMALINK=$(cat "${REPORTS_DIR}/DAY11_PERMALINK.txt")
+PERMALINK="$(get_permalink)"
+if [ -n "$PERMALINK" ]; then
   log "✅ Permalink found: $PERMALINK"
 else
   warn "Permalink not found"
 fi
 log ""
 
-# 2) Edge Function Logs収集
-log "📋 2) Edge Function Logs収集"
-EDGE_LOGS=""
-if command -v supabase >/dev/null 2>&1; then
-  PROJECT_REF=$(basename "$SUPABASE_URL" .supabase.co)
-  log "Fetching Edge Function logs..."
-  EDGE_LOGS=$(supabase functions logs --project-ref "$PROJECT_REF" --function-name "ops-slack-summary" --since 2h 2>/dev/null | tail -n 50 || echo "")
-  if [ -n "$EDGE_LOGS" ]; then
-    log "✅ Edge logs collected"
-  else
-    warn "Edge logs not available"
-  fi
-else
-  warn "Supabase CLI not found, skipping Edge logs"
-fi
+# 2) Day11 JSON Logs収集・マージ
+log "📋 2) Day11 JSON Logs収集・マージ"
+merge_day11_logs
+DRYRUN_SUM="$(checksum "${TMP_DIR}/dryrun_merged.json")"
+SEND_SUM="$(checksum "${TMP_DIR}/send_merged.json")"
+log "✅ Day11 logs merged"
 log ""
 
-# 3) Day11 JSON Logs収集
-log "📋 3) Day11 JSON Logs収集"
-DRYRUN_JSON=""
-SEND_JSON=""
-if [ -d "logs/day11" ]; then
-  LATEST_DRY=$(ls -t logs/day11/*_dryrun.json 2>/dev/null | head -n1)
-  LATEST_SEND=$(ls -t logs/day11/*_send.json 2>/dev/null | head -n1)
-  
-  if [ -n "$LATEST_DRY" ] && [ -f "$LATEST_DRY" ]; then
-    DRYRUN_JSON=$(cat "$LATEST_DRY")
-    log "✅ dryRun JSON found: $LATEST_DRY"
-  fi
-  
-  if [ -n "$LATEST_SEND" ] && [ -f "$LATEST_SEND" ]; then
-    SEND_JSON=$(cat "$LATEST_SEND")
-    log "✅ send JSON found: $LATEST_SEND"
-  fi
-else
-  warn "logs/day11 directory not found"
-fi
+# 3) Edge Function Logs収集
+log "📋 3) Edge Function Logs収集"
+collect_edge_logs
+EDGE_LIST="$(ls -1 ${EDGE_TMP_DIR}/*.log 2>/dev/null | xargs -I{} basename {} | paste -sd ',' || echo "")"
 log ""
 
-# 4) Stripe Events収集（Pricing機能用）
-log "📋 4) Stripe Events収集（Pricing機能用）"
-STRIPE_EVENTS=""
-if command -v stripe >/dev/null 2>&1; then
-  log "Fetching recent Stripe events..."
-  STRIPE_EVENTS=$(stripe events list --limit 10 2>/dev/null | jq -r '.data[] | "\(.created) \(.type) \(.id)"' || echo "")
-  if [ -n "$STRIPE_EVENTS" ]; then
-    log "✅ Stripe events collected"
-  else
-    warn "Stripe events not available"
-  fi
-else
-  warn "Stripe CLI not found, skipping Stripe events"
-fi
+# 4) Stripe Events収集
+log "📋 4) Stripe Events収集"
+collect_stripe_events
+STRIPE_SUM="$(checksum "${STRIPE_TMP_DIR}/events_starlist.json")"
 log ""
 
 # ===== Generate Audit Report =====
 log "📋 5) 監査票生成"
 cat > "$AUDIT_REPORT" <<EOF
-# Day11 & Pricing 統合監査レポート（自動生成）
+# Day11 & Pricing 統合監査票（自動生成）
 
-**生成日時**: ${TS}  
-**実行者**: $(whoami)  
-**環境**: ${SUPABASE_URL}
-
----
-
-## 1. Preflight Check
-
-- ✅ Environment Variables確認完了
-- ✅ SUPABASE_URL形式検証完了（20桁ref）
-- ✅ Preflightスクリプト実行完了
-
-### Environment Matrix
-\`\`\`
-SUPABASE_URL: ${SUPABASE_URL}
-SUPABASE_ANON_KEY: <masked>
-TZ: Asia/Tokyo
-\`\`\`
+- 生成日時（JST）: **${RUN_DATE_JST}**
+- 監査範囲: 過去 **${AUDIT_LOOKBACK_HOURS}h**（since: ${AUDIT_SINCE_ISO:-N/A}, UTC）
+- Git: \`$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")\`
+- Slack Permalink: ${PERMALINK:-"(未取得)"}
 
 ---
 
-## 2. Day11 Execution
+## 1. Day11 実行ログ（サマリ）
 
-### dryRun結果
-$(if [ -n "$DRYRUN_JSON" ]; then
+- dryRun ログ: \`${TMP_DIR}/dryrun_merged.json\`（sha256=${DRYRUN_SUM:-n/a}）
+- send ログ: \`${TMP_DIR}/send_merged.json\`（sha256=${SEND_SUM:-n/a}）
+
+### 1.1 送信件数（自動計上）
+
+\`\`\`json
+$(jq -n --slurpfile d "${TMP_DIR}/dryrun_merged.json" --slurpfile s "${TMP_DIR}/send_merged.json" \
+  '{dryRun: ($d[0]|length), send: ($s[0]|length)}' 2>/dev/null || echo '{"dryRun": 0, "send": 0}')
+\`\`\`
+
+### 1.2 最新dryRun結果
+
+$(if [ -f "${TMP_DIR}/dryrun_merged.json" ] && [ "$(jq 'length' "${TMP_DIR}/dryrun_merged.json" 2>/dev/null || echo 0)" -gt 0 ]; then
   echo '```json'
-  echo "$DRYRUN_JSON" | jq '.' 2>/dev/null || echo "$DRYRUN_JSON"
+  jq '.[-1] | {ok, stats: .stats, weekly_summary: .weekly_summary, message: .message}' "${TMP_DIR}/dryrun_merged.json" 2>/dev/null || echo "{}"
   echo '```'
-  echo ""
-  echo "**検証結果**:"
-  echo "$DRYRUN_JSON" | jq -r '
-    "  - ok: " + (.ok | tostring) +
-    "\n  - mean_notifications: " + (.stats.mean_notifications | tostring) +
-    "\n  - std_dev: " + (.stats.std_dev | tostring) +
-    "\n  - new_threshold: " + (.stats.new_threshold | tostring) +
-    "\n  - critical_threshold: " + (.stats.critical_threshold | tostring)
-  ' 2>/dev/null || echo "  - JSON解析エラー"
 else
   echo "dryRun JSON not found"
 fi)
 
-### 本送信結果
-$(if [ -n "$SEND_JSON" ]; then
+### 1.3 最新send結果
+
+$(if [ -f "${TMP_DIR}/send_merged.json" ] && [ "$(jq 'length' "${TMP_DIR}/send_merged.json" 2>/dev/null || echo 0)" -gt 0 ]; then
   echo '```json'
-  echo "$SEND_JSON" | jq '.' 2>/dev/null || echo "$SEND_JSON"
+  jq '.[-1] | {ok, permalink: (.permalink? // .slack?.permalink? // .message_url? // "N/A")}' "${TMP_DIR}/send_merged.json" 2>/dev/null || echo "{}"
   echo '```'
-  echo ""
-  echo "**検証結果**:"
-  echo "$SEND_JSON" | jq -r '
-    "  - ok: " + (.ok | tostring) +
-    "\n  - permalink: " + (.permalink? // .slack?.permalink? // .message_url? // "N/A" | tostring)
-  ' 2>/dev/null || echo "  - JSON解析エラー"
 else
   echo "send JSON not found"
 fi)
 
-### Permalink
-$(if [ -n "$PERMALINK" ]; then
-  echo "[$PERMALINK]($PERMALINK)"
-else
-  echo "Not available"
-fi)
+---
+
+## 2. Supabase Edge Logs
+
+- 収集対象: ${EDGE_LIST:-"(なし)"}
+
+\`\`\`text
+$(for f in ${EDGE_TMP_DIR}/*.log; do
+  [[ -s "$f" ]] || continue
+  echo "===== $(basename "$f") ====="
+  tail -n 80 "$f"
+  echo
+done || echo "Edge logs not available")
+\`\`\`
 
 ---
 
-## 3. Edge Function Logs
+## 3. Stripe Pricing イベント
 
-$(if [ -n "$EDGE_LOGS" ]; then
-  echo '```'
-  echo "$EDGE_LOGS"
-  echo '```'
-else
-  echo "Edge Function logs not available"
-  echo ""
-  echo "手動で確認:"
-  echo "\`\`\`bash"
-  echo "supabase functions logs --project-ref <ref> --function-name ops-slack-summary --since 2h"
-  echo "\`\`\`"
-fi)
+- 抽出ファイル: \`${STRIPE_TMP_DIR}/events_starlist.json\`（sha256=${STRIPE_SUM:-n/a}）
+- 代表イベント（最大10件）
+
+\`\`\`json
+$(jq '.[0:10] | map({id: .id, type, created, amount_total: (.data.object.amount_total // .data.object.amount // null), customer: (.data.object.customer // null)})' "${STRIPE_TMP_DIR}/events_starlist.json" 2>/dev/null || echo "[]")
+\`\`\`
 
 ---
 
-## 4. Stripe Events（Pricing機能用）
-
-$(if [ -n "$STRIPE_EVENTS" ]; then
-  echo "### 直近10件のStripe Events"
-  echo ""
-  echo '| Created | Type | ID |'
-  echo '|---------|------|-----|'
-  echo "$STRIPE_EVENTS" | while IFS=' ' read -r created type id; do
-    echo "| $created | $type | \`$id\` |"
-  done
-else
-  echo "Stripe events not available"
-  echo ""
-  echo "手動で確認:"
-  echo "\`\`\`bash"
-  echo "stripe events list --limit 10"
-  echo "\`\`\`"
-fi)
-
----
-
-## 5. Pricing E2E Test
+## 4. Pricing E2E Test
 
 ### 検証項目
 - [ ] 学生プラン：推奨価格表示・バリデーション・Checkout→DB保存
@@ -231,7 +242,15 @@ order by updated_at desc
 limit 10;
 \`\`\`
 
-**結果**: 手動で確認してください
+**結果**: 手動で確認してください（plan_priceが整数の円で保存されていること）
+
+---
+
+## 5. 整合性チェック（自動判定）
+
+- Slack投稿: $( [[ -n "$PERMALINK" ]] && echo "**OK**" || echo "**NG**: Permalink未取得")
+- Edgeログ:  $( [[ -n "$EDGE_LIST" ]]    && echo "**OK**" || echo "**NG**: 収集なし")
+- Stripe:     $( [[ -s "${STRIPE_TMP_DIR}/events_starlist.json" ]] && jq 'length > 0' "${STRIPE_TMP_DIR}/events_starlist.json" 2>/dev/null && echo "**OK**" || echo "**NG**: 抽出0件")
 
 ---
 
@@ -250,55 +269,26 @@ limit 10;
 
 ---
 
-## 7. ログファイル
+## 7. インシデント対処・ロールバック（要約）
 
-### Day11
-$(if [ -n "$LATEST_DRY" ]; then
-  echo "- dryRun JSON: \`$LATEST_DRY\`"
-else
-  echo "- dryRun JSON: not found"
-fi)
-$(if [ -n "$LATEST_SEND" ]; then
-  echo "- Send JSON: \`$LATEST_SEND\`"
-else
-  echo "- Send JSON: not found"
-fi)
-
-### Pricing
-- Webhook検証ログ: `<pricing logs>`
-- E2Eテストログ: `<test logs>`
+- 二重投稿 → 関数/トリガー一時停止、キャッシュ確認、再送要因を除去後に再実行（dryRun→send）
+- 429/5xx → 最大2回の指数バックオフで回復しない場合は停止、Edgeログ確認とSecrets再注入
+- JSON不整合 → ビュー再集計・型崩れ修正後にdryRun再検証
+- plan_priceがNULL → 金額単位変換を確認（amount_total/unit_amountの基数）
 
 ---
 
-## 8. 次のステップ
+## 8. 付記
 
-1. ✅ Slack #ops-monitor チャンネルで週次サマリを確認
-2. ✅ Supabase Functions Logs でログを確認
-3. ✅ 重要ファイル（OPS-MONITORING-V3-001.md / Mermaid.md）を更新
-4. ✅ PR作成（付属テンプレート使用）
-
----
-
-## 9. インシデント対処
-
-### 失敗時の復旧手順
-1. \`DAY11_RECOVERY_TEMPLATE.sh\` を実行
-2. Slack到達確認（UI確認）
-3. Edge Functionログ確認（\`supabase functions logs\`）
-4. DBビュー再集計確認（\`v_ops_notify_stats\`）
-5. Secrets再読込み確認
-
-### ロールバック手順
-1. GitHub Actions workflow を無効化
-2. Supabase Edge Function を前バージョンにロールバック
-3. DBビューを前バージョンにロールバック（必要に応じて）
+- 生成コマンド: \`./FINAL_INTEGRATION_SUITE.sh\` → \`generate_audit_report.sh\`
+- タイムゾーン: ${TZ}
+- 注意: 本監査票は**自動生成**。疑義がある場合は各原本（ログ/イベントJSON）を参照のこと。
 
 ---
 
-**監査完了日時**: $(date +'%Y-%m-%d %H:%M:%S %Z')  
+**監査完了日時**: ${RUN_DATE_JST}  
 **監査者**: $(whoami)  
-**承認**: `<approver>`
-
+**承認**: <approver>
 EOF
 
 log "✅ 監査票生成完了: $AUDIT_REPORT"
@@ -308,4 +298,3 @@ log "  1. 監査票を確認: $AUDIT_REPORT"
 log "  2. 不足情報を手動で追記"
 log "  3. PRテンプレートを使用してPR作成"
 log ""
-

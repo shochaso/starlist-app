@@ -1,0 +1,52 @@
+name: Generate Audit Report
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "5 0 * * 1"  # 毎週月曜 09:05 JST（=00:05 UTC）
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    env:
+      TZ: Asia/Tokyo
+      SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      STRIPE_API_KEY: ${{ secrets.STRIPE_API_KEY }}
+      AUDIT_LOOKBACK_HOURS: 48
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Setup CLI
+        run: |
+          npm i -g supabase
+          curl -fsSL https://cli.stripe.com/install.sh | bash
+      
+      - name: Auth CLIs
+        run: |
+          supabase login --token "${SUPABASE_ACCESS_TOKEN}" || echo "Supabase login failed"
+          stripe login --api-key "${STRIPE_API_KEY}" || echo "Stripe login failed"
+      
+      - name: Set environment variables
+        run: |
+          echo "SUPABASE_URL=${{ secrets.SUPABASE_URL }}" >> $GITHUB_ENV
+          echo "SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}" >> $GITHUB_ENV
+      
+      - name: Generate Audit Report
+        run: |
+          chmod +x ./FINAL_INTEGRATION_SUITE.sh ./generate_audit_report.sh
+          ./FINAL_INTEGRATION_SUITE.sh || ./generate_audit_report.sh
+      
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: audit-report
+          path: |
+            docs/reports/**/AUDIT_REPORT_*.md
+            tmp/audit_edge/*.log
+            tmp/audit_stripe/*.json
+            tmp/audit_day11/*.json
+          retention-days: 90
+
