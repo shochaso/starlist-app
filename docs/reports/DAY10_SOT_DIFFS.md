@@ -444,6 +444,13 @@ jobs:
 - 実行時刻 (JST): （実行後に追記）
 - Level: NORMAL / WARNING / CRITICAL
 - 期待レスポンス: `{ ok: true, dryRun: true, level: "...", metrics: {...}, message: "..." }`
+- 実行コマンド:
+  ```bash
+  curl -sS -X POST "https://<project-ref>.supabase.co/functions/v1/ops-slack-notify?dryRun=true" \
+    -H "Authorization: Bearer <anon-key>" \
+    -H "Content-Type: application/json" \
+    -d '{}'
+  ```
 
 **本送信テスト**:
 - Run ID: （実行後に追記）
@@ -451,6 +458,7 @@ jobs:
 - Delivered: true / false
 - Slackチャンネル: `#ops-monitor`
 - メッセージサンプル: （実行後に追記）
+- 実行方法: GitHub Actions → Ops Slack Notify → Run workflow (dryRun=false)
 
 **備考**: 
 - 期間=24h
