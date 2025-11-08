@@ -254,7 +254,7 @@ fi)
 $(for f in ${EDGE_TMP_DIR}/*.log; do
   [[ -s "$f" ]] || continue
   echo "===== $(basename "$f") ====="
-  tail -n 80 "$f"
+  tail -n 80 "$f" | scripts/utils/redact.sh 2>/dev/null || tail -n 80 "$f"
   echo
 done || echo "Edge logs not available")
 \`\`\`
@@ -267,7 +267,7 @@ done || echo "Edge logs not available")
 - 代表イベント（最大10件）
 
 \`\`\`json
-$(jq '.[0:10] | map({id: .id, type, created, amount_total: (.data.object.amount_total // .data.object.amount // null), customer: (.data.object.customer // null)})' "${STRIPE_TMP_DIR}/events_starlist.json" 2>/dev/null || echo "[]")
+$(jq '.[0:10] | map({id, type, created, amount_total: (.data.object.amount_total // .data.object.amount // null)})' "${STRIPE_TMP_DIR}/events_starlist.json" 2>/dev/null | scripts/utils/redact.sh 2>/dev/null || jq '.[0:10] | map({id, type, created, amount_total: (.data.object.amount_total // .data.object.amount // null)})' "${STRIPE_TMP_DIR}/events_starlist.json" 2>/dev/null || echo "[]")
 \`\`\`
 
 ---
