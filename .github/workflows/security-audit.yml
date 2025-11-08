@@ -31,13 +31,14 @@ jobs:
         run: |
           if [ -f pnpm-lock.yaml ]; then pnpm audit --audit-level=moderate || true; fi
 
-      - name: Set up Dart
-        uses: dart-lang/setup-dart@v1
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
         with:
-          sdk: stable
+          flutter-version: '3.24.0'
+          channel: 'stable'
 
-      - name: dart pub get
-        run: dart pub get
+      - name: flutter pub get
+        run: flutter pub get
 
       - name: dart pub outdated (report-only)
         run: dart pub outdated || true
