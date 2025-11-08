@@ -23,17 +23,17 @@ fn-serve:
 ## Day11 Go-Live only
 day11:
 	chmod +x ./FINAL_INTEGRATION_SUITE.sh
-	AUDIT_LOOKBACK_HOURS=48 ./FINAL_INTEGRATION_SUITE.sh --day11-only || true
+	AUDIT_LOOKBACK_HOURS=$(HOURS) ./FINAL_INTEGRATION_SUITE.sh --day11-only || true
 
 ## Pricing E2E test only
 pricing:
 	chmod +x ./FINAL_INTEGRATION_SUITE.sh
-	AUDIT_LOOKBACK_HOURS=48 ./FINAL_INTEGRATION_SUITE.sh --pricing-only || true
+	AUDIT_LOOKBACK_HOURS=$(HOURS) ./FINAL_INTEGRATION_SUITE.sh --pricing-only || true
 
 ## Generate audit reports only
 audit:
 	chmod +x ./generate_audit_report.sh
-	AUDIT_LOOKBACK_HOURS=48 ./generate_audit_report.sh || true
+	AUDIT_LOOKBACK_HOURS=$(HOURS) ./generate_audit_report.sh || true
 
 ## Run full integration suite
 all:
@@ -42,26 +42,27 @@ all:
 
 ## Quick smoke test (env & tools check)
 smoke:
-	@[ -n "$$SUPABASE_URL" ] || (echo "SUPABASE_URL missing" && exit 1)
-	@[ -n "$$SUPABASE_ANON_KEY" ] || (echo "SUPABASE_ANON_KEY missing" && exit 1)
-	@echo "OK: env"
-	@command -v jq >/dev/null && echo "OK: jq" || (echo "jq missing" && exit 1)
-	@command -v curl >/dev/null && echo "OK: curl" || (echo "curl missing" && exit 1)
-	@command -v date >/dev/null && echo "OK: date" || (echo "date missing" && exit 1)
-	@echo "Smoke test passed"
+	@[ -n "$$SUPABASE_URL" ] || (echo "SUPABASE_URL missing"; exit 1)
+	@[ -n "$$SUPABASE_ANON_KEY" ] || (echo "SUPABASE_ANON_KEY missing"; exit 1)
+	@command -v jq >/dev/null || (echo "jq missing"; exit 1)
+	@echo "Smoke OK"
+
+## Summarize latest audit report
+summarize:
+	@FILE=$$(ls -1 docs/reports/*_DAY11_AUDIT_*.md 2>/dev/null | tail -n1); \
+	[ -n "$$FILE" ] || { echo "No audit file"; exit 2; }; \
+	echo "== $$FILE =="; \
+	awk '/^## 1\. 件数サマリ/{flag=1;next}/^## /{flag=0}flag' "$$FILE" | tr -d '\n' | sed 's/  */ /g'; echo
 
 ## Front-matter schema validation
 verify:
-	@echo "Front-matter schema validation..."
-	@for file in docs/reports/*_AUDIT_*.md; do \
-	  if [ -f "$$file" ]; then \
-	    echo "Validating $$file..."; \
-	    awk '/^---$$/{f++} f==1{print} /^---$$/{if(f==2) exit}' "$$file" \
-	      | sed '1d;$$d' \
-	      | (command -v yq >/dev/null && yq -o=json || cat) \
-	      | (command -v ajv >/dev/null && ajv validate -s schemas/audit_report.schema.json -d /dev/stdin || echo "ajv not found, skipping validation"); \
-	  fi; \
-	done || echo "No audit reports found"
+	@which ajv >/dev/null || npm i -g ajv-cli >/dev/null
+	@which yq  >/dev/null || echo "Install yq for full verify"
+	@FILE=$$(ls -1 docs/reports/*_DAY11_AUDIT_*.md 2>/dev/null | tail -n1); \
+	[ -n "$$FILE" ] || { echo "No audit file"; exit 2; }; \
+	awk '/^---$$/{f++} f==1{print} /^---$$/{if(f==2) exit}' "$$FILE" | sed '1d;$$d' \
+	| yq -o=json \
+	| ajv validate -s schemas/audit_report.schema.json -d /dev/stdin
 
 ## Install schema validation tools
 schema:
@@ -77,3 +78,11 @@ redact:
 ## Lint markdown files
 lint:
 	@[ -f scripts/lint-md-local.sh ] && bash scripts/lint-md-local.sh || echo "skip"
+
+## Clean temporary audit artifacts
+clean:
+	rm -rf tmp/ .day11_cache/
+
+## Deep clean (including edge logs)
+distclean: clean
+	rm -f docs/reports/*_edge_logs.txt

@@ -74,11 +74,27 @@ node_modules/
 logs/
 *.log
 
-# Audit artifacts (keep reports, exclude raw logs/JSON)
-tmp/audit_*/
-logs/day11/*.json
-logs/day11/*.log
-.day11_cache/*.last
+# --- Starlist audit tmp/artifacts ---
+tmp/
+.day11_cache/
+logs/day11/
+docs/reports/*_edge_logs.txt
+
+# --- Local env/keys ---
+.env
+.env.*
+*.local
+
+# --- CI outputs ---
+*.safe
+*.log
+*.trace
+*.coverage
+*.DS_Store
+
+# --- Editor/OS ---
+.vscode/
+.idea/
 
 # Ignore env files
 .env

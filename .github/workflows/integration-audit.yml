@@ -43,7 +43,8 @@ jobs:
           chmod +x ./FINAL_INTEGRATION_SUITE.sh
           ./FINAL_INTEGRATION_SUITE.sh || true
       
-      - name: Upload artifacts
+      - name: Upload artifacts (always)
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: audit-${{ github.run_id }}
