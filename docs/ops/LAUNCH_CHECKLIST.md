@@ -1,5 +1,70 @@
 # 本番ローンチ運用チェックリスト（1ページ完結）
 
+## 🚀 すぐ使える最短3コマンド（本番直前）
+
+```bash
+AUDIT_LOOKBACK_HOURS=48 ./FINAL_INTEGRATION_SUITE.sh
+make verify && make summarize
+make gonogo
+```
+
+---
+
+## 📋 運用フロー（本番前・当日・後日）
+
+### 1) 本番前（5分）
+
+```bash
+# 依存ツール導入（初回のみ）
+make schema
+
+# 48hスコープで統合スイート実行 → 監査票生成
+AUDIT_LOOKBACK_HOURS=48 ./FINAL_INTEGRATION_SUITE.sh
+
+# 監査票の構造検証＋要約
+make verify && make summarize
+
+# Go/No-Go 10項目チェック
+make gonogo
+```
+
+**合格基準（抜粋）**：
+- `make verify` 成功
+- Slack permalink有効
+- DB監査0件
+- Stripe×DB突合不一致0件
+- p95 予算内
+- Artifacts保存OK
+
+---
+
+### 2) 当日（オンデマンド）
+
+```bash
+# Day11のみ実施
+make day11 HOURS=48
+
+# Pricing監査のみ実施
+make pricing HOURS=48
+
+# 監査票のみ再生成（Artifacts/ログから）
+make audit HOURS=48
+```
+
+**PR提出時**：
+- テンプレのチェックボックス（整数/範囲/重複/整合 など）をすべて☑
+- 証跡リンク（監査票、Slack permalink、Artifacts）を貼り付け
+
+---
+
+### 3) 後日（定期運用）
+
+- **毎週 月曜 09:05 JST**：`integration-audit.yml` が自動実行
+- 失敗しても **Artifacts は必ず保存**（`if: always()`）
+- 監査票は Git 管理、元JSON/ログは Git 外＋Artifactsで90日保全
+
+---
+
 ## ✅ 最終Go/No-Goクイックチェック（30秒）
 
 ```bash
@@ -46,40 +111,47 @@ make audit HOURS=48
 
 ---
 
-## 🧯 バックアウト/復旧（即応テンプレ）
+## 🧯 即応リカバリ（Exit Code 別）
 
-### 典型失敗 → 対処 → 再実行
-
-#### Exit 21（Permalink未取得）
-- **症状**: Slack Webhookの429/5xx/Secret不整合
+### Exit 21: Permalink未取得
+- **症状**: Slack Webhook 429/5xx/Secret不一致の可能性
 - **対処**: Secret再設定
 - **再実行**: `make day11`
 
-#### Exit 22（Stripe 0件）
+### Exit 22: Stripe 0件
 - **症状**: Stripeイベントが抽出されない
-- **対処**: `HOURS=72`へ延長、`STRIPE_API_KEY`の権限確認（読み取り不足が頻出）
+- **対処**: `HOURS=72` に延長／`STRIPE_API_KEY`（読み取り権限）確認
 - **再実行**: `make pricing HOURS=72`
 
-#### Exit 23（send空）
+### Exit 23: send空
 - **症状**: Day11 sendが空、実行失敗
-- **対処**: `logs/day11/*_send.json` のHTTP/JSON整合、`ops-slack-summary`末尾ログ確認
+- **対処**: `logs/day11/*_send.json` のHTTP/JSON整合を確認、`ops-slack-summary` 末尾ログでエラー確認
 - **再実行**: `make day11`
 
-### 情報レダクションの後追い
-
+### 機微情報懸念
 ```bash
 make redact && ./FINAL_INTEGRATION_SUITE.sh --audit-only
 ```
 
 ---
 
-## 🛡️ 監査の品質担保（仕上げ反復のポイント）
+## 🛡️ 運用の要点（再確認）
 
-1. **機械可読性**：Front-Matter（report_id / generated_at / tz / scope_hours / artifacts / checks）必須
-2. **網羅性**：Slack・Edge・Stripe・DB の**4面要約**を常に含める
-3. **証跡性**：監査票はGit管理、原本は**Artifacts**（90日）＋sha256で改竄検知
-4. **安全性**：`scripts/utils/redact.sh` 適用で機微情報なしを保証
-5. **運用性**：`Makefile` の `summarize / verify / clean / distclean` を起点に日々のオペ軽量化
+### 網羅性
+- Slack／Edge／Stripe／DB の4面要約を監査票に必ず含める
+
+### 再現性
+- JST固定＋Front-Matter＋Schema検証（`make verify`）
+
+### 証跡性
+- Front-Matter に `supabase_ref / git_sha / artifacts`
+- 元データはArtifactsで保持
+
+### 安全性
+- `scripts/utils/redact.sh` でメール/電話/番号を自動マスキング
+
+### 運用性
+- `make summarize / verify / clean / distclean` で日々の労力最小化
 
 ---
 
