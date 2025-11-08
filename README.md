@@ -5,7 +5,8 @@
 [![Integration Audit](https://img.shields.io/badge/Audit-Last%20Run-green)](#)
 [![JST Timezone](https://img.shields.io/badge/TZ-Asia%2FTokyo-blue)](#)
 
-> ※ 後日、CIの最新Run URLへ差し替え推奨（固定リンク）。
+> ※ 後日、CIの最新Run URLへ差し替え推奨（固定リンク）。  
+> 📊 [KPI Dashboard](/dashboard/audit) - 継続監査KPI可視化
 
 > 開発者向けメモ: **Node.js 20 系が必須**です。ローカルでは `nvm use 20 && npm ci` の後、`npm run lint:md:local` でリンクチェックを実行してください。
 

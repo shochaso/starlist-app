@@ -15,11 +15,23 @@
 本番直前、これだけ叩けば「構造OK／要約OK／判定OK」を一括で確認できます。
 
 ```bash
-AUDIT_LOOKBACK_HOURS=48 ./FINAL_INTEGRATION_SUITE.sh && make verify && make summarize && make gonogo
+AUDIT_LOOKBACK_HOURS=48 ./FINAL_INTEGRATION_SUITE.sh && make verify-v2 && make summarize && make gonogo
 ```
 
 * ここで **ALL PASS** → SlackにGo宣言（監査票リンクを添付）
 * 何か1つでもNG → Exit Code/項目に従って即時是正 → 再実行
+
+### ダッシュボード編（追加チェック）
+
+詳細は `docs/ops/DASHBOARD_FINAL_CHECKLIST.md` を参照。
+
+* v2スキーマ検証成功
+* KPIスナップショット存在・当日更新
+* CI連携で自動更新確認
+* UI表示（4指標）
+* 10分ウォッチ（p95上昇なし）
+* データ分離（PIIなし）
+* Safe Mode動作確認
 
 ---
 
