@@ -184,6 +184,28 @@ serve(async (req) => {
 </html>
     `.trim();
 
+    if (dryRun) {
+      return new Response(
+        JSON.stringify({
+          ok: true,
+          dryRun: true,
+          preview: html,
+          report_week: reportWeek,
+          metrics: {
+            uptime_percent: uptimePercent,
+            mean_p95_ms: meanP95Ms,
+            alert_count: alertCount,
+            alert_trend: alertTrend,
+            alert_change: alertChange,
+          },
+        }),
+        {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200,
+        }
+      );
+    }
+
     // Check idempotency: prevent duplicate sends for the same week
     const { data: existingLog } = await supabase
       .from("ops_summary_email_logs")
@@ -209,27 +231,6 @@ serve(async (req) => {
       );
     }
 
-    if (dryRun) {
-      return new Response(
-        JSON.stringify({
-          ok: true,
-          dryRun: true,
-          preview: html,
-          metrics: {
-            uptime_percent: uptimePercent,
-            mean_p95_ms: meanP95Ms,
-            alert_count: alertCount,
-            alert_trend: alertTrend,
-            alert_change: alertChange,
-          },
-        }),
-        {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 200,
-        }
-      );
-    }
-
     // Send email via Resend or SendGrid
     const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
     const RESEND_FROM = Deno.env.get("RESEND_FROM") ?? "STARLIST OPS <ops@starlist.jp>";
@@ -241,15 +242,32 @@ serve(async (req) => {
 
     let emailSent = false;
     let emailError: string | null = null;
+    let emailProvider: string | null = null;
+    let emailMessageId: string | null = null;
+    let emailToCount = 0;
+    const startTime = Date.now();
+
+    // Validate recipient domain (safety: only @starlist.jp allowed)
+    const validateRecipients = (recipients: string[]): boolean => {
+      return recipients.every(email => email.includes("@starlist.jp"));
+    };
 
     // Try Resend first (preferred)
     if (RESEND_API_KEY && RESEND_TO_LIST.length > 0) {
+      if (!validateRecipients(RESEND_TO_LIST)) {
+        throw new Error("Invalid recipient domain: only @starlist.jp allowed");
+      }
+
       try {
         const payload = {
           from: RESEND_FROM,
           to: RESEND_TO_LIST,
           subject: `STARLIST OPS Weekly (${new Date().toISOString().slice(0, 10)})`,
           html,
+          headers: {
+            "List-Unsubscribe": `<mailto:ops@starlist.jp?subject=Unsubscribe>, <https://starlist.jp/ops/unsubscribe>`,
+            "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+          },
         };
 
         const res = await fetch("https://api.resend.com/emails", {
@@ -268,6 +286,9 @@ serve(async (req) => {
 
         const result = await res.json();
         emailSent = true;
+        emailProvider = "resend";
+        emailMessageId = result.id || null;
+        emailToCount = RESEND_TO_LIST.length;
         console.log("[ops-summary-email] Email sent via Resend:", result);
       } catch (e) {
         emailError = String(e);
@@ -277,12 +298,20 @@ serve(async (req) => {
 
     // Fallback to SendGrid if Resend failed or not configured
     if (!emailSent && SENDGRID_API_KEY && SENDGRID_TO_LIST.length > 0) {
+      if (!validateRecipients(SENDGRID_TO_LIST)) {
+        throw new Error("Invalid recipient domain: only @starlist.jp allowed");
+      }
+
       try {
         const sgPayload = {
           personalizations: [{ to: SENDGRID_TO_LIST.map(e => ({ email: e })) }],
           from: { email: SENDGRID_FROM, name: "STARLIST OPS" },
           subject: `STARLIST OPS Weekly (${new Date().toISOString().slice(0, 10)})`,
           content: [{ type: "text/html", value: html }],
+          headers: {
+            "List-Unsubscribe": `<mailto:ops@starlist.jp?subject=Unsubscribe>, <https://starlist.jp/ops/unsubscribe>`,
+            "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+          },
         };
 
         const res = await fetch("https://api.sendgrid.com/v3/mail/send", {
@@ -300,10 +329,68 @@ serve(async (req) => {
         }
 
         emailSent = true;
+        emailProvider = "sendgrid";
+        emailMessageId = null; // SendGrid doesn't return message ID in response
+        emailToCount = SENDGRID_TO_LIST.length;
         console.log("[ops-summary-email] Email sent via SendGrid");
       } catch (e) {
         emailError = String(e);
         console.error("[ops-summary-email] SendGrid error:", e);
+      }
+    }
+
+    const durationMs = Date.now() - startTime;
+    const sentAtUtc = new Date();
+    const sentAtJst = toJST(sentAtUtc);
+
+    // Log email send (upsert for idempotency)
+    if (emailSent && emailProvider) {
+      try {
+        const { error: logError } = await supabase
+          .from("ops_summary_email_logs")
+          .upsert({
+            report_week: reportWeek,
+            channel: "email",
+            provider: emailProvider,
+            message_id: emailMessageId,
+            to_count: emailToCount,
+            subject: `STARLIST OPS Weekly (${new Date().toISOString().slice(0, 10)})`,
+            sent_at_utc: sentAtUtc.toISOString(),
+            sent_at_jst: sentAtJst.toISOString(),
+            duration_ms: durationMs,
+            ok: true,
+            error_code: null,
+            error_message: null,
+          }, {
+            onConflict: "report_week,channel,provider",
+          });
+
+        if (logError) {
+          console.error("[ops-summary-email] Failed to log email send:", logError);
+        }
+      } catch (logError) {
+        console.error("[ops-summary-email] Log error:", logError);
+      }
+    } else if (emailError) {
+      // Log failure
+      try {
+        await supabase
+          .from("ops_summary_email_logs")
+          .insert({
+            report_week: reportWeek,
+            channel: "email",
+            provider: emailProvider || "unknown",
+            to_count: 0,
+            subject: `STARLIST OPS Weekly (${new Date().toISOString().slice(0, 10)})`,
+            sent_at_utc: sentAtUtc.toISOString(),
+            sent_at_jst: sentAtJst.toISOString(),
+            duration_ms: durationMs,
+            ok: false,
+            error_code: "SEND_FAILED",
+            error_message: emailError,
+          });
+      } catch (logError) {
+        console.error("[ops-summary-email] Failed to log error:", logError);
       }
     }
 
