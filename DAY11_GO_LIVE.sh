@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Day11 Go-Live 最終実行スクリプト（堅牢化版）
+# Day11 Go-Live 最終実行スクリプト（堅牢化版・完成版）
 # Usage: ./DAY11_GO_LIVE.sh
 
 set -Eeuo pipefail
@@ -8,32 +8,116 @@ set -Eeuo pipefail
 log()   { printf "\033[1;34m[INFO]\033[0m %s\n" "$*"; }
 warn()  { printf "\033[1;33m[WARN]\033[0m %s\n" "$*"; }
 error() { printf "\033[1;31m[ERR ]\033[0m %s\n" "$*" >&2; }
-need_cmd(){ command -v "$1" >/dev/null 2>&1 || { error "Command not found: $1"; exit 127; }; }
+
+require_cmd() {
+  command -v "$1" >/dev/null 2>&1 || { error "Command not found: $1"; exit 127; }
+}
+
+require_env() {
+  : "${!1:?ERR: env $1 is required}"
+}
 
 trap 'error "Aborted (line $LINENO)"; exit 1' ERR
 
 # ===== Preflight =====
-: "${SUPABASE_URL:?Set SUPABASE_URL (e.g., https://<project-ref>.supabase.co)}"
-: "${SUPABASE_ANON_KEY:?Set SUPABASE_ANON_KEY}"
+require_cmd curl
+require_cmd jq
+require_cmd awk
+require_cmd date
+require_cmd flock || warn "flock not found (parallel execution guard disabled)"
 
-need_cmd curl
-need_cmd jq
-command -v supabase >/dev/null 2>&1 || warn "Supabase CLI 未検出（Dashboard操作にフォールバックします）"
+require_env SUPABASE_URL
+require_env SUPABASE_ANON_KEY
 
-# URL 形式ざっくり検証
-if ! echo "$SUPABASE_URL" | grep -Eq '^https://[a-z0-9-]+\.supabase\.co$'; then
+# SUPABASE_URL の厳格チェック
+if ! [[ "$SUPABASE_URL" =~ ^https://[a-z0-9-]+\.supabase\.co$ ]]; then
   error "SUPABASE_URL format invalid: $SUPABASE_URL"
   exit 2
 fi
 
-FUNC_NAME="ops-slack-summary"
-PERIOD="14d"
-DRYRUN_Q="dryRun=true&period=${PERIOD}"
-SEND_Q="dryRun=false&period=${PERIOD}"
-TMP_DRY="/tmp/day11_dryrun.json"
-TMP_SEND="/tmp/day11_send.json"
+# 機密漏えい防止
+set +x  # 以降は -x を使わない（秘密鍵がログに出ないように）
 
-# ===== Helpers =====
+# ===== Lock File (Parallel Execution Guard) =====
+LOCK=".day11.lock"
+if command -v flock >/dev/null 2>&1; then
+  exec 9>"$LOCK" || exit 1
+  if ! flock -n 9; then
+    error "Another DAY11_GO_LIVE.sh is running"
+    exit 1
+  fi
+  trap 'rm -f "$LOCK"' EXIT
+fi
+
+# ===== Logging Setup =====
+TS="$(date +'%Y-%m-%dT%H:%M:%S%z')"
+LOG_DIR="logs/day11"
+mkdir -p "$LOG_DIR"
+
+log_json() {
+  local name="$1" json="$2"
+  printf '%s\n' "$json" > "$LOG_DIR/${TS}_$name.json"
+  log "JSON saved: $LOG_DIR/${TS}_$name.json"
+}
+
+# ===== Cache Setup (Idempotency) =====
+CACHE_DIR=".day11_cache"
+mkdir -p "$CACHE_DIR"
+
+payload_hash() {
+  echo -n "$1" | sha256sum | awk '{print $1}'
+}
+
+ensure_not_duplicate() {
+  local key="$1" hash="$2" file="$CACHE_DIR/$key.last"
+  if [[ -f "$file" ]] && [[ "$(cat "$file" 2>/dev/null)" == "$hash" ]]; then
+    warn "same payload detected; skip send (idempotent)"
+    return 1
+  fi
+  echo "$hash" > "$file"
+  return 0
+}
+
+summary_fingerprint() {
+  jq -r '[.weekly_summary, .stats.mean_notifications, .stats.std_dev, .stats.new_threshold, .stats.critical_threshold] | @tsv' <<<"$1" \
+    | sha256sum | awk '{print $1}'
+}
+
+# ===== HTTP/JSON Helper with Retry =====
+http_json() {
+  local method="$1" url="$2" body="$3" attempt=0 max=3
+  while :; do
+    attempt=$((attempt+1))
+    resp=$(curl -sS --show-error -X "$method" "$url" \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer $SUPABASE_ANON_KEY" \
+      -H "apikey: $SUPABASE_ANON_KEY" \
+      ${body:+--data "$body"} \
+      -w "\n%{http_code}" 2>&1)
+    code="$(echo "$resp" | tail -n1)"
+    json="$(echo "$resp" | sed '$d')"
+
+    # 2xx 厳格判定
+    if [[ "$code" =~ ^2[0-9]{2}$ ]]; then
+      echo "$json"
+      return 0
+    fi
+
+    # 一時エラーのみ限定的に再試行
+    if [[ "$code" == "429" || "$code" =~ ^5 ]]; then
+      if (( attempt < max )); then
+        warn "HTTP $code (attempt $attempt/$max), retrying..."
+        sleep $(( 2 ** attempt ))
+        continue
+      fi
+    fi
+    error "HTTP $code"
+    echo "$json" | jq -r '.message? // .error? // .detail? // empty' 1>&2 || echo "$json" 1>&2
+    return 1
+  done
+}
+
+# ===== JSON Validation =====
 validate_dryrun_json() {
   local f="$1"
   
@@ -90,8 +174,16 @@ validate_send_json(){
   log "send JSON validation: OK ✅"
 }
 
+# ===== Constants =====
+FUNC_NAME="ops-slack-summary"
+PERIOD="14d"
+DRYRUN_Q="dryRun=true&period=${PERIOD}"
+SEND_Q="dryRun=false&period=${PERIOD}"
+TMP_DRY="/tmp/day11_dryrun.json"
+TMP_SEND="/tmp/day11_send.json"
+
 # ===== Main Flow =====
-log "=== Day11 Go-Live 最終実行（堅牢化版） ==="
+log "=== Day11 Go-Live 最終実行（堅牢化版・完成版） ==="
 log ""
 
 # 1) 実行直前チェック
@@ -111,22 +203,13 @@ log ""
 # 2) dryRun
 log "📋 2) dryRun実行"
 log "Invoke dryRun..."
-HTTP_CODE=$(curl -sS --fail -w "%{http_code}" -o "$TMP_DRY" -X POST \
-  "${SUPABASE_URL}/functions/v1/${FUNC_NAME}?${DRYRUN_Q}" \
-  -H "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
-  -H "apikey: ${SUPABASE_ANON_KEY}" \
-  -H "Content-Type: application/json" \
-  -d '{}' || echo "000")
-
-if [[ "$HTTP_CODE" != "200" ]]; then
-  error "dryRun HTTP $HTTP_CODE"
-  cat "$TMP_DRY" || true
-  exit 10
-fi
+dryrun_json=$(http_json POST "${SUPABASE_URL}/functions/v1/${FUNC_NAME}?${DRYRUN_Q}" '{}')
+printf '%s\n' "$dryrun_json" > "$TMP_DRY"
 
 validate_dryrun_json "$TMP_DRY"
 log "dryRun 抜粋:"
 jq '.stats, .weekly_summary, .message' "$TMP_DRY" || true
+log_json "dryrun" "$dryrun_json"
 log ""
 
 # 3) 本送信（確認プロンプト）
@@ -134,21 +217,28 @@ log "📋 3) 本送信（確認プロンプト）"
 read -r -p ">>> 本送信しますか？（Slack #ops-monitor）[y/N]: " yn
 if [[ "$yn" =~ ^[Yy]$ ]]; then
   log "Invoke SEND..."
-  HTTP_CODE=$(curl -sS --fail -w "%{http_code}" -o "$TMP_SEND" -X POST \
-    "${SUPABASE_URL}/functions/v1/${FUNC_NAME}?${SEND_Q}" \
-    -H "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
-    -H "apikey: ${SUPABASE_ANON_KEY}" \
-    -H "Content-Type: application/json" \
-    -d '{}' || echo "000")
-
-  if [[ "$HTTP_CODE" != "200" ]]; then
-    error "send HTTP $HTTP_CODE"
-    cat "$TMP_SEND" || true
-    exit 11
-  fi
   
-  validate_send_json "$TMP_SEND"
-  log "Slack #ops-monitor で到達を確認してください。"
+  # 冪等性チェック（同一内容の場合はスキップ）
+  dryrun_fp=$(summary_fingerprint "$dryrun_json")
+  if ! ensure_not_duplicate "weekly" "$dryrun_fp"; then
+    warn "Same payload detected, skipping send (idempotent)"
+  else
+    send_json=$(http_json POST "${SUPABASE_URL}/functions/v1/${FUNC_NAME}?${SEND_Q}" '{}')
+    printf '%s\n' "$send_json" > "$TMP_SEND"
+    
+    validate_send_json "$TMP_SEND"
+    log_json "send" "$send_json"
+    
+    # 同一内容検出
+    send_fp=$(summary_fingerprint "$send_json")
+    if [[ "$dryrun_fp" == "$send_fp" ]]; then
+      log "Send content matches dryRun (identical summary)"
+    fi
+    
+    log "Slack #ops-monitor で到達を確認してください。"
+    permalink=$(jq -r '.permalink? // .slack?.permalink? // "-"' <<<"$send_json" 2>/dev/null || echo "-")
+    [[ "$permalink" != "-" ]] && log "Slack permalink: $permalink"
+  fi
 else
   warn "本送信をスキップしました（dryRunのみ）。"
 fi
@@ -240,8 +330,9 @@ log ""
 log "✅ 実行完了:"
 log "  - 実行直前チェック完了"
 log "  - dryRun実行完了（自動検証付き）"
-log "  - 本送信完了（確認後実行）"
+log "  - 本送信完了（確認後実行、冪等性チェック付き）"
 log "  - 合格ライン確認完了（3点）"
+log "  - JSONログ保存完了: $LOG_DIR/"
 log ""
 log "📝 次のステップ:"
 log "  1. Slack #ops-monitor チャンネルで週次サマリを確認"
