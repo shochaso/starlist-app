@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.9.0] - 2025-11-08
+
+### Added
+- OPS Summary Email（β）公開
+  - Edge Function `ops-summary-email`（週次レポート生成）
+  - GitHub Actions週次スケジュール（毎週月曜09:00 JST）
+  - Resend/SendGridメール送信対応
+  - 送信の冪等化（重複送信防止）
+  - 配信品質改善（List-Unsubscribeヘッダー、Preheader）
+  - 監査ログ（`ops_summary_email_logs`テーブル）
+  - 宛先の安全策（@starlist.jpのみ許可）
+
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
