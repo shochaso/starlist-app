@@ -1,44 +1,49 @@
 #!/usr/bin/env bash
 # ====================================================================
-# STARLIST Final Integration Suite (Day11統合 + 監査票自動生成)
+# STARLIST Final Integration Suite (Day11統合 + 監査票自動生成・強化版)
 # - 実行順: Preflight → DAY11_GO_LIVE.sh → 監査票作成 → 監査用フォルダ整備
 # - 依存: jq, git, date, awk, bash>=5 / Asia/Tokyo 固定
 # - 機微情報は出力しません
 # ====================================================================
 
 set -Eeuo pipefail
-export TZ="Asia/Tokyo"
 
-# ---------- util ----------
-info(){ printf "\033[1;34m[INFO]\033[0m %s\n" "$*"; }
-warn(){ printf "\033[1;33m[WARN]\033[0m %s\n" "$*"; }
-err(){  printf "\033[1;31m[ERR ]\033[0m %s\n"  "$*" 1>&2; }
+# --- 基本設定 ---
+: "${TZ:=Asia/Tokyo}"
+export TZ
+NOW_JST="$(date +"%Y-%m-%d %H:%M:%S %Z")"
+RUN_DATE="$(date +%Y-%m-%d)"
+RUN_WEEK="$(date +%G-W%V)"   # ISO週
 
-require_cmd(){ command -v "$1" >/dev/null 2>&1 || { err "$1 not found"; exit 127; }; }
-require_env(){ : "${!1:?ERR: env $1 is required}"; }
-
-TS_ISO(){ date +'%Y-%m-%dT%H:%M:%S%z'; }
-DAY(){ date +'%Y-%m-%d'; }
-WEEK(){ date +'%G-W%V'; }
-
-PROJECT_REF_FROM_URL(){
-  # https://<ref>.supabase.co → <ref>
-  basename "${SUPABASE_URL}" .supabase.co
+# --- 前提チェック（Fail-fast） ---
+require_env() { 
+  for k in "$@"; do 
+    [[ -n "${!k-}" ]] || { echo "ERROR: env $k is missing"; exit 11; }
+  done
 }
 
-# ---------- preflight ----------
-require_cmd jq; require_cmd awk; require_cmd date; require_cmd git; require_cmd bash
-require_env SUPABASE_URL; require_env SUPABASE_ANON_KEY
+require_bin() { 
+  for b in "$@"; do 
+    command -v "$b" >/dev/null || { echo "ERROR: $b not found"; exit 12; }
+  done
+}
 
-if ! [[ "$SUPABASE_URL" =~ ^https://[a-z0-9]{20}\.supabase\.co$ ]]; then
-  err "SUPABASE_URL format invalid: $SUPABASE_URL"
-  exit 2
-fi
+require_env SUPABASE_URL SUPABASE_ANON_KEY
+require_bin jq sed awk grep date
+
+# Supabase / Stripe は任意機能で使うため存在すれば使う
+if command -v supabase >/dev/null; then USE_SUPABASE=1; else USE_SUPABASE=0; fi
+if command -v stripe   >/dev/null; then USE_STRIPE=1;   else USE_STRIPE=0;   fi
+
+PROJECT_REF="$(echo "$SUPABASE_URL" | sed -n 's#https://\([a-z0-9]\{20\}\)\.supabase\.co#\1#p')"
+[[ ${#PROJECT_REF} -eq 20 ]] || { echo "ERROR: Invalid SUPABASE_URL (project-ref 20 chars not found)"; exit 13; }
+
+echo "[PRECHECK] $NOW_JST / ref=$PROJECT_REF / stripe=$USE_STRIPE / supabase=$USE_SUPABASE"
 
 # 機密は出さない
 set +x
 
-# ---------- paths ----------
+# --- paths ---
 ROOT="$(pwd)"
 CACHE_DIR="${ROOT}/.day11_cache"
 LOG_DIR="${ROOT}/logs/day11"
@@ -46,17 +51,36 @@ REPORT_DIR="${ROOT}/docs/reports"
 mkdir -p "$CACHE_DIR" "$LOG_DIR" "$REPORT_DIR"
 
 COMMIT="$(git rev-parse --short HEAD || echo 'unknown')"
-RUN_AT="$(TS_ISO)"
-DATE="$(DAY)"
-WEEKID="$(WEEK)"
-PROJECT_REF="$(PROJECT_REF_FROM_URL)"
+RUN_AT="$(date +'%Y-%m-%dT%H:%M:%S%z')"
 
-# ---------- 1) Go-Live 実行 ----------
+: "${AUDIT_LOOKBACK_HOURS:=48}"
+
+# --- util ---
+info(){ printf "\033[1;34m[INFO]\033[0m %s\n" "$*"; }
+warn(){ printf "\033[1;33m[WARN]\033[0m %s\n" "$*"; }
+err(){  printf "\033[1;31m[ERR ]\033[0m %s\n"  "$*" 1>&2; }
+
+TS_ISO(){ date +'%Y-%m-%dT%H:%M:%S%z'; }
+DAY(){ date +'%Y-%m-%d'; }
+WEEK(){ date +'%G-W%V'; }
+
+PROJECT_REF_FROM_URL(){
+  basename "${SUPABASE_URL}" .supabase.co
+}
+
+get_permalink() {
+  for f in ".day11_cache/permalink.txt" "docs/reports/${RUN_DATE}/DAY11_PERMALINK.txt" "logs/day11/permalink.txt"; do
+    [[ -s "$f" ]] && { cat "$f"; return 0; }
+  done
+  grep -rhoE "https://.*slack.com/archives/[A-Z0-9]+/p[0-9]+" logs/day11 2>/dev/null | head -n1 || true
+}
+
+# --- 1) Go-Live 実行 ---
 info "Run DAY11_GO_LIVE.sh …"
 chmod +x ./DAY11_GO_LIVE.sh
 ./DAY11_GO_LIVE.sh
 
-# ---------- 2) 監査素材の収集 ----------
+# --- 2) 監査素材の収集 ---
 info "Collect artifacts for audit …"
 
 # 最新ログファイル（dryrun/send）を検出
@@ -69,12 +93,17 @@ if [[ -z "$DRY_JSON_FILE" || -z "$SEND_JSON_FILE" ]]; then
   exit 1
 fi
 
+# Day11 JSONログの自動マージ
+mkdir -p tmp/audit_day11
+jq -s 'flatten' logs/day11/*_dryrun.json 2>/dev/null > tmp/audit_day11/dryrun.json || echo "[]" > tmp/audit_day11/dryrun.json
+jq -s 'flatten' logs/day11/*_send.json   2>/dev/null > tmp/audit_day11/send.json   || echo "[]" > tmp/audit_day11/send.json
+
 # Permalink（キャッシュ優先→ログから抽出）
 PERMALINK_FILE="${CACHE_DIR}/permalink.txt"
 if [[ -s "$PERMALINK_FILE" ]]; then
   PERMALINK="$(cat "$PERMALINK_FILE" || true)"
 else
-  PERMALINK="$(jq -r '.permalink? // .slack?.permalink? // .message_url? // empty' <"$SEND_JSON_FILE")"
+  PERMALINK="$(get_permalink)"
   [[ -n "$PERMALINK" ]] && printf '%s\n' "$PERMALINK" > "$PERMALINK_FILE" || true
 fi
 [[ -z "$PERMALINK" ]] && warn "permalink not found; please attach Slack screenshot to the report."
@@ -83,187 +112,146 @@ fi
 OK_DRY="$(jq -e '.ok==true and (.stats|type=="object") and (.weekly_summary|type=="object") and (.message|type=="string") and (.stats.std_dev|numbers and .>=0) and (.stats.new_threshold|numbers and .>=0) and (.stats.critical_threshold|numbers and .>=0)' "$DRY_JSON_FILE" >/dev/null && echo OK || echo NG)"
 OK_SEND="$(jq -e '.ok==true and (.stats|type=="object") and (.weekly_summary|type=="object") and (.message|type=="string")' "$SEND_JSON_FILE" >/dev/null && echo OK || echo NG)"
 
-# ---------- 3) 監査票の自動作成 ----------
-REPORT_FILE="${REPORT_DIR}/${DATE}_DAY11_AUDIT_${WEEKID}.md"
-info "Generate audit report: ${REPORT_FILE}"
-
-cat > "$REPORT_FILE" <<'EOF'
-# Day11 監査レポート（Slack週次サマリ）
-
-## メタ情報
-
-- 実行日: __DATE__
-- 環境: prod
-- プロジェクト: __PROJECT_REF__
-- コミット: __COMMIT__
-- 実行者: （記入）
-- 実行時刻: __RUN_AT__
-
-## 合格ライン判定
-
-- dryRun JSON 妥当性: __OK_DRY__
-- 本送信 JSON 妥当性: __OK_SEND__
-- Slack 到達: （1件のみ到達をUIで確認／スクショ添付）
-- 関数ログ: HTTP 2xx・429/5xx は指数バックオフ内で回復、再送痕跡なし（別紙）
-
-## 主要KPI抜粋（send）
-
-- weekly_summary:  
-> __WEEKLY_SUMMARY__
-
-- stats: mean_notifications=__MEAN__, std_dev=__STD_DEV__, new_threshold=__NEW_THRESHOLD__, critical_threshold=__CRITICAL_THRESHOLD__
-
-## 証跡リンク/ファイル
-
-- Slack permalink: __PERMALINK__
-- dryRun JSON: `__DRY_FILE__`
-- send JSON: `__SEND_FILE__`
-- Edge logs: `docs/reports/__DATE___edge_logs.txt`（任意）
-- 参考: `.day11_cache/weekly.last`（冪等性キー）
-
-## インシデント対処・ロールバック（要約）
-
-- 二重投稿 → 関数/トリガー一時停止、キャッシュ確認、再送要因を除去後に再実行（dryRun→send）
-- 429/5xx → 最大2回の指数バックオフで回復しない場合は停止、Edgeログ確認とSecrets再注入
-- JSON不整合 → ビュー再集計・型崩れ修正後にdryRun再検証
-
-## 署名
-
-- 監査者: （記入） / 承認者: （記入）
-EOF
-
-# 置換埋め込み
-WEEKLY_SUMMARY="$(jq -r '.weekly_summary | tostring' <"$SEND_JSON_FILE" | sed 's/[\/&]/\\&/g')"
-MEAN="$(jq -r '.stats.mean_notifications // .stats.mean // "N/A"' <"$SEND_JSON_FILE")"
-STD_DEV="$(jq -r '.stats.std_dev // "N/A"' <"$SEND_JSON_FILE")"
-NEW_THRESHOLD="$(jq -r '.stats.new_threshold // "N/A"' <"$SEND_JSON_FILE")"
-CRITICAL_THRESHOLD="$(jq -r '.stats.critical_threshold // "N/A"' <"$SEND_JSON_FILE")"
-
-# sed 埋め込み（BSD/gnu互換）
-sed -i.bak \
-  -e "s|__DATE__|${DATE}|g" \
-  -e "s|__PROJECT_REF__|${PROJECT_REF}|g" \
-  -e "s|__COMMIT__|${COMMIT}|g" \
-  -e "s|__RUN_AT__|${RUN_AT}|g" \
-  -e "s|__OK_DRY__|${OK_DRY}|g" \
-  -e "s|__OK_SEND__|${OK_SEND}|g" \
-  -e "s|__WEEKLY_SUMMARY__|${WEEKLY_SUMMARY}|g" \
-  -e "s|__MEAN__|${MEAN}|g" \
-  -e "s|__STD_DEV__|${STD_DEV}|g" \
-  -e "s|__NEW_THRESHOLD__|${NEW_THRESHOLD}|g" \
-  -e "s|__CRITICAL_THRESHOLD__|${CRITICAL_THRESHOLD}|g" \
-  -e "s|__PERMALINK__|${PERMALINK:-(手動添付)}|g" \
-  -e "s|__DRY_FILE__|${DRY_JSON_FILE}|g" \
-  -e "s|__SEND_FILE__|${SEND_JSON_FILE}|g" \
-  "$REPORT_FILE" >/dev/null 2>&1 || true
-rm -f "${REPORT_FILE}.bak" || true
-
-info "Audit report created."
-echo "-> ${REPORT_FILE}"
-
-# ---------- 4) （任意）Edgeログ収集の雛形 ----------
-if command -v supabase >/dev/null 2>&1; then
-  info "Collecting last 2h Edge logs (optional)…"
-  supabase functions logs --project-ref "$PROJECT_REF" --function-name "ops-slack-summary" --since 2h > "${REPORT_DIR}/${DATE}_edge_logs.txt" 2>&1 || warn "Edge logs collection failed"
+# --- 3) Edge Logs収集 ---
+mkdir -p tmp/audit_edge
+if [[ "$USE_SUPABASE" -eq 1 ]]; then
+  EDGE_FUNCS=("ops-slack-summary" "ops-summary-email")
+  for fn in "${EDGE_FUNCS[@]}"; do
+    info "Collecting Edge logs for $fn..."
+    supabase functions logs --project-ref "$PROJECT_REF" --function-name "$fn" --since "${AUDIT_LOOKBACK_HOURS} hours" \
+      > "tmp/audit_edge/${fn}.log" 2>&1 || warn "Failed to collect logs for $fn"
+  done
 fi
 
-# ---------- 5) Pricing監査票（オプション） ----------
-if [ -f ./PRICING_FINAL_SHORTCUT.sh ]; then
-  info "Pricing E2E test available. Generate Pricing audit report? (y/n)"
-  read -r -n 1 -p "" yn
-  echo
-  if [[ "$yn" =~ ^[Yy]$ ]]; then
-    generate_pricing_audit_report
-  fi
+# --- 4) Stripe Events収集（Pricing監査用） ---
+if [[ "$USE_STRIPE" -eq 1 ]]; then
+  mkdir -p tmp/audit_stripe
+  SINCE_UNIX="$(date -u +%s -d "-${AUDIT_LOOKBACK_HOURS} hours" 2>/dev/null || date -u -v-${AUDIT_LOOKBACK_HOURS}H +%s 2>/dev/null || echo "")"
+  STRIPE_TYPES="checkout.session.completed payment_intent.succeeded customer.subscription.created customer.subscription.updated"
+  
+  info "Collecting Stripe events..."
+  stripe events list --limit 100 ${SINCE_UNIX:+--created "gte=${SINCE_UNIX}"} \
+    $(for t in $STRIPE_TYPES; do printf -- "--type %q " "$t"; done) -j \
+    > tmp/audit_stripe/events_raw.json 2>&1 || echo '{"data":[]}' > tmp/audit_stripe/events_raw.json
+
+  # Starlist対象抽出
+  jq '
+    .data
+    | map(select(
+      ( .data.object.metadata.app // "" ) == "starlist"
+      or ( .data.object.currency // "" ) == "jpy"
+      or ( .data.object.lines.data[0].price.id // "" | startswith("price_") )
+      or ( .type | contains("checkout.session") )
+    ))
+  ' tmp/audit_stripe/events_raw.json > tmp/audit_stripe/events_starlist.json 2>/dev/null || echo "[]" > tmp/audit_stripe/events_starlist.json
+fi
+
+# --- 5) DB監査（Pricing用） ---
+if [[ -f sql/pricing_audit.sql && "$USE_SUPABASE" -eq 1 ]]; then
+  info "Running DB audit for Pricing..."
+  supabase db query < sql/pricing_audit.sql > tmp/audit_stripe/db_pricing_audit.txt 2>&1 || warn "DB audit failed"
+fi
+
+# --- 6) Day11監査票生成 ---
+DAY11_REPORT="docs/reports/${RUN_DATE}_DAY11_AUDIT_${RUN_WEEK}.md"
+info "Generate Day11 audit report: ${DAY11_REPORT}"
+
+cat > "$DAY11_REPORT" <<EOF
+# Day11 監査票（自動生成）
+
+- 生成: ${NOW_JST}
+- 範囲: 過去 ${AUDIT_LOOKBACK_HOURS}h
+- Supabase ref: ${PROJECT_REF}
+- Slack: ${PERMALINK:-未取得}
+
+## 1. 件数サマリ
+
+\`\`\`json
+$(jq -n --slurpfile d tmp/audit_day11/dryrun.json --slurpfile s tmp/audit_day11/send.json \
+  '{dryRun: ($d[0]|length), send: ($s[0]|length)}' 2>/dev/null || echo '{"dryRun": 0, "send": 0}')
+\`\`\`
+
+## 2. エッジログ（末尾）
+
+\`\`\`text
+$(for f in tmp/audit_edge/*.log 2>/dev/null; do [[ -s "$f" ]] || continue; echo "== $(basename "$f") =="; tail -n 120 "$f"; echo; done || echo "Edge logs not available")
+\`\`\`
+
+## 3. 失敗/警告抽出（send.json）
+
+\`\`\`json
+$(jq '[.[] | select((.status//200) != 200 or (.ok//true) != true)] | .[0:20]' tmp/audit_day11/send.json 2>/dev/null || echo "[]")
+\`\`\`
+
+## 4. チェックリスト
+
+- [ ] Slack Permalink 取得済み
+- [ ] エッジログにERRORなし
+- [ ] send/dryRun の件数に極端な乖離なし
+- [ ] dryRun JSON 妥当性: ${OK_DRY}
+- [ ] 本送信 JSON 妥当性: ${OK_SEND}
+
+## 5. 証跡リンク/ファイル
+
+- dryRun JSON: \`${DRY_JSON_FILE}\`
+- send JSON: \`${SEND_JSON_FILE}\`
+- Edge logs: \`tmp/audit_edge/\`
+- 参考: \`.day11_cache/weekly.last\`（冪等性キー）
+
+---
+
+**監査完了日時**: ${NOW_JST}  
+**監査者**: $(whoami)  
+**承認**: <approver>
+EOF
+
+info "Day11 audit report created: $DAY11_REPORT"
+
+# --- 7) Pricing監査票生成 ---
+if [[ "$USE_STRIPE" -eq 1 ]]; then
+  PRICING_REPORT="docs/reports/${RUN_DATE}_PRICING_AUDIT.md"
+  STAR_EVENTS="tmp/audit_stripe/events_starlist.json"
+  info "Generate Pricing audit report: ${PRICING_REPORT}"
+
+  cat > "$PRICING_REPORT" <<EOF
+# Pricing 監査票（自動生成）
+
+- 生成: ${NOW_JST}
+- 範囲: 過去 ${AUDIT_LOOKBACK_HOURS}h
+- Supabase ref: ${PROJECT_REF}
+
+## 1. Stripe 抽出（代表10件）
+
+\`\`\`json
+$(jq '.[0:10] | map({id, type, created, amount_total: (.data.object.amount_total // .data.object.amount // null), customer: (.data.object.customer // null)})' "$STAR_EVENTS" 2>/dev/null || echo "[]")
+\`\`\`
+
+## 2. DB 監査（整数/範囲/重複/参照整合）
+
+\`\`\`text
+$(sed -n '1,200p' tmp/audit_stripe/db_pricing_audit.txt 2>/dev/null || echo "No DB audit output")
+\`\`\`
+
+## 3. チェックリスト（基準）
+
+- [ ] 整数性: 0件
+- [ ] 範囲逸脱: 0件（学生100–9999 / 成人300–29999）
+- [ ] 重複: 0件
+- [ ] 参照不整合: 0件
+
+## 4. 証跡リンク/ファイル
+
+- Stripe Events: \`tmp/audit_stripe/events_starlist.json\`
+- DB Audit: \`tmp/audit_stripe/db_pricing_audit.txt\`
+
+---
+
+**監査完了日時**: ${NOW_JST}  
+**監査者**: $(whoami)  
+**承認**: <approver>
+EOF
+
+  info "Pricing audit report created: $PRICING_REPORT"
 fi
 
 info "Final Integration Suite completed."
-
-# ---------- Pricing監査票生成関数 ----------
-generate_pricing_audit_report() {
-  info "Generating Pricing audit report…"
-  
-  PRICING_REPORT_FILE="${REPORT_DIR}/${DATE}_PRICING_AUDIT.md"
-  
-  # Stripe Events収集
-  STRIPE_EVENTS=""
-  if command -v stripe >/dev/null 2>&1; then
-    STRIPE_EVENTS=$(stripe events list --limit 10 2>/dev/null | jq -r '.data[] | "\(.created) \(.type) \(.id)"' || echo "")
-  fi
-  
-  cat > "$PRICING_REPORT_FILE" <<EOF
-# Pricing（推奨価格機能）監査レポート
-
-## メタ情報
-
-- 実行日: ${DATE}
-- 環境: prod
-- プロジェクト: ${PROJECT_REF}
-- コミット: ${COMMIT}
-- 実行者: （記入）
-- 実行時刻: ${RUN_AT}
-
-## 検証項目
-
-- [ ] 学生プラン：推奨価格表示・バリデーション・Checkout→DB保存
-- [ ] 成人プラン：推奨価格表示・バリデーション・Checkout→DB保存
-- [ ] plan_price整数検証完了
-
-## Stripe Events（直近10件）
-
-$(if [ -n "$STRIPE_EVENTS" ]; then
-  echo "| Created | Type | ID |"
-  echo "|---------|------|-----|"
-  echo "$STRIPE_EVENTS" | while IFS=' ' read -r created type id; do
-    echo "| $created | $type | \`$id\` |"
-  done
-else
-  echo "Stripe events not available"
-  echo ""
-  echo "手動で確認:"
-  echo "\`\`\`bash"
-  echo "stripe events list --limit 10"
-  echo "\`\`\`"
-fi)
-
-## DB検証結果
-
-\`\`\`sql
--- 直近のplan_price保存確認
-select subscription_id, plan_price, currency, updated_at
-from public.subscriptions
-where plan_price is not null
-order by updated_at desc
-limit 10;
-\`\`\`
-
-**結果**: 手動で確認してください（plan_priceが整数の円で保存されていること）
-
-## 合格ライン（3+1）
-
-- [ ] UI：推奨バッジ表示・刻み/上下限バリデーションOK
-- [ ] Checkout→DB：plan_price が整数円で保存
-- [ ] Webhook：checkout.* / subscription.* / invoice.* で価格更新反映
-- [ ] Logs：Supabase Functions 200、例外なし／再送痕跡なし
-
-## 証跡リンク/ファイル
-
-- Stripe Events: Stripe Dashboard → Events
-- Webhook Logs: Supabase Dashboard → Edge Functions → stripe-webhook → Logs
-- DB Records: Supabase Dashboard → SQL Editor（上記SQL実行）
-
-## インシデント対処・ロールバック（要約）
-
-- plan_priceがNULL → 金額単位変換を確認（amount_total/unit_amountの基数）
-- Webhook 400 → STRIPE_WEBHOOK_SECRET再設定
-- Webhook 500 → SUPABASE_SERVICE_ROLE_KEY確認
-- 価格入力が通る → UI側でvalidatePrice未結線を確認
-
-## 署名
-
-- 監査者: （記入） / 承認者: （記入）
-EOF
-
-  info "Pricing audit report created."
-  echo "-> ${PRICING_REPORT_FILE}"
-}

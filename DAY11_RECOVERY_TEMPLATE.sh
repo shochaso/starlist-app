@@ -58,9 +58,38 @@ log "  export SUPABASE_URL='https://<ref>.supabase.co'"
 log "  export SUPABASE_ANON_KEY='<anon>'"
 log ""
 
+# 直近のsendを無効化対象としてマーキング（例: 冪等ログへ記録）
+log "Marking recent send as invalid (if needed)..."
+mkdir -p logs/day11
+echo "$(date -Iseconds) mark send as invalid (manual)" >> logs/day11/recovery_marks.log
+
+# Slack再送 or 削除はポリシーに従い運用側で判断（自動削除は原則しない）
+PERMALINK_FILE=".day11_cache/permalink.txt"
+if [ -f "$PERMALINK_FILE" ]; then
+  PERMALINK=$(cat "$PERMALINK_FILE")
+  log "Manual action required: Slack message at $PERMALINK"
+else
+  warn "Permalink not found in cache"
+fi
+
+log ""
 log "=== 復旧テンプレート完了 ==="
 log ""
 log "📖 詳細な復旧手順:"
 log "  DAY11_GO_LIVE_GUIDE.md のトラブルシューティングセクションを参照"
+log ""
+log "📋 典型失敗の切り分け表:"
+log ""
+log "  - Permalink未取得:"
+log "    → logs/day11/*_send.json に Slack Webhook エラー/429/5xx を確認"
+log "    → リトライ（指数バックオフ）、Webhook URL/Secret再確認"
+log ""
+log "  - Stripe抽出0件:"
+log "    → イベントタイプ/Lookback不足/テスト環境を確認"
+log "    → AUDIT_LOOKBACK_HOURS を+72h、STRIPE_API_KEY スコープ確認"
+log ""
+log "  - DB監査0出力:"
+log "    → 接続/権限問題を確認"
+log "    → supabase login や SUPABASE_ACCESS_TOKEN を再供給"
 log ""
 

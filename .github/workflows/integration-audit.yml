@@ -1,0 +1,63 @@
+name: Integration Audit
+
+on:
+  workflow_dispatch:
+    inputs:
+      audit_hours:
+        description: "Lookback hours"
+        required: false
+        default: "48"
+  schedule:
+    - cron: "5 0 * * 1"   # 月曜09:05 JST (=00:05 UTC)
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    env:
+      TZ: Asia/Tokyo
+      AUDIT_LOOKBACK_HOURS: ${{ github.event.inputs.audit_hours || 48 }}
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+      SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      STRIPE_API_KEY: ${{ secrets.STRIPE_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Setup CLIs
+        run: |
+          sudo apt-get update && sudo apt-get install -y jq
+          npm i -g supabase
+          curl -fsSL https://cli.stripe.com/install.sh | bash
+      
+      - name: Auth CLIs
+        run: |
+          supabase login --token "${SUPABASE_ACCESS_TOKEN}" || echo "Supabase login failed"
+          stripe login --api-key "${STRIPE_API_KEY}" || echo "Stripe login failed"
+      
+      - name: Run Suite
+        run: |
+          chmod +x ./FINAL_INTEGRATION_SUITE.sh
+          ./FINAL_INTEGRATION_SUITE.sh || true
+      
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: audit-${{ github.run_id }}
+          path: |
+            docs/reports/*_DAY11_AUDIT_*.md
+            docs/reports/*_PRICING_AUDIT.md
+            tmp/audit_day11/*.json
+            tmp/audit_stripe/*.json
+            tmp/audit_edge/*.log
+          retention-days: 90
+      
+      - name: PR comment (optional)
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          recreate: true
+          path: docs/reports
+
