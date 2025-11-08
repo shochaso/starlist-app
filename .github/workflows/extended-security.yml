@@ -37,6 +37,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         continue-on-error: true
+        # Note: config-path is deprecated in v2, but action still works
 
       - name: Run Semgrep
         uses: returntocorp/semgrep-action@v1
