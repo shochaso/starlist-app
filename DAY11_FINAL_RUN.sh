@@ -29,8 +29,20 @@ echo "✅ SUPABASE_URL: ${SUPABASE_URL}"
 echo "✅ SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY:0:20}..."
 echo ""
 
-# 1) 仕上げチェック
-echo "📋 1) 仕上げチェック"
+# 1) 実行直前チェック（Preflight）
+echo "📋 1) 実行直前チェック（Preflight）"
+if [ -f ./DAY11_PREFLIGHT_CHECK.sh ]; then
+  chmod +x ./DAY11_PREFLIGHT_CHECK.sh
+  echo "🚀 実行直前チェックを実行します..."
+  ./DAY11_PREFLIGHT_CHECK.sh
+  echo ""
+else
+  echo "⚠️  DAY11_PREFLIGHT_CHECK.sh が見つかりません。手動チェックを推奨します。"
+  echo ""
+fi
+
+# 2) 仕上げチェック
+echo "📋 2) 仕上げチェック"
 chmod +x ./DAY11_FINAL_CHECK.sh ./DAY11_EXECUTE_ALL.sh ./DAY11_SMOKE_TEST.sh 2>/dev/null || true
 
 if [ -f ./DAY11_FINAL_CHECK.sh ]; then
@@ -42,8 +54,8 @@ fi
 
 echo ""
 
-# 2) 一括実行
-echo "📋 2) 一括実行（dryRun → 本送信 → 記録まで対話式で進みます）"
+# 3) 一括実行
+echo "📋 3) 一括実行（dryRun → 本送信 → 記録まで対話式で進みます）"
 if [ -f ./DAY11_EXECUTE_ALL.sh ]; then
   echo "🚀 一括実行スクリプトを実行します..."
   ./DAY11_EXECUTE_ALL.sh
@@ -54,8 +66,8 @@ fi
 
 echo ""
 
-# 3) スモークテスト（任意）
-echo "📋 3) スモークテスト（任意：dryRun要点の再確認）"
+# 4) スモークテスト（任意）
+echo "📋 4) スモークテスト（任意：dryRun要点の再確認）"
 read -p "スモークテストを実行しますか？ (y/n) " -n 1 -r
 echo
 if [[ $REPLY =~ ^[Yy]$ ]]; then
@@ -70,8 +82,8 @@ fi
 
 echo ""
 
-# 4) 重要ファイルの目視チェック
-echo "📋 4) 重要ファイルの目視チェック（変更が入ったか）"
+# 5) 重要ファイルの目視チェック
+echo "📋 5) 重要ファイルの目視チェック（変更が入ったか）"
 echo ""
 CHANGED_FILES=$(git status --porcelain 2>/dev/null | grep -E "DAY11_SOT_DIFFS.md|OPS-MONITORING-V3-001.md|Mermaid.md" || true)
 
@@ -114,6 +126,27 @@ EOF
 
 echo ""
 echo "=== Day11 最終ランブロック完了 ==="
+echo ""
+
+# 6) 最終レポート追記（オプション）
+echo "📋 6) 最終レポート追記（オプション）"
+if [ -f ./DAY11_FINAL_REPORT.sh ]; then
+  chmod +x ./DAY11_FINAL_REPORT.sh
+  read -p "最終レポートを追記しますか？ (y/n) " -n 1 -r
+  echo
+  if [[ $REPLY =~ ^[Yy]$ ]]; then
+    echo "SlackメッセージURLを入力してください（Enterでスキップ）:"
+    read -r SLACK_MSG_URL
+    if [ -n "$SLACK_MSG_URL" ]; then
+      ./DAY11_FINAL_REPORT.sh "$SLACK_MSG_URL"
+    else
+      echo "⚠️  レポート追記をスキップしました"
+    fi
+  fi
+else
+  echo "⚠️  DAY11_FINAL_REPORT.sh が見つかりません。手動でレポートを追記してください。"
+fi
+
 echo ""
 echo "📝 次のステップ:"
 echo "  1. Slack #ops-monitor チャンネルで週次サマリを確認"
