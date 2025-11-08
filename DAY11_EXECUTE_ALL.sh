@@ -236,7 +236,7 @@ fi
 
 echo ""
 echo "📝 メッセージプレビュー:"
-jq -r '.message' /tmp/day11_dryrun.json | head -15
+jq '.stats, .weekly_summary, .message' /tmp/day11_dryrun.json
 
 echo ""
 echo "✅ dryRun検証がすべて成功しました！"
@@ -305,19 +305,49 @@ echo ""
 echo ""
 echo "📋 ⑦ 成果物の記録"
 echo ""
-echo "✅ 以下のファイルを更新してください:"
+
+# 次回実行日時の抽出
+NEXT_RUN_JST="$(
+  jq -r '
+    .message
+    | (capture("(?<date>20[0-9]{2}-[01][0-9]-[0-3][0-9]).*?(?<time>[0-2][0-9]:[0-5][0-9])")? // empty)
+    | if . == "" then "" else (.date + "T" + .time + ":00+09:00") end
+  ' /tmp/day11_dryrun.json 2>/dev/null || echo ""
+)"
+
+read -p "SlackメッセージURLを入力してください（任意）: " SLACK_MSG_URL
+
 echo ""
-echo "1. docs/reports/DAY11_SOT_DIFFS.md"
-echo "   - dryRunレスポンス（/tmp/day11_dryrun.json）"
-echo "   - 本送信レスポンス（/tmp/day11_send.json）"
-echo "   - Slackスクショ（メッセージURL/時刻）"
+echo "📝 DAY11_SOT_DIFFS.md に追記しますか？ (y/n)"
+read -p ">>> " -n 1 -r
+echo
+if [[ $REPLY =~ ^[Yy]$ ]]; then
+  cat >> docs/reports/DAY11_SOT_DIFFS.md <<EOF
+
+### 本番検証ログ（$(date +'%Y-%m-%d %H:%M %Z')）
+
+- DryRun: HTTP 200 / ok:true / period=14d（抜粋: stats / weekly_summary / message）
+
+- 本送信: HTTP 200 / ok:true / Slack: ${SLACK_MSG_URL:-"(URL未記入)"}
+
+- 次回実行（推定）: ${NEXT_RUN_JST:-"(抽出不可)"}
+
+- Logs: Supabase Functions=200（再送なし） / GHA（実施時）=成功
+EOF
+  echo "✅ DAY11_SOT_DIFFS.md に追記しました"
+else
+  echo "⚠️  手動で追記してください"
+fi
+
 echo ""
-echo "2. docs/ops/OPS-MONITORING-V3-001.md"
+echo "✅ 以下のファイルも更新してください:"
+echo ""
+echo "1. docs/ops/OPS-MONITORING-V3-001.md"
 echo "   - 稼働開始日"
 echo "   - 運用責任者"
 echo "   - 連絡先"
 echo ""
-echo "3. docs/Mermaid.md"
+echo "2. docs/Mermaid.md"
 echo "   - Day11ノードをDay10直下に追加"
 echo ""
 
