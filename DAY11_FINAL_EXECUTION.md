@@ -115,17 +115,106 @@ EOF
 **方法1: 一括実行スクリプトを使用（推奨）**
 
 ```bash
-# 環境変数設定
-export SUPABASE_URL="https://<project-ref>.supabase.co"
-export SUPABASE_ANON_KEY="<anon-key>"
+# 0) 仕上げチェック（実行前の最小セット）
+./DAY11_FINAL_CHECK.sh
 
-# スクリプト実行
+# 1) 一括実行
 ./DAY11_EXECUTE_ALL.sh
+
+# 2) スモークテスト（任意）
+./DAY11_SMOKE_TEST.sh
 ```
 
 **方法2: 手動実行**
 
 上記の1-4の手順を順番に実行してください。
+
+---
+
+## 0) 仕上げチェック（実行前の最小セット）
+
+```bash
+# 置換：<project-ref>, <anon-key>
+export SUPABASE_URL="https://<project-ref>.supabase.co"
+export SUPABASE_ANON_KEY="<anon-key>"
+
+# 実行権限
+chmod +x ./DAY11_EXECUTE_ALL.sh
+
+# jq が無ければ導入（macOS）
+command -v jq >/dev/null || brew install jq
+
+# Secrets命名の最終確認（目視）
+# Supabase Edge Secret:  slack_webhook_ops_summary（小文字スネーク）
+# GitHub Actions Secret: SLACK_WEBHOOK_OPS_SUMMARY（大文字スネーク）
+
+# 仕上げチェックスクリプト実行
+./DAY11_FINAL_CHECK.sh
+```
+
+---
+
+## 1) 一括実行
+
+```bash
+./DAY11_EXECUTE_ALL.sh
+```
+
+* 対話プロンプトに従って進めてください（dryRun → 本送信の順）。
+* スクリプト内で `validate_dryrun_json` / `validate_send_json` が自動実行されます。
+* SlackメッセージURLの入力を求められたら、その場で貼り付けてください（あと追記でもOK）。
+
+---
+
+## 2) 成功トレイル（この3点が揃えば合格）
+
+* **dryRun**: `validate_dryrun_json` が **OK** で終了（`stats / weekly_summary / message` が整合）
+* **本送信**: `validate_send_json` が **OK**、Slack **#ops-monitor** に**1件のみ**到達
+* **Logs**: Supabase Functions **200**、指数バックオフの**再送なし**
+
+---
+
+## 3) 主要ファイルの自動/手動更新
+
+スクリプト実行で `DAY11_SOT_DIFFS.md` に自動追記されます。以下2点もお忘れなく：
+
+* `OPS-MONITORING-V3-001.md`: 稼働開始日・運用責任者・連絡先
+* `Mermaid.md`: **Day11（ops-slack-summary）** ノードを Day10 直下に追加
+
+---
+
+## 4) Go/No-Go 判定（最終4条件）
+
+1. **dryRun** 自動検証 OK
+2. **Slack本送信** 到達 & 体裁 OK（KPI/閾値/変化率/次回実行メッセージ）
+3. **ログ**にエラー／再送痕跡なし
+4. **文書3点**（SOT/運用/Mermaid）更新完了
+
+---
+
+## つまずき時の即応リスト（最短で直す）
+
+* **Missing Webhook / 400/404**: Webhookを再発行→`slack_webhook_ops_summary` を更新→再実行
+* **σや閾値が不正**: `v_ops_notify_stats` の0補完/集計ロジックを再適用（COALESCE/CASE）
+* **変化率フォーマット差**（"—"や"N/A"）: `parse_pct_or_null` に `gsub("—|N/A";"")` を1語追加
+* **件数が小数**: ビュー側の COUNT/CAST を見直し（`COUNT(*)::int` 等）
+
+---
+
+## 参考：最小スモーク（任意・数十秒）
+
+```bash
+# スモークテストスクリプト実行
+./DAY11_SMOKE_TEST.sh
+
+# または手動実行
+jq '.stats, .weekly_summary, .message' /tmp/day11_dryrun.json
+
+# 次回実行日時（抽出できた場合）
+jq -r '.message
+  | (capture("(?<date>20[0-9]{2}-[01][0-9]-[0-3][0-9]).*?(?<time>[0-2][0-9]:[0-5][0-9])")? // empty)
+  | if .=="" then "N/A" else (.date+"T"+.time+":00+09:00") end' /tmp/day11_dryrun.json
+```
 
 ---
 
