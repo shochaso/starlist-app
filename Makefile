@@ -1,4 +1,4 @@
-.PHONY: db-push db-pull fn-deploy fn-logs fn-serve day11 pricing audit all smoke verify schema lint redact
+.PHONY: db-push db-pull fn-deploy fn-logs fn-serve day11 pricing audit all smoke verify schema lint redact gonogo smoke-test
 
 ## Supabase DB を dev 環境へ反映
 db-push:
@@ -86,3 +86,13 @@ clean:
 ## Deep clean (including edge logs)
 distclean: clean
 	rm -f docs/reports/*_edge_logs.txt
+
+## Go/No-Go check (10 items)
+gonogo:
+	chmod +x scripts/gonogo_check.sh
+	scripts/gonogo_check.sh
+
+## Smoke test (30 seconds)
+smoke-test:
+	chmod +x scripts/smoke_test.sh
+	scripts/smoke_test.sh
