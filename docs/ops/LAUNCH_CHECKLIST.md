@@ -10,6 +10,19 @@
 
 ---
 
+## ✅ 最終Readyスタンプ（1コマンド検証）
+
+本番直前、これだけ叩けば「構造OK／要約OK／判定OK」を一括で確認できます。
+
+```bash
+AUDIT_LOOKBACK_HOURS=48 ./FINAL_INTEGRATION_SUITE.sh && make verify && make summarize && make gonogo
+```
+
+* ここで **ALL PASS** → SlackにGo宣言（監査票リンクを添付）
+* 何か1つでもNG → Exit Code/項目に従って即時是正 → 再実行
+
+---
+
 ## 🚀 すぐ使える最短3コマンド（本番直前）
 
 ```bash
@@ -397,11 +410,25 @@ make gonogo
 make redact && ./FINAL_INTEGRATION_SUITE.sh --audit-only
 ```
 
-### バックアウト45分タイマー（ワンライナー）
+### バックアウト45分タイマー（確実版）
 
 ```bash
-( sleep 2700 && echo "[NOTICE] 45m経過。成功判定 or バックアウトを選択してください。" ) &
+( sleep 2700; >&2 echo "[NOTICE] 45m経過：成功判定 or バックアウトを実施してください。" ) &
 ```
+
+### 当日の判断をさらに明瞭化（1行ログ追記）
+
+Go/Backout判断の証跡をローカルにも確実に残します。
+
+```bash
+# Go宣言時（T-15m後）
+echo "$(date -Iseconds) GO greenlight by <PM@name>" >> logs/day11/launch_decision.log
+
+# バックアウト時（T+45m判定）
+echo "$(date -Iseconds) BACKOUT executed by <oncall@name>" >> logs/day11/launch_decision.log
+```
+
+監査票に `launch_decision.log` のハッシュ（sha256）を併記すると改竄検知が強化されます。
 
 ---
 
@@ -410,11 +437,11 @@ make redact && ./FINAL_INTEGRATION_SUITE.sh --audit-only
 ### Go宣言（T-15m）
 
 ```
-:rocket: [GO] Day11 & Pricing 本番実行開始（JST）
-- Scope: 過去48h
-- 監査票: <link to _DAY11_AUDIT_*.md> / <link to _PRICING_AUDIT.md>
-- On-call: 主要 <@user> / Backups <@user>
-- バックアウト判定: T+45m
+:rocket: [GO] 本番実行開始（JST）
+- Scope: 48h
+- 監査票: <_DAY11_AUDIT_*.md>, <_PRICING_AUDIT.md>
+- On-call: <@主要> / Backup: <@副>
+- 判定: T+45m
 ```
 
 ### 成功判定（T+≤45m）
@@ -432,10 +459,27 @@ make redact && ./FINAL_INTEGRATION_SUITE.sh --audit-only
 - 理由: <短く>
 - 監査票: <link>
 - 対応: 無効化マーキング + 復旧テンプレ実行
-- 再実行目安: 48h後（是正完了後）
+- 再実行: 48h以内（是正後）
 ```
 
 ---
+
+---
+
+## 🔐 2点だけ最終セキュリティ確認
+
+* **Artifacts保持**：現在120日。機密性の高い原本JSON/ログはGitに含めずArtifactsのみで保全。
+* **Secrets**：Slack/Stripe/Supabaseの更新履歴を `LAUNCH_CHECKLIST.md` 末尾へ追記（ローテ予定日も明記）。
+
+---
+
+## 📌 本日の運転表（再掲・極短）
+
+1. `AUDIT_LOOKBACK_HOURS=48 ./FINAL_INTEGRATION_SUITE.sh`
+2. `make verify && make summarize`
+3. `make gonogo` → **Goなら** Slack宣言、**No-Goなら** Exitコード別是正
+4. 必要なら `make day11` / `make pricing`（T+0〜45m）
+5. **T+45m** 成功判定 or バックアウト（テンプレ実行）
 
 ---
 
