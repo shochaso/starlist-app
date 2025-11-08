@@ -46,4 +46,5 @@ jobs:
       - name: Run semgrep (report-only)
         uses: returntocorp/semgrep-action@v1
         with:
-          args: --config=p/ci || true
+          config: p/ci
+        continue-on-error: true
