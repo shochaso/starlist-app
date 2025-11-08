@@ -4,11 +4,11 @@
 // Last-Updated:: 2025-11-08
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../core/config/supabase_client_provider.dart';
 
 /// 推奨価格設定を取得するProvider
 final pricingConfigProvider = FutureProvider<Map<String, dynamic>>((ref) async {
-  final supabase = Supabase.instance.client;
+  final supabase = ref.watch(supabaseClientProvider);
 
   try {
     final res = await supabase.rpc('get_app_setting', params: {'p_key': 'pricing.recommendations'});
