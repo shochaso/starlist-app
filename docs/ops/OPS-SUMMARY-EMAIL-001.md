@@ -161,7 +161,39 @@ Source-of-Truth: Edge Functions (`supabase/functions/ops-summary-email/`) + GitH
 4. **メール受信確認**: 宛先にメールが届くことを確認
 5. **メトリクス検証**: メール内のメトリクスが正しいことを確認
 
-## 12. 参考リンク
+## 12. 到達率・冪等性・監査
+
+### 12.1 送信の冪等化
+
+- 同一週に重複送信を防ぐため、`report_week`（YYYY-Wnn）＋`channel`（email）＋`provider`をキーに送信ログを1行upsert
+- 既に存在する場合はスキップし、ログに「skipped: already sent」を出力
+- `ops_summary_email_logs`テーブルで管理
+
+### 12.2 配信品質（迷惑対策）
+
+- HTMLヘッダに`List-Unsubscribe`（`mailto:`と`https:`両方）を付与
+- Preheaderテキスト（先頭の見えない要約）を埋め込み、開封率改善
+- 差出人名（`STARLIST OPS`）は運用メールとブランドを一致
+
+### 12.3 監査ログ
+
+- `ops_summary_email_logs`テーブルに以下を保存:
+  - `run_id`, `provider`, `message_id`, `to_count`, `subject`
+  - `sent_at_utc`, `sent_at_jst`, `duration_ms`
+  - `ok`, `error_code`, `error_message`
+- 障害時はEdge Functionログ＋GitHub Run ArtifactsにHTMLプレビューを保存
+
+### 12.4 フォールバック設計
+
+- Resend送信失敗時のみSendGridへ切替
+- 両方成功の二重送信を防ぐため、成功したprovider名をログ保存→以降は同週スキップ
+
+### 12.5 宛先の安全策
+
+- MVPではOPS/DEVのみに限定（`@starlist.jp`ドメインのみ許可）
+- 将来的な対象拡大時はサプレッションリスト運用を同梱
+
+## 13. 参考リンク
 
 - `docs/ops/OPS-HEALTH-DASHBOARD-001.md` - OPS Health Dashboard仕様
 - `docs/ops/OPS-ALERT-AUTOMATION-001.md` - OPS Alert Automation仕様
