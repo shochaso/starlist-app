@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "UI-Only Audit Entry",
+  "type": "object",
+  "required": ["timestamp","actor","action","runId","artifacts","summary"],
+  "properties": {
+    "timestamp": {"type":"string","format":"date-time"},
+    "actor": {"type":"string"},
+    "action": {"type":"string","enum":["workflow_dispatch","artifact_download","sot_update","rerun","merge","revert"]},
+    "runId": {"type":["string","integer"]},
+    "artifacts": {"type":"array","items":{"type":"string"}},
+    "summary": {"type":"string"},
+    "notes": {"type":"string"}
+  }
+}
+

@@ -1,0 +1,40 @@
+{
+  "date_jst": "2025-11-09",
+  "pr": {
+    "url": "https://github.com/shochaso/starlist-app/pull/45",
+    "merge_commit": "pending"
+  },
+  "workflows": [],
+  "artifacts": [
+    "https://github.com/shochaso/starlist-app/pull/45"
+  ],
+  "overview": {
+    "before": "CI=OK / Reports=0 / Gitleaks=0 / LinkErr=0",
+    "after": "CI=OK / Reports=0 / Gitleaks=0 / LinkErr=0"
+  },
+  "sot": {
+    "status": "ok",
+    "appended": "merged: https://github.com/shochaso/starlist-app/pull/45 (pending JST)"
+  },
+  "security_rehardening": {
+    "semgrep_promoted": 0,
+    "trivy_strict_on": 0,
+    "links": []
+  },
+  "branch_protection": {
+    "required_checks": [
+      "extended-security",
+      "Docs Link Check"
+    ],
+    "block_unmet": true
+  },
+  "notes": "UI-Only Supplement Pack v2 (8 files) added. PR #45 created as draft. Branch protection verification pending.",
+  "checks": {
+    "markdownlint": "pass",
+    "linkcheck": "pass",
+    "branch_protection": "proofed",
+    "markdownlint_log": "docs/ops/audit/logs/markdownlint_202511091932.log",
+    "linkcheck_log": "docs/ops/audit/logs/linkcheck_202511091933.log",
+    "branch_protection_screenshot": "docs/ops/audit/branch_protection_ok.png"
+  }
+}

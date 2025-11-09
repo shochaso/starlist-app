@@ -24,7 +24,7 @@ void main() {
       final container = ProviderContainer(
         overrides: [
           opsMetricsSeriesProvider.overrideWith(
-            (ref) => Future.value(series),
+            () => _FakeOpsMetricsSeriesNotifier(series),
           ),
         ],
       );
@@ -55,4 +55,13 @@ void main() {
   });
 }
 
+class _FakeOpsMetricsSeriesNotifier extends OpsMetricsSeriesNotifier {
+  _FakeOpsMetricsSeriesNotifier(this._series);
 
+  final List<OpsMetricsSeriesPoint> _series;
+
+  @override
+  Future<List<OpsMetricsSeriesPoint>> build() async {
+    return _series;
+  }
+}

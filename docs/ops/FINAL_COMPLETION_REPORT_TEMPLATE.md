@@ -68,6 +68,44 @@
 
 ---
 
+## 監査サマリー（JSONテンプレ）
+
+```json
+{
+  "date_jst": "2025-11-09",
+  "workflows": {
+    "weekly_routine": {"run_id": "<RID>", "conclusion": "success"},
+    "allowlist_sweep": {"run_id": "<RID>", "conclusion": "success"},
+    "docs_link_check": {"run_id": "<RID>", "conclusion": "success"}
+  },
+  "ops_health": {"CI": "OK", "Reports": "<n>", "Gitleaks": 0, "LinkErr": 0},
+  "sot_ledger": {"status": "OK", "note": "PR URL + JST時刻追記済み"},
+  "security_rehardening": {
+    "semgrep_rules_promoted": 2,
+    "trivy_config_strict_services_on": 1
+  },
+  "branch_protection": {
+    "required_checks": ["extended-security", "Docs Link Check"],
+    "linear_history": true,
+    "squash_only": true
+  },
+  "artifacts_proof": {
+    "security_sarif": "captured",
+    "weekly_artifact": "downloaded"
+  }
+}
+```
+
+---
+
+## PR #39 マージ情報
+
+**マージ時刻**: 2025-11-09T09:14:30Z  
+**マージコミット**: c6ce2db26bd2e396f00582ce950af5b708f915c9  
+**URL**: https://github.com/shochaso/starlist-app/pull/39
+
+---
+
 **作成完了時刻**: 2025-11-09  
 **ステータス**: ⏳ **テンプレート作成完了（実績記録待ち）**
 

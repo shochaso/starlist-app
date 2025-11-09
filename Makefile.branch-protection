@@ -1,0 +1,67 @@
+# name=Makefile.branch-protection
+OWNER ?= shochaso
+REPO  ?= starlist-app
+BRANCH?= main
+PR    ?= 48
+RUN_ID?= 19207760988
+
+CTX   := /tmp/bp/contexts.json
+SOFT  := /tmp/bp/branch_protection_soft.json
+HARD  := /tmp/bp/branch_protection_hard.json
+
+guard:
+	@test -n "$$GITHUB_TOKEN" || (echo "GITHUB_TOKEN未設定"; exit 1)
+
+contexts:
+	@mkdir -p /tmp/bp
+	@gh api repos/$(OWNER)/$(REPO)/commits/${BRANCH}/check-runs -H "Accept: application/vnd.github+json" \
+	 | jq -r '.check_runs[]?.name' | sort -u | jq -R . | jq -s 'unique' > /tmp/bp/contexts_array.json
+	@jq -n --slurpfile ctxs /tmp/bp/contexts_array.json '["security-scan"] as $$base | ($$base + ($$ctxs[0]|map(tostring))) | unique' > $(CTX)
+	@echo "contexts:" && cat $(CTX) | jq .
+
+soft.json: contexts
+	@jq -n --slurpfile contexts $(CTX) \
+	'{"required_status_checks":{"strict":false,"contexts":$$contexts[0]},"enforce_admins":false,"required_pull_request_reviews":{"required_approving_review_count":1},"restrictions":null}' > $(SOFT)
+	@cat $(SOFT) | jq .
+
+hard.json: contexts
+	@jq -n --slurpfile contexts $(CTX) \
+	'{"required_status_checks":{"strict":true,"contexts":$$contexts[0]},"enforce_admins":true,"required_pull_request_reviews":{"required_approving_review_count":1},"restrictions":null}' > $(HARD)
+	@cat $(HARD) | jq .
+
+protect-soft: guard soft.json
+	@curl -sS -X PUT -H "Accept: application/vnd.github+json" \
+	 -H "Authorization: Bearer $$GITHUB_TOKEN" \
+	 https://api.github.com/repos/$(OWNER)/$(REPO)/branches/$(BRANCH)/protection \
+	 -d @$(SOFT) | jq .
+
+protect-hard: guard hard.json
+	@curl -sS -X PUT -H "Accept: application/vnd.github+json" \
+	 -H "Authorization: Bearer $$GITHUB_TOKEN" \
+	 https://api.github.com/repos/$(OWNER)/$(REPO)/branches/$(BRANCH)/protection \
+	 -d @$(HARD) | jq .
+
+protect-off: guard
+	@curl -sS -X DELETE -H "Accept: application/vnd.github+json" \
+	 -H "Authorization: Bearer $$GITHUB_TOKEN" \
+	 https://api.github.com/repos/$(OWNER)/$(REPO)/branches/$(BRANCH)/protection
+
+status:
+	@gh api repos/$(OWNER)/$(REPO)/branches/$(BRANCH)/protection -H "Accept: application/vnd.github+json" \
+	 | jq '{strict:.required_status_checks.strict,contexts:.required_status_checks.contexts,enforce_admins:.enforce_admins.enabled}'
+
+evidence:
+	@mkdir -p docs/ops/audit/logs docs/ops/audit/artifacts/extended-security-$(RUN_ID)
+	@gh run view $(RUN_ID) --repo $(OWNER)/$(REPO) --log > docs/ops/audit/logs/extended-security-$(RUN_ID).log
+	-@cp -r artifacts/extended-security-$(RUN_ID)/* docs/ops/audit/artifacts/extended-security-$(RUN_ID)/ 2>/dev/null || true
+	@if [ -f docs/ops/audit/branch_protection_ok.png ]; then \
+	  shasum -a 256 docs/ops/audit/branch_protection_ok.png | tee docs/ops/audit/logs/sha_branch_protection_ok.txt ; \
+	  file docs/ops/audit/branch_protection_ok.png | tee docs/ops/audit/logs/file_branch_protection_ok.txt ; \
+	fi
+	@git add docs/ops/audit && git commit -m "docs(ops): update Evidence" || true
+	@git push || true
+
+comment:
+	@SHA=$$( [ -f docs/ops/audit/logs/sha_branch_protection_ok.txt ] && cut -d' ' -f1 docs/ops/audit/logs/sha_branch_protection_ok.txt || echo N/A ); \
+	echo "Evidence for $(RUN_ID)\n- artifacts: docs/ops/audit/artifacts/extended-security-$(RUN_ID)/\n- logs: docs/ops/audit/logs/extended-security-$(RUN_ID).log\n- screenshot: docs/ops/audit/branch_protection_ok.png\n- sha256: $$SHA\n- contexts: $$(cat $(CTX))" \
+	> PR_EVIDENCE.md ; gh pr comment $(PR) --body-file PR_EVIDENCE.md

@@ -201,6 +201,7 @@ class _OpsDashboardPageState extends ConsumerState<OpsDashboardPage>
                       border: OutlineInputBorder(),
                       isDense: true,
                     ),
+                    isExpanded: true,
                     items: const [
                       DropdownMenuItem<String?>(
                           value: null, child: Text('All')),
@@ -228,6 +229,7 @@ class _OpsDashboardPageState extends ConsumerState<OpsDashboardPage>
                       border: OutlineInputBorder(),
                       isDense: true,
                     ),
+                    isExpanded: true,
                     items: const [
                       DropdownMenuItem<String?>(
                           value: null, child: Text('All')),
@@ -251,6 +253,7 @@ class _OpsDashboardPageState extends ConsumerState<OpsDashboardPage>
                       border: OutlineInputBorder(),
                       isDense: true,
                     ),
+                    isExpanded: true,
                     items: const [
                       DropdownMenuItem<String?>(
                           value: null, child: Text('All')),
@@ -281,6 +284,7 @@ class _OpsDashboardPageState extends ConsumerState<OpsDashboardPage>
                       border: OutlineInputBorder(),
                       isDense: true,
                     ),
+                    isExpanded: true,
                     items: const [
                       DropdownMenuItem(value: 30, child: Text('30 min')),
                       DropdownMenuItem(value: 60, child: Text('60 min')),
@@ -1034,69 +1038,6 @@ class _OpsDashboardPageState extends ConsumerState<OpsDashboardPage>
                               sideTitles: SideTitles(showTitles: false)),
                           rightTitles: const AxisTitles(
                               sideTitles: SideTitles(showTitles: false)),
-                        ),
-                        gridData: const FlGridData(show: true),
-                        borderData: FlBorderData(show: false),
-                      ),
-                    ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-                  ? const Center(child: Text('No data'))
-                  : BarChart(
-                      BarChartData(
-                        barGroups: health.aggregations.map((agg) {
-                          final index = health.aggregations.indexOf(agg);
-                          Color color;
-                          if (agg.alertTrend == 'increasing') {
-                            color = Colors.red;
-                          } else if (agg.alertTrend == 'decreasing') {
-                            color = Colors.green;
-                          } else {
-                            color = Colors.orange;
-                          }
-                          return BarChartGroupData(
-                            x: index,
-                            barRods: [
-                              BarChartRodData(
-                                toY: agg.alertCount.toDouble(),
-                                color: color,
-                                width: 20,
-                              ),
-                            ],
-                          );
-                        }).toList(),
-                        titlesData: FlTitlesData(
-                          leftTitles: AxisTitles(
-                            sideTitles: SideTitles(
-                              showTitles: true,
-                              reservedSize: 40,
-                              getTitlesWidget: (value, meta) {
-                                return Text('${value.toInt()}', style: const TextStyle(fontSize: 10));
-                              },
-                            ),
-                          ),
-                          bottomTitles: AxisTitles(
-                            sideTitles: SideTitles(
-                              showTitles: true,
-                              getTitlesWidget: (value, meta) {
-                                if (value.toInt() >= health.aggregations.length) return const SizedBox.shrink();
-                                final agg = health.aggregations[value.toInt()];
-                                return Text(
-                                  '${agg.app ?? 'N/A'}\n${agg.env ?? 'N/A'}',
-                                  style: const TextStyle(fontSize: 10),
-                                  textAlign: TextAlign.center,
-                                );
-                              },
-                            ),
-                          ),
-                          topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                          rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
                         ),
                         gridData: const FlGridData(show: true),
                         borderData: FlBorderData(show: false),
