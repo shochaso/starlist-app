@@ -8,7 +8,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
 import '../providers/ops_metrics_provider.dart';
-import '../models/ops_alert_model.dart';
 import '../models/ops_metrics_series_model.dart';
 import '../models/ops_health_model.dart';
 
@@ -19,12 +18,12 @@ class OpsDashboardPage extends ConsumerStatefulWidget {
   ConsumerState<OpsDashboardPage> createState() => _OpsDashboardPageState();
 }
 
-class _OpsDashboardPageState extends ConsumerState<OpsDashboardPage> with SingleTickerProviderStateMixin {
+class _OpsDashboardPageState extends ConsumerState<OpsDashboardPage>
+    with SingleTickerProviderStateMixin {
   String? _selectedEnv;
   String? _selectedApp;
   String? _selectedEvent;
   int _selectedMinutes = 30;
-  bool _autoRefreshListenerRegistered = false;
   late TabController _tabController;
 
   @override
@@ -45,19 +44,35 @@ class _OpsDashboardPageState extends ConsumerState<OpsDashboardPage> with Single
 
   @override
   Widget build(BuildContext context) {
-    // Auto-refresh trigger (30 seconds) - register once
-    // Note: ref.listen() automatically cancels previous listeners on rebuild
-    if (!_autoRefreshListenerRegistered) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        ref.listen(opsMetricsAutoRefreshProvider, (previous, next) {
-          next.whenData((_) {
-            ref.refresh(opsMetricsSeriesProvider); // ignore: unused_result
-          });
-        });
-        _autoRefreshListenerRegistered = true;
-      });
-    }
-
+    ref.listen<AsyncValue<List<OpsMetricsSeriesPoint>>>(
+      opsMetricsSeriesProvider,
+      (previous, next) {
+        final isAuthError = next.maybeWhen(
+          error: (error, _) => _isAuthorizationError(error),
+          orElse: () => false,
+        );
+        ref.read(opsMetricsAuthErrorProvider.notifier).state = isAuthError;
+        next.whenOrNull(
+          error: (error, _) {
+            final badge =
+                _formatFilterBadge(ref.read(opsMetricsFilterProvider));
+            final message =
+                isAuthError ? '権限がありません $badge' : 'メトリクスの取得に失敗しました: $error';
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(message),
+                action: SnackBarAction(
+                  label: '再読込',
+                  onPressed: () => ref
+                      .read(opsMetricsSeriesProvider.notifier)
+                      .manualRefresh(),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
     final seriesAsync = ref.watch(opsMetricsSeriesProvider);
     final kpi = ref.watch(opsMetricsKpiProvider);
 
@@ -68,7 +83,7 @@ class _OpsDashboardPageState extends ConsumerState<OpsDashboardPage> with Single
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () {
-              ref.refresh(opsMetricsSeriesProvider); // ignore: unused_result
+              ref.read(opsMetricsSeriesProvider.notifier).manualRefresh();
             },
           ),
         ],
@@ -85,7 +100,7 @@ class _OpsDashboardPageState extends ConsumerState<OpsDashboardPage> with Single
         children: [
           RefreshIndicator(
             onRefresh: () async {
-              ref.refresh(opsMetricsSeriesProvider); // ignore: unused_result
+              await ref.read(opsMetricsSeriesProvider.notifier).manualRefresh();
             },
             child: seriesAsync.when(
               data: (series) {
@@ -118,11 +133,8 @@ class _OpsDashboardPageState extends ConsumerState<OpsDashboardPage> with Single
   }
 
   Widget _buildFilterRow(BuildContext context) {
-    final seriesAsync = ref.watch(opsMetricsSeriesProvider);
-    final hasAuthError = seriesAsync.hasError && 
-        (seriesAsync.error.toString().contains('401') || 
-         seriesAsync.error.toString().contains('403'));
-    
+    final hasAuthError = ref.watch(opsMetricsAuthErrorProvider);
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -139,9 +151,11 @@ class _OpsDashboardPageState extends ConsumerState<OpsDashboardPage> with Single
                 ),
                 if (hasAuthError) ...[
                   Semantics(
-                    label: 'Authentication error badge: 401 or 403 error detected',
+                    label:
+                        'Authentication error badge: 401 or 403 error detected',
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
                         color: Colors.red,
                         borderRadius: BorderRadius.circular(12),
@@ -166,7 +180,9 @@ class _OpsDashboardPageState extends ConsumerState<OpsDashboardPage> with Single
                     child: IconButton(
                       icon: const Icon(Icons.refresh, color: Colors.red),
                       onPressed: () {
-                        ref.refresh(opsMetricsSeriesProvider);
+                        ref
+                            .read(opsMetricsSeriesProvider.notifier)
+                            .manualRefresh();
                       },
                       tooltip: 'Reload',
                     ),
@@ -179,17 +195,21 @@ class _OpsDashboardPageState extends ConsumerState<OpsDashboardPage> with Single
               children: [
                 Expanded(
                   child: DropdownButtonFormField<String?>(
-                    value: _selectedEnv,
+                    initialValue: _selectedEnv,
                     decoration: const InputDecoration(
                       labelText: 'Environment',
                       border: OutlineInputBorder(),
                       isDense: true,
                     ),
                     items: const [
-                      DropdownMenuItem<String?>(value: null, child: Text('All')),
-                      DropdownMenuItem<String?>(value: 'dev', child: Text('Dev')),
-                      DropdownMenuItem<String?>(value: 'stg', child: Text('Staging')),
-                      DropdownMenuItem<String?>(value: 'prod', child: Text('Production')),
+                      DropdownMenuItem<String?>(
+                          value: null, child: Text('All')),
+                      DropdownMenuItem<String?>(
+                          value: 'dev', child: Text('Dev')),
+                      DropdownMenuItem<String?>(
+                          value: 'stg', child: Text('Staging')),
+                      DropdownMenuItem<String?>(
+                          value: 'prod', child: Text('Production')),
                     ],
                     onChanged: (value) {
                       setState(() {
@@ -202,15 +222,17 @@ class _OpsDashboardPageState extends ConsumerState<OpsDashboardPage> with Single
                 const SizedBox(width: 8),
                 Expanded(
                   child: DropdownButtonFormField<String?>(
-                    value: _selectedApp,
+                    initialValue: _selectedApp,
                     decoration: const InputDecoration(
                       labelText: 'App',
                       border: OutlineInputBorder(),
                       isDense: true,
                     ),
                     items: const [
-                      DropdownMenuItem<String?>(value: null, child: Text('All')),
-                      DropdownMenuItem<String?>(value: 'starlist', child: Text('Starlist')),
+                      DropdownMenuItem<String?>(
+                          value: null, child: Text('All')),
+                      DropdownMenuItem<String?>(
+                          value: 'starlist', child: Text('Starlist')),
                     ],
                     onChanged: (value) {
                       setState(() {
@@ -223,17 +245,24 @@ class _OpsDashboardPageState extends ConsumerState<OpsDashboardPage> with Single
                 const SizedBox(width: 8),
                 Expanded(
                   child: DropdownButtonFormField<String?>(
-                    value: _selectedEvent,
+                    initialValue: _selectedEvent,
                     decoration: const InputDecoration(
                       labelText: 'Event',
                       border: OutlineInputBorder(),
                       isDense: true,
                     ),
                     items: const [
-                      DropdownMenuItem<String?>(value: null, child: Text('All')),
-                      DropdownMenuItem<String?>(value: 'search.sla_missed', child: Text('Search SLA')),
-                      DropdownMenuItem<String?>(value: 'auth.login.success', child: Text('Auth Login')),
-                      DropdownMenuItem<String?>(value: 'rls.access.denied', child: Text('RLS Denied')),
+                      DropdownMenuItem<String?>(
+                          value: null, child: Text('All')),
+                      DropdownMenuItem<String?>(
+                          value: 'search.sla_missed',
+                          child: Text('Search SLA')),
+                      DropdownMenuItem<String?>(
+                          value: 'auth.login.success',
+                          child: Text('Auth Login')),
+                      DropdownMenuItem<String?>(
+                          value: 'rls.access.denied',
+                          child: Text('RLS Denied')),
                     ],
                     onChanged: (value) {
                       setState(() {
@@ -246,7 +275,7 @@ class _OpsDashboardPageState extends ConsumerState<OpsDashboardPage> with Single
                 const SizedBox(width: 8),
                 Expanded(
                   child: DropdownButtonFormField<int>(
-                    value: _selectedMinutes,
+                    initialValue: _selectedMinutes,
                     decoration: const InputDecoration(
                       labelText: 'Period',
                       border: OutlineInputBorder(),
@@ -280,7 +309,7 @@ class _OpsDashboardPageState extends ConsumerState<OpsDashboardPage> with Single
       eventType: _selectedEvent,
       sinceMinutes: _selectedMinutes,
     );
-    ref.read(opsMetricsFilterProvider.notifier).state = filter;
+    ref.read(opsMetricsFilterProvider.notifier).setFilter(filter);
   }
 
   Widget _buildKpiCards(BuildContext context, OpsMetricsKpi kpi) {
@@ -305,12 +334,14 @@ class _OpsDashboardPageState extends ConsumerState<OpsDashboardPage> with Single
         ),
         const SizedBox(width: 8),
         Expanded(
-            child: _buildKpiCard(
-              context,
-              'P95 Latency',
-              kpi.p95LatencyMs != null ? '${kpi.p95LatencyMs}ms' : 'Gap',
-              kpi.p95LatencyMs != null && kpi.p95LatencyMs! > 500 ? Colors.orange : Colors.green,
-            ),
+          child: _buildKpiCard(
+            context,
+            'P95 Latency',
+            kpi.p95LatencyMs != null ? '${kpi.p95LatencyMs}ms' : 'Gap',
+            kpi.p95LatencyMs != null && kpi.p95LatencyMs! > 500
+                ? Colors.orange
+                : Colors.green,
+          ),
         ),
         const SizedBox(width: 8),
         Expanded(
@@ -325,7 +356,8 @@ class _OpsDashboardPageState extends ConsumerState<OpsDashboardPage> with Single
     );
   }
 
-  Widget _buildKpiCard(BuildContext context, String label, String value, Color color) {
+  Widget _buildKpiCard(
+      BuildContext context, String label, String value, Color color) {
     return Semantics(
       label: '$label: $value',
       child: Card(
@@ -353,7 +385,8 @@ class _OpsDashboardPageState extends ConsumerState<OpsDashboardPage> with Single
     );
   }
 
-  Widget _buildP95Chart(BuildContext context, List<OpsMetricsSeriesPoint> series) {
+  Widget _buildP95Chart(
+      BuildContext context, List<OpsMetricsSeriesPoint> series) {
     if (series.isEmpty) {
       return const SizedBox.shrink();
     }
@@ -388,7 +421,8 @@ class _OpsDashboardPageState extends ConsumerState<OpsDashboardPage> with Single
     }
 
     return Semantics(
-      label: 'P95 Latency chart showing ${spots.where((s) => !s.y.isNaN).length} data points with gaps for missing values',
+      label:
+          'P95 Latency chart showing ${spots.where((s) => !s.y.isNaN).length} data points with gaps for missing values',
       child: Card(
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -406,14 +440,15 @@ class _OpsDashboardPageState extends ConsumerState<OpsDashboardPage> with Single
                   LineChartData(
                     gridData: const FlGridData(show: true),
                     titlesData: FlTitlesData(
-                      leftTitles: AxisTitles(
+                      leftTitles: const AxisTitles(
                         sideTitles: SideTitles(showTitles: true),
                       ),
                       bottomTitles: AxisTitles(
                         sideTitles: SideTitles(
                           showTitles: true,
                           getTitlesWidget: (value, meta) {
-                            final date = DateTime.fromMillisecondsSinceEpoch(value.toInt());
+                            final date = DateTime.fromMillisecondsSinceEpoch(
+                                value.toInt());
                             return Text(DateFormat('HH:mm').format(date));
                           },
                         ),
@@ -446,7 +481,8 @@ class _OpsDashboardPageState extends ConsumerState<OpsDashboardPage> with Single
     );
   }
 
-  Widget _buildStackedBarChart(BuildContext context, List<OpsMetricsSeriesPoint> series) {
+  Widget _buildStackedBarChart(
+      BuildContext context, List<OpsMetricsSeriesPoint> series) {
     if (series.isEmpty) {
       return const SizedBox.shrink();
     }
@@ -475,14 +511,16 @@ class _OpsDashboardPageState extends ConsumerState<OpsDashboardPage> with Single
                   maxY: maxValue.toDouble() * 1.2,
                   barTouchData: BarTouchData(enabled: false),
                   titlesData: FlTitlesData(
-                    leftTitles: AxisTitles(
+                    leftTitles: const AxisTitles(
                       sideTitles: SideTitles(showTitles: true),
                     ),
                     bottomTitles: AxisTitles(
                       sideTitles: SideTitles(
                         showTitles: true,
                         getTitlesWidget: (value, meta) {
-                          if (value.toInt() >= series.length) return const Text('');
+                          if (value.toInt() >= series.length) {
+                            return const Text('');
+                          }
                           final date = series[value.toInt()].bucketStart;
                           return Padding(
                             padding: const EdgeInsets.only(top: 8),
@@ -536,7 +574,7 @@ class _OpsDashboardPageState extends ConsumerState<OpsDashboardPage> with Single
 
   Widget _buildRecentAlerts(BuildContext context) {
     final alertsAsync = ref.watch(opsRecentAlertsProvider);
-    
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -567,7 +605,9 @@ class _OpsDashboardPageState extends ConsumerState<OpsDashboardPage> with Single
                     final alert = alerts[index];
                     return ListTile(
                       leading: Icon(
-                        alert.type == 'failure_rate' ? Icons.error : Icons.timer,
+                        alert.type == 'failure_rate'
+                            ? Icons.error
+                            : Icons.timer,
                         color: Colors.red,
                       ),
                       title: Text(alert.message),
@@ -577,7 +617,8 @@ class _OpsDashboardPageState extends ConsumerState<OpsDashboardPage> with Single
                       ),
                       trailing: Text(
                         DateFormat('HH:mm').format(alert.alertedAt),
-                        style: const TextStyle(fontSize: 12, color: Colors.grey),
+                        style:
+                            const TextStyle(fontSize: 12, color: Colors.grey),
                       ),
                     );
                   },
@@ -663,7 +704,7 @@ class _OpsDashboardPageState extends ConsumerState<OpsDashboardPage> with Single
           const SizedBox(height: 16),
           ElevatedButton(
             onPressed: () {
-              ref.refresh(opsMetricsSeriesProvider);
+              ref.read(opsMetricsSeriesProvider.notifier).manualRefresh();
             },
             child: const Text('Retry'),
           ),
@@ -672,9 +713,24 @@ class _OpsDashboardPageState extends ConsumerState<OpsDashboardPage> with Single
     );
   }
 
+  bool _isAuthorizationError(Object? error) {
+    if (error == null) return false;
+    final lower = error.toString().toLowerCase();
+    return lower.contains('401') ||
+        lower.contains('403') ||
+        lower.contains('forbidden');
+  }
+
+  String _formatFilterBadge(OpsMetricsFilter filter) {
+    final env = filter.env ?? 'env:ALL';
+    final app = filter.app ?? 'app:ALL';
+    final event = filter.eventType ?? 'event:ALL';
+    return '($env / $app / $event)';
+  }
+
   Widget _buildHealthTab(BuildContext context) {
     final healthAsync = ref.watch(opsHealthProvider);
-    
+
     return RefreshIndicator(
       onRefresh: () async {
         ref.refresh(opsHealthProvider); // ignore: unused_result
@@ -682,18 +738,18 @@ class _OpsDashboardPageState extends ConsumerState<OpsDashboardPage> with Single
       child: healthAsync.when(
         data: (health) {
           if (health.aggregations.isEmpty) {
-            return Center(
+            return const Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.health_and_safety, size: 64, color: Colors.grey),
-                  const SizedBox(height: 16),
-                  const Text(
+                  Icon(Icons.health_and_safety, size: 64, color: Colors.grey),
+                  SizedBox(height: 16),
+                  Text(
                     'No health data available',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
-                  const SizedBox(height: 8),
-                  const Text(
+                  SizedBox(height: 8),
+                  Text(
                     'Try adjusting the time period',
                     style: TextStyle(color: Colors.grey),
                   ),
@@ -722,7 +778,7 @@ class _OpsDashboardPageState extends ConsumerState<OpsDashboardPage> with Single
 
   Widget _buildHealthPeriodSelector(BuildContext context) {
     final period = ref.watch(opsHealthPeriodProvider);
-    
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -743,7 +799,8 @@ class _OpsDashboardPageState extends ConsumerState<OpsDashboardPage> with Single
               ],
               selected: {period},
               onSelectionChanged: (Set<String> newSelection) {
-                ref.read(opsHealthPeriodProvider.notifier).state = newSelection.first;
+                ref.read(opsHealthPeriodProvider.notifier).state =
+                    newSelection.first;
               },
             ),
           ],
@@ -777,7 +834,9 @@ class _OpsDashboardPageState extends ConsumerState<OpsDashboardPage> with Single
                             barRods: [
                               BarChartRodData(
                                 toY: agg.uptimePercent,
-                                color: agg.uptimePercent >= 99.0 ? Colors.green : Colors.orange,
+                                color: agg.uptimePercent >= 99.0
+                                    ? Colors.green
+                                    : Colors.orange,
                                 width: 20,
                               ),
                             ],
@@ -789,7 +848,8 @@ class _OpsDashboardPageState extends ConsumerState<OpsDashboardPage> with Single
                               showTitles: true,
                               reservedSize: 40,
                               getTitlesWidget: (value, meta) {
-                                return Text('${value.toInt()}%', style: const TextStyle(fontSize: 10));
+                                return Text('${value.toInt()}%',
+                                    style: const TextStyle(fontSize: 10));
                               },
                             ),
                           ),
@@ -797,7 +857,10 @@ class _OpsDashboardPageState extends ConsumerState<OpsDashboardPage> with Single
                             sideTitles: SideTitles(
                               showTitles: true,
                               getTitlesWidget: (value, meta) {
-                                if (value.toInt() >= health.aggregations.length) return const SizedBox.shrink();
+                                if (value.toInt() >=
+                                    health.aggregations.length) {
+                                  return const SizedBox.shrink();
+                                }
                                 final agg = health.aggregations[value.toInt()];
                                 return Text(
                                   '${agg.app ?? 'N/A'}\n${agg.env ?? 'N/A'}',
@@ -807,8 +870,10 @@ class _OpsDashboardPageState extends ConsumerState<OpsDashboardPage> with Single
                               },
                             ),
                           ),
-                          topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                          rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                          topTitles: const AxisTitles(
+                              sideTitles: SideTitles(showTitles: false)),
+                          rightTitles: const AxisTitles(
+                              sideTitles: SideTitles(showTitles: false)),
                         ),
                         gridData: const FlGridData(show: true),
                         borderData: FlBorderData(show: false),
@@ -846,7 +911,9 @@ class _OpsDashboardPageState extends ConsumerState<OpsDashboardPage> with Single
                             barRods: [
                               BarChartRodData(
                                 toY: agg.meanP95Ms?.toDouble() ?? 0,
-                                color: (agg.meanP95Ms ?? 0) < 500 ? Colors.green : Colors.red,
+                                color: (agg.meanP95Ms ?? 0) < 500
+                                    ? Colors.green
+                                    : Colors.red,
                                 width: 20,
                               ),
                             ],
@@ -858,7 +925,8 @@ class _OpsDashboardPageState extends ConsumerState<OpsDashboardPage> with Single
                               showTitles: true,
                               reservedSize: 40,
                               getTitlesWidget: (value, meta) {
-                                return Text('${value.toInt()}ms', style: const TextStyle(fontSize: 10));
+                                return Text('${value.toInt()}ms',
+                                    style: const TextStyle(fontSize: 10));
                               },
                             ),
                           ),
@@ -866,7 +934,10 @@ class _OpsDashboardPageState extends ConsumerState<OpsDashboardPage> with Single
                             sideTitles: SideTitles(
                               showTitles: true,
                               getTitlesWidget: (value, meta) {
-                                if (value.toInt() >= health.aggregations.length) return const SizedBox.shrink();
+                                if (value.toInt() >=
+                                    health.aggregations.length) {
+                                  return const SizedBox.shrink();
+                                }
                                 final agg = health.aggregations[value.toInt()];
                                 return Text(
                                   '${agg.app ?? 'N/A'}\n${agg.env ?? 'N/A'}',
@@ -876,8 +947,10 @@ class _OpsDashboardPageState extends ConsumerState<OpsDashboardPage> with Single
                               },
                             ),
                           ),
-                          topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                          rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                          topTitles: const AxisTitles(
+                              sideTitles: SideTitles(showTitles: false)),
+                          rightTitles: const AxisTitles(
+                              sideTitles: SideTitles(showTitles: false)),
                         ),
                         gridData: const FlGridData(show: true),
                         borderData: FlBorderData(show: false),
@@ -935,7 +1008,8 @@ class _OpsDashboardPageState extends ConsumerState<OpsDashboardPage> with Single
                               showTitles: true,
                               reservedSize: 40,
                               getTitlesWidget: (value, meta) {
-                                return Text('${value.toInt()}', style: const TextStyle(fontSize: 10));
+                                return Text('${value.toInt()}',
+                                    style: const TextStyle(fontSize: 10));
                               },
                             ),
                           ),
@@ -943,7 +1017,10 @@ class _OpsDashboardPageState extends ConsumerState<OpsDashboardPage> with Single
                             sideTitles: SideTitles(
                               showTitles: true,
                               getTitlesWidget: (value, meta) {
-                                if (value.toInt() >= health.aggregations.length) return const SizedBox.shrink();
+                                if (value.toInt() >=
+                                    health.aggregations.length) {
+                                  return const SizedBox.shrink();
+                                }
                                 final agg = health.aggregations[value.toInt()];
                                 return Text(
                                   '${agg.app ?? 'N/A'}\n${agg.env ?? 'N/A'}',
@@ -953,8 +1030,10 @@ class _OpsDashboardPageState extends ConsumerState<OpsDashboardPage> with Single
                               },
                             ),
                           ),
-                          topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                          rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                          topTitles: const AxisTitles(
+                              sideTitles: SideTitles(showTitles: false)),
+                          rightTitles: const AxisTitles(
+                              sideTitles: SideTitles(showTitles: false)),
                         ),
                         gridData: const FlGridData(show: true),
                         borderData: FlBorderData(show: false),

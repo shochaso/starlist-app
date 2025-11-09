@@ -3,12 +3,12 @@
 // Spec-State:: 確定済み（週次レポート自動送信）
 // Last-Updated:: 2025-11-08
 
-import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { serve } from "std/http/server.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
 };
 
 interface SummaryQuery {
@@ -45,7 +45,9 @@ function isoWeekJST(date: Date = jstNow()): string {
   const dayNum = d.getUTCDay() || 7;
   d.setUTCDate(d.getUTCDate() + 4 - dayNum);
   const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-  const weekNum = Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+  const weekNum = Math.ceil(
+    (((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7,
+  );
   return `${d.getUTCFullYear()}-W${weekNum.toString().padStart(2, "0")}`;
 }
 
@@ -54,7 +56,9 @@ function ensureStarlistRecipients(list: string[]): string[] {
   return list.filter((email) => {
     const trimmed = email.trim();
     if (!trimmed.includes("@starlist.jp")) {
-      console.warn(`[ops-summary-email] Dropping non-starlist recipient: ${trimmed}`);
+      console.warn(
+        `[ops-summary-email] Dropping non-starlist recipient: ${trimmed}`,
+      );
       return false;
     }
     return true;
@@ -62,7 +66,11 @@ function ensureStarlistRecipients(list: string[]): string[] {
 }
 
 // Fetch metrics from ops-health function or return defaults
-async function fetchMetrics(supabaseUrl: string, anonKey: string, period: string = "7d"): Promise<Metrics> {
+async function fetchMetrics(
+  supabaseUrl: string,
+  anonKey: string,
+  period: string = "7d",
+): Promise<Metrics> {
   try {
     const url = `${supabaseUrl}/functions/v1/ops-health?period=${period}`;
     const response = await fetch(url, {
@@ -80,26 +88,39 @@ async function fetchMetrics(supabaseUrl: string, anonKey: string, period: string
     if (data.ok && data.aggregations && data.aggregations.length > 0) {
       // Aggregate across all services/apps/envs
       const aggregations = data.aggregations;
-      const avgUptime = aggregations.reduce((sum: number, agg: { uptime_percent: number }) => 
-        sum + agg.uptime_percent, 0) / aggregations.length;
+      const avgUptime =
+        aggregations.reduce((sum: number, agg: { uptime_percent: number }) =>
+          sum + agg.uptime_percent, 0) / aggregations.length;
       const avgP95 = aggregations
-        .map((agg: { mean_p95_ms: number | null }) => agg.mean_p95_ms)
-        .filter((v: number | null): v is number => v != null);
-      const meanP95 = avgP95.length > 0 
+        .map((agg: { mean_p95_ms: number | null }) =>
+          agg.mean_p95_ms
+        )
+        .filter((v: number | null): v is number =>
+          v != null
+        );
+      const meanP95 = avgP95.length > 0
         ? Math.round(avgP95.reduce((sum, v) => sum + v, 0) / avgP95.length)
         : null;
-      const totalAlerts = aggregations.reduce((sum: number, agg: { alert_count: number }) => 
-        sum + agg.alert_count, 0);
+      const totalAlerts = aggregations.reduce(
+        (sum: number, agg: { alert_count: number }) => sum + agg.alert_count,
+        0,
+      );
 
       return {
         uptimePct: Math.round(avgUptime * 100) / 100,
         meanP95Ms: meanP95,
-        alertTrend: [{ date: new Date().toISOString().slice(0, 10), count: totalAlerts }],
+        alertTrend: [{
+          date: new Date().toISOString().slice(0, 10),
+          count: totalAlerts,
+        }],
         degraded: false,
       };
     }
   } catch (error) {
-    console.error("[ops-summary-email] Failed to fetch metrics from ops-health:", error);
+    console.error(
+      "[ops-summary-email] Failed to fetch metrics from ops-health:",
+      error,
+    );
   }
 
   // Return safe defaults if fetch fails
@@ -115,9 +136,13 @@ async function fetchMetrics(supabaseUrl: string, anonKey: string, period: string
 function renderEmail(metrics: Metrics, reportWeek: string): EmailContent {
   const { uptimePct, meanP95Ms, alertTrend } = metrics;
   const alertCount = alertTrend.reduce((sum, t) => sum + t.count, 0);
-  const preheader = `Weekly health: ${uptimePct.toFixed(2)}% uptime, ${meanP95Ms ? `${meanP95Ms}ms` : "N/A"} p95, ${alertCount} alerts`;
+  const preheader = `Weekly health: ${uptimePct.toFixed(2)}% uptime, ${
+    meanP95Ms ? `${meanP95Ms}ms` : "N/A"
+  } p95, ${alertCount} alerts`;
 
-  const subject = `STARLIST OPS Weekly – ${reportWeek} (Uptime ${uptimePct.toFixed(2)}%, p95 ${meanP95Ms ? `${meanP95Ms}ms` : "N/A"})`;
+  const subject = `STARLIST OPS Weekly – ${reportWeek} (Uptime ${
+    uptimePct.toFixed(2)
+  }%, p95 ${meanP95Ms ? `${meanP95Ms}ms` : "N/A"})`;
 
   const html = `<!DOCTYPE html>
 <html>
@@ -174,7 +199,7 @@ async function logInsert(
   anonKey: string,
   reportWeek: string,
   channel: string,
-  provider: string
+  provider: string,
 ): Promise<{ inserted: boolean; existingId?: string }> {
   try {
     const url = `${supabaseUrl}/rest/v1/ops_summary_email_logs`;
@@ -231,10 +256,11 @@ async function logUpdate(
   toCount: number,
   subject: string,
   ok: boolean,
-  errorMessage?: string
+  errorMessage?: string,
 ): Promise<void> {
   try {
-    const url = `${supabaseUrl}/rest/v1/ops_summary_email_logs?report_week=eq.${reportWeek}&channel=eq.${channel}&provider=eq.${provider}`;
+    const url =
+      `${supabaseUrl}/rest/v1/ops_summary_email_logs?report_week=eq.${reportWeek}&channel=eq.${channel}&provider=eq.${provider}`;
     const payload: Record<string, unknown> = {
       message_id: messageId,
       to_count: toCount,
@@ -267,7 +293,7 @@ async function sendViaResend(
   from: string,
   to: string[],
   subject: string,
-  html: string
+  html: string,
 ): Promise<{ success: boolean; messageId: string | null; error?: string }> {
   try {
     const response = await fetch("https://api.resend.com/emails", {
@@ -305,7 +331,7 @@ async function sendViaSendGrid(
   from: string,
   to: string[],
   subject: string,
-  html: string
+  html: string,
 ): Promise<{ success: boolean; messageId: string | null; error?: string }> {
   try {
     const response = await fetch("https://api.sendgrid.com/v3/mail/send", {
@@ -316,7 +342,10 @@ async function sendViaSendGrid(
       },
       body: JSON.stringify({
         personalizations: [{ to: to.map((email) => ({ email })) }],
-        from: { email: from.replace(/.*<(.+)>.*/, "$1") || from, name: "STARLIST OPS" },
+        from: {
+          email: from.replace(/.*<(.+)>.*/, "$1") || from,
+          name: "STARLIST OPS",
+        },
         subject,
         content: [{ type: "text/html", value: html }],
         headers: {
@@ -353,7 +382,8 @@ serve(async (req: Request): Promise<Response> => {
       ? Object.fromEntries(new URL(req.url).searchParams.entries())
       : await req.json().catch(() => ({})) as SummaryQuery;
 
-    const dryRun = query.dryRun === true || query.dryRun === "true" || query.dryRun === "1";
+    const dryRun = query.dryRun === true || query.dryRun === "true" ||
+      query.dryRun === "1";
     const period = query.period || "7d";
     const reportWeek = isoWeekJST();
 
@@ -373,7 +403,10 @@ serve(async (req: Request): Promise<Response> => {
           metrics: {
             uptime_percent: metrics.uptimePct,
             mean_p95_ms: metrics.meanP95Ms,
-            alert_count: metrics.alertTrend.reduce((sum, t) => sum + t.count, 0),
+            alert_count: metrics.alertTrend.reduce(
+              (sum, t) => sum + t.count,
+              0,
+            ),
             degraded: metrics.degraded || false,
           },
           preview_html: emailContent.html,
@@ -381,14 +414,20 @@ serve(async (req: Request): Promise<Response> => {
         {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
           status: 200,
-        }
+        },
       );
     }
 
     // Production mode: send email
     // Check idempotency
     const channel = "email";
-    const logResult = await logInsert(supabaseUrl, supabaseAnonKey, reportWeek, channel, "resend");
+    const logResult = await logInsert(
+      supabaseUrl,
+      supabaseAnonKey,
+      reportWeek,
+      channel,
+      "resend",
+    );
     if (!logResult.inserted) {
       return new Response(
         JSON.stringify({
@@ -400,7 +439,7 @@ serve(async (req: Request): Promise<Response> => {
         {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
           status: 200,
-        }
+        },
       );
     }
 
@@ -413,13 +452,20 @@ serve(async (req: Request): Promise<Response> => {
     }
 
     if (recipients.length === 0) {
-      throw new Error("No valid recipients found. Set resend_to_list or provide toOverride.");
+      throw new Error(
+        "No valid recipients found. Set resend_to_list or provide toOverride.",
+      );
     }
 
     // Try Resend first
     const resendApiKey = getEnv("resend_api_key", false);
-    const resendFrom = getEnv("resend_from", false) || "STARLIST OPS <ops@starlist.jp>";
-    let sendResult: { success: boolean; messageId: string | null; error?: string } | null = null;
+    const resendFrom = getEnv("resend_from", false) ||
+      "STARLIST OPS <ops@starlist.jp>";
+    let sendResult: {
+      success: boolean;
+      messageId: string | null;
+      error?: string;
+    } | null = null;
     let provider = "resend";
 
     if (resendApiKey) {
@@ -428,7 +474,7 @@ serve(async (req: Request): Promise<Response> => {
         resendFrom,
         recipients,
         emailContent.subject,
-        emailContent.html
+        emailContent.html,
       );
     }
 
@@ -443,7 +489,7 @@ serve(async (req: Request): Promise<Response> => {
           sendgridFrom,
           recipients,
           emailContent.subject,
-          emailContent.html
+          emailContent.html,
         );
       }
     }
@@ -459,7 +505,7 @@ serve(async (req: Request): Promise<Response> => {
         0,
         emailContent.subject,
         false,
-        sendResult?.error || "No email provider configured"
+        sendResult?.error || "No email provider configured",
       );
       return new Response(
         JSON.stringify({
@@ -470,7 +516,7 @@ serve(async (req: Request): Promise<Response> => {
         {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
           status: 502,
-        }
+        },
       );
     }
 
@@ -484,7 +530,7 @@ serve(async (req: Request): Promise<Response> => {
       sendResult.messageId,
       recipients.length,
       emailContent.subject,
-      true
+      true,
     );
 
     return new Response(
@@ -498,7 +544,7 @@ serve(async (req: Request): Promise<Response> => {
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
-      }
+      },
     );
   } catch (error) {
     console.error("[ops-summary-email] Error:", error);
@@ -509,8 +555,10 @@ serve(async (req: Request): Promise<Response> => {
       }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: error instanceof Error && error.message.includes("missing env") ? 500 : 500,
-      }
+        status: error instanceof Error && error.message.includes("missing env")
+          ? 500
+          : 500,
+      },
     );
   }
 });

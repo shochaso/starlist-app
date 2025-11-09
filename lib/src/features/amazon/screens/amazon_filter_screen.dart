@@ -437,8 +437,8 @@ class _AmazonFilterScreenState extends ConsumerState<AmazonFilterScreen> {
           Switch(
             value: value,
             onChanged: onChanged,
-            thumbColor: MaterialStateProperty.resolveWith<Color?>(
-              (states) => states.contains(MaterialState.selected)
+            thumbColor: WidgetStateProperty.resolveWith<Color?>(
+              (states) => states.contains(WidgetState.selected)
                   ? const Color(0xFFFF9900)
                   : null,
             ),

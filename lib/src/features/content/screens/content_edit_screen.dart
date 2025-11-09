@@ -345,7 +345,7 @@ class _ContentEditScreenState extends ConsumerState<ContentEditScreen> {
               
               // カテゴリー選択
               DropdownButtonFormField<ContentCategory>(
-                value: _selectedCategory,
+                initialValue: _selectedCategory,
                 decoration: const InputDecoration(
                   labelText: 'カテゴリ',
                   border: OutlineInputBorder(),
@@ -397,7 +397,7 @@ class _ContentEditScreenState extends ConsumerState<ContentEditScreen> {
               
               // プライバシー設定
               DropdownButtonFormField<PrivacyLevel>(
-                value: _selectedPrivacyLevel,
+                initialValue: _selectedPrivacyLevel,
                 decoration: const InputDecoration(
                   labelText: 'プライバシー設定',
                   border: OutlineInputBorder(),

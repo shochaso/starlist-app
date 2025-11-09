@@ -1,4 +1,3 @@
-import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
@@ -25,7 +24,7 @@ void main() {
     });
 
     test('wraps FormatException as ValidationError', () {
-      final formatException = FormatException('bad JSON');
+      const formatException = FormatException('bad JSON');
       final result = _wrapError(formatException);
       expect(result, isA<ValidationError>());
       expect(result.message, contains('bad JSON'));

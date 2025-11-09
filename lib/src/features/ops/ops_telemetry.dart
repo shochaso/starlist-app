@@ -31,7 +31,7 @@ class OpsTelemetry {
 
   /// Factory constructor for production environment
   factory OpsTelemetry.prod() {
-    final supabaseUrl = EnvironmentConfig.supabaseUrl;
+    const supabaseUrl = EnvironmentConfig.supabaseUrl;
     // Edge Functions URL format: {supabaseUrl}/functions/v1/{functionName}
     final baseUrl = '$supabaseUrl/functions/v1';
     return OpsTelemetry(
@@ -43,7 +43,7 @@ class OpsTelemetry {
 
   /// Factory constructor for staging environment
   factory OpsTelemetry.staging() {
-    final supabaseUrl = EnvironmentConfig.supabaseUrl;
+    const supabaseUrl = EnvironmentConfig.supabaseUrl;
     final baseUrl = '$supabaseUrl/functions/v1';
     return OpsTelemetry(
       baseUrl: baseUrl,
@@ -54,7 +54,7 @@ class OpsTelemetry {
 
   /// Factory constructor for development environment
   factory OpsTelemetry.dev() {
-    final supabaseUrl = EnvironmentConfig.supabaseUrl;
+    const supabaseUrl = EnvironmentConfig.supabaseUrl;
     final baseUrl = '$supabaseUrl/functions/v1';
     return OpsTelemetry(
       baseUrl: baseUrl,

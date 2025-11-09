@@ -1,0 +1,22 @@
+name: flutter-providers-ci
+
+on:
+  pull_request:
+    paths:
+      - 'lib/src/features/ops/providers/**'
+      - 'test/src/features/ops/providers/**'
+      - 'lib/src/features/ops/screens/ops_dashboard_page.dart'
+
+jobs:
+  test-providers:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.x'
+      - run: flutter pub get
+      - name: Run provider tests
+        run: flutter test test/src/features/ops/providers/ops_metrics_provider_test.dart --reporter expanded
+      - name: Analyze providers + dashboard
+        run: dart analyze lib/src/features/ops/providers/ops_metrics_provider.dart lib/src/features/ops/screens/ops_dashboard_page.dart

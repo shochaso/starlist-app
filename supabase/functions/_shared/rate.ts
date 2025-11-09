@@ -19,7 +19,7 @@ export function rateLimit(key: string, limit = 30, windowMs = 60_000) {
     rec.t = now;
   }
   if (++rec.c > limit) {
-    throw new Error('rate_limit');
+    throw new Error("rate_limit");
   }
   bucket.set(key, rec);
 }
@@ -31,11 +31,10 @@ export function rateLimit(key: string, limit = 30, windowMs = 60_000) {
  */
 export function assertIdempotent(id: string) {
   if (!id) {
-    throw new Error('missing_id');
+    throw new Error("missing_id");
   }
   if (seen.has(id)) {
-    throw new Error('duplicate');
+    throw new Error("duplicate");
   }
   seen.add(id);
 }
-

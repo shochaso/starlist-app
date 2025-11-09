@@ -3,9 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
-import 'package:mime/mime.dart';
 import 'dart:convert';
-import 'dart:typed_data';
 import '../../../config/environment_config.dart';
 import '../utils/image_preprocessor.dart';
 import '../../../src/core/components/service_icons.dart';
@@ -1028,7 +1026,7 @@ class _YouTubeImportScreenState extends ConsumerState<YouTubeImportScreen>
   Future<void> _processImageOCR() async {
     if (selectedImageBytes == null) return;
 
-    String _detectMime(Uint8List data) {
+    String detectMime(Uint8List data) {
       if (data.length >= 4 &&
           data[0] == 0x89 &&
           data[1] == 0x50 &&
@@ -1065,8 +1063,8 @@ class _YouTubeImportScreenState extends ConsumerState<YouTubeImportScreen>
 
       final normalizedBytes = await prepareImageForDocAi(selectedImageBytes!);
       final base64Image = base64Encode(normalizedBytes);
-      final sanitizedMimeType = _detectMime(normalizedBytes); // 変換後の実際のMIMEタイプを検出
-      final originalMime = _detectMime(selectedImageBytes!);
+      final sanitizedMimeType = detectMime(normalizedBytes); // 変換後の実際のMIMEタイプを検出
+      final originalMime = detectMime(selectedImageBytes!);
       
       // 詳細なログ出力
       debugPrint('[DocAI] === OCR Request Details ===');
@@ -2024,8 +2022,8 @@ class _YouTubeImportScreenState extends ConsumerState<YouTubeImportScreen>
                                     extractedVideos[index]['isPublic'] = value;
                                   });
                                 },
-                                thumbColor: MaterialStateProperty.resolveWith<Color?>(
-                                  (states) => states.contains(MaterialState.selected)
+                                thumbColor: WidgetStateProperty.resolveWith<Color?>(
+                                  (states) => states.contains(WidgetState.selected)
                                       ? const Color(0xFF10B981)
                                       : null,
                                 ),

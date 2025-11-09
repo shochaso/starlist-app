@@ -905,7 +905,7 @@ class _ReceiptImportScreenState extends ConsumerState<ReceiptImportScreen>
   Future<void> _processReceiptOCR() async {
     if (selectedImageBytes == null && selectedImage == null) return;
 
-    String _detectMime(Uint8List data) {
+    String detectMime(Uint8List data) {
       if (data.length >= 4 &&
           data[0] == 0x89 &&
           data[1] == 0x50 &&
@@ -937,7 +937,7 @@ class _ReceiptImportScreenState extends ConsumerState<ReceiptImportScreen>
       String? mimeType;
       if (selectedImage != null) {
         try {
-          mimeType = await selectedImage!.mimeType;
+          mimeType = selectedImage!.mimeType;
         } catch (_) {
           mimeType = null;
         }
@@ -960,7 +960,7 @@ class _ReceiptImportScreenState extends ConsumerState<ReceiptImportScreen>
           'mimeType': mimeType,
           'contentBase64': base64Image,
           'originalMimeType':
-              selectedImageBytes != null ? _detectMime(selectedImageBytes!) : mimeType,
+              selectedImageBytes != null ? detectMime(selectedImageBytes!) : mimeType,
         }),
       );
 
@@ -969,7 +969,7 @@ class _ReceiptImportScreenState extends ConsumerState<ReceiptImportScreen>
         final serverError = errorBody['error'] ?? 'OCR処理に失敗しました';
         final detailInfo = errorBody['details'] ?? errorBody['badRequest'];
         throw Exception(
-          '$serverError' + (detailInfo != null ? ' | details: ' + detailInfo.toString() : ''),
+          '$serverError${detailInfo != null ? ' | details: $detailInfo' : ''}',
         );
       }
 

@@ -1,5 +1,5 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import type { SupabaseClient, User } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "supabase-js";
+import type { SupabaseClient, User } from "supabase-js";
 
 export class HttpError extends Error {
   status: number;
@@ -20,24 +20,32 @@ const OPS_SECRET_HEADER = "x-ops-secret";
 
 export const getAllowedOrigins = (): string[] => {
   const envValue = Deno.env.get("OPS_ALLOWED_ORIGINS");
-  const origins = (envValue ?? DEFAULT_ALLOWED_ORIGINS.join(",")).split(",").map((o) => o.trim()).filter(Boolean);
+  const origins = (envValue ?? DEFAULT_ALLOWED_ORIGINS.join(",")).split(",")
+    .map((o) => o.trim()).filter(Boolean);
   return origins.length > 0 ? origins : DEFAULT_ALLOWED_ORIGINS;
 };
 
 export const buildCorsHeaders = (req?: Request): Record<string, string> => {
   const origins = getAllowedOrigins();
   const origin = req?.headers.get("origin");
-  const allowedOrigin = origin && origins.includes(origin) ? origin : origins[0];
+  const allowedOrigin = origin && origins.includes(origin)
+    ? origin
+    : origins[0];
 
   return {
     "Access-Control-Allow-Origin": allowedOrigin,
-    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-ops-secret",
+    "Access-Control-Allow-Headers":
+      "authorization, x-client-info, apikey, content-type, x-ops-secret",
     "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
     "Access-Control-Allow-Credentials": "true",
   };
 };
 
-export const jsonResponse = (body: unknown, status = 200, req?: Request): Response =>
+export const jsonResponse = (
+  body: unknown,
+  status = 200,
+  req?: Request,
+): Response =>
   new Response(JSON.stringify(body), {
     status,
     headers: {
@@ -46,13 +54,15 @@ export const jsonResponse = (body: unknown, status = 200, req?: Request): Respon
     },
   });
 
-export const createServiceClient = (supabaseUrl: string, supabaseKey: string): SupabaseClient =>
-  createClient(supabaseUrl, supabaseKey);
+export const createServiceClient = (
+  supabaseUrl: string,
+  supabaseKey: string,
+): SupabaseClient => createClient(supabaseUrl, supabaseKey);
 
 export const createSupabaseClientWithAuth = (
   supabaseUrl: string,
   supabaseKey: string,
-  authHeader: string
+  authHeader: string,
 ): SupabaseClient =>
   createClient(supabaseUrl, supabaseKey, {
     global: { headers: { Authorization: authHeader } },
@@ -66,7 +76,10 @@ export interface AuthContext {
 }
 
 const maskEmail = (value: string): string =>
-  value.replace(/([A-Za-z0-9._%+-]{3})[A-Za-z0-9._%+-]*@([A-Za-z0-9.-]+\.[A-Za-z]{2,})/g, "$1***@$2");
+  value.replace(
+    /([A-Za-z0-9._%+-]{3})[A-Za-z0-9._%+-]*@([A-Za-z0-9.-]+\.[A-Za-z]{2,})/g,
+    "$1***@$2",
+  );
 
 export const maskPII = (input?: unknown): unknown => {
   if (typeof input === "string") {
@@ -75,13 +88,18 @@ export const maskPII = (input?: unknown): unknown => {
   return input;
 };
 
-export const safeLog = (tag: string, message: string, detail?: unknown): void => {
+export const safeLog = (
+  tag: string,
+  message: string,
+  detail?: unknown,
+): void => {
   const safeDetail = maskPII(detail);
   console.error(`[${tag}] ${message}`, safeDetail);
 };
 
 const hasOpsClaim = (user: User): boolean => {
-  const claimKey = Deno.env.get("OPS_ADMIN_METADATA_KEY") ?? DEFAULT_OPS_CLAIM_KEY;
+  const claimKey = Deno.env.get("OPS_ADMIN_METADATA_KEY") ??
+    DEFAULT_OPS_CLAIM_KEY;
   const metadata = {
     ...user.app_metadata,
     ...user.user_metadata,
@@ -107,14 +125,19 @@ export const requireUser = async (
   req: Request,
   supabaseUrl: string,
   supabaseServiceKey: string,
-  options?: { requireOpsClaim?: boolean }
+  options?: { requireOpsClaim?: boolean },
 ): Promise<AuthContext> => {
-  const header = req.headers.get("authorization") ?? req.headers.get("Authorization");
+  const header = req.headers.get("authorization") ??
+    req.headers.get("Authorization");
   if (!header) {
     throw new HttpError(401, "Missing authorization header");
   }
 
-  const supabase = createSupabaseClientWithAuth(supabaseUrl, supabaseServiceKey, header);
+  const supabase = createSupabaseClientWithAuth(
+    supabaseUrl,
+    supabaseServiceKey,
+    header,
+  );
   const {
     data: { user },
     error,

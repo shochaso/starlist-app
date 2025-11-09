@@ -1,0 +1,12 @@
+rules:
+  - id: no-hardcoded-secret
+    patterns:
+      - pattern: /(?i)(api_key|secret|token)\s*[:=]\s*["'][A-Za-z0-9_\-]{12,}["']/
+    message: Avoid embedding secrets in source.
+    severity: ERROR
+    languages: [generic]
+  - id: deno-fetch-no-http
+    pattern: 'fetch("http://$X", ...)'
+    message: Use HTTPS for outbound fetch requests.
+    severity: WARNING
+    languages: [typescript, javascript]

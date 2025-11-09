@@ -3,13 +3,15 @@
 // Spec-State:: 確定済み（Stripe Webhook統合・plan_price保存）
 // Last-Updated:: 2025-11-08
 
-import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
-import Stripe from "https://esm.sh/stripe@14.22.0?target=deno";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { serve } from "std/http/server.ts";
+import Stripe from "stripe";
+import { createClient } from "supabase-js";
+import type { SupabaseClient } from "supabase-js";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
 };
 
 // Environment variables
@@ -39,10 +41,10 @@ const asYen = (amount?: number | null): number => {
 
 // 保存ヘルパー
 const savePlanPrice = async (
-  supabase: any,
+  supabase: SupabaseClient,
   subscriptionId: string,
   amountYen: number,
-  currency?: string
+  currency?: string,
 ): Promise<void> => {
   const { error } = await supabase
     .from("subscriptions")
@@ -53,7 +55,10 @@ const savePlanPrice = async (
     .eq("subscription_id", subscriptionId);
 
   if (error) {
-    console.error(`[stripe-webhook] Failed to save plan_price for ${subscriptionId}:`, error);
+    console.error(
+      `[stripe-webhook] Failed to save plan_price for ${subscriptionId}:`,
+      error,
+    );
     throw error;
   }
 };
@@ -68,7 +73,10 @@ serve(async (req: Request): Promise<Response> => {
   if (!sig) {
     return new Response(
       JSON.stringify({ ok: false, error: "Missing stripe-signature header" }),
-      { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
     );
   }
 
@@ -81,11 +89,17 @@ serve(async (req: Request): Promise<Response> => {
     console.error("[stripe-webhook] Webhook signature verification failed:", e);
     return new Response(
       JSON.stringify({ ok: false, error: String(e) }),
-      { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
     );
   }
 
-  const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+  const supabase: SupabaseClient = createClient(
+    SUPABASE_URL,
+    SUPABASE_SERVICE_ROLE_KEY,
+  );
 
   try {
     switch (evt.type) {
@@ -106,7 +120,12 @@ serve(async (req: Request): Promise<Response> => {
         if (item?.price) {
           const unit = item.price.unit_amount ?? 0;
           const jpy = asYen(unit);
-          await savePlanPrice(supabase, sub.id, jpy, item.price.currency ?? "JPY");
+          await savePlanPrice(
+            supabase,
+            sub.id,
+            jpy,
+            item.price.currency ?? "JPY",
+          );
         }
         break;
       }
@@ -136,14 +155,19 @@ serve(async (req: Request): Promise<Response> => {
 
     return new Response(
       JSON.stringify({ ok: true, type: evt.type }),
-      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
     );
   } catch (e) {
     console.error(`[stripe-webhook] Error processing ${evt.type}:`, e);
     return new Response(
       JSON.stringify({ ok: false, error: String(e), type: evt.type }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
     );
   }
 });
-

@@ -3,8 +3,15 @@
 // Spec-State:: 確定済み
 // Last-Updated:: 2025-11-07
 
-import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
-import { HttpError, buildCorsHeaders, enforceOpsSecret, jsonResponse, requireUser, safeLog } from "./shared.ts";
+import { serve } from "std/http/server.ts";
+import {
+  buildCorsHeaders,
+  enforceOpsSecret,
+  HttpError,
+  jsonResponse,
+  requireUser,
+  safeLog,
+} from "./shared.ts";
 
 interface TelemetryPayload {
   app: string;
@@ -31,18 +38,34 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-    const { supabase } = await requireUser(req, supabaseUrl, supabaseServiceKey, { requireOpsClaim: true });
+    const { supabase } = await requireUser(
+      req,
+      supabaseUrl,
+      supabaseServiceKey,
+      { requireOpsClaim: true },
+    );
 
     const body = await req.json().catch(() => null) as TelemetryPayload | null;
 
     // バリデーション
-    if (!body || !body.app || !body.env || !body.event || typeof body.ok !== "boolean") {
-      return jsonResponse({ error: "Bad Request: app, env, event, ok are required" }, 400, req);
+    if (
+      !body || !body.app || !body.env || !body.event ||
+      typeof body.ok !== "boolean"
+    ) {
+      return jsonResponse(
+        { error: "Bad Request: app, env, event, ok are required" },
+        400,
+        req,
+      );
     }
 
     // env値の検証
     if (!["dev", "stg", "prod"].includes(body.env)) {
-      return jsonResponse({ error: "Bad Request: env must be dev, stg, or prod" }, 400, req);
+      return jsonResponse(
+        { error: "Bad Request: env must be dev, stg, or prod" },
+        400,
+        req,
+      );
     }
 
     const { app, env, event, ok, latency_ms, err_code, extra } = body;
@@ -62,7 +85,11 @@ serve(async (req) => {
 
     if (error) {
       safeLog("telemetry", "Insert error", error);
-      return jsonResponse({ error: "Insert failed", details: error.message }, 500, req);
+      return jsonResponse(
+        { error: "Insert failed", details: error.message },
+        500,
+        req,
+      );
     }
 
     return jsonResponse({ ok: true }, 201, req);
