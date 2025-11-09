@@ -142,49 +142,33 @@ class ServiceIcon extends StatelessWidget {
   }
 
   Widget _buildAssetIcon(String path) {
-    final isSvg = path.toLowerCase().endsWith('.svg');
+    // NOTE: Image.asset and SvgPicture.asset are restricted in lib/services
+    // by rg-guard workflow. Use CDN-based resolution instead.
+    // This method now delegates to dynamic icon resolution via registry.
     final normalized =
         _keyName != null ? KeyNormalizer.normalize(_keyName) : path;
-
-    try {
-      final widget = isSvg
-          ? SvgPicture.asset(
-              path,
-              width: size,
-              height: size,
-              fit: fit,
-              clipBehavior: Clip.antiAlias,
-            )
-          : Image.asset(
-              path,
-              width: size,
-              height: size,
-              fit: fit,
-              filterQuality: FilterQuality.high,
-            );
-      recordIconDiag(
-        IconDiagEvent(
-          key: normalized,
-          origin: path,
-          source: isSvg
-              ? ServiceIconSourceType.assetSvg
-              : ServiceIconSourceType.assetPng,
-          duration: Duration.zero,
-        ),
-      );
-      return _buildAnimated(widget);
-    } catch (_) {
-      recordIconDiag(
-        IconDiagEvent(
-          key: normalized,
-          origin: path,
-          source: ServiceIconSourceType.fallback,
-          duration: Duration.zero,
-          fallback: true,
-        ),
-      );
-      return _buildFallbackIcon();
+    
+    // Extract key from asset path if possible (e.g., "assets/icons/services/youtube.svg" -> "youtube")
+    final keyMatch = RegExp(r'([^/]+)\.(svg|png|jpg|jpeg|webp)$').firstMatch(path);
+    if (keyMatch != null) {
+      final key = keyMatch.group(1);
+      if (key != null) {
+        // Delegate to dynamic icon resolution
+        return ServiceIcon.forKey(key, size: size, fallback: fallback, fit: fit);
+      }
     }
+    
+    // Fallback if key extraction fails
+    recordIconDiag(
+      IconDiagEvent(
+        key: normalized,
+        origin: path,
+        source: ServiceIconSourceType.fallback,
+        duration: Duration.zero,
+        fallback: true,
+      ),
+    );
+    return _buildFallbackIcon();
   }
 
   Widget _buildAnimated(Widget child) {
