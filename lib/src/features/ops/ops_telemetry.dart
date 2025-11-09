@@ -3,6 +3,7 @@
 // Spec-State:: 確定済み
 // Last-Updated:: 2025-11-07
 
+import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 import 'package:http/http.dart' as http;
