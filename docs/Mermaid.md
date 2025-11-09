@@ -1,5 +1,3 @@
-Last-Updated: 2025-11-09
-
 flowchart TB
   A[docs/overview/COMMON_DOCS_INDEX.md<br/>共通ドキュメント索引<br/>← 索引中心]:::core
   
@@ -78,6 +76,70 @@ flowchart TB
   H3 --> H4
   H3 --> H5
   H3 --> H6
+  H4 --> H6
+  H7 --> H4
+  H7 --> H5
+  H7 --> O
+  H7 --> H6
+  O --> H6
+  O2 --> H6
+  O3 --> O2
+
+  %% RELATIONSHIPS (Day12拡張: 索引中心にエッジ再配線)
+  %% Overview → OPS
+  B --> O6
+  B --> O8
+  B1 --> O7
+  %% Share → OPS
+  D --> O6
+  %% OPS内部関係
+  O6 --> R5
+  O8 --> O9
+  O8 --> R6
+  O9 --> O10
+  O7 --> O11
+  O7 --> O12
+  O7 --> O13
+  %% Reports → OPS
+  R3 --> O10
+  R4 --> O2
+  R5 --> O6
+  %% OPS → Reports（双方向）
+  O6 -.-> R5
+  O8 -.-> R6
+  %% Architecture → Index
+  F3 --> A
+  %% OPS内部関係（追加）
+  O4 --> O2
+  O5 --> O4
+
+  %% 凡例ブロック（色/形/ラベル意味）
+  classDef core fill:#6a5cff,stroke:#4b3df0,color:#fff;
+  classDef overview fill:#f1efff,stroke:#6a5cff,color:#333;
+  classDef share fill:#fff6e6,stroke:#ff9a22,color:#333;
+  classDef dev fill:#e3f2fd,stroke:#1976d2,color:#0d47a1;
+  classDef arch fill:#ffe8f1,stroke:#d81b60,color:#6a0035;
+  classDef feature fill:#e8f5e9,stroke:#2e7d32,color:#1b5e20;
+  classDef feature2 fill:#f1fbf2,stroke:#43a047,color:#1b5e20;
+  classDef auth fill:#f0f4ff,stroke:#4a6ee0,color:#22315c;
+  classDef ops fill:#e9fff2,stroke:#13a36e,color:#333;
+  classDef biz fill:#fff5e1,stroke:#f57c00,color:#5d3300;
+  classDef guides fill:#fff0f5,stroke:#c2185b,color:#5d1030;
+  classDef legal fill:#ede7f6,stroke:#5e35b1,color:#311b92;
+  
+  %% 凡例説明（コメント）
+  %% core: 索引・中核ドキュメント（紫）
+  %% overview: 概要・セットアップ（薄紫）
+  %% share: AI共有SOP（オレンジ）
+  %% dev: 開発環境ガイド（青）
+  %% arch: アーキテクチャ図（ピンク）
+  %% feature: 機能仕様（緑）
+  %% auth: 認証関連（青紫）
+  %% ops: 運用・監視（薄緑）
+  %% biz: ビジネス・レポート（オレンジ）
+  %% guides: ガイド・読み物（ピンク）
+  %% legal: 法的文書（紫）
+
   H4 --> H6
   H7 --> H4
   H7 --> H5

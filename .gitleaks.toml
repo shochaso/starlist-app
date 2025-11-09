@@ -36,7 +36,7 @@ description = "Allowlist for known false positives"
 paths = [
   '''\.md$''',
   '''\.example$''',
-  '''\.template$',
+  '''\.template$''',
   '''SECURITY_SWEEP\.txt$''',
   '''docs/''',
 ]

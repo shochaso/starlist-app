@@ -342,3 +342,152 @@ Slack `#release` に PRリンク・要約・スクショを投稿
 
 最終更新: 2025-11-07
 
+
+**二重送信の有無（安全確認）**
+```sql
+select report_week, channel, provider, count(*) as cnt
+from ops_summary_email_logs
+group by 1,2,3
+having count(*) > 1;
+```
+
+### 🧯 Known Issues
+
+**2025-11-08: dryRun実行失敗（Secrets未設定）**
+- Run ID: 19186118117
+- エラー: `curl: (3) URL rejected: No host part in the URL`
+- 原因: `SUPABASE_URL`と`SUPABASE_ANON_KEY`が設定されていない
+- 対応: Secrets設定が必要
+  ```bash
+  gh secret set SUPABASE_URL --body "https://<project-ref>.supabase.co"
+  gh secret set SUPABASE_ANON_KEY --body "<anon-key>"
+  ```
+- 状態: ✅ Secrets設定完了
+
+**2025-11-08: dryRun実行失敗（ホスト解決エラー）**
+- Run ID: 19189278382, 19189297679
+- エラー: `curl: (6) Could not resolve host: ***`
+- 原因: `SUPABASE_URL`の値が正しくない可能性（ホスト名が解決できない）
+- 対応: 
+  - `SUPABASE_URL`の値を確認（`https://<project-ref>.supabase.co`形式であること）
+  - Edge Functionがデプロイされているか確認
+  - Supabaseプロジェクトが存在するか確認
+- 状態: 調査中（Secrets設定済みだが、URL解決エラーが継続）
+
+**次の対応手順:**
+1. ✅ Checkoutステップ修正完了（git cloneエラー解決）
+2. ✅ URL形式検証・DNS解決成功確認
+3. ❌ Edge Function未デプロイが判明（404 NOT_FOUND）
+4. Supabase Dashboardで`ops-summary-email` Edge Functionがデプロイされているか確認
+5. Edge Functionが未デプロイの場合は、デプロイを実行:
+   ```bash
+   supabase functions deploy ops-summary-email
+   ```
+   または Supabase Dashboard → Edge Functions → Deploy
+6. デプロイ後、再度dryRun実行
+
+**2025-11-08: dryRun実行失敗（Edge Function未デプロイ）**
+- Run ID: 19189493121
+- エラー: `HTTP/2 404` / `{"code":"NOT_FOUND","message":"Requested function was not found"}`
+- 原因: `ops-summary-email` Edge FunctionがSupabaseにデプロイされていない
+- 対応: Edge Functionをデプロイする必要がある
+- 状態: デプロイ待ち
+
+---
+
+## 2025-11-07: Day9 OPS Summary Email 実装完了
+
+- Spec: `docs/ops/OPS-SUMMARY-EMAIL-001.md`
+- Status: planned → in-progress → verified（実装完了）
+- Reason: Day9実装フェーズ完了。Edge Function、GitHub Actionsワークフロー、メール送信機能を実装。
+- CodeRefs:
+  - **Edge Function**: `supabase/functions/ops-summary-email/index.ts:L1-L280` - HTML生成・メール送信（Resend/SendGrid）
+  - **GitHub Actions**: `.github/workflows/ops-summary-email.yml:L1-L60` - 週次スケジュール・手動実行
+  - **ドキュメント**: `docs/ops/OPS-SUMMARY-EMAIL-001.md:L1-L110` - 実装計画・運用・セキュリティ・ロールバック手順
+- Impact:
+  - ✅ 週次レポートを自動生成・送信可能に
+  - ✅ HTMLテンプレートでメトリクスを可視化
+  - ✅ Resend/SendGridでメール送信可能に
+  - ✅ dryRunモードでプレビュー確認可能に
+  - ✅ 前週比計算でトレンドを把握可能に
+
+### 実装詳細
+
+#### Edge Function実装
+- HTMLテンプレート生成: シンプルなHTMLメール形式、インラインスタイル
+- メトリクス集計: uptime %, mean p95(ms), alert count, alert trend
+- 前週比計算: 実際のデータから前週同期間と比較
+- メール送信: Resend優先、SendGridフォールバック
+- dryRunモード: HTMLプレビューを返却
+
+#### GitHub Actions実装
+- 週次スケジュール: 毎週月曜09:00 JST（UTC 0:00）
+- 手動実行: workflow_dispatchでdryRun実行可能
+- Secrets管理: SUPABASE_URL, SUPABASE_ANON_KEY, RESEND_API_KEY, SENDGRID_API_KEY
+
+#### ドキュメント
+- 実装計画・仕様・運用・セキュリティ・ロールバック手順を記載
+
+---
+
+## 🧭 提出〜マージ運用
+
+### 1. PR作成
+- URL: https://github.com/shochaso/starlist-app/pull/new/feature/day9-ops-summary-email
+- Title: `Day9: OPS Summary Email（週次レポート自動送信）`
+- Body: `PR_BODY.md` + `DAY9_SOT_DIFFS.md` を参照
+- Reviewer: `@pm-tim`
+- Labels: `feature`, `ops`, `email`, `day9`
+- Milestone: `Day9 OPS Summary Email`
+
+### 2. 添付
+- [ ] HTMLプレビュー（dryRun実行結果）
+- [ ] メール送信成功ログ（messageId）
+
+### 3. マージ
+- CI緑化 → **Squash & merge**
+- マージ後、`DAY9_SOT_DIFFS.md` に以下を追記:
+  - `Merged: yes`
+  - `Merge SHA: <xxxx>`
+
+---
+
+## 🏷 Post-merge（3点だけ即）
+
+### 1. タグ作成
+```bash
+git checkout main
+git pull origin main
+git tag v0.9.0-ops-summary-email-beta -m 'feat(ops): Day9 OPS Summary Email - weekly report automation'
+git push origin v0.9.0-ops-summary-email-beta
+```
+
+### 2. CHANGELOG更新
+`CHANGELOG.md` に Day9 要約追記:
+```
+## [0.9.0] - 2025-11-07
+### Added
+- OPS Summary Email（β）公開
+  - Edge Function ops-summary-email（週次レポート生成）
+  - GitHub Actions週次スケジュール（毎週月曜09:00 JST）
+  - Resend/SendGridメール送信対応
+```
+
+### 3. 社内告知
+Slack `#release` に PRリンク・要約・スクショを投稿
+
+---
+
+## 🚀 Day10 キック（即着手メモ）
+
+- **ブランチ**: `feature/day10-ops-daily-slack`
+- **初手**:
+  - 日次ミニ・OPSサマリ（Slack投稿）
+  - クリティカル指標のみをSlackへ
+  - アラート閾値の自動チューニング
+- **ドキュメント**: `OPS-DAILY-SLACK-001.md` 新設（Slack連携・自動チューニング設計）
+
+---
+
+最終更新: 2025-11-07
+

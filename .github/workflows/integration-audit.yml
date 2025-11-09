@@ -114,3 +114,118 @@ jobs:
           path: pr_audit.md
           message_path: pr_audit.md
 
+
+on:
+  workflow_dispatch:
+    inputs:
+      audit_hours:
+        description: "Lookback hours"
+        required: false
+        default: "48"
+  schedule:
+    - cron: "5 0 * * 1"   # 月曜09:05 JST (=00:05 UTC)
+
+jobs:
+  audit:
+    environment:
+      name: production
+      url: https://app.starlist.jp
+    runs-on: ubuntu-latest
+    env:
+      TZ: Asia/Tokyo
+      AUDIT_LOOKBACK_HOURS: ${{ github.event.inputs.audit_hours || 48 }}
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+      SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      STRIPE_API_KEY: ${{ secrets.STRIPE_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Setup CLIs
+        run: |
+          sudo apt-get update && sudo apt-get install -y jq
+          npm i -g supabase ajv-cli
+          curl -fsSL https://cli.stripe.com/install.sh | bash
+          sudo snap install yq || echo "yq install failed (may need manual install)"
+      
+      - name: Auth CLIs
+        run: |
+          supabase login --token "${SUPABASE_ACCESS_TOKEN}" || echo "Supabase login failed"
+          stripe login --api-key "${STRIPE_API_KEY}" || echo "Stripe login failed"
+      
+      - name: Run Suite
+        run: |
+          chmod +x ./FINAL_INTEGRATION_SUITE.sh
+          ./FINAL_INTEGRATION_SUITE.sh || true
+      
+      - name: Upload artifacts (always)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: audit-${{ github.run_id }}
+          path: |
+            docs/reports/*_DAY11_AUDIT_*.md
+            docs/reports/*_PRICING_AUDIT.md
+            tmp/audit_day11/*.json
+            tmp/audit_stripe/*.json
+            tmp/audit_edge/*.log
+          retention-days: 120
+      
+      - name: Summarize to PR
+        if: ${{ github.event.pull_request.number }}
+        run: |
+          FILE=$(ls docs/reports/*_DAY11_AUDIT_*.md 2>/dev/null | tail -n1 || echo "")
+          if [ -n "$FILE" ]; then
+            TITLE=$(grep -m1 '^# ' "$FILE" | sed 's/^# //' || echo "Audit Report")
+            COUNT=$(awk '/^## 1. 件数サマリ/{flag=1;next}/^## /{flag=0}flag' "$FILE" | tr -d '\n' | head -c 200 || echo "N/A")
+            echo "### ${TITLE}" > pr_audit.md
+            echo "" >> pr_audit.md
+            echo "**Scope:** ${AUDIT_LOOKBACK_HOURS}h  |  TZ: ${TZ}" >> pr_audit.md
+            echo "" >> pr_audit.md
+            echo "**Counts:** \`${COUNT}\`" >> pr_audit.md
+          fi
+      
+      - name: Publish latest KPI (on success)
+        if: success()
+        run: |
+          mkdir -p dashboard/data
+          # 監査生成物からKPI抽出（存在しなければ安全なデフォルト）
+          DAY11_COUNT=$(jq 'length' tmp/audit_day11/send.json 2>/dev/null || echo 0)
+          P95=$(jq '.p95_latency_ms' tmp/audit_day11/metrics.json 2>/dev/null || echo 0)
+          STRIPE=$(jq 'length' tmp/audit_stripe/events_starlist.json 2>/dev/null || echo 0)
+          # 成功率は存在時のみ算出（安全なfallback）
+          OK=$(jq '[.[] | select((.status//200)==200)] | length' tmp/audit_day11/send.json 2>/dev/null || echo 0)
+          SR=$( [ "$DAY11_COUNT" -gt 0 ] && awk "BEGIN{printf \"%.4f\", $OK/$DAY11_COUNT}" || echo 0 )
+          CSR=$(jq '.checkout_success_rate // 0' dashboard/data/latest.json 2>/dev/null || echo 0)
+
+          jq -n \
+            --arg now "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            --argjson c "$DAY11_COUNT" \
+            --argjson p "$P95" \
+            --argjson s "$SR" \
+            --argjson cs "$CSR" \
+            --argjson mismatches "$(jq '. | length' tmp/audit_stripe/mismatches.json 2>/dev/null || echo 0)" \
+            --argjson streak "$(jq '.mismatch_streak_zero_days // 0' dashboard/data/latest.json 2>/dev/null || echo 0)" \
+            '{updated_at:$now, day11_count:$c, p95_latency_ms:$p, slack_success_rate:$s, checkout_success_rate:$cs, mismatches_today:$mismatches, mismatch_streak_zero_days:$streak}' \
+            > dashboard/data/latest.json
+
+      - name: Commit KPI snapshot
+        if: success()
+        run: |
+          git config user.name "ci-bot"
+          git config user.email "ci@example.com"
+          git add dashboard/data/latest.json
+          git commit -m "chore: update KPI snapshot [skip ci]" || echo "no changes"
+          git push || true
+      
+      - name: PR comment (optional)
+        if: ${{ github.event.pull_request.number }}
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          recreate: true
+          path: pr_audit.md
+          message_path: pr_audit.md
+

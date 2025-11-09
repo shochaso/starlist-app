@@ -38,3 +38,42 @@ repos:
         pass_filenames: false
         description: "Analyze Dart code for errors and warnings"
 
+
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-json
+      - id: check-added-large-files
+        args: ['--maxkb=1000']
+      - id: check-merge-conflict
+      - id: detect-private-key
+
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.18.0
+    hooks:
+      - id: gitleaks
+        args: ['--config-path', '.gitleaks.toml']
+        description: "Detect hardcoded secrets and credentials"
+
+  - repo: https://github.com/dart-lang/dart_style
+    rev: 3.0.0
+    hooks:
+      - id: dartfmt
+        files: \.dart$
+        description: "Format Dart code"
+
+  - repo: local
+    hooks:
+      - id: dart-analyze
+        name: dart analyze
+        entry: bash -c 'dart analyze --fatal-infos'
+        language: system
+        files: \.dart$
+        pass_filenames: false
+        description: "Analyze Dart code for errors and warnings"
+

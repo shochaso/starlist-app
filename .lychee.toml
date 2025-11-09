@@ -5,3 +5,9 @@ exclude = [
 max_concurrency = 4
 retry_wait_time = 2
 
+  "^https://zjwvmoxpacbpwawlwbrd.functions.supabase.co", # CSP受け口（403/非公開の可能性）
+]
+
+max_concurrency = 4
+retry_wait_time = 2
+

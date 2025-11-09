@@ -1,7 +1,7 @@
 Status: beta
 Source-of-Truth: docs/overview/STARLIST_OVERVIEW.md
 Spec-State: beta
-Last-Updated: 2025-11-09
+Last-Updated: 2025-11-08
 
 
 # Starlist プロジェクト概要（β版）
@@ -140,6 +140,71 @@ Starlist の全体像を短時間で共有するためのドキュメントで�
 - **URL**: `/ops/dashboard`（Flutter Web）
 - **KPI指標キー**: `totalRequests`（総リクエスト数）、`errorRate`（失敗率）、`p95LatencyMs`（p95レイテンシ）、`errorCount`（エラー数）
 - **KPI表との対応**: 
+  - `totalRequests` ↔ KPI表「総リクエスト数」（未表示、要追加）
+  - `errorRate` ↔ KPI表「失敗率」
+  - `p95LatencyMs` ↔ KPI表「p95 レイテンシ」
+- **チャート**: P95 Latency（ギャップ表示対応）、Stacked Bar Chart
+- **WoW変化率**: 前週比を自動計算し、μ±2σ/3σに基づく色付け（黄色/赤色/緑色）
+- **参考**: `docs/ops/OPS-MONITORING-002.md`, `docs/ops/DASHBOARD_IMPLEMENTATION.md`
+
+### 監査レポート自動生成
+- **スクリプト**: `generate_audit_report.sh`
+- **実行**: GitHub Actions（週次 + 手動実行）
+- **内容**: Permalink, Edge Logs, Stripe Events, Day11 JSON Logs
+- **参考**: `docs/ops/AUDIT_SYSTEM_ENTERPRISE.md`
+
+---
+
+## 外部連携・依存サービス
+
+- 例: Stripe、Supabase、Auth0/LINE、SNS API、CDN 等。
+- 契約形態や使用制限、認証方式（OAuth、API Key 等）。
+- 障害時のエスカレーション先やサポート窓口。
+
+> TODO: 依存関係を一覧化。
+
+---
+
+## 関連ドキュメント一覧
+
+- `docs/COMMON_DOCS_INDEX.md` … ドキュメント目次。
+- `docs/COMPANY_SETUP_GUIDE.md` … オンボーディング手順（雛形）。
+- `docs/development/DEVELOPMENT_GUIDE.md` … 開発環境構築。
+- `docs/features/payment_current_state.md` … 決済実装の現状。
+- `docs/CHATGPT_SHARE_GUIDE.md` … ChatGPT 共有フローとチェックリスト。
+- `docs/ops/supabase_byo_auth.md` … Supabase BYO Auth / doc-share 運用手順。
+- その他関連資料を箇条書きで追記。
+
+> TODO: 追加で参照したい資料があればリストアップ。
+
+---
+
+## ロードマップ・今後の課題
+
+### Roadmap (Q4→Q1)
+
+| 期間 | マイルストーン | DoD | リスク | フォールバック |
+| --- | --- | --- | --- | --- |
+| Q4 | β公開ダッシュボード整備 | KPI表/監視/リンク緑 | 依存API障害 | 旧集計に切替 |
+| Q4 | 通知要約運用安定化 | μ+2σ/3σ閾値活用 | 間欠エラー | 再送+抑止 |
+| Q1 | 決済拡張(国内) | 決済種別テスト緑 | 規約差異 | Stripe限定運用 |
+
+### Day12以降（10×拡張フェーズ）
+
+- **Day12**: ドキュメント統合（SSOT確立）、30ブランチ同時展開（Security/Ops/Automation/UI/Business）
+- **技術的負債**: Edge Dry-run API 設計、スター単位課金の DB 拡張、Mermaid Day12 ノードの最終確定
+- **参考**: `docs/planning/DAY12_10X_EXPANSION_ROADMAP.md`
+
+---
+
+## 更新履歴
+
+| 日付 | 更新者 | 変更箇所 |
+| --- | --- | --- |
+| 2025-10-?? | 作成者名 | 雛形作成 |
+| 2025-11-07 | Tim | Day5 Telemetry/OPS サマリーとロードマップを更新。 |
+| 2025-11-08 | Tim | Day12 β統合：KPI表、ロードマップ表、監視・通知スタックを追加。 |
+
   - `totalRequests` ↔ KPI表「総リクエスト数」（未表示、要追加）
   - `errorRate` ↔ KPI表「失敗率」
   - `p95LatencyMs` ↔ KPI表「p95 レイテンシ」

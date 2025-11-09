@@ -117,3 +117,14 @@ echo "📊 To check logs: tail -f logs/flutter.log"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
 
+
+echo "📝 BrowserSync PID: $BS_PID"
+echo "📁 Logs:"
+echo "   - logs/flutter.log"
+echo "   - logs/browsersync.log"
+echo ""
+echo "🛑 To stop: pkill -f flutter && pkill -f browser-sync"
+echo "📊 To check logs: tail -f logs/flutter.log"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+

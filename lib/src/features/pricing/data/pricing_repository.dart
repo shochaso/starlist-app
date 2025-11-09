@@ -46,3 +46,50 @@ Map<String, dynamic> _fallbackConfig() {
   };
 }
 
+
+// Spec-State:: 確定済み（推奨価格取得）
+// Last-Updated:: 2025-11-08
+
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/config/supabase_client_provider.dart';
+
+/// 推奨価格設定を取得するProvider
+final pricingConfigProvider = FutureProvider<Map<String, dynamic>>((ref) async {
+  final supabase = ref.watch(supabaseClientProvider);
+
+  try {
+    final res = await supabase.rpc('get_app_setting', params: {'p_key': 'pricing.recommendations'});
+
+    if (res == null) {
+      throw Exception('config null');
+    }
+
+    return Map<String, dynamic>.from(res as Map);
+  } catch (e, st) {
+    // エラー時はフォールバックを返す
+    // TODO: ログ基盤（e.g. logger / crashlytics）に送る想定
+    // ignore: avoid_print
+    // print('Failed to fetch pricing config: $e');
+    return _fallbackConfig();
+  }
+});
+
+/// フォールバック設定（デフォルト値）
+Map<String, dynamic> _fallbackConfig() {
+  return {
+    "version": "fallback",
+    "tiers": {
+      "light": {"student": 100, "adult": 480},
+      "standard": {"student": 200, "adult": 1980},
+      "premium": {"student": 500, "adult": 4980}
+    },
+    "limits": {
+      "student": {"min": 100, "max": 9999},
+      "adult": {"min": 300, "max": 29999},
+      "step": 10,
+      "currency": "JPY",
+      "tax_inclusive": true
+    }
+  };
+}
+

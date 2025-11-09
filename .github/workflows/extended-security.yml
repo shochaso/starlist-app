@@ -142,3 +142,146 @@ jobs:
           retention-days: 90
         continue-on-error: true
 
+
+on:
+  pull_request:
+  push:
+    branches: [ main, develop ]
+  schedule:
+    # 毎週月曜09:00 JST (00:00 UTC)
+    - cron: '0 0 * * 1'
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  security-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for gitleaks
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile || pnpm install
+        continue-on-error: true
+
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true
+        # Note: config-path is deprecated in v2, but action still works
+
+      - name: Run Semgrep
+        uses: returntocorp/semgrep-action@v1
+        with:
+          config: p/ci
+        continue-on-error: true
+
+      - name: Run Trivy (filesystem)
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+        continue-on-error: true
+
+      - name: Upload Trivy results
+        uses: github/codeql-action/upload-sarif@v3
+        if: always() && hashFiles('trivy-results.sarif') != ''
+        with:
+          sarif_file: 'trivy-results.sarif'
+        continue-on-error: true
+
+      - name: Generate CycloneDX SBOM
+        run: |
+          # Install cyclonedx-npm if not available
+          if ! command -v cyclonedx-npm >/dev/null 2>&1; then
+            npm install -g @cyclonedx/cyclonedx-npm || echo "cyclonedx-npm install failed, using pnpm audit fallback"
+          fi
+          
+          # Generate CycloneDX SBOM
+          if command -v cyclonedx-npm >/dev/null 2>&1; then
+            cyclonedx-npm --output-file sbom-cyclonedx.json || echo "cyclonedx-npm failed"
+          fi
+          
+          # Fallback: pnpm audit JSON
+          pnpm audit --json > sbom-pnpm.json || true
+          echo "SBOM generated"
+        continue-on-error: true
+
+      - name: Upload SBOM
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sbom
+          path: |
+            sbom-cyclonedx.json
+            sbom-pnpm.json
+          retention-days: 90
+        continue-on-error: true
+
+      - name: RLS Audit (dry-run)
+        if: always()
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: |
+          set -euo pipefail
+          
+          # Install Supabase CLI if not available
+          if ! command -v supabase >/dev/null 2>&1; then
+            npm install -g supabase || echo "supabase CLI install failed"
+          fi
+          
+          # Run RLS audit SQL (dry-run)
+          if command -v supabase >/dev/null 2>&1 && [ -n "${SUPABASE_URL:-}" ] && [ -n "${SUPABASE_ACCESS_TOKEN:-}" ]; then
+            mkdir -p docs/reports
+            supabase login --token "${SUPABASE_ACCESS_TOKEN}" || echo "Supabase login failed"
+            
+            # Execute RLS audit SQL and save to Markdown
+            {
+              echo "# RLS Audit Report"
+              echo ""
+              echo "**Generated**: $(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+              echo ""
+              echo "## Tables without RLS enabled"
+              echo ""
+              echo "\`\`\`sql"
+              supabase db query "$(cat scripts/rls_audit.sql | head -n 14)" --project-ref "$(echo $SUPABASE_URL | sed 's#https://\([^.]*\)\.supabase\.co#\1#')" || echo "Query failed"
+              echo "\`\`\`"
+              echo ""
+              echo "## Tables with RLS but no policies"
+              echo ""
+              echo "\`\`\`sql"
+              supabase db query "$(cat scripts/rls_audit.sql | tail -n +16)" --project-ref "$(echo $SUPABASE_URL | sed 's#https://\([^.]*\)\.supabase\.co#\1#')" || echo "Query failed"
+              echo "\`\`\`"
+            } > docs/reports/RLS_AUDIT_REPORT.md || echo "RLS audit report generation failed"
+          else
+            echo "⚠️  Supabase CLI or credentials not available. Skipping RLS audit."
+          fi
+        continue-on-error: true
+
+      - name: Upload RLS Audit Report
+        uses: actions/upload-artifact@v4
+        if: always() && hashFiles('docs/reports/RLS_AUDIT_REPORT.md') != ''
+        with:
+          name: rls-audit-report
+          path: docs/reports/RLS_AUDIT_REPORT.md
+          retention-days: 90
+        continue-on-error: true
+

@@ -66,3 +66,26 @@ jobs:
           if [ $broken -eq 1 ]; then
             exit 1
           fi
+
+              if (rel !~ /^https?:\/\// && rel !~ /^mailto:/ && rel !~ /^#/) {
+                if (rel ~ /^\//) {
+                  target = "." rel
+                } else {
+                  target = dir "/" rel
+                }
+                gsub(/\/\.\//, "/", target)
+                while (target ~ /\/[^\/]+\/\.\.\//) {
+                  gsub(/\/[^\/]+\/\.\.\//, "/", target)
+                }
+                if (!system("test -f \"" target "\" || test -d \"" target "\"")) {
+                  # Link is valid
+                } else {
+                  print FILENAME ": BROKEN LINK -> " rel
+                  exit 1
+                }
+              }
+            }' "$file" || broken=1
+          done
+          if [ $broken -eq 1 ]; then
+            exit 1
+          fi

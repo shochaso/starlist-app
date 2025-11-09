@@ -33,3 +33,39 @@
   }
 }
 
+
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "AuditReportFrontMatter",
+  "type": "object",
+  "required": ["report_id", "generated_at", "tz", "scope_hours", "supabase_ref", "checks"],
+  "properties": {
+    "report_id": {"type": "string"},
+    "generated_at": {"type": "string"},
+    "tz": {"type": "string"},
+    "scope_hours": {"type": "integer", "minimum": 1, "maximum": 168},
+    "supabase_ref": {"type": "string", "pattern": "^[a-z0-9]{20}$"},
+    "slack_permalink": {"type": ["string", "null"]},
+    "git_sha": {"type": "string"},
+    "artifacts": {
+      "type": "object",
+      "properties": {
+        "dryrun_json": {"type": "string"},
+        "send_json": {"type": "string"},
+        "stripe_json": {"type": "string"},
+        "edge_logs": {"type": "string"}
+      }
+    },
+    "checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name"],
+        "properties": {
+          "name": {"type": "string"}
+        }
+      }
+    }
+  }
+}
+
+

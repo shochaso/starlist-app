@@ -1,0 +1,4 @@
+# Put CVE-IDs or file patterns to ignore noisy/known issues here.
+# Example:
+# CVE-2021-12345
+# node_modules/**/*

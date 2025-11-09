@@ -224,3 +224,20 @@ index 20852a9..56eb34c 100644
 ---
 
 **Note**: This file is auto-generated. Manual edits may be overwritten.
+
+- .mlc.json
+- docs/COMPANY_SETUP_GUIDE.md
+- docs/Mermaid.md
+- docs/ops/SSOT_RULES.md
+- docs/overview/COMMON_DOCS_INDEX.md
+- docs/overview/STARLIST_OVERVIEW.md
+- guides/CHATGPT_SHARE_GUIDE.md
+- package.json
+- scripts/docs/generate-diff-log.mjs
+- scripts/docs/link-check.mjs
+- scripts/docs/update-last-updated.mjs
+
+---
+
+**Note**: This file is auto-generated. Manual edits may be overwritten.
+* rebase-merge: 2025-11-09 12:57:23 JST branch=feature/day12-security-ci-hardening
