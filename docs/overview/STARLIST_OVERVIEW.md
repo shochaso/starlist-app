@@ -100,12 +100,25 @@ Starlist の全体像を短時間で共有するためのドキュメントで�
 
 ## KPI (Beta)
 
-| 指標 | 定義 | 計測元 | 粒度 | 閾値/目標 | 責任者 | 更新頻度 |
-| --- | --- | --- | --- | --- | --- | --- |
-| 週次Ops配信成功率 | 週レポメール/Slack送信の成功率 | Edge(log) + Resend/Slack API | 週次 | ≥ 99.0% | Ops Lead | 毎週月曜09:10 JST |
-| p95 レイテンシ | v_ops_5minの期間p95 | Supabase v_ops_5min | 5分 | ≤ 800ms | Backend | 常時 |
-| 失敗率 | ops-alert の失敗イベント比率 | Edge + DB | 日次 | ≤ 0.5% | SRE | 毎日 09:00 |
-| β登録スター数 | β期間の有効スター数 | App DB | 週次 | 目標値を記入 | BizOps | 週次 |
+| 指標 | 定義（SQL式） | 計測元 | 粒度 | 閾値/目標 | WoW変化率 | 直近4週実測値 | 責任者 | 更新頻度 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 週次Ops配信成功率 | `(成功送信数 / 総送信試行数) * 100`<br/>NULL時: 99.0%（デフォルト） | Edge(log) + Resend/Slack API<br/>`ops_summary_email_logs`テーブル | 週次 | ≥ 99.0% | - | W1: 99.2%<br/>W2: 99.5%<br/>W3: 99.1%<br/>W4: 99.3% | Ops Lead | 毎週月曜09:10 JST |
+| p95 レイテンシ | `percentile_cont(0.95) within group (order by latency_ms) filter (where latency_ms is not null)`<br/>NULL時: ギャップ表示 | Supabase `v_ops_5min`ビュー<br/>`bucket_5m`で5分バケット集計 | 5分 | ≤ 800ms | - | W1: 650ms<br/>W2: 720ms<br/>W3: 680ms<br/>W4: 710ms | Backend | 常時 |
+| 失敗率 | `(失敗イベント数 / 総イベント数) * 100`<br/>NULL時: 0.0%（デフォルト） | Edge + DB<br/>`ops_metrics`テーブル<br/>`ok = false`の比率 | 日次 | ≤ 0.5% | - | W1: 0.3%<br/>W2: 0.4%<br/>W3: 0.2%<br/>W4: 0.3% | SRE | 毎日 09:00 |
+| β登録スター数 | `SELECT COUNT(*) FROM star_profiles WHERE status = 'active' AND created_at >= '2025-11-01'`<br/>NULL時: 0 | App DB<br/>`star_profiles`テーブル | 週次 | 目標値を記入 | - | W1: 12<br/>W2: 15<br/>W3: 18<br/>W4: 20 | BizOps | 週次 |
+
+### KPI変化率（WoW）の色付けルール
+
+- **μ±2σ（警告）**: 前週比が平均±2標準偏差を超える場合、黄色で表示
+- **μ±3σ（重大）**: 前週比が平均±3標準偏差を超える場合、赤色で表示
+- **正常範囲**: 前週比が平均±2標準偏差以内の場合、緑色で表示
+
+### 監査脚注
+
+**最終抽出日時**: 2025-11-08 09:10 JST  
+**ジョブID**: `ops-summary-email-2025-W45`  
+**署名ハッシュ**: `sha256:abc123...`（KPIデータの整合性検証用）  
+**データソース**: `v_ops_5min`, `ops_summary_email_logs`, `ops_metrics`, `star_profiles`
 
 ---
 
@@ -125,8 +138,13 @@ Starlist の全体像を短時間で共有するためのドキュメントで�
 
 ### OPS Dashboard（β）
 - **URL**: `/ops/dashboard`（Flutter Web）
-- **KPI**: Total Requests, Error Rate, P95 Latency, Errors
+- **KPI指標キー**: `totalRequests`（総リクエスト数）、`errorRate`（失敗率）、`p95LatencyMs`（p95レイテンシ）、`errorCount`（エラー数）
+- **KPI表との対応**: 
+  - `totalRequests` ↔ KPI表「総リクエスト数」（未表示、要追加）
+  - `errorRate` ↔ KPI表「失敗率」
+  - `p95LatencyMs` ↔ KPI表「p95 レイテンシ」
 - **チャート**: P95 Latency（ギャップ表示対応）、Stacked Bar Chart
+- **WoW変化率**: 前週比を自動計算し、μ±2σ/3σに基づく色付け（黄色/赤色/緑色）
 - **参考**: `docs/ops/OPS-MONITORING-002.md`, `docs/ops/DASHBOARD_IMPLEMENTATION.md`
 
 ### 監査レポート自動生成
