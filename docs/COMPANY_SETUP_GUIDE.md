@@ -49,6 +49,71 @@ Last-Updated: 2025-11-09
 
 ---
 
+## 権限マトリクス（ロール×操作×監査記録）
+
+### Supabase
+
+| ロール | 操作 | 監査記録 | 備考 |
+| --- | --- | --- | --- |
+| `anon` | SELECT（公開テーブルのみ） | `audit_auth`テーブル | 認証前ユーザー |
+| `authenticated` | SELECT/INSERT/UPDATE/DELETE（RLS制限内） | `audit_auth`テーブル | 認証済みユーザー |
+| `service_role` | 全操作（RLSバイパス） | `ops_metrics`, `ops_alerts_history` | Edge Functions専用 |
+| `ops_admin` | SELECT（ops_*テーブル） | `ops_summary_email_logs` | OPS管理用（`has_ops_admin_claim()`） |
+
+**権限付与方法**:
+- `ops_admin`: `auth.users.app_metadata`に`{"ops_admin": true}`を設定
+- `service_role`: Supabase Dashboardの「Settings > API」から取得
+
+### Stripe
+
+| ロール | 操作 | 監査記録 | 備考 |
+| --- | --- | --- | --- |
+| `read_only` | 決済情報の閲覧 | Stripe Dashboard Logs | 監査専用 |
+| `read_write` | 決済情報の閲覧・作成・更新 | Stripe Dashboard Logs | 開発・運用用 |
+| `admin` | 全操作（返金・キャンセル含む） | Stripe Dashboard Logs | BizOps専用 |
+
+**権限付与方法**: Stripe Dashboardの「Settings > Team」から招待
+
+### Resend
+
+| ロール | 操作 | 監査記録 | 備考 |
+| --- | --- | --- | --- |
+| `sender` | メール送信 | Resend Dashboard Logs | 週次要約送信用 |
+| `admin` | 全操作（API Key管理含む） | Resend Dashboard Logs | Ops Lead専用 |
+
+**権限付与方法**: Resend Dashboardの「Settings > Team」から招待
+
+### Slack
+
+| ロール | 操作 | 監査記録 | 備考 |
+| --- | --- | --- | --- |
+| `webhook` | メッセージ送信（特定チャンネル） | Slack Webhook Logs | 週次要約通知用 |
+| `admin` | 全操作（Webhook管理含む） | Slack Webhook Logs | Ops Lead専用 |
+
+**権限付与方法**: Slack Workspace SettingsからWebhook URL発行
+
+### GitHub
+
+| ロール | 操作 | 監査記録 | 備考 |
+| --- | --- | --- | --- |
+| `read` | リポジトリ閲覧 | GitHub Audit Log | 外部パートナー用 |
+| `write` | リポジトリ閲覧・コミット | GitHub Audit Log | 開発者用 |
+| `admin` | 全操作（Secrets管理含む） | GitHub Audit Log | テックリード専用 |
+
+**権限付与方法**: GitHub Org Settingsから招待
+
+---
+
+### 監査記録の確認方法
+
+- **Supabase**: `SELECT * FROM audit_auth ORDER BY created_at DESC LIMIT 100;`
+- **Stripe**: Dashboard > Logs
+- **Resend**: Dashboard > Logs
+- **Slack**: Workspace Settings > Audit Logs
+- **GitHub**: Org Settings > Audit Log
+
+---
+
 ## リポジトリとバージョン管理
 
 - メインリポジトリのクローン方法、必須ブランチルール。
@@ -136,10 +201,60 @@ cp .env.example .env.local
 - 例: `resend_api_key`, `supabase_anon_key`, `stripe_secret_key`
 - GitHub Secretsも同様の命名規則を適用
 
-#### 4. 監査ログ
+#### 4. キー命名規則テーブル
+
+| サービス | 接頭辞 | 命名例 | 備考 |
+| --- | --- | --- | --- |
+| Supabase | `supabase_` | `supabase_anon_key`, `supabase_service_role_key` | anon/service_roleを区別 |
+| Stripe | `stripe_` | `stripe_secret_key`, `stripe_publishable_key` | secret/publishableを区別 |
+| Resend | `resend_` | `resend_api_key` | API Keyのみ |
+| Slack | `slack_` | `slack_webhook_ops_summary` | Webhook URL |
+| GitHub | `github_` | `github_token` | Personal Access Token |
+| OPS | `ops_` | `ops_service_secret`, `ops_allowed_origins` | OPS専用Secrets |
+
+**命名ルール**:
+- すべて小文字、アンダースコア区切り（snake_case）
+- 接頭辞でサービスを識別
+- キーの種類（anon/service_role/secret/publishable等）を明示
+- 用途が複数ある場合は用途を追加（例: `slack_webhook_ops_summary`）
+
+#### 5. 漏洩時の即時ローテ手順
+
+**誰が**: Ops Lead / テックリード  
+**どこで**: GitHub Secrets / Supabase Environment Variables / 1Password Vault
+
+**手順**:
+1. **即座に旧キーを無効化**（GitHub Secrets削除、Supabase環境変数削除、1Password Vault削除）
+2. **新キーを生成**（各サービスのダッシュボードから再発行）
+3. **新キーを全環境に反映**（GitHub Secrets、Supabase環境変数、1Password Vault）
+4. **Edge Functionsを再デプロイ**（`supabase functions deploy <function-name>`）
+5. **監査ログに記録**（`docs/reports/DAY12_SOT_DIFFS.md`に漏洩日時・無効化日時・新キー発行日時を記録）
+6. **影響範囲を確認**（該当キーを使用しているEdge Functions、CI/CD、ローカル環境を確認）
+7. **チームに通知**（Slack #ops-alertsチャンネルで通知）
+
+**所要時間**: 15分以内（緊急時は5分以内）
+
+#### 6. 監査ログ
 
 - Secrets受け渡しは`docs/reports/DAY12_SOT_DIFFS.md`に記録
 - 再発行時は旧キーを無効化し、ログに残す
+
+### 監査ログ書式テンプレート
+
+```markdown
+## Secrets ローテーション（YYYY-MM-DD）
+
+**日付**: YYYY-MM-DD HH:MM JST  
+**担当者**: [担当者名]  
+**サービス**: [Supabase/Stripe/Resend等]  
+**キー名**: `[key_name]`  
+**理由**: [ローテーション/漏洩対応/定期更新]  
+**旧キー無効化日時**: YYYY-MM-DD HH:MM JST  
+**新キー発行日時**: YYYY-MM-DD HH:MM JST  
+**影響範囲**: [Edge Functions名、CI/CD、ローカル環境]  
+**Issueリンク**: #xxx（該当Issue/PR）  
+**差分**: [変更内容の要約]
+```
 
 ### 参考ドキュメント
 
