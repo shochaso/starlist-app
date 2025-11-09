@@ -21,17 +21,17 @@ fi
 
 if [ "$HAS_SEMGREP" = "1" ]; then
   echo ">> semgrep: .semgrep.yml"
-  semgrep --error --config ./.semgrep.yml --metrics=off || EXIT_CODE=$?
+  semgrep --error --config ./.semgrep.yml --metrics=off --output semgrep.sarif --format sarif || EXIT_CODE=$?
 else
   echo "!! semgrep not found (skipping)."
 fi
 
 if [ "$HAS_TRIVY" = "1" ]; then
   echo ">> trivy fs scan (CRITICAL,HIGH)"
-  trivy fs --quiet --exit-code 1 --severity CRITICAL,HIGH --ignorefile .trivyignore . || EXIT_CODE=$?
+  trivy fs --quiet --exit-code 1 --severity CRITICAL,HIGH --ignorefile .trivyignore --format sarif --output trivy-results.sarif . || EXIT_CODE=$?
   if [ "$SKIP_TRIVY_CONFIG" = "0" ]; then
     echo ">> trivy config scan"
-    trivy config --quiet --exit-code 1 --severity CRITICAL,HIGH --ignorefile .trivyignore . || EXIT_CODE=$?
+    trivy config --quiet --exit-code 1 --severity CRITICAL,HIGH --ignorefile .trivyignore --format sarif --output trivy-config.sarif . || EXIT_CODE=$?
   else
     echo ">> trivy config scan SKIPPED (SKIP_TRIVY_CONFIG=1)"
   fi
