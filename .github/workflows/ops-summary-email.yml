@@ -2,11 +2,18 @@ name: Ops Summary Email
 
 on:
   workflow_dispatch:
+    inputs:
+      dryRun:
+        description: "Dry run mode (preview HTML without sending)"
+        required: false
+        default: "true"
+        type: boolean
   schedule:
     - cron: "0 0 * * 1" # 毎週月曜 09:00 JST（UTC+9 → UTC 0:00）
 
 permissions:
   contents: read
+  contents: write
 
 jobs:
   send:
@@ -17,6 +24,7 @@ jobs:
       RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
       RESEND_FROM: ${{ secrets.RESEND_FROM }}
       RESEND_TO_LIST: ${{ secrets.RESEND_TO_LIST }}
+      OPS_SERVICE_SECRET: ${{ secrets.OPS_SERVICE_SECRET }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -74,7 +82,7 @@ jobs:
           getent hosts "$HOST" || { echo "::error title=DNS error::Failed to resolve $HOST"; exit 1; }
 
       - name: DryRun (preview HTML)
-        if: ${{ github.event_name == 'workflow_dispatch' }}
+        if: ${{ github.event_name == 'workflow_dispatch' && (github.event.inputs.dryRun == 'true' || github.event.inputs.dryRun == '') }}
         run: |
           set -euo pipefail
           set -x
@@ -82,6 +90,7 @@ jobs:
           URL="${BASE%/}/functions/v1/ops-summary-email?dryRun=true"
           curl -sS -D /tmp/h -o /tmp/body \
             -H "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
+            -H "x-ops-secret: ${OPS_SERVICE_SECRET}" \
             -H "apikey: ${SUPABASE_ANON_KEY}" \
             -H "Content-Type: application/json" \
             "$URL" || exit 1
@@ -92,18 +101,30 @@ jobs:
           cat /tmp/body
           echo ""
           echo "--- validation ---"
-          cat /tmp/body | jq -e '.ok == true and (.preview|length>0)' || exit 1
+          cat /tmp/body | jq -e '.ok == true and (.preview_html|length>0)' || exit 1
+          
+          # Log success to docs/reports/OPS-SUMMARY-LOGS.md
+          mkdir -p docs/reports
+          LOG_FILE="docs/reports/OPS-SUMMARY-LOGS.md"
+          TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          echo "" >> "$LOG_FILE"
+          echo "## $(date -u +"%Y-%m-%d %H:%M:%S UTC") - DryRun Success" >> "$LOG_FILE"
+          echo "" >> "$LOG_FILE"
+          echo "- **Mode**: DryRun" >> "$LOG_FILE"
+          echo "- **Status**: ✅ Success" >> "$LOG_FILE"
+          echo "- **Timestamp**: ${TIMESTAMP}" >> "$LOG_FILE"
+          echo "- **Response**: \`$(cat /tmp/body | jq -c '{ok, report_week, metrics}')\`" >> "$LOG_FILE"
+          echo "" >> "$LOG_FILE"
+          
           echo "[ops-summary-email] dryrun success"
 
       - name: Send Weekly Email (prod)
-        if: ${{ github.event_name == 'schedule' }}
-        env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        if: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.event.inputs.dryRun == 'false') }}
         run: |
           set -euo pipefail
           RESPONSE=$(curl --fail --show-error --retry 3 --retry-all-errors --max-time 30 \
             -H "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
+            -H "x-ops-secret: ${OPS_SERVICE_SECRET}" \
             -H "Content-Type: application/json" \
             -X POST \
             "${SUPABASE_URL}/functions/v1/ops-summary-email" \
@@ -112,6 +133,37 @@ jobs:
           echo "Response:"
           echo "$RESPONSE" | jq .
           
-          echo "$RESPONSE" | jq -e '.ok == true' || exit 1
-          echo "[ops-summary-email] weekly email sent"
+          if echo "$RESPONSE" | jq -e '.ok == true' > /dev/null 2>&1; then
+            # Log success to docs/reports/OPS-SUMMARY-LOGS.md
+            mkdir -p docs/reports
+            LOG_FILE="docs/reports/OPS-SUMMARY-LOGS.md"
+            TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+            echo "" >> "$LOG_FILE"
+            echo "## $(date -u +"%Y-%m-%d %H:%M:%S UTC") - Production Send Success" >> "$LOG_FILE"
+            echo "" >> "$LOG_FILE"
+            echo "- **Mode**: Production" >> "$LOG_FILE"
+            echo "- **Status**: ✅ Success" >> "$LOG_FILE"
+            echo "- **Timestamp**: ${TIMESTAMP}" >> "$LOG_FILE"
+            echo "- **Provider**: \`$(echo "$RESPONSE" | jq -r '.provider // "unknown"')\`" >> "$LOG_FILE"
+            echo "- **Message ID**: \`$(echo "$RESPONSE" | jq -r '.message_id // "N/A"')\`" >> "$LOG_FILE"
+            echo "- **To Count**: \`$(echo "$RESPONSE" | jq -r '.to_count // 0')\`" >> "$LOG_FILE"
+            echo "- **Report Week**: \`$(echo "$RESPONSE" | jq -r '.report_week // "N/A"')\`" >> "$LOG_FILE"
+            echo "" >> "$LOG_FILE"
+            echo "[ops-summary-email] weekly email sent"
+          else
+            # Log failure to docs/reports/OPS-SUMMARY-LOGS.md
+            mkdir -p docs/reports
+            LOG_FILE="docs/reports/OPS-SUMMARY-LOGS.md"
+            TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+            echo "" >> "$LOG_FILE"
+            echo "## $(date -u +"%Y-%m-%d %H:%M:%S UTC") - Production Send Failure" >> "$LOG_FILE"
+            echo "" >> "$LOG_FILE"
+            echo "- **Mode**: Production" >> "$LOG_FILE"
+            echo "- **Status**: ❌ Failure" >> "$LOG_FILE"
+            echo "- **Timestamp**: ${TIMESTAMP}" >> "$LOG_FILE"
+            echo "- **Error**: \`$(echo "$RESPONSE" | jq -r '.error // "Unknown error"')\`" >> "$LOG_FILE"
+            echo "- **Response**: \`$(echo "$RESPONSE" | jq -c)\`" >> "$LOG_FILE"
+            echo "" >> "$LOG_FILE"
+            exit 1
+          fi
 

@@ -30,14 +30,8 @@ interface EmailContent {
   preheader: string;
 }
 
-// Environment variable reader with validation
-function getEnv(key: string, required = true): string {
-  const value = Deno.env.get(key);
-  if (required && !value) {
-    throw new Error(`missing env: ${key}`);
-  }
-  return value || "";
-}
+// Import type-safe environment helpers
+import { getEnv, getEnvArray } from "../_shared/env.ts";
 
 // Get current time in JST (UTC+9)
 function jstNow(): Date {
@@ -415,10 +409,7 @@ serve(async (req: Request): Promise<Response> => {
     if (query.toOverride && Array.isArray(query.toOverride)) {
       recipients = ensureStarlistRecipients(query.toOverride);
     } else {
-      const resendToList = getEnv("resend_to_list", false);
-      if (resendToList) {
-        recipients = ensureStarlistRecipients(resendToList.split(","));
-      }
+      recipients = ensureStarlistRecipients(getEnvArray("resend_to_list", []));
     }
 
     if (recipients.length === 0) {
