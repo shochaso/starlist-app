@@ -130,8 +130,8 @@ class MypageScreen extends ConsumerWidget {
                     ),
                     trailing: Switch(
                       value: isDarkMode,
-                      thumbColor: MaterialStateProperty.resolveWith<Color?>(
-                        (states) => states.contains(MaterialState.selected)
+                      thumbColor: WidgetStateProperty.resolveWith<Color?>(
+                        (states) => states.contains(WidgetState.selected)
                             ? (isDarkMode ? Colors.blue : Colors.black)
                             : null,
                       ),

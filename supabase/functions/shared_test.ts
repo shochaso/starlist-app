@@ -1,4 +1,4 @@
-import { assertEquals } from "https://deno.land/std@0.224.0/testing/asserts.ts";
+import { assertEquals } from "std/testing/asserts.ts";
 import { buildCorsHeaders, maskPII } from "./shared.ts";
 
 Deno.test("maskPII removes identifiable segments", () => {
@@ -14,18 +14,27 @@ Deno.test("maskPII removes identifiable segments", () => {
 Deno.test("buildCorsHeaders respects allowed origins", () => {
   const previous = Deno.env.get("OPS_ALLOWED_ORIGINS");
   try {
-    Deno.env.set("OPS_ALLOWED_ORIGINS", "https://app.starlist.jp, https://ops.starlist.jp");
+    Deno.env.set(
+      "OPS_ALLOWED_ORIGINS",
+      "https://app.starlist.jp, https://ops.starlist.jp",
+    );
     const req = new Request("https://api.starlist.jp/health", {
       headers: { Origin: "https://ops.starlist.jp" },
     });
     const headers = buildCorsHeaders(req);
-    assertEquals(headers["Access-Control-Allow-Origin"], "https://ops.starlist.jp");
+    assertEquals(
+      headers["Access-Control-Allow-Origin"],
+      "https://ops.starlist.jp",
+    );
 
     const foreignReq = new Request("https://api.starlist.jp/health", {
       headers: { Origin: "https://evil.com" },
     });
     const fallback = buildCorsHeaders(foreignReq);
-    assertEquals(fallback["Access-Control-Allow-Origin"], "https://app.starlist.jp");
+    assertEquals(
+      fallback["Access-Control-Allow-Origin"],
+      "https://app.starlist.jp",
+    );
   } finally {
     if (previous === undefined) {
       Deno.env.delete("OPS_ALLOWED_ORIGINS");

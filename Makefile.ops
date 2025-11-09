@@ -1,0 +1,20 @@
+.PHONY: weekly proof ops-health lint-docs audit-bundle
+
+weekly:
+	gh workflow run weekly-routine.yml
+
+proof:
+	scripts/ops/collect-weekly-proof.sh
+
+ops-health:
+	node scripts/ops/update-ops-health.js && git add docs/overview/STARLIST_OVERVIEW.md && git commit -m "docs(overview): ops health auto" && git push
+
+lint-docs:
+	node scripts/docs/update-mlc.js && npm run lint:md:local
+
+audit-bundle:
+	ts=$$(date +%Y%m%d-%H%M%S); \
+	mkdir -p out/audit && \
+	zip -r out/audit/weekly-proof-$${ts}.zip out/logs/ docs/reports/DAY12_SOT_DIFFS.md docs/overview/STARLIST_OVERVIEW.md 2>/dev/null || true && \
+	ls -lh out/audit/weekly-proof-$${ts}.zip
+

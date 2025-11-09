@@ -1,0 +1,20 @@
+name: "Security vulnerability report"
+title: "[SEC] "
+labels: [security]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: "Description"
+      placeholder: "Steps to reproduce, PoC, severity"
+      required: true
+  - type: textarea
+    id: impact
+    attributes:
+      label: "Impact"
+      placeholder: "What happens if exploited?"
+  - type: textarea
+    id: mitigation
+    attributes:
+      label: "Mitigation"
+      placeholder: "Suggested mitigation or reference"

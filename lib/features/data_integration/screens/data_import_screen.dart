@@ -1384,7 +1384,7 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
                     ),
                     const SizedBox(height: 8),
                     DropdownButtonFormField<String>(
-                      value: categories.contains(selectedCategory)
+                      initialValue: categories.contains(selectedCategory)
                           ? selectedCategory
                           : null,
                       items: categories
@@ -1418,7 +1418,7 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
                     ),
                     const SizedBox(height: 8),
                     DropdownButtonFormField<String>(
-                      value: options.any(
+                      initialValue: options.any(
                               (option) => option['id'] == selectedServiceId)
                           ? selectedServiceId
                           : 'custom',

@@ -3,12 +3,13 @@
 // Spec-State:: 確定済み（自動閾値調整＋週次レポート可視化）
 // Last-Updated:: 2025-11-08
 
-import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { serve } from "std/http/server.ts";
+import { createClient } from "supabase-js";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
 };
 
 interface SummaryQuery {
@@ -64,7 +65,9 @@ function isoWeekJST(date: Date = jstNow()): string {
   const dayNum = d.getUTCDay() || 7;
   d.setUTCDate(d.getUTCDate() + 4 - dayNum);
   const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-  const weekNum = Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+  const weekNum = Math.ceil(
+    (((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7,
+  );
   return `${d.getUTCFullYear()}-W${weekNum.toString().padStart(2, "0")}`;
 }
 
@@ -82,7 +85,9 @@ function getNextMondayJST(): string {
   const jst = jstNow();
   const dayOfWeek = jst.getUTCDay();
   const daysUntilMonday = dayOfWeek === 0 ? 1 : 8 - dayOfWeek;
-  const nextMonday = new Date(jst.getTime() + daysUntilMonday * 24 * 60 * 60 * 1000);
+  const nextMonday = new Date(
+    jst.getTime() + daysUntilMonday * 24 * 60 * 60 * 1000,
+  );
   return formatJSTDate(nextMonday);
 }
 
@@ -90,7 +95,7 @@ function getNextMondayJST(): string {
 async function fetchStats(
   supabaseUrl: string,
   anonKey: string,
-  period: string = "14d"
+  _period: string = "14d",
 ): Promise<NotificationStats[]> {
   const supabase = createClient(supabaseUrl, anonKey);
 
@@ -122,7 +127,8 @@ function calculateThresholds(stats: NotificationStats[]): ThresholdStats {
   const notifications = stats.map((s) => s.notification_count);
   const mean = notifications.reduce((a, b) => a + b, 0) / notifications.length;
   const variance =
-    notifications.reduce((sum, n) => sum + Math.pow(n - mean, 2), 0) / notifications.length;
+    notifications.reduce((sum, n) => sum + Math.pow(n - mean, 2), 0) /
+    notifications.length;
   const stdDev = Math.sqrt(variance);
 
   const newThreshold = mean + 2 * stdDev;
@@ -142,13 +148,13 @@ function generateWeeklySummary(stats: NotificationStats[]): WeeklySummary {
   const now = new Date();
   const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
   const currentWeekStats = stats.filter(
-    (s) => new Date(s.day) >= sevenDaysAgo && new Date(s.day) <= now
+    (s) => new Date(s.day) >= sevenDaysAgo && new Date(s.day) <= now,
   );
 
   // Previous week (7-14 days ago)
   const fourteenDaysAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
   const previousWeekStats = stats.filter(
-    (s) => new Date(s.day) >= fourteenDaysAgo && new Date(s.day) < sevenDaysAgo
+    (s) => new Date(s.day) >= fourteenDaysAgo && new Date(s.day) < sevenDaysAgo,
   );
 
   // Count by level for current week
@@ -174,32 +180,39 @@ function generateWeeklySummary(stats: NotificationStats[]): WeeklySummary {
     .reduce((sum, s) => sum + s.notification_count, 0);
 
   // Calculate percentage changes
-  const normalChange =
-    previousNormal > 0
-      ? `${((currentNormal - previousNormal) / previousNormal * 100).toFixed(1)}%`
-      : currentNormal > 0
-      ? "+100%"
-      : "±0";
-  const warningChange =
-    previousWarning > 0
-      ? `${((currentWarning - previousWarning) / previousWarning * 100).toFixed(1)}%`
-      : currentWarning > 0
-      ? "+100%"
-      : "±0";
-  const criticalChange =
-    previousCritical > 0
-      ? `${((currentCritical - previousCritical) / previousCritical * 100).toFixed(1)}%`
-      : currentCritical > 0
-      ? "+100%"
-      : "±0";
+  const normalChange = previousNormal > 0
+    ? `${((currentNormal - previousNormal) / previousNormal * 100).toFixed(1)}%`
+    : currentNormal > 0
+    ? "+100%"
+    : "±0";
+  const warningChange = previousWarning > 0
+    ? `${
+      ((currentWarning - previousWarning) / previousWarning * 100).toFixed(1)
+    }%`
+    : currentWarning > 0
+    ? "+100%"
+    : "±0";
+  const criticalChange = previousCritical > 0
+    ? `${
+      ((currentCritical - previousCritical) / previousCritical * 100).toFixed(1)
+    }%`
+    : currentCritical > 0
+    ? "+100%"
+    : "±0";
 
   return {
     normal: currentNormal,
     warning: currentWarning,
     critical: currentCritical,
-    normalChange: normalChange.startsWith("-") ? normalChange : `+${normalChange}`,
-    warningChange: warningChange.startsWith("-") ? warningChange : `+${warningChange}`,
-    criticalChange: criticalChange.startsWith("-") ? criticalChange : `+${criticalChange}`,
+    normalChange: normalChange.startsWith("-")
+      ? normalChange
+      : `+${normalChange}`,
+    warningChange: warningChange.startsWith("-")
+      ? warningChange
+      : `+${warningChange}`,
+    criticalChange: criticalChange.startsWith("-")
+      ? criticalChange
+      : `+${criticalChange}`,
   };
 }
 
@@ -208,11 +221,17 @@ function generateSlackMessage(
   reportWeek: string,
   thresholds: ThresholdStats,
   weeklySummary: WeeklySummary,
-  nextDate: string
+  nextDate: string,
 ): string {
   const { meanNotifications, stdDev, newThreshold } = thresholds;
-  const { normal, warning, critical, normalChange, warningChange, criticalChange } =
-    weeklySummary;
+  const {
+    normal,
+    warning,
+    critical,
+    normalChange,
+    warningChange,
+    criticalChange,
+  } = weeklySummary;
 
   // Generate comment based on trends
   let comment = "通知数は安定傾向。";
@@ -225,15 +244,33 @@ function generateSlackMessage(
   }
 
   // Calculate trend icons (↑↓→)
-  const normalIcon = normalChange.startsWith("+") ? "↑" : normalChange.startsWith("-") ? "↓" : "→";
-  const warningIcon = warningChange.startsWith("+") ? "↑" : warningChange.startsWith("-") ? "↓" : "→";
-  const criticalIcon = criticalChange.startsWith("+") ? "↑" : criticalChange.startsWith("-") ? "↓" : "→";
+  const normalIcon = normalChange.startsWith("+")
+    ? "↑"
+    : normalChange.startsWith("-")
+    ? "↓"
+    : "→";
+  const warningIcon = warningChange.startsWith("+")
+    ? "↑"
+    : warningChange.startsWith("-")
+    ? "↓"
+    : "→";
+  const criticalIcon = criticalChange.startsWith("+")
+    ? "↑"
+    : criticalChange.startsWith("-")
+    ? "↓"
+    : "→";
 
   return `📊 OPS Summary Report（${reportWeek}）
 ────────────────────────────
-✅ 正常通知：${normal}件（前週比 ${normalIcon} ${normalChange.replace(/^[+-]/, "")}）
-⚠ 警告通知：${warning}件（前週比 ${warningIcon} ${warningChange.replace(/^[+-]/, "")}）
-🔥 重大通知：${critical}件（前週比 ${criticalIcon} ${criticalChange.replace(/^[+-]/, "")}）
+✅ 正常通知：${normal}件（前週比 ${normalIcon} ${
+    normalChange.replace(/^[+-]/, "")
+  }）
+⚠ 警告通知：${warning}件（前週比 ${warningIcon} ${
+    warningChange.replace(/^[+-]/, "")
+  }）
+🔥 重大通知：${critical}件（前週比 ${criticalIcon} ${
+    criticalChange.replace(/^[+-]/, "")
+  }）
 
 📈 通知平均：${meanNotifications.toFixed(1)}件 / σ=${stdDev.toFixed(1)}
 🔧 新閾値：${newThreshold.toFixed(1)}件（μ+2σ）
@@ -248,7 +285,7 @@ function generateSlackMessage(
 async function sendToSlack(
   webhookUrl: string,
   message: string,
-  maxRetries: number = 3
+  maxRetries: number = 3,
 ): Promise<{ success: boolean; status: number; body: string }> {
   const delays = [250, 1000, 3000]; // ms
 
@@ -312,7 +349,8 @@ serve(async (req: Request): Promise<Response> => {
       : await req.json().catch(() => ({})) as SummaryQuery;
 
     const period = query.period || "14d";
-    const dryRun = query.dryRun === true || query.dryRun === "true" || query.dryRun === "1";
+    const dryRun = query.dryRun === true || query.dryRun === "true" ||
+      query.dryRun === "1";
 
     // Fetch statistics
     const stats = await fetchStats(supabaseUrl, supabaseAnonKey, period);
@@ -328,7 +366,12 @@ serve(async (req: Request): Promise<Response> => {
     const nextDate = getNextMondayJST();
 
     // Generate Slack message
-    const message = generateSlackMessage(reportWeek, thresholds, weeklySummary, nextDate);
+    const message = generateSlackMessage(
+      reportWeek,
+      thresholds,
+      weeklySummary,
+      nextDate,
+    );
 
     // DryRun mode: return preview only
     if (dryRun) {
@@ -356,7 +399,7 @@ serve(async (req: Request): Promise<Response> => {
         {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
           status: 200,
-        }
+        },
       );
     }
 
@@ -370,7 +413,7 @@ serve(async (req: Request): Promise<Response> => {
         {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
           status: 400,
-        }
+        },
       );
     }
 
@@ -408,7 +451,7 @@ serve(async (req: Request): Promise<Response> => {
         {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
           status: 200,
-        }
+        },
       );
     }
 
@@ -438,7 +481,7 @@ serve(async (req: Request): Promise<Response> => {
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200, // HTTP 200 but sent: false
-      }
+      },
     );
   } catch (error) {
     console.error("[ops-slack-summary] Error:", error);
@@ -449,11 +492,14 @@ serve(async (req: Request): Promise<Response> => {
       }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: error instanceof Error && error.message.includes("missing env") ? 500 : 502,
-      }
+        status: error instanceof Error && error.message.includes("missing env")
+          ? 500
+          : 502,
+      },
     );
   }
 });
+<<<<<<< HEAD
 
 
 
@@ -913,3 +959,5 @@ serve(async (req: Request): Promise<Response> => {
 });
 
 
+=======
+>>>>>>> 8abb626 (feat(ops): add ultra pack enhancements — Makefile, audit bundle, risk register, RACI matrix)

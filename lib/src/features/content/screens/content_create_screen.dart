@@ -211,7 +211,7 @@ class _ContentCreateScreenState extends ConsumerState<ContentCreateScreen> {
 
                     // コンテンツタイプ
                     DropdownButtonFormField<ContentTypeModel>(
-                      value: _selectedType,
+                      initialValue: _selectedType,
                       decoration: const InputDecoration(
                         labelText: 'コンテンツタイプ *',
                         border: OutlineInputBorder(),

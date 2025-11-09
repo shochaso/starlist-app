@@ -10,6 +10,7 @@
       "pattern": "^https://zjwvmoxpacbpwawlwbrd.functions.supabase.co"
     },
     {
+<<<<<<< HEAD
       "pattern": "https://admin\\.google\\.com"
     },
     {
@@ -20,11 +21,30 @@
     },
     {
       "pattern": "cdn\\.jsdelivr\\.net.*%22"
+=======
+      "pattern": "admin\\.google\\.com"
+    },
+    {
+      "pattern": "github\\.com/orgs/.+"
+    },
+    {
+      "pattern": "^mailto:"
+    },
+    {
+      "pattern": "localhost"
+    },
+    {
+      "pattern": "#"
+>>>>>>> 8abb626 (feat(ops): add ultra pack enhancements — Makefile, audit bundle, risk register, RACI matrix)
     }
   ],
   "timeout": "20s",
   "retryOn429": true,
   "retryCount": 3,
   "fallbackRetryDelay": "5s",
-  "aliveStatusCodes": [200, 206, 429]
+  "aliveStatusCodes": [
+    200,
+    206,
+    429
+  ]
 }

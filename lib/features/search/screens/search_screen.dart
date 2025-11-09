@@ -1659,8 +1659,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
                             fontSize: 12,
                           ),
                         ),
-                        thumbColor: MaterialStateProperty.resolveWith<Color?>(
-                          (states) => states.contains(MaterialState.selected)
+                        thumbColor: WidgetStateProperty.resolveWith<Color?>(
+                          (states) => states.contains(WidgetState.selected)
                               ? const Color(0xFF4ECDC4)
                               : null,
                         ),

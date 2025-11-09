@@ -351,8 +351,8 @@ class _NotificationSettingsScreenState extends ConsumerState<NotificationSetting
           Switch(
             value: value,
             onChanged: onChanged,
-            thumbColor: MaterialStateProperty.resolveWith<Color?>(
-              (states) => states.contains(MaterialState.selected)
+            thumbColor: WidgetStateProperty.resolveWith<Color?>(
+              (states) => states.contains(WidgetState.selected)
                   ? const Color(0xFF4ECDC4)
                   : null,
             ),

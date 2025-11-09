@@ -13,17 +13,17 @@ export interface JsonResponse<T = unknown> {
 export function jsonResponse<T>(
   data: T,
   status: number = 200,
-  headers: Record<string, string> = {}
+  headers: Record<string, string> = {},
 ): Response {
   return new Response(
     JSON.stringify({ ok: true, data }),
     {
       status,
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
         ...headers,
       },
-    }
+    },
   );
 }
 
@@ -33,19 +33,20 @@ export function jsonResponse<T>(
 export function errorResponse(
   error: string,
   status: number = 500,
-  headers: Record<string, string> = {}
+  headers: Record<string, string> = {},
 ): Response {
   return new Response(
     JSON.stringify({ ok: false, error }),
     {
       status,
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
         ...headers,
       },
-    }
+    },
   );
 }
+<<<<<<< HEAD
 
 // Usage: import { jsonResponse, errorResponse } from "../_shared/response.ts";
 
@@ -95,3 +96,5 @@ export function errorResponse(
   );
 }
 
+=======
+>>>>>>> 8abb626 (feat(ops): add ultra pack enhancements — Makefile, audit bundle, risk register, RACI matrix)

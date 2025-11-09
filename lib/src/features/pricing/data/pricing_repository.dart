@@ -18,7 +18,7 @@ final pricingConfigProvider = FutureProvider<Map<String, dynamic>>((ref) async {
     }
 
     return Map<String, dynamic>.from(res as Map);
-  } catch (e, st) {
+  } catch (e) {
     // エラー時はフォールバックを返す
     // TODO: ログ基盤（e.g. logger / crashlytics）に送る想定
     // ignore: avoid_print

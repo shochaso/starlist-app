@@ -1,13 +1,26 @@
-name: extended-security
+name: Extended Security
+
+env:
+  TRIVY_DB_REPOSITORY: ghcr.io/aquasecurity/trivy-db:2
+  TRIVY_JAVA_DB_REPOSITORY: ghcr.io/aquasecurity/trivy-java-db:1
 
 on:
   workflow_dispatch:
+<<<<<<< HEAD
   pull_request:
   push:
     branches: [ main, develop ]
   schedule:
     # 毎週月曜09:00 JST (00:00 UTC)
     - cron: '0 0 * * 1'
+=======
+  schedule:
+    - cron: '0 20 * * 1'
+  pull_request:
+    paths-ignore:
+      - 'docs/**'
+      - '*.md'
+>>>>>>> 8abb626 (feat(ops): add ultra pack enhancements — Makefile, audit bundle, risk register, RACI matrix)
 
 permissions:
   contents: read
@@ -15,10 +28,12 @@ permissions:
   security-events: write
 
 jobs:
-  security-scan:
+  sbom:
+    name: Generate SBOM
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+<<<<<<< HEAD
         with:
           fetch-depth: 0  # Full history for gitleaks
 
@@ -82,12 +97,15 @@ jobs:
           sarif_file: trivy-results.sarif
         continue-on-error: true
 
+=======
+>>>>>>> 8abb626 (feat(ops): add ultra pack enhancements — Makefile, audit bundle, risk register, RACI matrix)
       - name: Generate CycloneDX SBOM
         run: |
-          # Install cyclonedx-npm if not available
-          if ! command -v cyclonedx-npm >/dev/null 2>&1; then
-            npm install -g @cyclonedx/cyclonedx-npm || echo "cyclonedx-npm install failed, using pnpm audit fallback"
+          set -euo pipefail
+          if ! command -v syft >/dev/null 2>&1; then
+            curl -fsSL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
           fi
+<<<<<<< HEAD
           
           # Generate CycloneDX SBOM
           if command -v cyclonedx-npm >/dev/null 2>&1; then
@@ -100,18 +118,19 @@ jobs:
         continue-on-error: true
 
       - name: Upload SBOM
+=======
+          syft packages dir:. -o cyclonedx-json=sbom-cyclonedx.json
+          syft packages dir:. -o spdx-json=sbom.spdx.json
+      - name: Upload SBOM artifact
+>>>>>>> 8abb626 (feat(ops): add ultra pack enhancements — Makefile, audit bundle, risk register, RACI matrix)
         uses: actions/upload-artifact@v4
-        if: always()
         with:
           name: sbom
-          path: |
-            sbom-cyclonedx.json
-            sbom-pnpm.json
-          retention-days: 90
-        continue-on-error: true
+          path: sbom-cyclonedx.json
 
-      - name: RLS Audit (dry-run)
+      - name: Upload security artifacts
         if: always()
+<<<<<<< HEAD
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
@@ -152,10 +171,171 @@ jobs:
         continue-on-error: true
 
       - name: Upload RLS Audit Report
+=======
+>>>>>>> 8abb626 (feat(ops): add ultra pack enhancements — Makefile, audit bundle, risk register, RACI matrix)
         uses: actions/upload-artifact@v4
-        if: always() && hashFiles('docs/reports/RLS_AUDIT_REPORT.md') != ''
         with:
-          name: rls-audit-report
-          path: docs/reports/RLS_AUDIT_REPORT.md
-          retention-days: 90
-        continue-on-error: true
+          name: sec-${{ github.job }}
+          path: |
+            logs/**
+            docs/reports/OPS-SUMMARY-LOGS.md
+            sbom.spdx.json
+            semgrep.sarif
+          if-no-files-found: ignore
+
+  trivy:
+    name: Trivy filesystem scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Trivy filesystem scan
+        uses: aquasecurity/trivy-action@v0.24.0
+        with:
+          scan-type: 'fs'
+          format: 'table'
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+          ignore-unfixed: true
+          exit-code: '1'
+      - name: Upload Trivy report
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-report
+          path: trivy-results.json
+
+      - name: Upload security artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sec-${{ github.job }}
+          path: |
+            logs/**
+            docs/reports/OPS-SUMMARY-LOGS.md
+            sbom.spdx.json
+            semgrep.sarif
+          if-no-files-found: ignore
+
+  semgrep:
+    name: Semgrep scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Semgrep
+        run: pip install --upgrade pip semgrep
+      - name: Run Semgrep
+        run: semgrep --config ./.semgrep.yml --json --output semgrep-report.json --sarif --sarif-output semgrep.sarif
+      - name: Upload Semgrep report
+        uses: actions/upload-artifact@v4
+        with:
+          name: semgrep-report
+          path: semgrep-report.json
+
+      - name: Upload security artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sec-${{ github.job }}
+          path: |
+            logs/**
+            docs/reports/OPS-SUMMARY-LOGS.md
+            sbom.spdx.json
+            semgrep.sarif
+          if-no-files-found: ignore
+
+      - uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: semgrep.sarif
+
+  gitleaks:
+    name: Gitleaks scan
+    runs-on: ubuntu-latest
+    # NOTE: We allow gitleaks to finish with findings (`|| true` above) and review results from SARIF artifacts / Security tab.
+    strategy:
+      fail-fast: false
+      matrix:
+        scope: [full, fast]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Gitleaks
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/gitleaks/gitleaks/master/scripts/install.sh | bash -s -- -b /usr/local/bin
+      - name: Run Gitleaks
+        run: |
+          if [ "${{ matrix.scope }}" = "fast" ]; then
+            gitleaks detect --no-git --report-format sarif --report-path gitleaks-${{ matrix.scope }}.sarif || true
+          else
+            gitleaks detect --report-format sarif --report-path gitleaks-${{ matrix.scope }}.sarif || true
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_ENABLE_SUMMARY: true
+      - name: Upload Gitleaks SARIF
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: gitleaks-${{ matrix.scope }}.sarif
+      - name: Upload security artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sec-gitleaks-${{ matrix.scope }}
+          path: gitleaks-${{ matrix.scope }}.sarif
+          if-no-files-found: ignore
+
+  supabase-env-check:
+    name: Supabase env verification
+    runs-on: ubuntu-latest
+    if: >-
+      ${{ secrets.SUPABASE_URL != '' &&
+        secrets.SUPABASE_ANON_KEY != '' &&
+        secrets.OPS_SERVICE_SECRET != '' }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify Supabase env
+        run: scripts/verify_supabase_env.sh
+
+  rls-audit:
+    name: RLS audit
+    runs-on: ubuntu-latest
+    if: ${{ secrets.DATABASE_URL != '' }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run RLS audit
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: scripts/rls/run_rls_audit.sh
+      - name: Upload RLS audit artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sec-rls-audit
+          path: scripts/rls/run_rls_audit.sh
+
+  deno_tests:
+    name: Deno fmt/lint/test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Deno
+        uses: denoland/setup-deno@v1
+        with:
+          deno-version: v1.47.0
+      - name: Deno fmt
+        run: deno fmt --check
+      - name: Deno lint
+        run: deno lint
+      - name: Deno test
+        run: deno test -A
+
+      - name: Upload security artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sec-${{ github.job }}
+          path: |
+            logs/**
+            docs/reports/OPS-SUMMARY-LOGS.md
+            sbom.spdx.json
+            semgrep.sarif
+          if-no-files-found: ignore

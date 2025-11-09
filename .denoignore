@@ -1,0 +1,3 @@
+docs/**
+**/*.md
+scripts/check_mail_dns.mjs

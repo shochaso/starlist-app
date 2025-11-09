@@ -147,7 +147,7 @@ class _NetflixAddManualScreenState extends ConsumerState<NetflixAddManualScreen>
         
         // コンテンツタイプ
         DropdownButtonFormField<NetflixContentType>(
-          value: _contentType,
+          initialValue: _contentType,
           style: const TextStyle(color: Colors.white),
           decoration: _inputDecoration('コンテンツタイプ', Icons.category),
           dropdownColor: const Color(0xFF1A1A1A),
@@ -315,7 +315,7 @@ class _NetflixAddManualScreenState extends ConsumerState<NetflixAddManualScreen>
       children: [
         // 視聴状態
         DropdownButtonFormField<NetflixWatchStatus>(
-          value: _watchStatus,
+          initialValue: _watchStatus,
           style: const TextStyle(color: Colors.white),
           decoration: _inputDecoration('視聴状態', Icons.play_circle),
           dropdownColor: const Color(0xFF1A1A1A),

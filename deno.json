@@ -1,0 +1,8 @@
+{
+  "importMap": "import_map.json",
+  "tasks": {
+    "fmt": "deno fmt --check supabase/functions scripts tests",
+    "lint": "deno lint supabase/functions scripts tests",
+    "test": "deno test -A supabase/functions/_tests"
+  }
+}

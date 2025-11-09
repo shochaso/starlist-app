@@ -3,12 +3,13 @@
 // Spec-State:: 確定済み（Slack日次通知）
 // Last-Updated:: 2025-11-08
 
-import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { serve } from "std/http/server.ts";
+import { createClient } from "supabase-js";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
 };
 
 interface SlackNotifyQuery {
@@ -60,7 +61,7 @@ function formatJST(date: Date = jstNow()): string {
 async function fetchMetrics24h(
   supabaseUrl: string,
   anonKey: string,
-  range: string = "24h"
+  range: string = "24h",
 ): Promise<Metrics24h> {
   const supabase = createClient(supabaseUrl, anonKey);
 
@@ -70,7 +71,16 @@ async function fetchMetrics24h(
   if (range === "yesterday") {
     // Yesterday 00:00 JST to 23:59 JST
     const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-    since = new Date(Date.UTC(yesterday.getUTCFullYear(), yesterday.getUTCMonth(), yesterday.getUTCDate(), 0, 0, 0));
+    since = new Date(
+      Date.UTC(
+        yesterday.getUTCFullYear(),
+        yesterday.getUTCMonth(),
+        yesterday.getUTCDate(),
+        0,
+        0,
+        0,
+      ),
+    );
     since.setTime(since.getTime() - 9 * 60 * 60 * 1000); // Convert to UTC
   } else {
     // Last 24 hours
@@ -114,22 +124,25 @@ async function fetchMetrics24h(
 
     totalRequests += total;
     totalErrors += Math.round(total * failureRate);
-    
+
     if (p95 != null) {
       p95Latencies.push(p95);
     }
 
     if (endpoint && failureRate > 0) {
-      errorByEndpoint[endpoint] = (errorByEndpoint[endpoint] || 0) + Math.round(total * failureRate);
+      errorByEndpoint[endpoint] = (errorByEndpoint[endpoint] || 0) +
+        Math.round(total * failureRate);
     }
   }
 
-  const successRate = totalRequests > 0 
-    ? ((totalRequests - totalErrors) / totalRequests) * 100 
+  const successRate = totalRequests > 0
+    ? ((totalRequests - totalErrors) / totalRequests) * 100
     : 100.0;
-  
+
   const meanP95 = p95Latencies.length > 0
-    ? Math.round(p95Latencies.reduce((sum, v) => sum + v, 0) / p95Latencies.length)
+    ? Math.round(
+      p95Latencies.reduce((sum, v) => sum + v, 0) / p95Latencies.length,
+    )
     : null;
 
   // Find top error endpoint
@@ -148,7 +161,9 @@ async function fetchMetrics24h(
     p95Ms: meanP95,
     errorCount: totalErrors,
     topErrorEndpoint,
-    topErrorRate: topErrorRate ? Math.round(topErrorRate * 100) / 100 : undefined,
+    topErrorRate: topErrorRate
+      ? Math.round(topErrorRate * 100) / 100
+      : undefined,
   };
 }
 
@@ -162,7 +177,10 @@ function determineLevel(metrics: Metrics24h): AlertLevel {
   }
 
   // Warning: 98.0% ≤ success_rate < 99.5% OR 1000 ≤ p95_ms < 1500
-  if ((successRate >= 98.0 && successRate < 99.5) || (p95Ms != null && p95Ms >= 1000 && p95Ms < 1500)) {
+  if (
+    (successRate >= 98.0 && successRate < 99.5) ||
+    (p95Ms != null && p95Ms >= 1000 && p95Ms < 1500)
+  ) {
     return "WARNING";
   }
 
@@ -173,9 +191,10 @@ function determineLevel(metrics: Metrics24h): AlertLevel {
 function buildSlackMessage(
   level: AlertLevel,
   metrics: Metrics24h,
-  jstTime: string
+  jstTime: string,
 ): SlackMessage {
-  const { successRate, p95Ms, errorCount, topErrorEndpoint, topErrorRate } = metrics;
+  const { successRate, p95Ms, errorCount, topErrorEndpoint, topErrorRate } =
+    metrics;
 
   // Emoji based on level
   const emoji = level === "CRITICAL" ? "🔥" : level === "WARNING" ? "⚠️" : "✅";
@@ -217,7 +236,7 @@ function buildSlackMessage(
 async function sendToSlack(
   webhookUrl: string,
   message: SlackMessage,
-  maxRetries: number = 3
+  maxRetries: number = 3,
 ): Promise<{ success: boolean; status: number; body: string }> {
   const delays = [250, 1000, 3000]; // ms
 
@@ -272,7 +291,7 @@ async function saveAuditLog(
   message: SlackMessage,
   delivered: boolean,
   responseStatus: number,
-  responseBody: string
+  responseBody: string,
 ): Promise<void> {
   try {
     const supabase = createClient(supabaseUrl, anonKey);
@@ -311,7 +330,8 @@ serve(async (req: Request): Promise<Response> => {
       : await req.json().catch(() => ({})) as SlackNotifyQuery;
 
     const range = query.range || "24h";
-    const dryRun = query.dryRun === true || query.dryRun === "true" || query.dryRun === "1";
+    const dryRun = query.dryRun === true || query.dryRun === "true" ||
+      query.dryRun === "1";
 
     // Fetch metrics
     const metrics = await fetchMetrics24h(supabaseUrl, supabaseAnonKey, range);
@@ -342,7 +362,7 @@ serve(async (req: Request): Promise<Response> => {
         {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
           status: 200,
-        }
+        },
       );
     }
 
@@ -356,7 +376,7 @@ serve(async (req: Request): Promise<Response> => {
         {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
           status: 400,
-        }
+        },
       );
     }
 
@@ -372,7 +392,7 @@ serve(async (req: Request): Promise<Response> => {
       message,
       sendResult.success,
       sendResult.status,
-      sendResult.body
+      sendResult.body,
     );
 
     // Return response
@@ -391,7 +411,7 @@ serve(async (req: Request): Promise<Response> => {
         {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
           status: 200,
-        }
+        },
       );
     }
 
@@ -411,7 +431,7 @@ serve(async (req: Request): Promise<Response> => {
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200, // HTTP 200 but delivered: false
-      }
+      },
     );
   } catch (error) {
     console.error("[ops-slack-notify] Error:", error);
@@ -422,11 +442,14 @@ serve(async (req: Request): Promise<Response> => {
       }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: error instanceof Error && error.message.includes("missing env") ? 500 : 502,
-      }
+        status: error instanceof Error && error.message.includes("missing env")
+          ? 500
+          : 502,
+      },
     );
   }
 });
+<<<<<<< HEAD
 
 
 // Source-of-Truth:: supabase/functions/ops-slack-notify/index.ts
@@ -859,3 +882,5 @@ serve(async (req: Request): Promise<Response> => {
 });
 
 
+=======
+>>>>>>> 8abb626 (feat(ops): add ultra pack enhancements — Makefile, audit bundle, risk register, RACI matrix)
