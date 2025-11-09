@@ -252,3 +252,4 @@ index 20852a9..56eb34c 100644
 * merged: https://github.com/shochaso/starlist-app/pull/30  (2025-11-09 14:14:52 JST)
 * merged: https://github.com/shochaso/starlist-app/pull/31  (2025-11-09 14:14:52 JST)
 * merged: https://github.com/shochaso/starlist-app/pull/32  (2025-11-09 14:14:53 JST)
+* merged: https://github.com/shochaso/starlist-app/pull/33  (2025-11-09 14:36:48 JST)
