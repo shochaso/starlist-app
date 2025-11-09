@@ -47,7 +47,5 @@ echo ""
 
 flutter run -d chrome \
   --web-port 8080 \
-  --web-hostname localhost \
-  --web-renderer html \
-  --user-data-dir="$(pwd)/.chrome-dev-profile"
+  --web-hostname localhost
 
