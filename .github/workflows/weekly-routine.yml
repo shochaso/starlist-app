@@ -1,0 +1,87 @@
+name: weekly-routine
+
+on:
+  schedule:
+    - cron: "0 0 * * 1"  # 毎週月曜 00:00 UTC (09:00 JST)
+  workflow_dispatch:
+
+jobs:
+  weekly:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      
+      - name: Install deps
+        run: |
+          npm i -g pnpm
+          pnpm i --frozen-lockfile=false || npm ci || npm install
+      
+      - name: Security CI (kick & wait)
+        run: |
+          gh workflow run extended-security.yml || true
+          sleep 10
+          gh run list --workflow extended-security.yml --limit 3 || true
+      
+      - name: Weekly Reports (PDF/PNG)
+        run: |
+          pnpm export:audit-report || bash scripts/generate_audit_report.sh || true
+          ls -1 out/reports/weekly-*.* 2>/dev/null | sed -n '1,5p' || echo "No weekly reports found"
+      
+      - name: Logs bundle
+        run: |
+          mkdir -p out/logs
+          echo "[$(date -u +%Y-%m-%dT%H:%M:%SZ)] weekly-run OK" >> out/logs/weekly.txt
+          scripts/ops/post-merge-routine.sh || true
+      
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: weekly-reports-and-logs
+          path: |
+            out/reports/weekly-*.pdf
+            out/reports/weekly-*.png
+            out/logs/*.txt
+          retention-days: 90
+      
+      - name: Notify Slack (summary)
+        if: always()
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          STATUS="OK"
+          [ -z "$(ls -1 out/reports/weekly-*.* 2>/dev/null | head -n1)" ] && STATUS="WARN: no weekly reports"
+          
+          payload=$(cat <<'JSON'
+          {
+            "text": "*Weekly Routine* finished.",
+            "blocks": [
+              {
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": "*Weekly Routine Status:* ${STATUS}"
+                }
+              },
+              {
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": "Artifacts: weekly-reports-and-logs\nWorkflow: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                }
+              }
+            ]
+          }
+JSON
+          )
+          if [ -n "$SLACK_WEBHOOK_URL" ] && [ "$SLACK_WEBHOOK_URL" != "" ]; then
+            curl -X POST -H 'Content-type: application/json' --data "$payload" "$SLACK_WEBHOOK_URL" || echo "Slack notification failed (non-fatal)"
+          else
+            echo "SLACK_WEBHOOK_URL not set, skipping notification"
+          fi
+

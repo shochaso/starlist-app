@@ -1,0 +1,85 @@
+name: allowlist-sweep
+
+on:
+  schedule:
+    - cron: "0 0 * * 1"  # 毎週月曜 00:00 UTC (09:00 JST)
+  workflow_dispatch:
+
+jobs:
+  sweep:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Sweep expired allowlist entries
+        run: |
+          node - <<'JS'
+          const fs = require('fs');
+          
+          if (!fs.existsSync('.gitleaks.toml')) {
+            console.log('NOOP: .gitleaks.toml not found');
+            process.exit(0);
+          }
+          
+          let s = fs.readFileSync('.gitleaks.toml', 'utf8');
+          const before = s;
+          
+          // "remove by: YYYY-MM-DD" を期限超過で削る簡易版
+          const today = new Date().toISOString().slice(0, 10);
+          
+          // 期限マーカーを含む行を検出・削除
+          const lines = s.split('\n');
+          const updatedLines = lines.map(line => {
+            // "remove by: YYYY-MM-DD" パターンを検出
+            const match = line.match(/#\s*remove\s+by:\s*(\d{4}-\d{2}-\d{2})/i);
+            if (match) {
+              const deadline = match[1];
+              if (deadline < today) {
+                console.log(`⚠️  Expired entry found: ${deadline} (today: ${today})`);
+                return null; // この行を削除
+              }
+            }
+            return line;
+          }).filter(line => line !== null);
+          
+          s = updatedLines.join('\n');
+          
+          if (s !== before) {
+            fs.writeFileSync('.gitleaks.toml', s);
+            console.log('UPDATED: Expired entries removed');
+            process.exit(1); // 変更があったことを示す
+          } else {
+            console.log('NOOP: No expired entries found');
+            process.exit(0);
+          }
+JS
+        id: sweep
+        
+      - name: Create PR if changed
+        if: failure() && steps.sweep.outcome == 'failure'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          BRANCH="chore/allowlist-sweep-$(date +%Y%m%d)"
+          git checkout -b "$BRANCH"
+          git add .gitleaks.toml
+          git commit -m "chore(security): allowlist sweep (auto)" || exit 0
+          git push -u origin HEAD
+          
+          gh pr create --fill \
+            --title "chore(security): allowlist sweep (auto)" \
+            --body "期限到来のallowlistエントリを自動削除しました。
+
+関連Issue: #38" || echo "PR creation failed (may already exist)"
+      
+      - name: Upload sweep results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allowlist-sweep-results
+          path: .gitleaks.toml
+          if-no-files-found: ignore
+

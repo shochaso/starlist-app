@@ -34,4 +34,47 @@ repos:
         language: system
         files: \.dart$
         pass_filenames: false
+<<<<<<< HEAD
 
+=======
+        description: "Analyze Dart code for errors and warnings"
+
+  - repo: https://github.com/denoland/deno_install
+    rev: v1
+    hooks:
+      - id: deno_fmt
+        name: deno fmt
+
+  - repo: https://github.com/scop/pre-commit-shfmt
+    rev: v3.7.0
+    hooks:
+      - id: shfmt
+
+  - repo: https://github.com/koalaman/shellcheck
+    rev: v0.10.0
+    hooks:
+      - id: shellcheck
+
+  - repo: https://github.com/returntocorp/semgrep
+    rev: v1.142.1
+    hooks:
+      - id: semgrep
+        args:
+          - --config
+          - ./.semgrep.yml
+          - --exclude
+          - node_modules
+          - --exclude
+          - vendor
+          - --exclude
+          - apps/flutter
+
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.18.4
+    hooks:
+      - id: gitleaks
+        args:
+          - detect
+          - --redact
+          - --no-git
+>>>>>>> 599d82c (feat(ops): finalize 10× pack — weekly automation, security hardening, SOT verification)
