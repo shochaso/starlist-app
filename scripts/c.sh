@@ -24,10 +24,23 @@ flutter clean
 flutter pub get
 echo "✅ Cache cleared and dependencies updated"
 
+# Chrome 実行ファイルのパスを設定（自動検出問題対応）
+export CHROME_EXECUTABLE="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+
+# 開発用Chromeプロファイルディレクトリを作成（既存プロファイルとの競合回避）
+mkdir -p .chrome-dev-profile
+
 # Run Flutter web on Chrome at port 8080 with hot reload (background)
 echo "🚀 Starting Flutter Web on Chrome (port 8080)..."
+echo "   Chrome executable: ${CHROME_EXECUTABLE}"
+echo "   User Data Dir: $(pwd)/.chrome-dev-profile"
 echo "📝 Flutter log: logs/flutter.log"
-flutter run -d chrome --web-port 8080 > logs/flutter.log 2>&1 &
+flutter run -d chrome \
+  --web-port 8080 \
+  --web-hostname localhost \
+  --web-renderer html \
+  --user-data-dir="$(pwd)/.chrome-dev-profile" \
+  > logs/flutter.log 2>&1 &
 FLUTTER_PID=$!
 
 # Wait for Flutter to start (with timeout)
