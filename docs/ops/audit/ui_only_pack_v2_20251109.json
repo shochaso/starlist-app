@@ -36,5 +36,12 @@
     "markdownlint_log": "docs/ops/audit/logs/markdownlint_202511091932.log",
     "linkcheck_log": "docs/ops/audit/logs/linkcheck_202511091933.log",
     "branch_protection_screenshot": "docs/ops/audit/branch_protection_ok.png"
+  },
+  "evidence": {
+    "screenshot": {
+      "path": "docs/ops/audit/branch_protection_ok.png",
+      "sha256_path": "docs/ops/audit/2025-11-09/sha_branch_protection_ok.txt",
+      "sha256": "0b1ddf2477524bbe1befb41ed85eb6d06f7c17a6d9ed2a428204aa72c88586ce"
+    }
   }
 }
