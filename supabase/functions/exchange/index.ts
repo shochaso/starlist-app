@@ -1,8 +1,9 @@
-import { createRemoteJWKSet, jwtVerify, SignJWT } from "https://deno.land/x/jose@v4.14.4/index.ts";
+import { createRemoteJWKSet, jwtVerify, SignJWT } from "jose";
 
 // CORS configuration via env, fallback to permissive defaults for local dev
 const allowOrigin = Deno.env.get("CORS_ALLOW_ORIGIN") ?? "*";
-const allowHeaders = Deno.env.get("CORS_ALLOW_HEADERS") ?? "authorization, content-type";
+const allowHeaders = Deno.env.get("CORS_ALLOW_HEADERS") ??
+  "authorization, content-type";
 const allowMethods = Deno.env.get("CORS_ALLOW_METHODS") ?? "POST, OPTIONS";
 
 const auth0Domain = Deno.env.get("AUTH0_DOMAIN");
@@ -11,7 +12,9 @@ const supabaseAudience = Deno.env.get("SUPABASE_JWT_AUD") ?? "authenticated";
 const auth0Audience = Deno.env.get("AUTH0_AUDIENCE") ?? undefined;
 
 if (!auth0Domain || !supabaseJwtSecret) {
-  console.warn("[exchange] Missing AUTH0_DOMAIN or SUPABASE_JWT_SECRET env vars");
+  console.warn(
+    "[exchange] Missing AUTH0_DOMAIN or SUPABASE_JWT_SECRET env vars",
+  );
 }
 
 function resolveAuth0Issuer(domain: string | null): URL | null {

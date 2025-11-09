@@ -3,13 +3,15 @@
 // Spec-State:: 確定済み
 // Last-Updated:: 2025-11-07
 
-import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { serve } from "std/http/server.ts";
+import {
+  buildCorsHeaders,
+  enforceOpsSecret,
+  HttpError,
+  jsonResponse,
+  requireUser,
+  safeLog,
+} from "./shared.ts";
 
 interface TelemetryPayload {
   app: string;
@@ -24,38 +26,45 @@ interface TelemetryPayload {
 serve(async (req) => {
   // CORS preflight
   if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
+    return new Response("ok", { headers: buildCorsHeaders(req) });
   }
 
   if (req.method !== "POST") {
-    return new Response(
-      JSON.stringify({ error: "Method Not Allowed" }),
-      { status: 405, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return jsonResponse({ error: "Method Not Allowed" }, 405, req);
   }
 
   try {
+    enforceOpsSecret(req);
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    
-    // Service role keyを使用してRLSをバイパス（Edge Functions用）
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    const { supabase } = await requireUser(
+      req,
+      supabaseUrl,
+      supabaseServiceKey,
+      { requireOpsClaim: true },
+    );
 
     const body = await req.json().catch(() => null) as TelemetryPayload | null;
 
     // バリデーション
-    if (!body || !body.app || !body.env || !body.event || typeof body.ok !== "boolean") {
-      return new Response(
-        JSON.stringify({ error: "Bad Request: app, env, event, ok are required" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    if (
+      !body || !body.app || !body.env || !body.event ||
+      typeof body.ok !== "boolean"
+    ) {
+      return jsonResponse(
+        { error: "Bad Request: app, env, event, ok are required" },
+        400,
+        req,
       );
     }
 
     // env値の検証
     if (!["dev", "stg", "prod"].includes(body.env)) {
-      return new Response(
-        JSON.stringify({ error: "Bad Request: env must be dev, stg, or prod" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      return jsonResponse(
+        { error: "Bad Request: env must be dev, stg, or prod" },
+        400,
+        req,
       );
     }
 
@@ -75,24 +84,20 @@ serve(async (req) => {
       });
 
     if (error) {
-      console.error("[telemetry] Insert error:", error);
-      return new Response(
-        JSON.stringify({ error: "Insert failed", details: error.message }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      safeLog("telemetry", "Insert error", error);
+      return jsonResponse(
+        { error: "Insert failed", details: error.message },
+        500,
+        req,
       );
     }
 
-    return new Response(
-      JSON.stringify({ ok: true }),
-      { status: 201, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return jsonResponse({ ok: true }, 201, req);
   } catch (error) {
-    console.error("[telemetry] Error:", error);
-    return new Response(
-      JSON.stringify({ error: String(error) }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    if (error instanceof HttpError) {
+      return jsonResponse({ error: error.message }, error.status, req);
+    }
+    safeLog("telemetry", "Error", error);
+    return jsonResponse({ error: "Internal server error" }, 500, req);
   }
 });
-
-

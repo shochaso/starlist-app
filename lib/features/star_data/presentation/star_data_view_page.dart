@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../domain/category.dart';
-import '../domain/star_data.dart';
 import '../application/star_data_controller.dart';
 import 'widgets/star_action_bar.dart';
 import 'widgets/star_data_grid.dart';

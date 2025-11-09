@@ -1,0 +1,4 @@
+成果：OPS Telemetry/UIをmanualRefresh&setFilterに統一。Auth可視・30s単一タイマー化、SecurityタブにSARIF/Artifacts確認。
+検証：weekly/allowlistをworkflow_dispatchで手動起動（RUN_ID確定）。providers-only CI = green（ローカル一致）。
+次：PR #22 完了を前提にBranch Protectionへ必須チェック追加→継続監査体制へ移行。
+

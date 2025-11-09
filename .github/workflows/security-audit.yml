@@ -5,18 +5,25 @@ on:
     branches: [ main, fix/security-hardening-web-csp-lock ]
   pull_request:
     branches: [ main ]
+  workflow_dispatch:
+  schedule:
+    - cron: '0 6 * * 1'
+
+permissions:
+  contents: read
 
 jobs:
   security-audit:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
+      - name: Setup Node.js 20
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: '20'
+          cache: 'pnpm'
 
       - name: Install pnpm
         run: |
@@ -47,11 +54,19 @@ jobs:
         run: flutter pub get || (echo "pub get failed, trying with cache repair..." && dart pub cache repair && flutter pub get)
         continue-on-error: true
 
-      - name: dart pub outdated (report-only)
-        run: dart pub outdated || true
+      - name: dart pub outdated (null-safety)
+        run: dart pub outdated --mode=null-safety || true
 
       - name: Run semgrep (report-only)
         uses: returntocorp/semgrep-action@v1
         with:
           config: p/ci
         continue-on-error: true
+
+      - name: Setup Deno
+        uses: denoland/setup-deno@v1
+        with:
+          deno-version: v2
+
+      - name: Run Deno tests for shared helpers
+        run: deno test supabase/functions/shared_test.ts
