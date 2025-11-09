@@ -1,7 +1,7 @@
+lib/features/star_data/presentation/widgets/star_data_card.dart:252:      return Image.asset(
 lib/src/features/subscription/presentation/screens/payment_method_screen.dart:318:                child: Image.asset(
 lib/src/features/subscription/presentation/screens/payment_method_screen.dart:332:                child: Image.asset(
 lib/src/features/subscription/presentation/screens/payment_method_screen.dart:364:            child: Image.asset(
 lib/src/features/subscription/presentation/screens/payment_method_screen.dart:394:            child: Image.asset(
 lib/src/features/subscription/presentation/screens/payment_method_screen.dart:425:              child: Image.asset(
 lib/src/features/subscription/presentation/screens/payment_method_screen.dart:452:              child: Image.asset(
-lib/features/star_data/presentation/widgets/star_data_card.dart:252:      return Image.asset(
