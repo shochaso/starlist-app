@@ -1,0 +1,1 @@
+[ops][fetch] skip same-hash kind=auto hash=___

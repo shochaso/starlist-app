@@ -1,0 +1,6 @@
+README.md:44:## Security Artifacts
+README.md:46:- **Gitleaks artifacts**: Actions → Extended Security → `sec-gitleaks-*` delivers `gitleaks-<scope>.sarif`. Inspect with the GitHub Security tab or a SARIF viewer for detailed findings.
+README.md:497:  * **CI/CD（GitHub Actions）**  
+docs/ops/OPS_DASHBOARD_GUIDE.md:4:- `OPS_MOCK=true`: 合成データで動作（モックページ `OpsMockDashboardPage` 推奨）。
+docs/ops/OPS_DASHBOARD_GUIDE.md:5:- `OPS_MOCK=false` で実データ。
+docs/ops/OPS_DASHBOARD_GUIDE.md:8:- 画面上の更新（Pull/ボタン/Retry/バッジ）はすべて `manualRefresh()` に集約。

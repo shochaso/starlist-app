@@ -1,0 +1,648 @@
+Resolving dependencies...
+Downloading packages...
+  _fe_analyzer_shared 85.0.0 (92.0.0 available)
+  analyzer 7.7.1 (9.0.0 available)
+  archive 3.6.1 (4.0.7 available)
+  async 2.12.0 (2.13.0 available)
+  auth0_flutter 1.8.0 (1.14.0 available)
+  auth0_flutter_platform_interface 1.8.0 (1.14.0 available)
+  build 3.1.0 (4.0.2 available)
+  build_daemon 4.0.4 (4.1.0 available)
+  build_resolvers 3.0.3 (3.0.4 available)
+  build_runner 2.7.1 (2.10.1 available)
+  build_runner_core 9.3.1 (9.3.2 available)
+  cached_network_image 3.4.0 (3.4.1 available)
+  cached_network_image_web 1.3.0 (1.3.1 available)
+  characters 1.4.0 (1.4.1 available)
+  checked_yaml 2.0.3 (2.0.4 available)
+  confetti 0.7.0 (0.8.0 available)
+  connectivity_plus 6.1.5 (7.0.0 available)
+  cross_file 0.3.4+2 (0.3.5 available)
+  crypto 3.0.6 (3.0.7 available)
+  dart_style 3.1.1 (3.1.2 available)
+  file_selector_macos 0.9.4+4 (0.9.4+5 available)
+  firebase_core 2.32.0 (4.2.1 available)
+  firebase_core_platform_interface 5.4.2 (6.0.2 available)
+  firebase_core_web 2.17.5 (3.3.0 available)
+  fl_chart 0.68.0 (1.1.1 available)
+  flutter_lints 4.0.0 (6.0.0 available)
+  flutter_local_notifications 17.2.4 (19.5.0 available)
+  flutter_local_notifications_linux 4.0.1 (6.0.0 available)
+  flutter_local_notifications_platform_interface 7.2.0 (9.1.0 available)
+  flutter_plugin_android_lifecycle 2.0.30 (2.0.32 available)
+  flutter_riverpod 2.6.1 (3.0.3 available)
+  flutter_secure_storage_linux 1.2.3 (2.0.1 available)
+  flutter_secure_storage_macos 3.1.3 (4.0.0 available)
+  flutter_secure_storage_platform_interface 1.1.2 (2.0.1 available)
+  flutter_secure_storage_web 1.2.1 (2.0.0 available)
+  flutter_secure_storage_windows 3.1.2 (4.0.0 available)
+  flutter_svg 2.2.1 (2.2.2 available)
+  font_awesome_flutter 10.9.1 (10.12.0 available)
+  functions_client 2.4.4 (2.5.0 available)
+  go_router 14.8.1 (17.0.0 available)
+  gotrue 2.15.0 (2.16.0 available)
+  image 4.3.0 (4.5.4 available)
+  image_picker_android 0.8.13+1 (0.8.13+7 available)
+  image_picker_ios 0.8.13 (0.8.13+1 available)
+  image_picker_macos 0.2.2 (0.2.2+1 available)
+  image_picker_platform_interface 2.11.0 (2.11.1 available)
+  js 0.6.7 (0.7.2 available)
+  lints 4.0.0 (6.0.0 available)
+  lottie 2.7.0 (3.3.2 available)
+  material_color_utilities 0.11.1 (0.13.0 available)
+  meta 1.16.0 (1.17.0 available)
+  mime 1.0.6 (2.0.0 available)
+  otp 3.1.4 (3.2.0 available)
+  path_provider_android 2.2.18 (2.2.20 available)
+  path_provider_foundation 2.4.2 (2.4.3 available)
+  petitparser 6.1.0 (7.0.1 available)
+  realtime_client 2.5.3 (2.6.0 available)
+  riverpod 2.6.1 (3.0.3 available)
+  rxdart 0.27.7 (0.28.0 available)
+  sentry 8.14.2 (9.8.0 available)
+  sentry_flutter 8.14.2 (9.8.0 available)
+  shared_preferences_android 2.4.13 (2.4.15 available)
+  shared_preferences_foundation 2.5.4 (2.5.5 available)
+  source_gen 4.0.0 (4.0.2 available)
+  sqflite_android 2.4.1 (2.4.2+2 available)
+  sqflite_common 2.5.5 (2.5.6 available)
+  supabase 2.9.2 (2.10.0 available)
+  supabase_flutter 2.10.2 (2.10.3 available)
+  synchronized 3.3.1 (3.4.0 available)
+  test 1.26.2 (1.26.3 available)
+  test_api 0.7.6 (0.7.7 available)
+  test_core 0.6.11 (0.6.12 available)
+  timezone 0.9.4 (0.10.1 available)
+  url_launcher_android 6.3.20 (6.3.24 available)
+  url_launcher_ios 6.3.4 (6.3.5 available)
+  url_launcher_macos 3.2.3 (3.2.4 available)
+  uuid 4.5.1 (4.5.2 available)
+  vm_service 14.3.1 (15.0.2 available)
+  web 0.5.1 (1.1.1 available)
+  win32 5.13.0 (5.15.0 available)
+  xml 6.5.0 (6.6.1 available)
+Got dependencies!
+81 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+00:00 +0: loading /Users/shochaso/Downloads/starlist-app/test/src/features/ops/providers/ops_metrics_provider_test.dart                                                                                00:01 +0: loading /Users/shochaso/Downloads/starlist-app/test/src/features/ops/providers/ops_metrics_provider_test.dart                                                                                00:02 +0: loading /Users/shochaso/Downloads/starlist-app/test/src/features/ops/providers/ops_metrics_provider_test.dart                                                                                lib/src/features/ops/screens/ops_dashboard_page.dart:1051:19: Error: Expected a declaration, but got '?'.
+                  ? const Center(child: Text('No data'))
+                  ^
+lib/src/features/ops/screens/ops_dashboard_page.dart:1051:21: Error: Can't have modifier 'const' here.
+Try removing 'const'.
+                  ? const Center(child: Text('No data'))
+                    ^^^^^
+lib/src/features/ops/screens/ops_dashboard_page.dart:1051:39: Error: Non-optional parameters can't have a default value.
+Try removing the default value or making the parameter optional.
+                  ? const Center(child: Text('No data'))
+                                      ^
+lib/src/features/ops/screens/ops_dashboard_page.dart:1052:19: Error: Expected '{' before this.
+                  : BarChart(
+                  ^
+lib/src/features/ops/screens/ops_dashboard_page.dart:1052:19: Error: Expected a declaration, but got ':'.
+                  : BarChart(
+                  ^
+lib/src/features/ops/screens/ops_dashboard_page.dart:1054:34: Error: Non-optional parameters can't have a default value.
+Try removing the default value or making the parameter optional.
+                        barGroups: health.aggregations.map((agg) {
+                                 ^
+lib/src/features/ops/screens/ops_dashboard_page.dart:1075:35: Error: Non-optional parameters can't have a default value.
+Try removing the default value or making the parameter optional.
+                        titlesData: FlTitlesData(
+                                  ^
+lib/src/features/ops/screens/ops_dashboard_page.dart:1102:33: Error: Non-optional parameters can't have a default value.
+Try removing the default value or making the parameter optional.
+                        gridData: const FlGridData(show: true),
+                                ^
+lib/src/features/ops/screens/ops_dashboard_page.dart:1103:35: Error: Non-optional parameters can't have a default value.
+Try removing the default value or making the parameter optional.
+                        borderData: FlBorderData(show: false),
+                                  ^
+lib/src/features/ops/screens/ops_dashboard_page.dart:1105:22: Error: Expected '{' before this.
+                    ),
+                     ^
+lib/src/features/ops/screens/ops_dashboard_page.dart:1105:22: Error: Expected a declaration, but got ','.
+                    ),
+                     ^
+lib/src/features/ops/screens/ops_dashboard_page.dart:1106:13: Error: Expected a declaration, but got ')'.
+            ),
+            ^
+lib/src/features/ops/screens/ops_dashboard_page.dart:1106:14: Error: Expected a declaration, but got ','.
+            ),
+             ^
+lib/src/features/ops/screens/ops_dashboard_page.dart:1107:11: Error: Expected a declaration, but got ']'.
+          ],
+          ^
+lib/src/features/ops/screens/ops_dashboard_page.dart:1107:12: Error: Expected a declaration, but got ','.
+          ],
+           ^
+lib/src/features/ops/screens/ops_dashboard_page.dart:1108:9: Error: Expected a declaration, but got ')'.
+        ),
+        ^
+lib/src/features/ops/screens/ops_dashboard_page.dart:1108:10: Error: Expected a declaration, but got ','.
+        ),
+         ^
+lib/src/features/ops/screens/ops_dashboard_page.dart:1109:7: Error: Expected a declaration, but got ')'.
+      ),
+      ^
+lib/src/features/ops/screens/ops_dashboard_page.dart:1109:8: Error: Expected a declaration, but got ','.
+      ),
+       ^
+lib/src/features/ops/screens/ops_dashboard_page.dart:1110:5: Error: Expected a declaration, but got ')'.
+    );
+    ^
+lib/src/features/ops/screens/ops_dashboard_page.dart:1110:6: Error: Unexpected token ';'.
+    );
+     ^
+lib/src/features/ops/screens/ops_dashboard_page.dart:1111:3: Error: Expected a declaration, but got '}'.
+  }
+  ^
+lib/src/features/ops/screens/ops_dashboard_page.dart:1112:1: Error: Expected a declaration, but got '}'.
+}
+^
+test/src/features/ops/pages/ops_dashboard_page_test.dart:27:29: Error: A value of type 'Future<List<OpsMetricsSeriesPoint>>' can't be returned from a function with return type 'OpsMetricsSeriesNotifier'.
+ - 'Future' is from 'dart:async'.
+ - 'List' is from 'dart:core'.
+ - 'OpsMetricsSeriesPoint' is from 'package:starlist_app/src/features/ops/models/ops_metrics_series_model.dart' ('lib/src/features/ops/models/ops_metrics_series_model.dart').
+ - 'OpsMetricsSeriesNotifier' is from 'package:starlist_app/src/features/ops/providers/ops_metrics_provider.dart' ('lib/src/features/ops/providers/ops_metrics_provider.dart').
+            (ref) => Future.value(series),
+                            ^
+test/src/features/ops/pages/ops_dashboard_page_test.dart:27:13: Error: The argument type 'OpsMetricsSeriesNotifier Function(dynamic)' can't be assigned to the parameter type 'OpsMetricsSeriesNotifier Function()'.
+ - 'OpsMetricsSeriesNotifier' is from 'package:starlist_app/src/features/ops/providers/ops_metrics_provider.dart' ('lib/src/features/ops/providers/ops_metrics_provider.dart').
+            (ref) => Future.value(series),
+            ^
+lib/src/features/ops/screens/ops_dashboard_page.dart:418:20: Error: Method invocation is not a constant expression.
+            child: Center(child: Text('No latency data available')),
+                   ^^^^^^
+lib/src/features/ops/screens/ops_dashboard_page.dart:510:17: Error: The argument type 'BarChartData' can't be assigned to the parameter type 'dynamic Function(dynamic, dynamic, dynamic, dynamic)'.
+ - 'BarChartData' is from 'package:fl_chart/src/chart/bar_chart/bar_chart_data.dart' ('../../.pub-cache/hosted/pub.dev/fl_chart-0.68.0/lib/src/chart/bar_chart/bar_chart_data.dart').
+                BarChartData(
+                ^
+lib/src/features/ops/screens/ops_dashboard_page.dart:630:24: Error: Method invocation is not a constant expression.
+                child: Center(child: CircularProgressIndicator()),
+                       ^^^^^^
+lib/src/features/ops/screens/ops_dashboard_page.dart:647:18: Error: Too few positional arguments: 1 required, 0 given.
+    return Center(
+                 ^
+lib/src/features/ops/screens/ops_dashboard_page.dart:1051:27: Context: Found this candidate, but the arguments don't match.
+                  ? const Center(child: Text('No data'))
+                          ^^^^^^
+lib/src/features/ops/screens/ops_dashboard_page.dart:681:18: Error: Couldn't find constructor 'Center'.
+    return const Center(
+                 ^^^^^^
+lib/src/features/ops/screens/ops_dashboard_page.dart:694:18: Error: Too few positional arguments: 1 required, 0 given.
+    return Center(
+                 ^
+lib/src/features/ops/screens/ops_dashboard_page.dart:1051:27: Context: Found this candidate, but the arguments don't match.
+                  ? const Center(child: Text('No data'))
+                          ^^^^^^
+lib/src/features/ops/screens/ops_dashboard_page.dart:742:26: Error: Couldn't find constructor 'Center'.
+            return const Center(
+                         ^^^^^^
+lib/src/features/ops/screens/ops_dashboard_page.dart:828:27: Error: Couldn't find constructor 'Center'.
+                  ? const Center(child: Text('No data'))
+                          ^^^^^^
+lib/src/features/ops/screens/ops_dashboard_page.dart:830:23: Error: The argument type 'BarChartData' can't be assigned to the parameter type 'dynamic Function(dynamic, dynamic, dynamic, dynamic)'.
+ - 'BarChartData' is from 'package:fl_chart/src/chart/bar_chart/bar_chart_data.dart' ('../../.pub-cache/hosted/pub.dev/fl_chart-0.68.0/lib/src/chart/bar_chart/bar_chart_data.dart').
+                      BarChartData(
+                      ^
+lib/src/features/ops/screens/ops_dashboard_page.dart:905:27: Error: Couldn't find constructor 'Center'.
+                  ? const Center(child: Text('No data'))
+                          ^^^^^^
+lib/src/features/ops/screens/ops_dashboard_page.dart:907:23: Error: The argument type 'BarChartData' can't be assigned to the parameter type 'dynamic Function(dynamic, dynamic, dynamic, dynamic)'.
+ - 'BarChartData' is from 'package:fl_chart/src/chart/bar_chart/bar_chart_data.dart' ('../../.pub-cache/hosted/pub.dev/fl_chart-0.68.0/lib/src/chart/bar_chart/bar_chart_data.dart').
+                      BarChartData(
+                      ^
+lib/src/features/ops/screens/ops_dashboard_page.dart:982:27: Error: Couldn't find constructor 'Center'.
+                  ? const Center(child: Text('No data'))
+                          ^^^^^^
+lib/src/features/ops/screens/ops_dashboard_page.dart:984:23: Error: The argument type 'BarChartData' can't be assigned to the parameter type 'dynamic Function(dynamic, dynamic, dynamic, dynamic)'.
+ - 'BarChartData' is from 'package:fl_chart/src/chart/bar_chart/bar_chart_data.dart' ('../../.pub-cache/hosted/pub.dev/fl_chart-0.68.0/lib/src/chart/bar_chart/bar_chart_data.dart').
+                      BarChartData(
+                      ^
+lib/src/features/ops/screens/ops_dashboard_page.dart:1051:41: Error: Constant expression expected.
+Try inserting 'const'.
+                  ? const Center(child: Text('No data'))
+                                        ^^^^
+lib/src/features/ops/screens/ops_dashboard_page.dart:1054:36: Error: Undefined name 'health'.
+                        barGroups: health.aggregations.map((agg) {
+                                   ^^^^^^
+lib/src/features/ops/screens/ops_dashboard_page.dart:1055:41: Error: Undefined name 'health'.
+                          final index = health.aggregations.indexOf(agg);
+                                        ^^^^^^
+lib/src/features/ops/screens/ops_dashboard_page.dart:1057:31: Error: Not a constant expression.
+                          if (agg.alertTrend == 'increasing') {
+                              ^^^
+lib/src/features/ops/screens/ops_dashboard_page.dart:1058:35: Error: Not a constant expression.
+                            color = Colors.red;
+                                  ^
+lib/src/features/ops/screens/ops_dashboard_page.dart:1059:38: Error: Not a constant expression.
+                          } else if (agg.alertTrend == 'decreasing') {
+                                     ^^^
+lib/src/features/ops/screens/ops_dashboard_page.dart:1060:35: Error: Not a constant expression.
+                            color = Colors.green;
+                                  ^
+lib/src/features/ops/screens/ops_dashboard_page.dart:1062:35: Error: Not a constant expression.
+                            color = Colors.orange;
+                                  ^
+lib/src/features/ops/screens/ops_dashboard_page.dart:1065:32: Error: Not a constant expression.
+                            x: index,
+                               ^^^^^
+lib/src/features/ops/screens/ops_dashboard_page.dart:1068:38: Error: Not a constant expression.
+                                toY: agg.alertCount.toDouble(),
+                                     ^^^
+lib/src/features/ops/screens/ops_dashboard_page.dart:1068:53: Error: Method invocation is not a constant expression.
+                                toY: agg.alertCount.toDouble(),
+                                                    ^^^^^^^^
+lib/src/features/ops/screens/ops_dashboard_page.dart:1069:40: Error: Not a constant expression.
+                                color: color,
+                                       ^^^^^
+lib/src/features/ops/screens/ops_dashboard_page.dart:1067:31: Error: Constant expression expected.
+Try inserting 'const'.
+                              BarChartRodData(
+                              ^^^^^^^^^^^^^^^
+lib/src/features/ops/screens/ops_dashboard_page.dart:1067:31: Error: Cannot invoke a non-'const' constructor where a const expression is expected.
+Try using a constructor or factory that is 'const'.
+                              BarChartRodData(
+                              ^^^^^^^^^^^^^^^
+lib/src/features/ops/screens/ops_dashboard_page.dart:1066:38: Error: Constant expression expected.
+Try inserting 'const'.
+                            barRods: [
+                                     ^
+lib/src/features/ops/screens/ops_dashboard_page.dart:1064:34: Error: Constant expression expected.
+Try inserting 'const'.
+                          return BarChartGroupData(
+                                 ^^^^^^^^^^^^^^^^^
+lib/src/features/ops/screens/ops_dashboard_page.dart:1064:34: Error: Cannot invoke a non-'const' constructor where a const expression is expected.
+Try using a constructor or factory that is 'const'.
+                          return BarChartGroupData(
+                                 ^^^^^^^^^^^^^^^^^
+lib/src/features/ops/screens/ops_dashboard_page.dart:1054:60: Error: Not a constant expression.
+                        barGroups: health.aggregations.map((agg) {
+                                                           ^^^^^
+lib/src/features/ops/screens/ops_dashboard_page.dart:1054:56: Error: Method invocation is not a constant expression.
+                        barGroups: health.aggregations.map((agg) {
+                                                       ^^^
+lib/src/features/ops/screens/ops_dashboard_page.dart:1074:28: Error: Method invocation is not a constant expression.
+                        }).toList(),
+                           ^^^^^^
+lib/src/features/ops/screens/ops_dashboard_page.dart:1081:48: Error: Not a constant expression.
+                                return Text('${value.toInt()}', style: const TextStyle(fontSize: 10));
+                                               ^^^^^
+lib/src/features/ops/screens/ops_dashboard_page.dart:1081:54: Error: Method invocation is not a constant expression.
+                                return Text('${value.toInt()}', style: const TextStyle(fontSize: 10));
+                                                     ^^^^^
+lib/src/features/ops/screens/ops_dashboard_page.dart:1081:40: Error: Constant expression expected.
+Try inserting 'const'.
+                                return Text('${value.toInt()}', style: const TextStyle(fontSize: 10));
+                                       ^^^^
+lib/src/features/ops/screens/ops_dashboard_page.dart:1080:48: Error: Not a constant expression.
+                              getTitlesWidget: (value, meta) {
+                                               ^^^^^^^^^^^^^
+lib/src/features/ops/screens/ops_dashboard_page.dart:1077:41: Error: Constant expression expected.
+Try inserting 'const'.
+                            sideTitles: SideTitles(
+                                        ^^^^^^^^^^
+lib/src/features/ops/screens/ops_dashboard_page.dart:1076:39: Error: Constant expression expected.
+Try inserting 'const'.
+                          leftTitles: AxisTitles(
+                                      ^^^^^^^^^^
+lib/src/features/ops/screens/ops_dashboard_page.dart:1089:37: Error: Not a constant expression.
+                                if (value.toInt() >= health.aggregations.length) return const SizedBox.shrink();
+                                    ^^^^^
+lib/src/features/ops/screens/ops_dashboard_page.dart:1089:43: Error: Method invocation is not a constant expression.
+                                if (value.toInt() >= health.aggregations.length) return const SizedBox.shrink();
+                                          ^^^^^
+lib/src/features/ops/screens/ops_dashboard_page.dart:1089:54: Error: Undefined name 'health'.
+                                if (value.toInt() >= health.aggregations.length) return const SizedBox.shrink();
+                                                     ^^^^^^
+lib/src/features/ops/screens/ops_dashboard_page.dart:1090:45: Error: Undefined name 'health'.
+                                final agg = health.aggregations[value.toInt()];
+                                            ^^^^^^
+lib/src/features/ops/screens/ops_dashboard_page.dart:1092:38: Error: Not a constant expression.
+                                  '${agg.app ?? 'N/A'}\n${agg.env ?? 'N/A'}',
+                                     ^^^
+lib/src/features/ops/screens/ops_dashboard_page.dart:1092:59: Error: Not a constant expression.
+                                  '${agg.app ?? 'N/A'}\n${agg.env ?? 'N/A'}',
+                                                          ^^^
+lib/src/features/ops/screens/ops_dashboard_page.dart:1091:40: Error: Constant expression expected.
+Try inserting 'const'.
+                                return Text(
+                                       ^^^^
+lib/src/features/ops/screens/ops_dashboard_page.dart:1088:48: Error: Not a constant expression.
+                              getTitlesWidget: (value, meta) {
+                                               ^^^^^^^^^^^^^
+lib/src/features/ops/screens/ops_dashboard_page.dart:1086:41: Error: Constant expression expected.
+Try inserting 'const'.
+                            sideTitles: SideTitles(
+                                        ^^^^^^^^^^
+lib/src/features/ops/screens/ops_dashboard_page.dart:1085:41: Error: Constant expression expected.
+Try inserting 'const'.
+                          bottomTitles: AxisTitles(
+                                        ^^^^^^^^^^
+lib/src/features/ops/screens/ops_dashboard_page.dart:1075:37: Error: Constant expression expected.
+Try inserting 'const'.
+                        titlesData: FlTitlesData(
+                                    ^^^^^^^^^^^^
+lib/src/features/ops/screens/ops_dashboard_page.dart:1103:37: Error: Constant expression expected.
+Try inserting 'const'.
+                        borderData: FlBorderData(show: false),
+                                    ^^^^^^^^^^^^
+lib/src/features/ops/screens/ops_dashboard_page.dart:1103:37: Error: Cannot invoke a non-'const' constructor where a const expression is expected.
+Try using a constructor or factory that is 'const'.
+                        borderData: FlBorderData(show: false),
+                                    ^^^^^^^^^^^^
+00:02 +0 -1: loading /Users/shochaso/Downloads/starlist-app/test/src/features/ops/pages/ops_dashboard_page_test.dart [E]                                                                               
+  Failed to load "/Users/shochaso/Downloads/starlist-app/test/src/features/ops/pages/ops_dashboard_page_test.dart":
+  Compilation failed for testPath=/Users/shochaso/Downloads/starlist-app/test/src/features/ops/pages/ops_dashboard_page_test.dart: lib/src/features/ops/screens/ops_dashboard_page.dart:1051:19: Error: Expected a declaration, but got '?'.
+                    ? const Center(child: Text('No data'))
+                    ^
+  lib/src/features/ops/screens/ops_dashboard_page.dart:1051:21: Error: Can't have modifier 'const' here.
+  Try removing 'const'.
+                    ? const Center(child: Text('No data'))
+                      ^^^^^
+  lib/src/features/ops/screens/ops_dashboard_page.dart:1051:39: Error: Non-optional parameters can't have a default value.
+  Try removing the default value or making the parameter optional.
+                    ? const Center(child: Text('No data'))
+                                        ^
+  lib/src/features/ops/screens/ops_dashboard_page.dart:1052:19: Error: Expected '{' before this.
+                    : BarChart(
+                    ^
+  lib/src/features/ops/screens/ops_dashboard_page.dart:1052:19: Error: Expected a declaration, but got ':'.
+                    : BarChart(
+                    ^
+  lib/src/features/ops/screens/ops_dashboard_page.dart:1054:34: Error: Non-optional parameters can't have a default value.
+  Try removing the default value or making the parameter optional.
+                          barGroups: health.aggregations.map((agg) {
+                                   ^
+  lib/src/features/ops/screens/ops_dashboard_page.dart:1075:35: Error: Non-optional parameters can't have a default value.
+  Try removing the default value or making the parameter optional.
+                          titlesData: FlTitlesData(
+                                    ^
+  lib/src/features/ops/screens/ops_dashboard_page.dart:1102:33: Error: Non-optional parameters can't have a default value.
+  Try removing the default value or making the parameter optional.
+                          gridData: const FlGridData(show: true),
+                                  ^
+  lib/src/features/ops/screens/ops_dashboard_page.dart:1103:35: Error: Non-optional parameters can't have a default value.
+  Try removing the default value or making the parameter optional.
+                          borderData: FlBorderData(show: false),
+                                    ^
+  lib/src/features/ops/screens/ops_dashboard_page.dart:1105:22: Error: Expected '{' before this.
+                      ),
+                       ^
+  lib/src/features/ops/screens/ops_dashboard_page.dart:1105:22: Error: Expected a declaration, but got ','.
+                      ),
+                       ^
+  lib/src/features/ops/screens/ops_dashboard_page.dart:1106:13: Error: Expected a declaration, but got ')'.
+              ),
+              ^
+  lib/src/features/ops/screens/ops_dashboard_page.dart:1106:14: Error: Expected a declaration, but got ','.
+              ),
+               ^
+  lib/src/features/ops/screens/ops_dashboard_page.dart:1107:11: Error: Expected a declaration, but got ']'.
+            ],
+            ^
+  lib/src/features/ops/screens/ops_dashboard_page.dart:1107:12: Error: Expected a declaration, but got ','.
+            ],
+             ^
+  lib/src/features/ops/screens/ops_dashboard_page.dart:1108:9: Error: Expected a declaration, but got ')'.
+          ),
+          ^
+  lib/src/features/ops/screens/ops_dashboard_page.dart:1108:10: Error: Expected a declaration, but got ','.
+          ),
+           ^
+  lib/src/features/ops/screens/ops_dashboard_page.dart:1109:7: Error: Expected a declaration, but got ')'.
+        ),
+        ^
+  lib/src/features/ops/screens/ops_dashboard_page.dart:1109:8: Error: Expected a declaration, but got ','.
+        ),
+         ^
+  lib/src/features/ops/screens/ops_dashboard_page.dart:1110:5: Error: Expected a declaration, but got ')'.
+      );
+      ^
+  lib/src/features/ops/screens/ops_dashboard_page.dart:1110:6: Error: Unexpected token ';'.
+      );
+       ^
+  lib/src/features/ops/screens/ops_dashboard_page.dart:1111:3: Error: Expected a declaration, but got '}'.
+    }
+    ^
+  lib/src/features/ops/screens/ops_dashboard_page.dart:1112:1: Error: Expected a declaration, but got '}'.
+  }
+  ^
+  test/src/features/ops/pages/ops_dashboard_page_test.dart:27:29: Error: A value of type 'Future<List<OpsMetricsSeriesPoint>>' can't be returned from a function with return type 'OpsMetricsSeriesNotifier'.
+   - 'Future' is from 'dart:async'.
+   - 'List' is from 'dart:core'.
+   - 'OpsMetricsSeriesPoint' is from 'package:starlist_app/src/features/ops/models/ops_metrics_series_model.dart' ('lib/src/features/ops/models/ops_metrics_series_model.dart').
+   - 'OpsMetricsSeriesNotifier' is from 'package:starlist_app/src/features/ops/providers/ops_metrics_provider.dart' ('lib/src/features/ops/providers/ops_metrics_provider.dart').
+              (ref) => Future.value(series),
+                              ^
+  test/src/features/ops/pages/ops_dashboard_page_test.dart:27:13: Error: The argument type 'OpsMetricsSeriesNotifier Function(dynamic)' can't be assigned to the parameter type 'OpsMetricsSeriesNotifier Function()'.
+   - 'OpsMetricsSeriesNotifier' is from 'package:starlist_app/src/features/ops/providers/ops_metrics_provider.dart' ('lib/src/features/ops/providers/ops_metrics_provider.dart').
+              (ref) => Future.value(series),
+              ^
+  lib/src/features/ops/screens/ops_dashboard_page.dart:418:20: Error: Method invocation is not a constant expression.
+              child: Center(child: Text('No latency data available')),
+                     ^^^^^^
+  lib/src/features/ops/screens/ops_dashboard_page.dart:510:17: Error: The argument type 'BarChartData' can't be assigned to the parameter type 'dynamic Function(dynamic, dynamic, dynamic, dynamic)'.
+   - 'BarChartData' is from 'package:fl_chart/src/chart/bar_chart/bar_chart_data.dart' ('../../.pub-cache/hosted/pub.dev/fl_chart-0.68.0/lib/src/chart/bar_chart/bar_chart_data.dart').
+                  BarChartData(
+                  ^
+  lib/src/features/ops/screens/ops_dashboard_page.dart:630:24: Error: Method invocation is not a constant expression.
+                  child: Center(child: CircularProgressIndicator()),
+                         ^^^^^^
+  lib/src/features/ops/screens/ops_dashboard_page.dart:647:18: Error: Too few positional arguments: 1 required, 0 given.
+      return Center(
+                   ^
+  lib/src/features/ops/screens/ops_dashboard_page.dart:1051:27: Context: Found this candidate, but the arguments don't match.
+                    ? const Center(child: Text('No data'))
+                            ^^^^^^
+  lib/src/features/ops/screens/ops_dashboard_page.dart:681:18: Error: Couldn't find constructor 'Center'.
+      return const Center(
+                   ^^^^^^
+  lib/src/features/ops/screens/ops_dashboard_page.dart:694:18: Error: Too few positional arguments: 1 required, 0 given.
+      return Center(
+                   ^
+  lib/src/features/ops/screens/ops_dashboard_page.dart:1051:27: Context: Found this candidate, but the arguments don't match.
+                    ? const Center(child: Text('No data'))
+                            ^^^^^^
+  lib/src/features/ops/screens/ops_dashboard_page.dart:742:26: Error: Couldn't find constructor 'Center'.
+              return const Center(
+                           ^^^^^^
+  lib/src/features/ops/screens/ops_dashboard_page.dart:828:27: Error: Couldn't find constructor 'Center'.
+                    ? const Center(child: Text('No data'))
+                            ^^^^^^
+  lib/src/features/ops/screens/ops_dashboard_page.dart:830:23: Error: The argument type 'BarChartData' can't be assigned to the parameter type 'dynamic Function(dynamic, dynamic, dynamic, dynamic)'.
+   - 'BarChartData' is from 'package:fl_chart/src/chart/bar_chart/bar_chart_data.dart' ('../../.pub-cache/hosted/pub.dev/fl_chart-0.68.0/lib/src/chart/bar_chart/bar_chart_data.dart').
+                        BarChartData(
+                        ^
+  lib/src/features/ops/screens/ops_dashboard_page.dart:905:27: Error: Couldn't find constructor 'Center'.
+                    ? const Center(child: Text('No data'))
+                            ^^^^^^
+  lib/src/features/ops/screens/ops_dashboard_page.dart:907:23: Error: The argument type 'BarChartData' can't be assigned to the parameter type 'dynamic Function(dynamic, dynamic, dynamic, dynamic)'.
+   - 'BarChartData' is from 'package:fl_chart/src/chart/bar_chart/bar_chart_data.dart' ('../../.pub-cache/hosted/pub.dev/fl_chart-0.68.0/lib/src/chart/bar_chart/bar_chart_data.dart').
+                        BarChartData(
+                        ^
+  lib/src/features/ops/screens/ops_dashboard_page.dart:982:27: Error: Couldn't find constructor 'Center'.
+                    ? const Center(child: Text('No data'))
+                            ^^^^^^
+  lib/src/features/ops/screens/ops_dashboard_page.dart:984:23: Error: The argument type 'BarChartData' can't be assigned to the parameter type 'dynamic Function(dynamic, dynamic, dynamic, dynamic)'.
+   - 'BarChartData' is from 'package:fl_chart/src/chart/bar_chart/bar_chart_data.dart' ('../../.pub-cache/hosted/pub.dev/fl_chart-0.68.0/lib/src/chart/bar_chart/bar_chart_data.dart').
+                        BarChartData(
+                        ^
+  lib/src/features/ops/screens/ops_dashboard_page.dart:1051:41: Error: Constant expression expected.
+  Try inserting 'const'.
+                    ? const Center(child: Text('No data'))
+                                          ^^^^
+  lib/src/features/ops/screens/ops_dashboard_page.dart:1054:36: Error: Undefined name 'health'.
+                          barGroups: health.aggregations.map((agg) {
+                                     ^^^^^^
+  lib/src/features/ops/screens/ops_dashboard_page.dart:1055:41: Error: Undefined name 'health'.
+                            final index = health.aggregations.indexOf(agg);
+                                          ^^^^^^
+  lib/src/features/ops/screens/ops_dashboard_page.dart:1057:31: Error: Not a constant expression.
+                            if (agg.alertTrend == 'increasing') {
+                                ^^^
+  lib/src/features/ops/screens/ops_dashboard_page.dart:1058:35: Error: Not a constant expression.
+                              color = Colors.red;
+                                    ^
+  lib/src/features/ops/screens/ops_dashboard_page.dart:1059:38: Error: Not a constant expression.
+                            } else if (agg.alertTrend == 'decreasing') {
+                                       ^^^
+  lib/src/features/ops/screens/ops_dashboard_page.dart:1060:35: Error: Not a constant expression.
+                              color = Colors.green;
+                                    ^
+  lib/src/features/ops/screens/ops_dashboard_page.dart:1062:35: Error: Not a constant expression.
+                              color = Colors.orange;
+                                    ^
+  lib/src/features/ops/screens/ops_dashboard_page.dart:1065:32: Error: Not a constant expression.
+                              x: index,
+                                 ^^^^^
+  lib/src/features/ops/screens/ops_dashboard_page.dart:1068:38: Error: Not a constant expression.
+                                  toY: agg.alertCount.toDouble(),
+                                       ^^^
+  lib/src/features/ops/screens/ops_dashboard_page.dart:1068:53: Error: Method invocation is not a constant expression.
+                                  toY: agg.alertCount.toDouble(),
+                                                      ^^^^^^^^
+  lib/src/features/ops/screens/ops_dashboard_page.dart:1069:40: Error: Not a constant expression.
+                                  color: color,
+                                         ^^^^^
+  lib/src/features/ops/screens/ops_dashboard_page.dart:1067:31: Error: Constant expression expected.
+  Try inserting 'const'.
+                                BarChartRodData(
+                                ^^^^^^^^^^^^^^^
+  lib/src/features/ops/screens/ops_dashboard_page.dart:1067:31: Error: Cannot invoke a non-'const' constructor where a const expression is expected.
+  Try using a constructor or factory that is 'const'.
+                                BarChartRodData(
+                                ^^^^^^^^^^^^^^^
+  lib/src/features/ops/screens/ops_dashboard_page.dart:1066:38: Error: Constant expression expected.
+  Try inserting 'const'.
+                              barRods: [
+                                       ^
+  lib/src/features/ops/screens/ops_dashboard_page.dart:1064:34: Error: Constant expression expected.
+  Try inserting 'const'.
+                            return BarChartGroupData(
+                                   ^^^^^^^^^^^^^^^^^
+  lib/src/features/ops/screens/ops_dashboard_page.dart:1064:34: Error: Cannot invoke a non-'const' constructor where a const expression is expected.
+  Try using a constructor or factory that is 'const'.
+                            return BarChartGroupData(
+                                   ^^^^^^^^^^^^^^^^^
+  lib/src/features/ops/screens/ops_dashboard_page.dart:1054:60: Error: Not a constant expression.
+                          barGroups: health.aggregations.map((agg) {
+                                                             ^^^^^
+  lib/src/features/ops/screens/ops_dashboard_page.dart:1054:56: Error: Method invocation is not a constant expression.
+                          barGroups: health.aggregations.map((agg) {
+                                                         ^^^
+  lib/src/features/ops/screens/ops_dashboard_page.dart:1074:28: Error: Method invocation is not a constant expression.
+                          }).toList(),
+                             ^^^^^^
+  lib/src/features/ops/screens/ops_dashboard_page.dart:1081:48: Error: Not a constant expression.
+                                  return Text('${value.toInt()}', style: const TextStyle(fontSize: 10));
+                                                 ^^^^^
+  lib/src/features/ops/screens/ops_dashboard_page.dart:1081:54: Error: Method invocation is not a constant expression.
+                                  return Text('${value.toInt()}', style: const TextStyle(fontSize: 10));
+                                                       ^^^^^
+  lib/src/features/ops/screens/ops_dashboard_page.dart:1081:40: Error: Constant expression expected.
+  Try inserting 'const'.
+                                  return Text('${value.toInt()}', style: const TextStyle(fontSize: 10));
+                                         ^^^^
+  lib/src/features/ops/screens/ops_dashboard_page.dart:1080:48: Error: Not a constant expression.
+                                getTitlesWidget: (value, meta) {
+                                                 ^^^^^^^^^^^^^
+  lib/src/features/ops/screens/ops_dashboard_page.dart:1077:41: Error: Constant expression expected.
+  Try inserting 'const'.
+                              sideTitles: SideTitles(
+                                          ^^^^^^^^^^
+  lib/src/features/ops/screens/ops_dashboard_page.dart:1076:39: Error: Constant expression expected.
+  Try inserting 'const'.
+                            leftTitles: AxisTitles(
+                                        ^^^^^^^^^^
+  lib/src/features/ops/screens/ops_dashboard_page.dart:1089:37: Error: Not a constant expression.
+                                  if (value.toInt() >= health.aggregations.length) return const SizedBox.shrink();
+                                      ^^^^^
+  lib/src/features/ops/screens/ops_dashboard_page.dart:1089:43: Error: Method invocation is not a constant expression.
+                                  if (value.toInt() >= health.aggregations.length) return const SizedBox.shrink();
+                                            ^^^^^
+  lib/src/features/ops/screens/ops_dashboard_page.dart:1089:54: Error: Undefined name 'health'.
+                                  if (value.toInt() >= health.aggregations.length) return const SizedBox.shrink();
+                                                       ^^^^^^
+  lib/src/features/ops/screens/ops_dashboard_page.dart:1090:45: Error: Undefined name 'health'.
+                                  final agg = health.aggregations[value.toInt()];
+                                              ^^^^^^
+  lib/src/features/ops/screens/ops_dashboard_page.dart:1092:38: Error: Not a constant expression.
+                                    '${agg.app ?? 'N/A'}\n${agg.env ?? 'N/A'}',
+                                       ^^^
+  lib/src/features/ops/screens/ops_dashboard_page.dart:1092:59: Error: Not a constant expression.
+                                    '${agg.app ?? 'N/A'}\n${agg.env ?? 'N/A'}',
+                                                            ^^^
+  lib/src/features/ops/screens/ops_dashboard_page.dart:1091:40: Error: Constant expression expected.
+  Try inserting 'const'.
+                                  return Text(
+                                         ^^^^
+  lib/src/features/ops/screens/ops_dashboard_page.dart:1088:48: Error: Not a constant expression.
+                                getTitlesWidget: (value, meta) {
+                                                 ^^^^^^^^^^^^^
+  lib/src/features/ops/screens/ops_dashboard_page.dart:1086:41: Error: Constant expression expected.
+  Try inserting 'const'.
+                              sideTitles: SideTitles(
+                                          ^^^^^^^^^^
+  lib/src/features/ops/screens/ops_dashboard_page.dart:1085:41: Error: Constant expression expected.
+  Try inserting 'const'.
+                            bottomTitles: AxisTitles(
+                                          ^^^^^^^^^^
+  lib/src/features/ops/screens/ops_dashboard_page.dart:1075:37: Error: Constant expression expected.
+  Try inserting 'const'.
+                          titlesData: FlTitlesData(
+                                      ^^^^^^^^^^^^
+  lib/src/features/ops/screens/ops_dashboard_page.dart:1103:37: Error: Constant expression expected.
+  Try inserting 'const'.
+                          borderData: FlBorderData(show: false),
+                                      ^^^^^^^^^^^^
+  lib/src/features/ops/screens/ops_dashboard_page.dart:1103:37: Error: Cannot invoke a non-'const' constructor where a const expression is expected.
+  Try using a constructor or factory that is 'const'.
+                          borderData: FlBorderData(show: false),
+                                      ^^^^^^^^^^^^
+  .
+
+To run this test again: /Users/shochaso/development/flutter/bin/cache/dart-sdk/bin/dart test /Users/shochaso/Downloads/starlist-app/test/src/features/ops/pages/ops_dashboard_page_test.dart -p vm --plain-name 'loading /Users/shochaso/Downloads/starlist-app/test/src/features/ops/pages/ops_dashboard_page_test.dart'
+00:02 +0 -2: loading /Users/shochaso/Downloads/starlist-app/test/src/features/ops/providers/ops_metrics_provider_test.dart [E]                                                                         
+  Error: The Dart compiler exited unexpectedly.
+  package:flutter_tools/src/base/common.dart 34:3  throwToolExit
+  package:flutter_tools/src/compile.dart 910:11    DefaultResidentCompiler._compile.<fn>
+  dart:async/zone.dart 1538:47                     _rootRunUnary
+  dart:async/zone.dart 1429:19                     _CustomZone.runUnary
+  dart:async/future_impl.dart 948:45               Future._propagateToListeners.handleValueCallback
+  dart:async/future_impl.dart 977:13               Future._propagateToListeners
+  dart:async/future_impl.dart 862:9                Future._propagateToListeners
+  dart:async/future_impl.dart 720:5                Future._completeWithValue
+  dart:async/future_impl.dart 804:7                Future._asyncCompleteWithValue.<fn>
+  dart:async/zone.dart 1525:13                     _rootRun
+  dart:async/zone.dart 1422:19                     _CustomZone.run
+  dart:async/zone.dart 1321:7                      _CustomZone.runGuarded
+  dart:async/zone.dart 1362:23                     _CustomZone.bindCallbackGuarded.<fn>
+  dart:async/schedule_microtask.dart 40:35         _microtaskLoop
+  dart:async/schedule_microtask.dart 49:5          _startMicrotaskLoop
+  dart:isolate-patch/isolate_patch.dart 127:13     _runPendingImmediateCallback
+  dart:isolate-patch/isolate_patch.dart 194:5      _RawReceivePort._handleMessage
+  
+
+To run this test again: /Users/shochaso/development/flutter/bin/cache/dart-sdk/bin/dart test /Users/shochaso/Downloads/starlist-app/test/src/features/ops/providers/ops_metrics_provider_test.dart -p vm --plain-name 'loading /Users/shochaso/Downloads/starlist-app/test/src/features/ops/providers/ops_metrics_provider_test.dart'
+00:03 +0 -2: /Users/shochaso/Downloads/starlist-app/test/src/features/ops/providers/ops_metrics_provider_test.dart: OpsMetricsFilterNotifier normalizes values and clamps window                       00:03 +1 -2: /Users/shochaso/Downloads/starlist-app/test/src/features/ops/providers/ops_metrics_provider_test.dart: OpsMetricsFilterNotifier normalizes values and clamps window                       00:03 +1 -2: /Users/shochaso/Downloads/starlist-app/test/src/features/ops/providers/ops_metrics_provider_test.dart: OpsMetricsFilterNotifier reset returns default filter                              00:03 +2 -2: /Users/shochaso/Downloads/starlist-app/test/src/features/ops/providers/ops_metrics_provider_test.dart: OpsMetricsFilterNotifier reset returns default filter                              00:03 +2 -2: Some tests failed.                                                                                                                                                                        

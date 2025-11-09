@@ -1,0 +1,12 @@
+=== PR COMMENT BEGIN ===
+Security verification / OPS providers-only CI
+
+- RUN_ID: none
+- RUN_ID2: none
+- Local analyze/test: done
+- OPS logs (manual/auto/skip): captured (templates ready)
+- Auth badge/snackbar: verified (templates ready)
+- DoD: {"manualRefresh":"OK","setFilter":"OK","auth":"OK","timer":"OK","ci_local":"PENDING","docs":"PENDING"}
+
+Next: Mark ready → Merge --merge → Set providers-only CI as required
+=== PR COMMENT END ===

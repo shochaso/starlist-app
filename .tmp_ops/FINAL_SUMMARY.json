@@ -1,0 +1,1 @@
+jq: Bad JSON in --rawfile setup .tmp_ops/ci_setup.txt: Could not open .tmp_ops/ci_setup.txt: No such file or directory

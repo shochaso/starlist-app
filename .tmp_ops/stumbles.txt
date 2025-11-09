@@ -1,0 +1,3 @@
+- GUIDE→Actionsのリンク不足
+- Securityタブの参照が分散
+- RUN_ID取得の導線が不鮮明

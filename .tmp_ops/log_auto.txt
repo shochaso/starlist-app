@@ -1,0 +1,1 @@
+[ops][fetch] ok kind=auto ms=___ count=___ hash=___

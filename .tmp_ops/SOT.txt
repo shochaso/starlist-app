@@ -1,0 +1,6 @@
+【OPS Telemetry/UI 統合・検証】
+- CI: providers-only を --ref で起動、RUN_ID=none（最新）
+- 実機: OPS_MOCK=true で manual/auto/skip ログ採取（ms/count/hash）
+- Auth: 誘発→バッジ/スナックバーを確認、manualRefresh時のwarnも捕捉
+- 安定性: helpers/models/logging/providers/pages 一貫、withValues置換済
+- 次: CIを必須チェックに設定→PRマージ→継続監査へ移行

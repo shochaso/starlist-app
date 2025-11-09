@@ -1,0 +1,1 @@
+security_tab: code scanning visible; artifacts: sbom/gitleaks present
