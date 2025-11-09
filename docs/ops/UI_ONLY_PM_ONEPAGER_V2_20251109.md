@@ -65,3 +65,15 @@
 - Screenshot:
   - docs/ops/audit/branch_protection_ok.png
 
+
+## Evidence (Locked)
+
+- PR: https://github.com/shochaso/starlist-app/pull/45
+
+- Logs:
+  - docs/ops/audit/logs/markdownlint_202511091932.log
+  - docs/ops/audit/logs/linkcheck_202511091933.log
+
+- Screenshot:
+  - docs/ops/audit/branch_protection_ok.png
+
