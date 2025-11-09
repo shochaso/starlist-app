@@ -1,0 +1,8 @@
+sequenceDiagram
+  participant App
+  participant Edge
+  participant DB
+  App->>Edge: POST /telemetry
+  Edge->>DB: insert ops_metrics
+  DB-->>Edge: ok
+  Edge-->>App: 200 ok

@@ -11,6 +11,18 @@
     },
     {
       "pattern": "^https://zjwvmoxpacbpwawlwbrd.functions.supabase.co"
+    },
+    {
+      "pattern": "https://admin\\.google\\.com"
+    },
+    {
+      "pattern": "https://github\\.com/orgs/starlist-app"
+    },
+    {
+      "pattern": "\\.mermaid$"
+    },
+    {
+      "pattern": "cdn\\.jsdelivr\\.net.*%22"
     }
   ],
   "retryOn429": true,
