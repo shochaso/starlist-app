@@ -4,12 +4,8 @@
 // Last-Updated:: 2025-11-07
 
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import type { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { HttpError, buildCorsHeaders, createServiceClient, enforceOpsSecret, jsonResponse, requireUser, safeLog } from "./shared.ts";
 
 interface AlertQuery {
   dry_run?: boolean;
@@ -19,7 +15,7 @@ interface AlertQuery {
 serve(async (req) => {
   // CORS preflight
   if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
+    return new Response("ok", { headers: buildCorsHeaders(req) });
   }
 
   try {
@@ -29,32 +25,16 @@ serve(async (req) => {
 
     const dryRun = query.dry_run !== false; // デフォルトtrue
 
-    // Authentication check (skip for dryRun mode in CI/testing)
-    const authHeader = req.headers.get("authorization");
-    if (!dryRun && !authHeader) {
-      return new Response(
-        JSON.stringify({ error: "Unauthorized: Missing authorization header" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
+    enforceOpsSecret(req);
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    
-    // Create client with user's JWT for RLS validation (if provided)
-    const supabase = createClient(supabaseUrl, supabaseServiceKey, 
-      authHeader ? { global: { headers: { Authorization: authHeader } } } : {}
-    );
-
-    // Verify the user is authenticated (skip for dryRun)
+    let supabase: SupabaseClient;
     if (!dryRun) {
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
-      if (authError || !user) {
-        return new Response(
-          JSON.stringify({ error: "Unauthorized: Invalid or expired token" }),
-          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
+      const auth = await requireUser(req, supabaseUrl, supabaseServiceKey, { requireOpsClaim: true });
+      supabase = auth.supabase;
+    } else {
+      supabase = createServiceClient(supabaseUrl, supabaseServiceKey);
     }
     const minutes = Number(query.minutes) || 15;
 
@@ -68,11 +48,8 @@ serve(async (req) => {
       .order("ts_ingested", { ascending: false });
 
     if (error) {
-      console.error("[ops-alert] Query error:", error);
-      return new Response(
-        JSON.stringify({ error: "Query failed", details: error.message }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      safeLog("ops-alert", "Query error", error);
+      return jsonResponse({ error: "Query failed", details: error.message }, 500, req);
     }
 
     // 集計計算
@@ -140,27 +117,22 @@ serve(async (req) => {
             .insert(alertHistoryRecords);
 
           if (insertError) {
-            console.error("[ops-alert] Failed to save alert history:", insertError);
+            safeLog("ops-alert", "Failed to save alert history", insertError);
           } else {
             console.log("[ops-alert] Alert history saved:", alertHistoryRecords.length, "records");
           }
         } catch (historyError) {
-          console.error("[ops-alert] Error saving alert history:", historyError);
+          safeLog("ops-alert", "Error saving alert history", historyError);
         }
       }
     }
 
-    return new Response(
-      JSON.stringify(result),
-      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return jsonResponse(result, 200, req);
   } catch (error) {
-    console.error("[ops-alert] Error:", error);
-    return new Response(
-      JSON.stringify({ error: String(error), dryRun: true }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    if (error instanceof HttpError) {
+      return jsonResponse({ error: error.message }, error.status, req);
+    }
+    safeLog("ops-alert", "Error", error);
+    return jsonResponse({ error: "Internal server error", dryRun: true }, 500, req);
   }
 });
-
-

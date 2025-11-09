@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
 import '../providers/ops_metrics_provider.dart';
+import '../models/ops_alert_model.dart';
 import '../models/ops_metrics_series_model.dart';
 import '../models/ops_health_model.dart';
 

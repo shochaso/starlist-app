@@ -4,12 +4,7 @@
 // Last-Updated:: 2025-11-07
 
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { HttpError, buildCorsHeaders, enforceOpsSecret, jsonResponse, requireUser, safeLog } from "./shared.ts";
 
 interface HealthQuery {
   period?: string; // '1h', '6h', '24h', '7d'
@@ -39,30 +34,11 @@ serve(async (req) => {
       ? Object.fromEntries(new URL(req.url).searchParams.entries())
       : await req.json().catch(() => ({})) as HealthQuery;
 
-    // Authentication check
-    const authHeader = req.headers.get("authorization");
-    if (!authHeader) {
-      return new Response(
-        JSON.stringify({ error: "Unauthorized: Missing authorization header" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
+    enforceOpsSecret(req);
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    
-    const supabase = createClient(supabaseUrl, supabaseServiceKey, 
-      { global: { headers: { Authorization: authHeader } } }
-    );
-
-    // Verify the user is authenticated
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return new Response(
-        JSON.stringify({ error: "Unauthorized: Invalid or expired token" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
+    const { supabase } = await requireUser(req, supabaseUrl, supabaseServiceKey, { requireOpsClaim: true });
 
     const period = query.period || '24h';
     const periodMinutes: Record<string, number> = {
@@ -94,7 +70,7 @@ serve(async (req) => {
     const { data: alerts, error: alertsError } = await alertQuery;
 
     if (alertsError) {
-      console.error("[ops-health] Alert history query error:", alertsError);
+      safeLog("ops-health", "Alert history query error", alertsError);
       throw alertsError;
     }
 
@@ -118,27 +94,20 @@ serve(async (req) => {
     const { data: metrics, error: metricsError } = await metricsQuery;
 
     if (metricsError) {
-      console.error("[ops-health] Metrics query error:", metricsError);
+      safeLog("ops-health", "Metrics query error", metricsError);
       throw metricsError;
     }
 
     // Aggregate health metrics
     const aggregations = aggregateHealthMetrics(alerts || [], metrics || [], query);
 
-    return new Response(
-      JSON.stringify({
-        ok: true,
-        period,
-        aggregations,
-      }),
-      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return jsonResponse({ ok: true, period, aggregations }, 200, req);
   } catch (error) {
-    console.error("[ops-health] Error:", error);
-    return new Response(
-      JSON.stringify({ error: String(error) }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    if (error instanceof HttpError) {
+      return jsonResponse({ error: error.message }, error.status, req);
+    }
+    safeLog("ops-health", "Error", error);
+    return jsonResponse({ error: "Internal server error" }, 500, req);
   }
 });
 
@@ -231,4 +200,3 @@ function aggregateHealthMetrics(
 
   return aggregations;
 }
-

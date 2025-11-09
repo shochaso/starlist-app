@@ -47,4 +47,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - モデル: `OpsMetricsSeriesPoint`, `OpsMetricsFilter`, `OpsMetricsKpi`
 - プロバイダー: `opsMetricsFilterProvider`, `opsMetricsSeriesProvider`, `opsMetricsKpiProvider`, `opsMetricsAutoRefreshProvider`
 - テスト: モデル単体テスト追加
-

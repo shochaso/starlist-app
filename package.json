@@ -7,6 +7,8 @@
   },
   "engineStrict": true,
   "scripts": {
+    "sbom:npm": "pnpx -y @cyclonedx/cyclonedx-npm --output-file sbom-npm.json",
+    "sbom:dart": "dart pub global activate cyclonedx_dart && cyclonedx-dart > sbom-dart.json"
     "preinstall": "node -e \"const v=process.versions.node.split('.')[0]; if(Number(v)<20){console.error('Node>=20 required. Run `nvm use`'); process.exit(1)}\"",
     "start:bs": "browser-sync start --config bs-config.js",
     "dev": "echo 'Run: npm run start:bs in separate terminal, then ./scripts/c.sh'",

@@ -282,4 +282,3 @@ having count(*) > 1;
 - `docs/ops/OPS-HEALTH-DASHBOARD-001.md` - OPS Health Dashboard仕様
 - `docs/ops/OPS-ALERT-AUTOMATION-001.md` - OPS Alert Automation仕様
 - `supabase/functions/ops-health/index.ts` - ops-health Edge Function実装
-

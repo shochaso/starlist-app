@@ -12,6 +12,7 @@ jobs:
   send:
     runs-on: ubuntu-latest
     env:
+      OPS_SERVICE_SECRET: ${{ secrets.OPS_SERVICE_SECRET }}
       SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
       SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
       RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
@@ -39,7 +40,7 @@ jobs:
 
       - name: Validate required secrets
         run: |
-          required=(SUPABASE_URL SUPABASE_ANON_KEY)
+          required=(SUPABASE_URL SUPABASE_ANON_KEY OPS_SERVICE_SECRET RESEND_API_KEY RESEND_FROM RESEND_TO_LIST)
           missing=0
           for v in "${required[@]}"; do
             if [ -z "${!v}" ]; then
@@ -78,40 +79,28 @@ jobs:
         run: |
           set -euo pipefail
           set -x
-          BASE="$SUPABASE_URL"
-          URL="${BASE%/}/functions/v1/ops-summary-email?dryRun=true"
-          curl -sS -D /tmp/h -o /tmp/body \
+          RESPONSE=$(curl --fail --show-error --retry 3 --retry-all-errors --max-time 30 \
             -H "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
-            -H "apikey: ${SUPABASE_ANON_KEY}" \
+            -H "x-ops-secret: ${OPS_SERVICE_SECRET}" \
             -H "Content-Type: application/json" \
-            "$URL" || exit 1
-          set +x
-          echo "--- headers ---"
-          cat /tmp/h
-          echo "--- body ---"
-          cat /tmp/body
-          echo ""
-          echo "--- validation ---"
-          cat /tmp/body | jq -e '.ok == true and (.preview|length>0)' || exit 1
+            "${SUPABASE_URL}/functions/v1/ops-summary-email?dryRun=true")
+          echo "Response:"
+          echo "$RESPONSE" | jq .
+          echo "$RESPONSE" | jq -e '.ok == true and (.preview|length>0)' || exit 1
           echo "[ops-summary-email] dryrun success"
 
       - name: Send Weekly Email (prod)
         if: ${{ github.event_name == 'schedule' }}
-        env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
         run: |
           set -euo pipefail
           RESPONSE=$(curl --fail --show-error --retry 3 --retry-all-errors --max-time 30 \
             -H "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
+            -H "x-ops-secret: ${OPS_SERVICE_SECRET}" \
             -H "Content-Type: application/json" \
             -X POST \
             "${SUPABASE_URL}/functions/v1/ops-summary-email" \
             -d '{}')
-          
           echo "Response:"
           echo "$RESPONSE" | jq .
-          
           echo "$RESPONSE" | jq -e '.ok == true' || exit 1
           echo "[ops-summary-email] weekly email sent"
-
