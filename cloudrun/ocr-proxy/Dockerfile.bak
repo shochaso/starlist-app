@@ -13,8 +13,3 @@ ENV PORT=8080
 EXPOSE 8080
 
 CMD ["node", "index.js"]
-
-# --- Security hardening (Trivy AVD-DS-0002) ---
-# Create unprivileged user and switch
-RUN addgroup --system app && adduser --system --ingroup app app
-USER app:app

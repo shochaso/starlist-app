@@ -21,12 +21,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/cache@v4
-        with:
-          path: ~/.cache/trivy
-          key: trivy-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml' , '**/package-lock.json' ) }}
-          restore-keys: trivy-${{ runner.os }}-
-
       - name: Prepare SBOM directory
         run: mkdir -p security-reports/sbom
       - name: Generate SBOM
@@ -45,12 +39,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/cache@v4
-        with:
-          path: ~/.cache/trivy
-          key: trivy-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml' , '**/package-lock.json' ) }}
-          restore-keys: trivy-${{ runner.os }}-
-
       - name: Setup Python
         uses: actions/setup-python@v5
       - name: Install Semgrep
@@ -75,12 +63,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/cache@v4
-        with:
-          path: ~/.cache/trivy
-          key: trivy-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml' , '**/package-lock.json' ) }}
-          restore-keys: trivy-${{ runner.os }}-
-
       - name: Prepare Trivy directory
         run: mkdir -p security-reports
       - name: Setup Trivy
