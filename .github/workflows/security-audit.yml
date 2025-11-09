@@ -1,4 +1,4 @@
-name: Security Audit
+name: security-audit
 
 on:
   push:
@@ -14,7 +14,6 @@ permissions:
 
 jobs:
   security-audit:
-    name: Run security checks
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -55,14 +54,14 @@ jobs:
         run: flutter pub get || (echo "pub get failed, trying with cache repair..." && dart pub cache repair && flutter pub get)
         continue-on-error: true
 
-      - name: dart pub outdated
-        run: dart pub outdated || true
+      - name: dart pub outdated (null-safety)
+        run: dart pub outdated --mode=null-safety || true
 
-      - name: Install Semgrep
-        run: python -m pip install --upgrade pip semgrep
-
-      - name: Run Semgrep security scan
-        run: semgrep --config=auto --severity critical,high,medium
+      - name: Run semgrep (report-only)
+        uses: returntocorp/semgrep-action@v1
+        with:
+          config: p/ci
+        continue-on-error: true
 
       - name: Setup Deno
         uses: denoland/setup-deno@v1

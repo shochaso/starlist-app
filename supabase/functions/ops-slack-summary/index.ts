@@ -224,14 +224,20 @@ function generateSlackMessage(
     comment = "通知数が少ない。閾値見直し検討。";
   }
 
+  // Calculate trend icons (↑↓→)
+  const normalIcon = normalChange.startsWith("+") ? "↑" : normalChange.startsWith("-") ? "↓" : "→";
+  const warningIcon = warningChange.startsWith("+") ? "↑" : warningChange.startsWith("-") ? "↓" : "→";
+  const criticalIcon = criticalChange.startsWith("+") ? "↑" : criticalChange.startsWith("-") ? "↓" : "→";
+
   return `📊 OPS Summary Report（${reportWeek}）
 ────────────────────────────
-✅ 正常通知：${normal}件（前週比 ${normalChange}）
-⚠ 警告通知：${warning}件（${warningChange}）
-🔥 重大通知：${critical}件（${criticalChange}）
+✅ 正常通知：${normal}件（前週比 ${normalIcon} ${normalChange.replace(/^[+-]/, "")}）
+⚠ 警告通知：${warning}件（前週比 ${warningIcon} ${warningChange.replace(/^[+-]/, "")}）
+🔥 重大通知：${critical}件（前週比 ${criticalIcon} ${criticalChange.replace(/^[+-]/, "")}）
 
-📈 通知平均：${meanNotifications}件 / σ=${stdDev}
-🔧 新閾値：${newThreshold}件（μ+2σ）
+📈 通知平均：${meanNotifications.toFixed(1)}件 / σ=${stdDev.toFixed(1)}
+🔧 新閾値：${newThreshold.toFixed(1)}件（μ+2σ）
+🚨 重大閾値：${thresholds.criticalThreshold.toFixed(1)}件（μ+3σ）
 
 📅 次回自動閾値再算出：${nextDate}（月）
 ────────────────────────────
@@ -448,4 +454,5 @@ serve(async (req: Request): Promise<Response> => {
     );
   }
 });
+
 

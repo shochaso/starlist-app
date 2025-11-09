@@ -19,12 +19,14 @@ repos:
     hooks:
       - id: gitleaks
         args: ['--config-path', '.gitleaks.toml']
+        description: "Detect hardcoded secrets and credentials"
 
   - repo: https://github.com/dart-lang/dart_style
     rev: 3.0.0
     hooks:
       - id: dartfmt
         files: \.dart$
+        description: "Format Dart code"
 
   - repo: local
     hooks:
@@ -34,4 +36,4 @@ repos:
         language: system
         files: \.dart$
         pass_filenames: false
-
+        description: "Analyze Dart code for errors and warnings"
