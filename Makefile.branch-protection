@@ -1,4 +1,4 @@
-# Branch Protection Management Makefile
+# name=Makefile.branch-protection
 OWNER ?= shochaso
 REPO  ?= starlist-app
 BRANCH?= main
@@ -14,7 +14,7 @@ guard:
 
 contexts:
 	@mkdir -p /tmp/bp
-	@gh api repos/$(OWNER)/$(REPO)/commits/$(BRANCH)/check-runs -H "Accept: application/vnd.github+json" \
+	@gh api repos/$(OWNER)/$(REPO)/commits/${BRANCH}/check-runs -H "Accept: application/vnd.github+json" \
 	 | jq -r '.check_runs[]?.name' | sort -u | jq -R . | jq -s 'unique' \
 	 | jq -n --argjson ctxs "$$(cat)" '["security-scan"] as $$base | ($$base + $$ctxs) | unique' > $(CTX)
 	@echo "contexts:" && cat $(CTX) | jq .
@@ -53,7 +53,7 @@ status:
 evidence:
 	@mkdir -p docs/ops/audit/logs docs/ops/audit/artifacts/extended-security-$(RUN_ID)
 	@gh run view $(RUN_ID) --repo $(OWNER)/$(REPO) --log > docs/ops/audit/logs/extended-security-$(RUN_ID).log
-	-@cp -r artifacts/extended-security-$(RUN_ID)/* docs/ops/audit/artifacts/extended-security-$(RUN_ID)/
+	-@cp -r artifacts/extended-security-$(RUN_ID)/* docs/ops/audit/artifacts/extended-security-$(RUN_ID)/ 2>/dev/null || true
 	@if [ -f docs/ops/audit/branch_protection_ok.png ]; then \
 	  shasum -a 256 docs/ops/audit/branch_protection_ok.png | tee docs/ops/audit/logs/sha_branch_protection_ok.txt ; \
 	  file docs/ops/audit/branch_protection_ok.png | tee docs/ops/audit/logs/file_branch_protection_ok.txt ; \
