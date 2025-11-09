@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Flutter Web with BrowserSync for instant reload",
   "engines": {
-    "node": ">=20 <21"
+    "node": "20.x"
   },
   "engineStrict": true,
   "scripts": {
