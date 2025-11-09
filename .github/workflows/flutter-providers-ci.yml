@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - 'lib/src/features/ops/providers/**'
+      - 'lib/src/features/ops/helpers/**'
       - 'test/src/features/ops/providers/**'
       - 'lib/src/features/ops/screens/ops_dashboard_page.dart'
 

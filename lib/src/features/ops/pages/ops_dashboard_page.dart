@@ -4,8 +4,10 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../helpers/ops_dashboard_helpers.dart';
+import '../models/dashboard_models.dart';
 import '../models/ops_alert_model.dart';
-import '../models/ops_metrics_model.dart';
+import '../models/ops_metrics_series_model.dart';
 import '../providers/ops_metrics_provider.dart';
 
 class OpsDashboardPage extends ConsumerStatefulWidget {
@@ -36,19 +38,19 @@ class _OpsDashboardPageState extends ConsumerState<OpsDashboardPage> {
               ref.read(opsMetricsAuthErrorProvider.notifier).state = false,
           loading: () {},
           error: (error, _) {
-            final isAuthError = _isAuthorizationError(error);
+            final isAuthError = isAuthorizationError(error);
             ref.read(opsMetricsAuthErrorProvider.notifier).state = isAuthError;
-            final badge = _formatFilterBadge(ref.read(opsMetricsFilterProvider));
-            final message = isAuthError
-                ? '権限がありません $badge'
-                : 'メトリクスの取得に失敗しました: $error';
+            final badge = formatFilterBadge(ref.read(opsMetricsFilterProvider));
+            final message =
+                isAuthError ? '権限がありません $badge' : 'メトリクスの取得に失敗しました: $error';
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(message),
                 action: SnackBarAction(
                   label: '再読込',
-                  onPressed: () =>
-                      ref.read(opsMetricsSeriesProvider.notifier).manualRefresh(),
+                  onPressed: () => ref
+                      .read(opsMetricsSeriesProvider.notifier)
+                      .manualRefresh(),
                 ),
               ),
             );
@@ -87,8 +89,8 @@ class _OpsDashboardPageState extends ConsumerState<OpsDashboardPage> {
             _AutoRefreshIndicator(asyncValue: metricsAsync),
             const SizedBox(height: 12),
             metricsAsync.when(
-              data: (metrics) =>
-                  _buildDashboardContent(context, ref, metrics, alerts),
+              data: (metrics) => _buildDashboardContent(
+                  context, ref, metrics, alerts.value ?? []),
               loading: () => const _LoadingState(),
               error: (error, stackTrace) => _ErrorState(
                 error: error,
@@ -121,23 +123,12 @@ class _OpsDashboardPageState extends ConsumerState<OpsDashboardPage> {
       children: [
         _KpiRow(summary: summary),
         const SizedBox(height: 16),
-        _MetricsCharts(metrics: metrics, scrollController: _chartScrollController),
+        _MetricsCharts(
+            metrics: metrics, scrollController: _chartScrollController),
         const SizedBox(height: 16),
         _AlertsCard(alerts: alerts),
       ],
     );
-  }
-
-  bool _isAuthorizationError(Object error) {
-    final lower = error.toString().toLowerCase();
-    return lower.contains('401') || lower.contains('403') || lower.contains('forbidden');
-  }
-
-  String _formatFilterBadge(OpsMetricsFilter filter) {
-    final env = filter.env ?? 'env:ALL';
-    final app = filter.app ?? 'app:ALL';
-    final event = filter.eventType ?? 'event:ALL';
-    return '($env / $app / $event)';
   }
 }
 
@@ -186,7 +177,8 @@ class _FilterRow extends ConsumerWidget {
             label: 'Event',
             value: filter.eventType,
             options: eventOptions,
-            onChanged: ref.read(opsMetricsFilterProvider.notifier).updateEventType,
+            onChanged:
+                ref.read(opsMetricsFilterProvider.notifier).updateEventType,
           ),
           DropdownButton<int>(
             value: filter.sinceMinutes,
@@ -423,7 +415,8 @@ class _MetricsCharts extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final width = math.max(metrics.length * 32.0, MediaQuery.of(context).size.width - 32);
+    final width =
+        math.max(metrics.length * 32.0, MediaQuery.of(context).size.width - 32);
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -532,8 +525,10 @@ class _P95LineChart extends StatelessWidget {
               getTitlesWidget: (value, meta) => Text('${value.toInt()} ms'),
             ),
           ),
-          topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          topTitles:
+              const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          rightTitles:
+              const AxisTitles(sideTitles: SideTitles(showTitles: false)),
         ),
         lineBarsData: segments
             .map(
@@ -545,7 +540,10 @@ class _P95LineChart extends StatelessWidget {
                 belowBarData: BarAreaData(
                   show: true,
                   gradient: LinearGradient(
-                    colors: [Colors.blue.withOpacity(0.3), Colors.transparent],
+                    colors: [
+                      Colors.blue.withValues(alpha: 0.3),
+                      Colors.transparent
+                    ],
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                   ),
@@ -586,13 +584,17 @@ class _SuccessErrorBarChart extends StatelessWidget {
     });
 
     final maxTotal = groups.fold<double>(
-        0, (previousValue, element) => math.max(previousValue, element.barRods.first.toY));
+        0,
+        (previousValue, element) =>
+            math.max(previousValue, element.barRods.first.toY));
 
     return BarChart(
       BarChartData(
         maxY: maxTotal == 0 ? 10 : maxTotal * 1.2,
         barGroups: groups,
-        gridData: FlGridData(show: true, horizontalInterval: (maxTotal / 5).clamp(1, double.infinity)),
+        gridData: FlGridData(
+            show: true,
+            horizontalInterval: (maxTotal / 5).clamp(1, double.infinity)),
         titlesData: FlTitlesData(
           bottomTitles: AxisTitles(
             sideTitles: SideTitles(
@@ -620,8 +622,10 @@ class _SuccessErrorBarChart extends StatelessWidget {
               getTitlesWidget: (value, meta) => Text(value.toInt().toString()),
             ),
           ),
-          topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          topTitles:
+              const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          rightTitles:
+              const AxisTitles(sideTitles: SideTitles(showTitles: false)),
         ),
         borderData: FlBorderData(show: false),
       ),

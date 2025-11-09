@@ -10,6 +10,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/config/supabase_client_provider.dart';
+import '../logging/log_adapter.dart';
 import '../models/ops_alert_model.dart';
 import '../models/ops_health_model.dart';
 import '../models/ops_metrics_model.dart';
@@ -80,24 +81,24 @@ class OpsMetricsSeriesNotifier
   Future<List<OpsMetricsSeriesPoint>>? _inFlight;
   DateTime? _lastFetchAt;
   int? _lastFilterHash;
+  late final LogAdapter _log;
 
   @override
   Future<List<OpsMetricsSeriesPoint>> build() async {
     ref.onDispose(_cancelTimer);
+    _log = LogAdapter(tag: 'ops-metrics');
     _scheduleRefresh();
     final filter = ref.watch(opsMetricsFilterProvider);
-    return _refreshWithFilter(filter);
+    return _refreshWithFilter(filter, kind: 'initial');
   }
 
   Future<void> manualRefresh() async {
     final filter = ref.read(opsMetricsFilterProvider);
-    debugPrint(
-        '[opsMetricsSeries] manual refresh triggered for ${_filterLabel(filter)}');
     state = const AsyncLoading();
-    final nextState =
-        await AsyncValue.guard(() => _refreshWithFilter(filter, force: true));
-    debugPrint(
-        '[opsMetricsSeries] manual refresh completed for ${_filterLabel(filter)}');
+    _log.info('manual', 'refresh triggered ${_filterLabel(filter)}');
+    final nextState = await AsyncValue.guard(() =>
+        _refreshWithFilter(filter, force: true, kind: 'manual'));
+    _log.info('manual', 'refresh complete ${_filterLabel(filter)}');
     state = nextState;
   }
 
@@ -105,6 +106,7 @@ class OpsMetricsSeriesNotifier
     _autoRefreshTimer ??= Timer.periodic(_autoRefreshInterval, (_) {
       _triggerAutoRefresh();
     });
+    _log.info('timer', 'scheduled interval=30s');
   }
 
   void _cancelTimer() {
@@ -114,15 +116,16 @@ class OpsMetricsSeriesNotifier
 
   Future<void> _triggerAutoRefresh() async {
     final filter = ref.read(opsMetricsFilterProvider);
-    debugPrint(
-        '[opsMetricsSeries] auto-refresh triggered for ${_filterLabel(filter)}');
-    final nextState = await AsyncValue.guard(() => _refreshWithFilter(filter));
+    _log.info('auto', 'triggered ${_filterLabel(filter)}');
+    final nextState =
+        await AsyncValue.guard(() => _refreshWithFilter(filter, kind: 'auto'));
     state = nextState;
   }
 
   Future<List<OpsMetricsSeriesPoint>> _refreshWithFilter(
     OpsMetricsFilter filter, {
     bool force = false,
+    String kind = 'auto',
   }) async {
     final now = DateTime.now();
     final filterHash = _hashFilter(filter);
@@ -132,8 +135,7 @@ class OpsMetricsSeriesNotifier
         now.difference(_lastFetchAt!) < _dedupeWindow;
 
     if (recentlyFetched) {
-      debugPrint(
-          '[opsMetricsSeries] dedupe skip for ${_filterLabel(filter)} (cached within $_dedupeWindow)');
+      _log.info('fetch', 'dedupe skip kind=$kind hash=$filterHash');
       final cached = state.value;
       if (cached != null) {
         return cached;
@@ -148,9 +150,12 @@ class OpsMetricsSeriesNotifier
     _inFlight = future;
 
     try {
+      final sw = Stopwatch()..start();
       final data = await future;
       _lastFetchAt = DateTime.now();
       _lastFilterHash = filterHash;
+      _log.info('fetch',
+          'kind=$kind ms=${sw.elapsedMilliseconds} pts=${data.length} hash=$filterHash ${_filterLabel(filter)}');
       return data;
     } finally {
       if (identical(_inFlight, future)) {

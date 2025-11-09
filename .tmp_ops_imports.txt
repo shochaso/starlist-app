@@ -1,0 +1,8 @@
+lib/core/navigation/app_router.dart:11:import 'package:starlist_app/src/features/ops/screens/ops_dashboard_page.dart';
+lib/src/features/ops/models/ops_alert_model.dart:2:// Source-of-Truth:: lib/src/features/ops/models/ops_alert_model.dart
+lib/src/features/ops/models/ops_health_model.dart:2:// Source-of-Truth:: lib/src/features/ops/models/ops_health_model.dart
+lib/src/features/ops/models/ops_metrics_model.dart:2:// Source-of-Truth:: lib/src/features/ops/models/ops_metrics_model.dart
+lib/src/features/ops/models/ops_metrics_series_model.dart:2:// Source-of-Truth:: lib/src/features/ops/models/ops_metrics_series_model.dart
+lib/src/features/ops/ops_telemetry.dart:2:// Source-of-Truth:: lib/src/features/ops/ops_telemetry.dart
+lib/src/features/ops/providers/ops_metrics_provider.dart:2:// Source-of-Truth:: lib/src/features/ops/providers/ops_metrics_provider.dart
+lib/src/features/ops/screens/ops_dashboard_page.dart:2:// Source-of-Truth:: lib/src/features/ops/screens/ops_dashboard_page.dart
