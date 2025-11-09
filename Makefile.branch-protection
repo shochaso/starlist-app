@@ -15,18 +15,18 @@ guard:
 contexts:
 	@mkdir -p /tmp/bp
 	@gh api repos/$(OWNER)/$(REPO)/commits/${BRANCH}/check-runs -H "Accept: application/vnd.github+json" \
-	 | jq -r '.check_runs[]?.name' | sort -u | jq -R . | jq -s 'unique' \
-	 | jq -n --argjson ctxs "$$(cat)" '["security-scan"] as $$base | ($$base + $$ctxs) | unique' > $(CTX)
+	 | jq -r '.check_runs[]?.name' | sort -u | jq -R . | jq -s 'unique' > /tmp/bp/contexts_array.json
+	@jq -n --slurpfile ctxs /tmp/bp/contexts_array.json '["security-scan"] as $$base | ($$base + ($$ctxs[0]|map(tostring))) | unique' > $(CTX)
 	@echo "contexts:" && cat $(CTX) | jq .
 
 soft.json: contexts
-	@jq -n --argjson contexts "$$(cat $(CTX))" \
-	'{"required_status_checks":{"strict":false,"contexts":$$contexts},"enforce_admins":false,"required_pull_request_reviews":{"required_approving_review_count":1},"restrictions":null}' > $(SOFT)
+	@jq -n --slurpfile contexts $(CTX) \
+	'{"required_status_checks":{"strict":false,"contexts":$$contexts[0]},"enforce_admins":false,"required_pull_request_reviews":{"required_approving_review_count":1},"restrictions":null}' > $(SOFT)
 	@cat $(SOFT) | jq .
 
 hard.json: contexts
-	@jq -n --argjson contexts "$$(cat $(CTX))" \
-	'{"required_status_checks":{"strict":true,"contexts":$$contexts},"enforce_admins":true,"required_pull_request_reviews":{"required_approving_review_count":1},"restrictions":null}' > $(HARD)
+	@jq -n --slurpfile contexts $(CTX) \
+	'{"required_status_checks":{"strict":true,"contexts":$$contexts[0]},"enforce_admins":true,"required_pull_request_reviews":{"required_approving_review_count":1},"restrictions":null}' > $(HARD)
 	@cat $(HARD) | jq .
 
 protect-soft: guard soft.json
