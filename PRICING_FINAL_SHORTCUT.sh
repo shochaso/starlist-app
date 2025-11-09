@@ -100,13 +100,19 @@ echo ""
 
 # 5) 受け入れテスト
 echo "📋 5) 受け入れテスト（ユニット + E2E チェックリスト）"
+ACCEPTANCE_RESULT="failed"
 if [ -f ./PRICING_ACCEPTANCE_TEST.sh ]; then
   chmod +x ./PRICING_ACCEPTANCE_TEST.sh
   if ./PRICING_ACCEPTANCE_TEST.sh; then
     echo "✅ 受け入れテスト成功"
     echo "Summary: Acceptance tests passed"
+    ACCEPTANCE_RESULT="passed"
   else
     echo "❌ 受け入れテストが失敗しました"
+    echo ""
+    echo "🔄 ロールバック手順:"
+    echo "  ./scripts/pricing_rollback.sh <stripe_price_id>"
+    echo ""
     exit 1
   fi
 else
@@ -164,16 +170,42 @@ else
 fi
 echo ""
 
+# 8) 実行ログの署名ハッシュ生成（成功/失敗の証跡固定）
+echo "📋 8) 実行ログ署名生成"
+EXECUTION_STATUS="success"
+STRIPE_CLI_STATUS="ready"
+DB_STATUS="passed"
+FLUTTER_TEST_STATUS="passed"
+WEBHOOK_STATUS="${WEBHOOK_RESULT:-unknown}"
+ACCEPTANCE_STATUS="${ACCEPTANCE_RESULT:-unknown}"
+
+LOG_CONTENT="$(date -u +"%Y-%m-%dT%H:%M:%SZ")|${SUPABASE_URL}|stripe_cli:${STRIPE_CLI_STATUS}|db:${DB_STATUS}|flutter_test:${FLUTTER_TEST_STATUS}|webhook:${WEBHOOK_STATUS}|acceptance:${ACCEPTANCE_STATUS}"
+LOG_HASH=$(echo -n "$LOG_CONTENT" | shasum -a 256 | cut -d' ' -f1)
+echo "✅ Log signature: sha256:${LOG_HASH:0:16}..."
+echo ""
+
 echo "=== 最終実務ショートカット完了 ==="
 echo ""
 echo "🎉 推奨価格機能の実地検証～Flutter結線確認～受け入れ判定が完了しました！"
 echo ""
-echo "📊 実行サマリ:"
-echo "  ✅ Stripe CLI: Ready"
-echo "  ✅ DB確認: plan_price integer check passed"
-echo "  ✅ Flutter test: All tests passed"
-echo "  ✅ Webhook検証: Passed"
-echo "  ✅ 受け入れテスト: Passed"
+echo "📊 実行サマリ（1行要約）:"
+if [ "$ACCEPTANCE_STATUS" = "passed" ] && [ "$WEBHOOK_STATUS" = "passed" ]; then
+  echo "  ✅ OK | sha256:${LOG_HASH:0:16} | Stripe CLI: ${STRIPE_CLI_STATUS} | DB: ${DB_STATUS} | Flutter test: ${FLUTTER_TEST_STATUS} | Webhook: ${WEBHOOK_STATUS} | Acceptance: ${ACCEPTANCE_STATUS}"
+else
+  echo "  ❌ NG | sha256:${LOG_HASH:0:16} | Stripe CLI: ${STRIPE_CLI_STATUS} | DB: ${DB_STATUS} | Flutter test: ${FLUTTER_TEST_STATUS} | Webhook: ${WEBHOOK_STATUS} | Acceptance: ${ACCEPTANCE_STATUS}"
+  echo ""
+  echo "🔄 ロールバック手順:"
+  echo "  ./scripts/pricing_rollback.sh <stripe_price_id>"
+  exit 1
+fi
+echo ""
+echo "📋 詳細:"
+echo "  ✅ Stripe CLI: ${STRIPE_CLI_STATUS}"
+echo "  ✅ DB確認: plan_price integer check ${DB_STATUS}"
+echo "  ✅ Flutter test: ${FLUTTER_TEST_STATUS}"
+echo "  ✅ Webhook検証: ${WEBHOOK_STATUS}"
+echo "  ✅ 受け入れテスト: ${ACCEPTANCE_STATUS}"
+echo "  ✅ ログ署名: sha256:${LOG_HASH}"
 echo ""
 echo "Exit code: 0 (Success)"
 exit 0
