@@ -1,18 +1,11 @@
-# Branch Protection Verification Screenshot
+# Branch Protection Screenshot Placeholder
 
-This file is a placeholder for the branch protection verification screenshot.
+This file is a placeholder. Please take a screenshot of the Branch Protection verification via GitHub UI and save it as: branch_protection_ok.png
 
 **Instructions**:
 1. Go to GitHub Settings → Branches → Branch protection rules → main
 2. Verify required checks: extended-security, Docs Link Check
-3. Verify merge strategy: Squash only, Linear history
-4. Take a screenshot and save as: `branch_protection_ok.png`
-5. Place it in: `docs/ops/audit/`
-
-**Verification Steps**:
-1. Create a dummy PR with a minor docs change
-2. Verify that Merge button is blocked when checks are not passing
-3. Verify that Merge button is enabled when checks pass
-4. Take screenshot of the blocked state and enabled state
+3. Create a dummy PR and verify Merge button is blocked when checks are not passing
+4. Take screenshot and save as: docs/ops/audit/branch_protection_ok.png
 
 **Status**: Pending (to be completed via UI)
