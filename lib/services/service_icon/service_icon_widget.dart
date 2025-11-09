@@ -142,7 +142,7 @@ class ServiceIcon extends StatelessWidget {
   }
 
   Widget _buildAssetIcon(String path) {
-    // NOTE: Image.asset and SvgPicture.asset are restricted in lib/services
+    // NOTE: Asset-based image loaders are restricted in lib/services
     // by rg-guard workflow. Use CDN-based resolution instead.
     // This method now delegates to dynamic icon resolution via registry.
     final normalized =
