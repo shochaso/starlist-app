@@ -8,30 +8,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Setup Node.js 20
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - name: Verify Node.js version
-        run: |
-          NODE_VERSION=$(node -v | cut -d'v' -f2 | cut -d'.' -f1)
-          if [ "$NODE_VERSION" -lt 20 ]; then
-            echo "::error::Node.js version must be >= 20. Current: $(node -v)"
-            exit 1
-          fi
-          echo "✅ Node.js version: $(node -v)"
       - name: Install dependencies
         run: npm ci || npm install
       - name: Install markdown-link-check
-        run: npm install -g markdown-link-check
+        run: npm ci || npm install && npm install -g markdown-link-check
         continue-on-error: true
       - name: Create lychee config (if using lychee)
         run: |
           printf '%s\n' 'exclude = ["^https://zjwvmoxpacbpwawlwbrd.functions.supabase.co"]' > .lychee.toml
-        continue-on-error: true
-      - name: Run docs:preflight (update dates → link check → diff log)
-        if: github.event_name == 'pull_request'
-        run: npm run docs:preflight || true
         continue-on-error: true
       - name: Run link check
         run: npm run lint:md || true
@@ -44,29 +31,6 @@ jobs:
             dir=$(dirname "$file")
             awk -v dir="$dir" 'match($0,/\]\(([^):#?]+)(#[^)]+)?\)/,m) {
               rel = m[1]
-              if (rel !~ /^https?:\/\// && rel !~ /^mailto:/ && rel !~ /^#/) {
-                if (rel ~ /^\//) {
-                  target = "." rel
-                } else {
-                  target = dir "/" rel
-                }
-                gsub(/\/\.\//, "/", target)
-                while (target ~ /\/[^\/]+\/\.\.\//) {
-                  gsub(/\/[^\/]+\/\.\.\//, "/", target)
-                }
-                if (!system("test -f \"" target "\" || test -d \"" target "\"")) {
-                  # Link is valid
-                } else {
-                  print FILENAME ": BROKEN LINK -> " rel
-                  exit 1
-                }
-              }
-            }' "$file" || broken=1
-          done
-          if [ $broken -eq 1 ]; then
-            exit 1
-          fi
-
               if (rel !~ /^https?:\/\// && rel !~ /^mailto:/ && rel !~ /^#/) {
                 if (rel ~ /^\//) {
                   target = "." rel

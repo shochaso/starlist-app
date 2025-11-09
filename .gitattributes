@@ -1,0 +1,8 @@
+# Day12 merge preferences
+docs/reports/DAY12_SOT_DIFFS.md merge=union
+
+# Keep local branch changes for scripts (Day12)
+package.json merge=ours
+
+# Mermaid diagrams: text merge（main基準で解決推奨）
+docs/diagrams/*.mmd text

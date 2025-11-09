@@ -1,4 +1,8 @@
-# Put CVE-IDs or file patterns to ignore noisy/known issues here.
-# Example:
-# CVE-2021-12345
-# node_modules/**/*
+# Ignore generated, test, and build artifacts during Trivy FS scans
+**/third_party/**
+**/vendor/**
+**/node_modules/**
+**/build/**
+**/.dart_tool/**
+**/generated/**
+**/tests/**
