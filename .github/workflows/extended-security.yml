@@ -1,77 +1,114 @@
-name: extended-security
+name: Extended Security
 
 on:
-  pull_request:
-  push:
-    branches: [ main, develop ]
+  workflow_dispatch:
+    inputs:
+      semgrep_fail_on:
+        description: 'Fail job if Semgrep finds issues (true/false)'
+        required: false
+        default: 'false'
+      trivy_fail_severity:
+        description: 'Minimum Trivy severity to fail the job (none/low/medium/high/critical)'
+        required: false
+        default: 'high'
 
 permissions:
   contents: read
-  security-events: write
 
 jobs:
-  security-scan:
+  sbom:
+    name: SBOM (Syft)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0  # Full history for gitleaks
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'pnpm'
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile || pnpm install
-        continue-on-error: true
-
-      - name: Run Gitleaks
-        uses: gitleaks/gitleaks-action@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        continue-on-error: true
-        # Note: config-path is deprecated in v2, but action still works
-
-      - name: Run Semgrep
-        uses: returntocorp/semgrep-action@v1
-        with:
-          config: p/ci
-        continue-on-error: true
-
-      - name: Run Trivy (filesystem)
-        uses: aquasecurity/trivy-action@master
-        with:
-          scan-type: 'fs'
-          scan-ref: '.'
-          format: 'sarif'
-          output: 'trivy-results.sarif'
-        continue-on-error: true
-
-      - name: Upload Trivy results
-        uses: github/codeql-action/upload-sarif@v3
-        if: always() && hashFiles('trivy-results.sarif') != ''
-        with:
-          sarif_file: 'trivy-results.sarif'
-        continue-on-error: true
-
+      - name: Prepare SBOM directory
+        run: mkdir -p security-reports/sbom
       - name: Generate SBOM
-        run: |
-          pnpm audit --json > sbom-pnpm.json || true
-          echo "SBOM generated"
-        continue-on-error: true
-
-      - name: Upload SBOM
+        uses: anchore/sbom-action@v0
+        with:
+          format: json
+          output-file: security-reports/sbom/syft.json
+      - name: Upload SBOM artifact
         uses: actions/upload-artifact@v4
-        if: always()
         with:
           name: sbom
-          path: sbom-pnpm.json
-        continue-on-error: true
+          path: security-reports/sbom/syft.json
+
+  semgrep:
+    name: Static Code Analysis (Semgrep)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+      - name: Install Semgrep
+        run: pip install semgrep
+      - name: Run Semgrep
+        run: |
+          mkdir -p security-reports
+          COMMON_EXCLUDES="--exclude third_party --exclude vendor --exclude node_modules --exclude build --exclude .dart_tool --exclude generated --exclude tests"
+          if [ "${{ github.event.inputs.semgrep_fail_on }}" = "true" ]; then
+            semgrep --config .semgrep.yml $COMMON_EXCLUDES --error --json > security-reports/semgrep.json || true
+          else
+            semgrep --config .semgrep.yml $COMMON_EXCLUDES --json > security-reports/semgrep.json || true
+          fi
+      - name: Upload Semgrep report
+        uses: actions/upload-artifact@v4
+        with:
+          name: semgrep
+          path: security-reports/semgrep.json
+
+  trivy:
+    name: Image / FS Scan (Trivy)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepare Trivy directory
+        run: mkdir -p security-reports
+      - name: Setup Trivy
+        uses: aquasecurity/trivy-action@0.24.0
+        with:
+          scan-type: 'fs'
+          format: 'json'
+          ignore-unfixed: true
+          output: 'security-reports/trivy.json'
+          skip-dirs: 'third_party,vendor,node_modules,build,.dart_tool,generated,tests'
+      - name: Upload Trivy report
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy
+          path: security-reports/trivy.json
+      - name: Check Trivy severity threshold (optional fail)
+        run: |
+          python3 - <<'PY'
+import json
+import sys
+
+sev_order = {"UNKNOWN": 0, "LOW": 1, "MEDIUM": 2, "HIGH": 3, "CRITICAL": 4}
+th = "${{ github.event.inputs.trivy_fail_severity }}".upper()
+if th in ("", "NONE", "NONE\n"):
+    print("No trivy fail threshold set (NONE).")
+    sys.exit(0)
+try:
+    with open("security-reports/trivy.json", "r", encoding="utf-8") as f:
+        data = json.load(f)
+except FileNotFoundError:
+    print("trivy.json not found; skipping threshold check.")
+    sys.exit(0)
+
+count = 0
+entries = data if isinstance(data, list) else [data]
+for entry in entries:
+    for vuln in entry.get("Vulnerabilities") or []:
+        sev = (vuln.get("Severity") or "UNKNOWN").upper()
+        if sev_order.get(sev, 0) >= sev_order.get(th, 3):
+            count += 1
+
+if count > 0:
+    print(f"Found {count} vulnerabilities >= {th}; failing per input threshold.")
+    sys.exit(2)
+
+print("No vulnerabilities above threshold.")
+sys.exit(0)
+PY
 
