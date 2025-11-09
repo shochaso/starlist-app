@@ -101,3 +101,9 @@
 - Screenshot:
   - docs/ops/audit/branch_protection_ok.png
 
+
+## Sign-off
+
+- Playbook v2 (A→J): Completed on 2025-11-09
+- Owner: PM Tim
+
