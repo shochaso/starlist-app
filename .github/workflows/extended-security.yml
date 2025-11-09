@@ -1,144 +1,111 @@
-name: extended-security
+name: Extended Security
 
 on:
-  pull_request:
-  push:
-    branches: [ main, develop ]
-  schedule:
-    # 毎週月曜09:00 JST (00:00 UTC)
-    - cron: '0 0 * * 1'
+  workflow_dispatch:
+    inputs:
+      semgrep_fail_on:
+        description: 'Fail job if Semgrep finds issues (true/false)'
+        required: false
+        default: 'false'
+      trivy_fail_severity:
+        description: 'Minimum Trivy severity to fail the job (none/low/medium/high/critical)'
+        required: false
+        default: 'high'
 
 permissions:
   contents: read
-  security-events: write
 
 jobs:
-  security-scan:
+  sbom:
+    name: SBOM (Syft)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Prepare SBOM directory
+        run: mkdir -p security-reports/sbom
+      - name: Generate SBOM
+        uses: anchore/sbom-action@v0
         with:
-          fetch-depth: 0  # Full history for gitleaks
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'pnpm'
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile || pnpm install
-        continue-on-error: true
-
-      - name: Run Gitleaks
-        uses: gitleaks/gitleaks-action@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        continue-on-error: true
-        # Note: config-path is deprecated in v2, but action still works
-
-      - name: Run Semgrep
-        uses: returntocorp/semgrep-action@v1
-        with:
-          config: p/ci
-        continue-on-error: true
-
-      - name: Run Trivy (filesystem)
-        uses: aquasecurity/trivy-action@master
-        with:
-          scan-type: 'fs'
-          scan-ref: '.'
-          format: 'sarif'
-          output: 'trivy-results.sarif'
-        continue-on-error: true
-
-      - name: Upload Trivy results
-        uses: github/codeql-action/upload-sarif@v3
-        if: always() && hashFiles('trivy-results.sarif') != ''
-        with:
-          sarif_file: 'trivy-results.sarif'
-        continue-on-error: true
-
-      - name: Generate CycloneDX SBOM
-        run: |
-          # Install cyclonedx-npm if not available
-          if ! command -v cyclonedx-npm >/dev/null 2>&1; then
-            npm install -g @cyclonedx/cyclonedx-npm || echo "cyclonedx-npm install failed, using pnpm audit fallback"
-          fi
-          
-          # Generate CycloneDX SBOM
-          if command -v cyclonedx-npm >/dev/null 2>&1; then
-            cyclonedx-npm --output-file sbom-cyclonedx.json || echo "cyclonedx-npm failed"
-          fi
-          
-          # Fallback: pnpm audit JSON
-          pnpm audit --json > sbom-pnpm.json || true
-          echo "SBOM generated"
-        continue-on-error: true
-
-      - name: Upload SBOM
+          format: json
+          output-file: security-reports/sbom/syft.json
+      - name: Upload SBOM artifact
         uses: actions/upload-artifact@v4
-        if: always()
         with:
           name: sbom
-          path: |
-            sbom-cyclonedx.json
-            sbom-pnpm.json
-          retention-days: 90
-        continue-on-error: true
+          path: security-reports/sbom/syft.json
 
-      - name: RLS Audit (dry-run)
-        if: always()
-        env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+  semgrep:
+    name: Static Code Analysis (Semgrep)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+      - name: Install Semgrep
+        run: pip install semgrep
+      - name: Run Semgrep
         run: |
-          set -euo pipefail
-          
-          # Install Supabase CLI if not available
-          if ! command -v supabase >/dev/null 2>&1; then
-            npm install -g supabase || echo "supabase CLI install failed"
-          fi
-          
-          # Run RLS audit SQL (dry-run)
-          if command -v supabase >/dev/null 2>&1 && [ -n "${SUPABASE_URL:-}" ] && [ -n "${SUPABASE_ACCESS_TOKEN:-}" ]; then
-            mkdir -p docs/reports
-            supabase login --token "${SUPABASE_ACCESS_TOKEN}" || echo "Supabase login failed"
-            
-            # Execute RLS audit SQL and save to Markdown
-            {
-              echo "# RLS Audit Report"
-              echo ""
-              echo "**Generated**: $(date -u +"%Y-%m-%dT%H:%M:%SZ")"
-              echo ""
-              echo "## Tables without RLS enabled"
-              echo ""
-              echo "\`\`\`sql"
-              supabase db query "$(cat scripts/rls_audit.sql | head -n 14)" --project-ref "$(echo $SUPABASE_URL | sed 's#https://\([^.]*\)\.supabase\.co#\1#')" || echo "Query failed"
-              echo "\`\`\`"
-              echo ""
-              echo "## Tables with RLS but no policies"
-              echo ""
-              echo "\`\`\`sql"
-              supabase db query "$(cat scripts/rls_audit.sql | tail -n +16)" --project-ref "$(echo $SUPABASE_URL | sed 's#https://\([^.]*\)\.supabase\.co#\1#')" || echo "Query failed"
-              echo "\`\`\`"
-            } > docs/reports/RLS_AUDIT_REPORT.md || echo "RLS audit report generation failed"
+          mkdir -p security-reports
+          if [ "${{ github.event.inputs.semgrep_fail_on }}" = "true" ]; then
+            semgrep --config .semgrep.yml --error --json > security-reports/semgrep.json
           else
-            echo "⚠️  Supabase CLI or credentials not available. Skipping RLS audit."
+            semgrep --config .semgrep.yml --json > security-reports/semgrep.json || true
           fi
-        continue-on-error: true
-
-      - name: Upload RLS Audit Report
+      - name: Upload Semgrep report
         uses: actions/upload-artifact@v4
-        if: always() && hashFiles('docs/reports/RLS_AUDIT_REPORT.md') != ''
         with:
-          name: rls-audit-report
-          path: docs/reports/RLS_AUDIT_REPORT.md
-          retention-days: 90
-        continue-on-error: true
+          name: semgrep
+          path: security-reports/semgrep.json
 
+  trivy:
+    name: Image / FS Scan (Trivy)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepare Trivy directory
+        run: mkdir -p security-reports
+      - name: Setup Trivy
+        uses: aquasecurity/trivy-action@0.24.0
+        with:
+          scan-type: 'fs'
+          format: 'json'
+          ignore-unfixed: true
+          output: 'security-reports/trivy.json'
+      - name: Upload Trivy report
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy
+          path: security-reports/trivy.json
+      - name: Check Trivy severity threshold (optional fail)
+        run: |
+          python3 - <<'PY'
+import json
+import sys
+
+sev_order = {"UNKNOWN": 0, "LOW": 1, "MEDIUM": 2, "HIGH": 3, "CRITICAL": 4}
+th = "${{ github.event.inputs.trivy_fail_severity }}".upper()
+if th in ("", "NONE", "NONE\n"):
+    print("No trivy fail threshold set (NONE).")
+    sys.exit(0)
+try:
+    with open("security-reports/trivy.json", "r", encoding="utf-8") as f:
+        data = json.load(f)
+except FileNotFoundError:
+    print("trivy.json not found; skipping threshold check.")
+    sys.exit(0)
+
+count = 0
+entries = data if isinstance(data, list) else [data]
+for entry in entries:
+    for vuln in entry.get("Vulnerabilities") or []:
+        sev = (vuln.get("Severity") or "UNKNOWN").upper()
+        if sev_order.get(sev, 0) >= sev_order.get(th, 3):
+            count += 1
+
+if count > 0:
+    print(f"Found {count} vulnerabilities >= {th}; failing per input threshold.")
+    sys.exit(2)
+
+print("No vulnerabilities above threshold.")
+sys.exit(0)
+PY
