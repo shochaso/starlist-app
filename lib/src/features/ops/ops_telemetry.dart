@@ -187,3 +187,100 @@ class OpsTelemetry {
 
 
 
+
+    final jitter = Random().nextInt(1000); // Random 0-1s
+    await Future.delayed(Duration(milliseconds: baseDelay + jitter));
+  }
+
+  /// Send telemetry event to Edge Function with retry and deduplication
+  Future<bool> send({
+    required String event,
+    required bool ok,
+    int? latencyMs,
+    String? errCode,
+    Map<String, dynamic>? extra,
+  }) async {
+    final payload = {
+      'app': app,
+      'env': env,
+      'event': event,
+      'ok': ok,
+      'latency_ms': latencyMs,
+      'err_code': errCode,
+      'extra': extra,
+    };
+    
+    // Deduplication check
+    final hash = _generatePayloadHash(payload);
+    if (_isDuplicate(hash)) {
+      print('[OpsTelemetry] Duplicate payload detected, skipping: $event');
+      return true; // Consider duplicate as success
+    }
+    
+    // Retry logic with exponential backoff + jitter
+    for (int attempt = 0; attempt < _maxRetries; attempt++) {
+      try {
+        final uri = Uri.parse('$baseUrl/telemetry');
+        final response = await http.post(
+          uri,
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ${EnvironmentConfig.supabaseAnonKey}',
+          },
+          body: jsonEncode(payload),
+        ).timeout(
+          const Duration(seconds: 10),
+          onTimeout: () => throw TimeoutException('Request timeout'),
+        );
+
+        if (response.statusCode == 201) {
+          return true;
+        }
+        
+        // Retry on 5xx errors
+        if (response.statusCode >= 500 && attempt < _maxRetries - 1) {
+          await _waitWithBackoff(attempt);
+          continue;
+        }
+        
+        // Non-retryable error
+        print('[OpsTelemetry] Send failed: ${response.statusCode}');
+        return false;
+      } catch (e) {
+        if (attempt < _maxRetries - 1) {
+          await _waitWithBackoff(attempt);
+          continue;
+        }
+        // Final attempt failed, add to retry queue
+        _retryQueue.add({
+          'payload': payload,
+          'timestamp': DateTime.now().millisecondsSinceEpoch,
+        });
+        print('[OpsTelemetry] Send failed after $_maxRetries attempts: $e');
+        return false;
+      }
+    }
+    
+    return false;
+  }
+  
+  /// Retry failed sends from queue
+  static Future<void> retryFailed() async {
+    if (_retryQueue.isEmpty) return;
+    
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final toRetry = _retryQueue.where((item) {
+      // Retry items older than 1 minute
+      return now - item['timestamp'] > 60 * 1000;
+    }).toList();
+    
+    for (final item in toRetry) {
+      _retryQueue.remove(item);
+      // Note: This requires access to OpsTelemetry instance
+      // In practice, you'd store the instance or recreate it
+    }
+  }
+}
+
+
+

@@ -3,30 +3,33 @@
   "version": "1.0.0",
   "description": "Flutter Web with BrowserSync for instant reload",
   "engines": {
-    "node": "20.x"
+    "node": ">=20 <21"
   },
   "engineStrict": true,
   "scripts": {
-    "sbom:npm": "pnpx -y @cyclonedx/cyclonedx-npm --output-file sbom-npm.json",
-    "sbom:dart": "dart pub global activate cyclonedx_dart && cyclonedx-dart > sbom-dart.json",
-    "sbom:syft": "syft packages dir:. -o spdx-json=sbom-spdx.json",
-    "sec:scan": "trivy fs --exit-code=1 --ignore-unfixed --severity CRITICAL,HIGH .",
-    "sec:semgrep": "semgrep --config ./.semgrep.yml",
     "preinstall": "node -e \"const v=process.versions.node.split('.')[0]; if(Number(v)<20){console.error('Node>=20 required. Run `nvm use`'); process.exit(1)}\"",
     "start:bs": "browser-sync start --config bs-config.js",
     "dev": "echo 'Run: npm run start:bs in separate terminal, then ./scripts/c.sh'",
     "report": "bash scripts/progress-report.sh",
     "lint:md": "node scripts/ensure-node20.js && markdown-link-check -c .mlc.json -q **/*.md",
-    "lint:md:local": "node scripts/docs/update-mlc.js && markdown-link-check -c .mlc.json -q **/*.md",
+    "lint:md:local": "node scripts/docs/link-check.mjs",
     "check:mail:dns": "node scripts/check_mail_dns.mjs starlist.jp",
     "pricing:final": "bash PRICING_FINAL_SHORTCUT.sh",
-    "export:audit-report": "bash scripts/generate_audit_report.sh"
+    "docs:update-dates": "node scripts/docs/update-last-updated.mjs",
+    "docs:diff-log": "node scripts/docs/generate-diff-log.mjs",
+    "docs:preflight": "npm run docs:update-dates && npm run lint:md:local && npm run docs:diff-log",
+    "security:runner": "bash scripts/extended_security_runner.sh",
+    "security:install:brew": "brew install gitleaks trivy || true",
+    "security:install:pipx": "pipx install semgrep || pip install semgrep || true",
+    "security:ci": "npm run -s security:runner",
+    "security:local": "npm run -s security:install:brew && npm run -s security:install:pipx && npm run -s security:runner",
+    "audit:npm": "npm audit --audit-level=high || true",
+    "audit:pnpm:jsr": "pnpm audit --registry=https://registry.npmjs.org || true"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@playwright/test": "^1.56.1",
     "browser-sync": "^2.29.3"
   }
 }

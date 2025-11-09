@@ -103,3 +103,25 @@ docs/reports/*_edge_logs.txt
 # Supabase CLI metadata
 supabase/.temp/
 .report/
+
+.env.*
+*.local
+
+# --- CI outputs ---
+*.safe
+*.log
+*.trace
+*.coverage
+*.DS_Store
+
+# --- Editor/OS ---
+.vscode/
+.idea/
+
+# Ignore env files
+.env
+.env.*
+
+# Supabase CLI metadata
+supabase/.temp/
+.report/

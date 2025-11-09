@@ -562,3 +562,80 @@ serve(async (req: Request): Promise<Response> => {
     );
   }
 });
+
+        sendResult = await sendViaSendGrid(
+          sendgridApiKey,
+          sendgridFrom,
+          recipients,
+          emailContent.subject,
+          emailContent.html
+        );
+      }
+    }
+
+    if (!sendResult || !sendResult.success) {
+      await logUpdate(
+        supabaseUrl,
+        supabaseAnonKey,
+        reportWeek,
+        channel,
+        provider,
+        null,
+        0,
+        emailContent.subject,
+        false,
+        sendResult?.error || "No email provider configured"
+      );
+      return new Response(
+        JSON.stringify({
+          ok: false,
+          error: sendResult?.error || "No email provider configured",
+          provider,
+        }),
+        {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 502,
+        }
+      );
+    }
+
+    // Update audit log
+    await logUpdate(
+      supabaseUrl,
+      supabaseAnonKey,
+      reportWeek,
+      channel,
+      provider,
+      sendResult.messageId,
+      recipients.length,
+      emailContent.subject,
+      true
+    );
+
+    return new Response(
+      JSON.stringify({
+        ok: true,
+        provider,
+        report_week: reportWeek,
+        message_id: sendResult.messageId,
+        to_count: recipients.length,
+      }),
+      {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      }
+    );
+  } catch (error) {
+    console.error("[ops-summary-email] Error:", error);
+    return new Response(
+      JSON.stringify({
+        ok: false,
+        error: String(error),
+      }),
+      {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: error instanceof Error && error.message.includes("missing env") ? 500 : 500,
+      }
+    );
+  }
+});

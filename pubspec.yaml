@@ -59,3 +59,5 @@ flutter:
     - assets/config/image_registry.json
     - assets/service_icons/
     - assets/icons/services/
+
+    - assets/icons/services/

@@ -1,5 +1,4 @@
-#!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
-
-npx --no-install lint-staged || true
-
+#!/usr/bin/env bash
+set -e
+# Node/Lintなどが既に走る場合は統合可。ここではdartのみに限定。
+command -v dart >/dev/null 2>&1 && dart format --output=none --set-exit-if-changed . || true

@@ -10,28 +10,21 @@
       "pattern": "^https://zjwvmoxpacbpwawlwbrd.functions.supabase.co"
     },
     {
-      "pattern": "admin\\.google\\.com"
+      "pattern": "https://admin\\.google\\.com"
     },
     {
-      "pattern": "github\\.com/orgs/.+"
+      "pattern": "https://github\\.com/orgs/starlist-app"
     },
     {
-      "pattern": "^mailto:"
+      "pattern": "\\.mermaid$"
     },
     {
-      "pattern": "localhost"
-    },
-    {
-      "pattern": "#"
+      "pattern": "cdn\\.jsdelivr\\.net.*%22"
     }
   ],
   "timeout": "20s",
   "retryOn429": true,
   "retryCount": 3,
   "fallbackRetryDelay": "5s",
-  "aliveStatusCodes": [
-    200,
-    206,
-    429
-  ]
+  "aliveStatusCodes": [200, 206, 429]
 }

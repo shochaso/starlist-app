@@ -282,3 +282,88 @@ having count(*) > 1;
 - `docs/ops/OPS-HEALTH-DASHBOARD-001.md` - OPS Health Dashboard仕様
 - `docs/ops/OPS-ALERT-AUTOMATION-001.md` - OPS Alert Automation仕様
 - `supabase/functions/ops-health/index.ts` - ops-health Edge Function実装
+
+
+
+### 13.2 手動dryRun → プレビュー確認
+
+- `.ok == true`をログで確認
+- HTMLプレビューのPreheader表示とList-Unsubscribeヘッダーを目視確認
+- 失敗時はログ末尾のエラーコードを`DAY9_SOT_DIFFS.md`の「Known Issues」に即追記
+
+### 13.3 単発の本送信テスト
+
+- Resend本送信 → 届信確認（迷惑振分け無し）
+- 失敗時のみSendGridフォールバック（二重送信防止の冪等ガードは実装済）
+- `DAY9_SOT_DIFFS.md`にRun ID / Provider / Message ID / JST時刻を記録
+
+### 13.4 週次自動スケジュールの確定
+
+- GitHub Actions `cron: 0 0 * * 1`（UTC）＝ JST月曜09:00
+- サマータイム影響なし（日本）
+
+### 13.5 PRマージ → 運用開始
+
+- ラベル：`ops`, `docs`, `ci`を付与
+- マージ後にActions実行権限を再確認
+
+## 14. 運用監視ポイント（初週）
+
+### 14.1 DBログの健全性
+
+- 同一`report_week × channel × provider`が1行のみ（ユニーク制約OK）
+- `ok=true`で`error_code`/`error_message`が`NULL`または空文字
+- `to_count`と`RESEND_TO_LIST`の件数が一致
+
+### 14.2 到達率・品質
+
+- 開封率の初期指標：SubjectとPreheaderの関連性を維持
+- 迷惑振分けゼロが理想。入った場合は差出人名or DKIMセレクタ再調整
+
+### 14.3 冪等性
+
+- 手動再送しても同週はskipログになることを確認
+- Providerが異なる再送（Resend→SendGrid）でも2通化しない
+
+## 15. 運用で使うSQLコマンド
+
+### 15.1 直近10件の送信ログ（JST整形）
+
+```sql
+select run_id, provider, message_id, to_count,
+       (sent_at_utc at time zone 'Asia/Tokyo') as sent_at_jst,
+       ok, error_code
+from ops_summary_email_logs
+order by sent_at_utc desc
+limit 10;
+```
+
+### 15.2 今週分が既に送られているか確認
+
+```sql
+-- 例: 2025-W45
+select count(*) from ops_summary_email_logs
+where report_week = '2025-W45' and channel='email' and ok = true;
+```
+
+### 15.3 二重送信の有無（安全確認）
+
+```sql
+select report_week, channel, provider, count(*) as cnt
+from ops_summary_email_logs
+group by 1,2,3
+having count(*) > 1;
+```
+
+## 16. ロールバック最短手順（想定5分）
+
+1. **Actions停止**: `ops-summary-email.yml`を`workflow_dispatch:`のみに切替 → push
+2. **送信ガード**: Edge Functionのenvに`OPS_EMAIL_SUSPEND=true`を追加し即デプロイ
+3. **通知**: `DAY9_SOT_DIFFS.md`に障害サマリを追記（Run ID / 事象 / 暫定対応 / 次アクション）
+
+## 17. 参考リンク
+
+- `docs/ops/OPS-HEALTH-DASHBOARD-001.md` - OPS Health Dashboard仕様
+- `docs/ops/OPS-ALERT-AUTOMATION-001.md` - OPS Alert Automation仕様
+- `supabase/functions/ops-health/index.ts` - ops-health Edge Function実装
+
