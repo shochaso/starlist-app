@@ -30,14 +30,8 @@ interface EmailContent {
   preheader: string;
 }
 
-// Environment variable reader with validation
-function getEnv(key: string, required = true): string {
-  const value = Deno.env.get(key);
-  if (required && !value) {
-    throw new Error(`missing env: ${key}`);
-  }
-  return value || "";
-}
+// Import type-safe environment helpers
+import { getEnv, getEnvArray } from "../_shared/env.ts";
 
 // Get current time in JST (UTC+9)
 function jstNow(): Date {
@@ -415,10 +409,7 @@ serve(async (req: Request): Promise<Response> => {
     if (query.toOverride && Array.isArray(query.toOverride)) {
       recipients = ensureStarlistRecipients(query.toOverride);
     } else {
-      const resendToList = getEnv("resend_to_list", false);
-      if (resendToList) {
-        recipients = ensureStarlistRecipients(resendToList.split(","));
-      }
+      recipients = ensureStarlistRecipients(getEnvArray("resend_to_list", []));
     }
 
     if (recipients.length === 0) {
@@ -447,6 +438,83 @@ serve(async (req: Request): Promise<Response> => {
       const sendgridFrom = getEnv("sendgrid_from", false) || "ops@starlist.jp";
       if (sendgridApiKey) {
         provider = "sendgrid";
+        sendResult = await sendViaSendGrid(
+          sendgridApiKey,
+          sendgridFrom,
+          recipients,
+          emailContent.subject,
+          emailContent.html
+        );
+      }
+    }
+
+    if (!sendResult || !sendResult.success) {
+      await logUpdate(
+        supabaseUrl,
+        supabaseAnonKey,
+        reportWeek,
+        channel,
+        provider,
+        null,
+        0,
+        emailContent.subject,
+        false,
+        sendResult?.error || "No email provider configured"
+      );
+      return new Response(
+        JSON.stringify({
+          ok: false,
+          error: sendResult?.error || "No email provider configured",
+          provider,
+        }),
+        {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 502,
+        }
+      );
+    }
+
+    // Update audit log
+    await logUpdate(
+      supabaseUrl,
+      supabaseAnonKey,
+      reportWeek,
+      channel,
+      provider,
+      sendResult.messageId,
+      recipients.length,
+      emailContent.subject,
+      true
+    );
+
+    return new Response(
+      JSON.stringify({
+        ok: true,
+        provider,
+        report_week: reportWeek,
+        message_id: sendResult.messageId,
+        to_count: recipients.length,
+      }),
+      {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      }
+    );
+  } catch (error) {
+    console.error("[ops-summary-email] Error:", error);
+    return new Response(
+      JSON.stringify({
+        ok: false,
+        error: String(error),
+      }),
+      {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: error instanceof Error && error.message.includes("missing env") ? 500 : 500,
+      }
+    );
+  }
+});
+
         sendResult = await sendViaSendGrid(
           sendgridApiKey,
           sendgridFrom,

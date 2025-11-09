@@ -8,3 +8,14 @@
   "mismatch_streak_zero_days": 17
 }
 
+
+  "updated_at": "2025-11-08T09:05:00Z",
+  "day11_count": 128,
+  "slack_success_rate": 0.992,
+  "p95_latency_ms": 1640,
+  "checkout_success_rate": 0.972,
+  "mismatches_today": 0,
+  "mismatch_streak_zero_days": 17
+}
+
+

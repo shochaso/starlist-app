@@ -48,3 +48,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - プロバイダー: `opsMetricsFilterProvider`, `opsMetricsSeriesProvider`, `opsMetricsKpiProvider`, `opsMetricsAutoRefreshProvider`
 - テスト: モデル単体テスト追加
 
+
+- DropdownButtonFormFieldのnull値型エラーを修正
+- ref.listen()のメモリリークを修正
+- copyWith()でnullableフィールドをnullに設定可能に修正
+- ops-alert関数でdryRunモード時に認証をスキップするように修正
+- 正規表現パターンの修正（youtube_ocr_parser_v6.dart）
+
+### Technical
+- モデル: `OpsMetricsSeriesPoint`, `OpsMetricsFilter`, `OpsMetricsKpi`
+- プロバイダー: `opsMetricsFilterProvider`, `opsMetricsSeriesProvider`, `opsMetricsKpiProvider`, `opsMetricsAutoRefreshProvider`
+- テスト: モデル単体テスト追加
+

@@ -37,3 +37,43 @@
   }
 }
 
+
+  "$schema":"http://json-schema.org/draft-07/schema#",
+  "title":"AuditReportFrontMatterV2",
+  "type":"object",
+  "required":[
+    "report_id","generated_at","tz","scope_hours","supabase_ref",
+    "git_sha","artifacts","checks","risk_level","slo_targets","signatures"
+  ],
+  "properties":{
+    "report_id":{"type":"string"},
+    "generated_at":{"type":"string"},
+    "tz":{"type":"string","enum":["Asia/Tokyo"]},
+    "scope_hours":{"type":"integer","minimum":1,"maximum":168},
+    "supabase_ref":{"type":"string","pattern":"^[a-z0-9]{20}$"},
+    "slack_permalink":{"type":["string","null"]},
+    "git_sha":{"type":"string"},
+    "artifacts":{"type":"object"},
+    "checks":{"type":"array","items":{"type":"object","required":["name"],"properties":{"name":{"type":"string"}}}},
+    "risk_level":{"type":"string","enum":["LOW","MEDIUM","HIGH","CRITICAL"]},
+    "slo_targets":{
+      "type":"object",
+      "properties":{
+        "p95_latency_ms":{"type":"integer"},
+        "slack_success_rate":{"type":"number","minimum":0,"maximum":1},
+        "checkout_success_rate":{"type":"number","minimum":0,"maximum":1}
+      },
+      "required":["p95_latency_ms","slack_success_rate","checkout_success_rate"]
+    },
+    "signatures":{
+      "type":"array",
+      "items":{"type":"object","required":["role","fingerprint","time"],"properties":{
+        "role":{"type":"string"},
+        "fingerprint":{"type":"string","pattern":"^[0-9a-f]{64}$"},
+        "time":{"type":"string"}
+      }}
+    }
+  }
+}
+
+

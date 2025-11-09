@@ -117,15 +117,61 @@ class _OpsDashboardPageState extends ConsumerState<OpsDashboardPage> with Single
   }
 
   Widget _buildFilterRow(BuildContext context) {
+    final seriesAsync = ref.watch(opsMetricsSeriesProvider);
+    final hasAuthError = seriesAsync.hasError && 
+        (seriesAsync.error.toString().contains('401') || 
+         seriesAsync.error.toString().contains('403'));
+    
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Filters',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            Row(
+              children: [
+                const Expanded(
+                  child: Text(
+                    'Filters',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                if (hasAuthError) ...[
+                  Semantics(
+                    label: 'Authentication error badge: 401 or 403 error detected',
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.red,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.error, color: Colors.white, size: 16),
+                          SizedBox(width: 4),
+                          Text(
+                            'Auth Error',
+                            style: TextStyle(color: Colors.white, fontSize: 12),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Semantics(
+                    label: 'Reload button: Click to retry loading metrics',
+                    button: true,
+                    child: IconButton(
+                      icon: const Icon(Icons.refresh, color: Colors.red),
+                      onPressed: () {
+                        ref.refresh(opsMetricsSeriesProvider);
+                      },
+                      tooltip: 'Reload',
+                    ),
+                  ),
+                ],
+              ],
             ),
             const SizedBox(height: 8),
             Row(
@@ -258,12 +304,12 @@ class _OpsDashboardPageState extends ConsumerState<OpsDashboardPage> with Single
         ),
         const SizedBox(width: 8),
         Expanded(
-          child: _buildKpiCard(
-            context,
-            'P95 Latency',
-            kpi.p95LatencyMs != null ? '${kpi.p95LatencyMs}ms' : 'N/A',
-            kpi.p95LatencyMs != null && kpi.p95LatencyMs! > 500 ? Colors.orange : Colors.green,
-          ),
+            child: _buildKpiCard(
+              context,
+              'P95 Latency',
+              kpi.p95LatencyMs != null ? '${kpi.p95LatencyMs}ms' : 'Gap',
+              kpi.p95LatencyMs != null && kpi.p95LatencyMs! > 500 ? Colors.orange : Colors.green,
+            ),
         ),
         const SizedBox(width: 8),
         Expanded(
@@ -279,25 +325,28 @@ class _OpsDashboardPageState extends ConsumerState<OpsDashboardPage> with Single
   }
 
   Widget _buildKpiCard(BuildContext context, String label, String value, Color color) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              label,
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
-            const SizedBox(height: 4),
-            Text(
-              value,
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    color: color,
-                    fontWeight: FontWeight.bold,
-                  ),
-            ),
-          ],
+    return Semantics(
+      label: '$label: $value',
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                value,
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      color: color,
+                      fontWeight: FontWeight.bold,
+                    ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -308,74 +357,89 @@ class _OpsDashboardPageState extends ConsumerState<OpsDashboardPage> with Single
       return const SizedBox.shrink();
     }
 
-    final spots = series
-        .where((p) => p.p95LatencyMs != null)
-        .map((p) => FlSpot(
-              p.bucketStart.millisecondsSinceEpoch.toDouble(),
-              p.p95LatencyMs!.toDouble(),
-            ))
-        .toList();
+    // Show gaps for null values instead of interpolating
+    final spots = <FlSpot>[];
+    for (final p in series) {
+      if (p.p95LatencyMs != null) {
+        spots.add(FlSpot(
+          p.bucketStart.millisecondsSinceEpoch.toDouble(),
+          p.p95LatencyMs!.toDouble(),
+        ));
+      } else {
+        // Add gap marker (use NaN to create visual gap)
+        spots.add(FlSpot(
+          p.bucketStart.millisecondsSinceEpoch.toDouble(),
+          double.nan,
+        ));
+      }
+    }
 
-    if (spots.isEmpty) {
-      return const Card(
-        child: Padding(
-          padding: EdgeInsets.all(16),
-          child: Center(child: Text('No latency data available')),
+    if (spots.isEmpty || spots.every((s) => s.y.isNaN)) {
+      return Semantics(
+        label: 'P95 Latency chart: No latency data available',
+        child: const Card(
+          child: Padding(
+            padding: EdgeInsets.all(16),
+            child: Center(child: Text('No latency data available')),
+          ),
         ),
       );
     }
 
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'P95 Latency (ms)',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-            SizedBox(
-              height: 200,
-              child: LineChart(
-                LineChartData(
-                  gridData: const FlGridData(show: true),
-                  titlesData: FlTitlesData(
-                    leftTitles: AxisTitles(
-                      sideTitles: SideTitles(showTitles: true),
-                    ),
-                    bottomTitles: AxisTitles(
-                      sideTitles: SideTitles(
-                        showTitles: true,
-                        getTitlesWidget: (value, meta) {
-                          final date = DateTime.fromMillisecondsSinceEpoch(value.toInt());
-                          return Text(DateFormat('HH:mm').format(date));
-                        },
+    return Semantics(
+      label: 'P95 Latency chart showing ${spots.where((s) => !s.y.isNaN).length} data points with gaps for missing values',
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'P95 Latency (ms)',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 16),
+              SizedBox(
+                height: 200,
+                child: LineChart(
+                  LineChartData(
+                    gridData: const FlGridData(show: true),
+                    titlesData: FlTitlesData(
+                      leftTitles: AxisTitles(
+                        sideTitles: SideTitles(showTitles: true),
+                      ),
+                      bottomTitles: AxisTitles(
+                        sideTitles: SideTitles(
+                          showTitles: true,
+                          getTitlesWidget: (value, meta) {
+                            final date = DateTime.fromMillisecondsSinceEpoch(value.toInt());
+                            return Text(DateFormat('HH:mm').format(date));
+                          },
+                        ),
+                      ),
+                      rightTitles: const AxisTitles(
+                        sideTitles: SideTitles(showTitles: false),
+                      ),
+                      topTitles: const AxisTitles(
+                        sideTitles: SideTitles(showTitles: false),
                       ),
                     ),
-                    rightTitles: const AxisTitles(
-                      sideTitles: SideTitles(showTitles: false),
-                    ),
-                    topTitles: const AxisTitles(
-                      sideTitles: SideTitles(showTitles: false),
-                    ),
+                    borderData: FlBorderData(show: true),
+                    lineBarsData: [
+                      LineChartBarData(
+                        spots: spots.where((s) => !s.y.isNaN).toList(),
+                        isCurved: true,
+                        color: Colors.blue,
+                        barWidth: 2,
+                        dotData: const FlDotData(show: false),
+                        belowBarData: BarAreaData(show: false),
+                      ),
+                    ],
                   ),
-                  borderData: FlBorderData(show: true),
-                  lineBarsData: [
-                    LineChartBarData(
-                      spots: spots,
-                      isCurved: true,
-                      color: Colors.blue,
-                      barWidth: 2,
-                      dotData: const FlDotData(show: false),
-                      belowBarData: BarAreaData(show: false),
-                    ),
-                  ],
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -840,6 +904,69 @@ class _OpsDashboardPageState extends ConsumerState<OpsDashboardPage> with Single
             SizedBox(
               height: 200,
               child: health.aggregations.isEmpty
+                  ? const Center(child: Text('No data'))
+                  : BarChart(
+                      BarChartData(
+                        barGroups: health.aggregations.map((agg) {
+                          final index = health.aggregations.indexOf(agg);
+                          Color color;
+                          if (agg.alertTrend == 'increasing') {
+                            color = Colors.red;
+                          } else if (agg.alertTrend == 'decreasing') {
+                            color = Colors.green;
+                          } else {
+                            color = Colors.orange;
+                          }
+                          return BarChartGroupData(
+                            x: index,
+                            barRods: [
+                              BarChartRodData(
+                                toY: agg.alertCount.toDouble(),
+                                color: color,
+                                width: 20,
+                              ),
+                            ],
+                          );
+                        }).toList(),
+                        titlesData: FlTitlesData(
+                          leftTitles: AxisTitles(
+                            sideTitles: SideTitles(
+                              showTitles: true,
+                              reservedSize: 40,
+                              getTitlesWidget: (value, meta) {
+                                return Text('${value.toInt()}', style: const TextStyle(fontSize: 10));
+                              },
+                            ),
+                          ),
+                          bottomTitles: AxisTitles(
+                            sideTitles: SideTitles(
+                              showTitles: true,
+                              getTitlesWidget: (value, meta) {
+                                if (value.toInt() >= health.aggregations.length) return const SizedBox.shrink();
+                                final agg = health.aggregations[value.toInt()];
+                                return Text(
+                                  '${agg.app ?? 'N/A'}\n${agg.env ?? 'N/A'}',
+                                  style: const TextStyle(fontSize: 10),
+                                  textAlign: TextAlign.center,
+                                );
+                              },
+                            ),
+                          ),
+                          topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                          rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                        ),
+                        gridData: const FlGridData(show: true),
+                        borderData: FlBorderData(show: false),
+                      ),
+                    ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
                   ? const Center(child: Text('No data'))
                   : BarChart(
                       BarChartData(
