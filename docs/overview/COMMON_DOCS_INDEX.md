@@ -1,6 +1,11 @@
+Last-Updated: 2025-11-09
+
 # Starlist 共通ドキュメント索引
 
 Starlist 関連リポジトリ／プロジェクトに共通して参照したい資料を集約したインデックス。ChatGPT など外部ツールに概要を渡す際は、本ファイルとリンク先の要約を共有すると効率的です。
+
+**Status**: beta  
+**Last-Updated**: 2025-11-08
 
 ---
 
@@ -49,17 +54,44 @@ Starlist 関連リポジトリ／プロジェクトに共通して参照した�
 
 ## 2. チーム共通で押さえるべきドキュメント
 
+### 基本ドキュメント
+
 - `../README.md` … リポジトリ全体の概要とセットアップ要約。
 - `docs/README.md` … ドキュメント全体のフォルダ構成と利用ルール。
-- `docs/overview/STARLIST_OVERVIEW.md` … プロジェクト全体像のサマリー。
-- `docs/COMPANY_SETUP_GUIDE.md` … アカウント発行・開発環境セットアップ手順。
+- `docs/overview/STARLIST_OVERVIEW.md` … プロジェクト全体像のサマリー（β版、KPI表・ロードマップ表含む）。
+- `docs/COMPANY_SETUP_GUIDE.md` … アカウント発行・開発環境セットアップ手順（β版、Secrets運用SOP含む）。
 - `docs/development/DEVELOPMENT_GUIDE.md` … 開発環境構築と作業手順。
 - `docs/planning/Task.md` … 進行中のタスク一覧。
+
+### 運用・監視（docs/ops/）
+
+- `docs/ops/OPS-MONITORING-001.md` … 監視・テレメトリ正準。
+- `docs/ops/OPS-MONITORING-002.md` … OPS Dashboard拡張（β）。
+- `docs/ops/OPS-SUMMARY-EMAIL-001.md` … 週次メール要約。
+- `docs/ops/LAUNCH_CHECKLIST.md` … 本番入りチェックリスト。
+- `docs/ops/AUDIT_SYSTEM_ENTERPRISE.md` … 監査システム全体像。
+- `docs/ops/DASHBOARD_IMPLEMENTATION.md` … KPIダッシュボード実装。
+
+### レポート（docs/reports/）
+
+- `docs/reports/STARLIST_DAY5_SUMMARY.md` … Day5 実装進行サマリー。
+- `docs/reports/DAY10_SOT_DIFFS.md` … OPS Slack Notify（Day10）。
+- `docs/reports/DAY11_INTEGRATION_LOG.md` … Day11統合ログ。
+- `docs/reports/DAY12_SOT_DIFFS.md` … Day12ドキュメント統合差分。
+
+### QA・テスト（docs/qa/）
+
+- `docs/qa/AT_AUDIT_SUITE.md` … 受け入れテスト監査スイート。
+
+### 機能・設計
+
 - `docs/architecture/starlist_architecture_documentation.md.docx` … システム構成図と技術スタック（バイナリだが主要情報を保持）。
 - `docs/features/payment_current_state.md` … 現行の決済実装まとめ。
 - `docs/api/PAYMENT_SYSTEM_INTEGRATION_STRATEGY.md` … 決済連携の設計方針・DB スキーマ案。
 - `docs/features/design/` … 画面仕様とコンポーネント指針。
-- `docs/reports/STARLIST_DAY5_SUMMARY.md` … Day5 実装進行サマリー。
+
+### 法的文書
+
 - `docs/legal/` 配下 … 利用規約・プライバシーポリシーなど外部公開文書。
 
 （必要に応じて新しい資料を追加し、このリストを更新してください。）
@@ -96,7 +128,20 @@ Starlist 関連リポジトリ／プロジェクトに共通して参照した�
 ## 5. 今後の追加候補
 
 - プロジェクト別サマリー（モバイル/サーバー/データパイプラインなど）の 1 ページ化。
-- API／データモデルの ER 図・シーケンス図を画像＋テキストで併記。
+- **ER図・シーケンス図**: `docs/architecture/` に配置予定。Mermaid/PlantUMLいずれもOK。生成先パス・命名規則・貼付SOPを`INDEX`から参照可能にする。
 - 開発者オンボーディング用のチェックリスト更新。
+
+---
+
+## 6. 用語統一（最小語彙表）
+
+| 用語 | 正規表記 | 備考 |
+| --- | --- | --- |
+| OPS | OPS（大文字） | Operationsの略 |
+| KPI | KPI（大文字） | Key Performance Indicator |
+| Edge Function | Edge Function | Supabase Edge Functions |
+| dryRun | dryRun | テスト実行モード |
+| Secrets | Secrets | 機密情報（大文字S） |
+| doc-share | doc-share | Supabase Storageバケット名 |
 
 必要な情報が不足している場合はこのファイルまたは `docs/README.md` を更新し、各チームに共有してください。

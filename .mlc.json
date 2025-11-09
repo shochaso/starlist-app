@@ -1,18 +1,19 @@
 {
-  "replacementPatterns": [
-    {
-      "pattern": "^https://zjwvmoxpacbpwawlwbrd.functions.supabase.co",
-      "replacement": ""
-    }
-  ],
   "ignorePatterns": [
+    {
+      "pattern": "^mailto:"
+    },
+    {
+      "pattern": "^#.+$"
+    },
+    {
+      "pattern": "^https://localhost"
+    },
     {
       "pattern": "^https://zjwvmoxpacbpwawlwbrd.functions.supabase.co"
     }
   ],
-  "timeout": "20s",
   "retryOn429": true,
-  "retryCount": 3,
-  "fallbackRetryDelay": "5s",
-  "aliveStatusCodes": [200, 206, 429]
+  "timeout": "15s",
+  "aliveStatusCodes": [200, 206, 301, 302, 308]
 }

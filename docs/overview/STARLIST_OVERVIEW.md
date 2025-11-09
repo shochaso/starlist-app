@@ -1,12 +1,12 @@
-Status:: 
-Source-of-Truth:: (TBD)
-Spec-State:: 
-Last-Updated:: 
+Status: beta
+Source-of-Truth: docs/overview/STARLIST_OVERVIEW.md
+Spec-State: beta
+Last-Updated: 2025-11-09
 
 
-# Starlist プロジェクト概要（雛形）
+# Starlist プロジェクト概要（β版）
 
-Starlist の全体像を短時間で共有するためのテンプレートです。各章に最新情報を記入して利用してください。
+Starlist の全体像を短時間で共有するためのドキュメントです。Day5〜Day11で固まった運用基盤（OPSメトリクス、Edge Functions、メール/Slack要約、Secrets方針、監査KPIダッシュボード等）を反映したβ版として整備しています。
 
 ---
 
@@ -27,11 +27,10 @@ Starlist の全体像を短時間で共有するためのテンプレートで�
 
 ## はじめに
 
-- ドキュメントの目的と想定読者。
-- プロジェクトの現状ステータス（例: α版/β版/本番）。
-- 保守・更新の責任者。
-
-> TODO: 最新のプロジェクトステータスを記入。
+- **目的**: プロジェクト全体像を短時間で把握できるよう、主要コンポーネント、機能マップ、KPI、ロードマップを一覧化
+- **想定読者**: 新規メンバー、PM、BizOps、外部パートナー
+- **現状ステータス**: β版（Day5〜Day11で運用基盤を確立、監査・自動化・可視化を整備済み）
+- **保守責任者**: テックリード / Ops Lead
 
 ---
 
@@ -92,12 +91,49 @@ Starlist の全体像を短時間で共有するためのテンプレートで�
 | 機能カテゴリ | 現状ステータス | 次のアクション |
 | --- | --- | --- |
 | データインポート | 主要サービスのダミー取り込み UI/診断機能を実装済み。 | サポートマトリクスとアイコン資産の整備を継続。 |
-| 決済/サブスク | Stripe ベースの Payment/Subscription Service を実装。 | コンビニ・キャリア決済の仕様検討と実装着手。 |
-| 分析/レポート | ランキング/スターデータ画面の初期バージョンを提供。 | 指標ダッシュボード強化とテスト追加。 |
+| 決済/サブスク | Stripe ベースの Payment/Subscription Service を実装。推奨価格機能（Day11）を実装済み。 | コンビニ・キャリア決済の仕様検討と実装着手。 |
+| 分析/レポート | ランキング/スターデータ画面の初期バージョンを提供。OPS Dashboard（β）を実装済み。 | 指標ダッシュボード強化とテスト追加。 |
 | AI/自動化 | AI 秘書・スケジューラの設計ドキュメントを作成済み。 | PoC 実装とインテグレーションのロードマップ策定。 |
-| Day5 Telemetry/OPS | キックオフ（DB/Edge 設計完了、Node20/CI ガード整備済み）。 | DB→Edge→Flutter→UI→CI の順で実装し、`ops-alert` dryRun と QA E2E を完了。 |
+| OPS監視・通知 | Day5〜Day11で基盤確立。Telemetry、ops-alert、週次メール/Slack要約、KPIダッシュボードを実装済み。 | Day12で自動化率100%を目指し、10×拡張フェーズを実施。 |
 
-> TODO: PM/各担当と進捗を整合。
+---
+
+## KPI (Beta)
+
+| 指標 | 定義 | 計測元 | 粒度 | 閾値/目標 | 責任者 | 更新頻度 |
+| --- | --- | --- | --- | --- | --- | --- |
+| 週次Ops配信成功率 | 週レポメール/Slack送信の成功率 | Edge(log) + Resend/Slack API | 週次 | ≥ 99.0% | Ops Lead | 毎週月曜09:10 JST |
+| p95 レイテンシ | v_ops_5minの期間p95 | Supabase v_ops_5min | 5分 | ≤ 800ms | Backend | 常時 |
+| 失敗率 | ops-alert の失敗イベント比率 | Edge + DB | 日次 | ≤ 0.5% | SRE | 毎日 09:00 |
+| β登録スター数 | β期間の有効スター数 | App DB | 週次 | 目標値を記入 | BizOps | 週次 |
+
+---
+
+## 監視・通知スタック
+
+### 週次メール要約
+- **Edge Function**: `ops-summary-email`
+- **実行**: GitHub Actions（毎週月曜09:00 JST）
+- **dryRun**: `?dryRun=true` でプレビュー可能
+- **参考**: `docs/ops/OPS-SUMMARY-EMAIL-001.md`
+
+### 週次Slack要約
+- **Edge Function**: `ops-slack-summary`
+- **実行**: GitHub Actions（毎週月曜09:00 JST）
+- **閾値**: μ+2σ（警告）、μ+3σ（重大）を自動算出
+- **参考**: `docs/reports/DAY10_SOT_DIFFS.md`
+
+### OPS Dashboard（β）
+- **URL**: `/ops/dashboard`（Flutter Web）
+- **KPI**: Total Requests, Error Rate, P95 Latency, Errors
+- **チャート**: P95 Latency（ギャップ表示対応）、Stacked Bar Chart
+- **参考**: `docs/ops/OPS-MONITORING-002.md`, `docs/ops/DASHBOARD_IMPLEMENTATION.md`
+
+### 監査レポート自動生成
+- **スクリプト**: `generate_audit_report.sh`
+- **実行**: GitHub Actions（週次 + 手動実行）
+- **内容**: Permalink, Edge Logs, Stripe Events, Day11 JSON Logs
+- **参考**: `docs/ops/AUDIT_SYSTEM_ENTERPRISE.md`
 
 ---
 
@@ -127,9 +163,19 @@ Starlist の全体像を短時間で共有するためのテンプレートで�
 
 ## ロードマップ・今後の課題
 
-- **Day5 (現フェーズ)**: Telemetry/OPS 実装（`ops_metrics` / `v_ops_5min` / Edge `telemetry` & `ops-alert`）、CI `QA E2E` の緑化。  
-- **Day6 (予告)**: 監視フェーズ拡張（OPS-002）。通知チューニングと BizOps レポート連携。  
-- **技術的負債**: Edge Dry-run API 設計、スター単位課金の DB 拡張、Mermaid Day5 ノードの最終確定。
+### Roadmap (Q4→Q1)
+
+| 期間 | マイルストーン | DoD | リスク | フォールバック |
+| --- | --- | --- | --- | --- |
+| Q4 | β公開ダッシュボード整備 | KPI表/監視/リンク緑 | 依存API障害 | 旧集計に切替 |
+| Q4 | 通知要約運用安定化 | μ+2σ/3σ閾値活用 | 間欠エラー | 再送+抑止 |
+| Q1 | 決済拡張(国内) | 決済種別テスト緑 | 規約差異 | Stripe限定運用 |
+
+### Day12以降（10×拡張フェーズ）
+
+- **Day12**: ドキュメント統合（SSOT確立）、30ブランチ同時展開（Security/Ops/Automation/UI/Business）
+- **技術的負債**: Edge Dry-run API 設計、スター単位課金の DB 拡張、Mermaid Day12 ノードの最終確定
+- **参考**: `docs/planning/DAY12_10X_EXPANSION_ROADMAP.md`
 
 ---
 
@@ -139,3 +185,4 @@ Starlist の全体像を短時間で共有するためのテンプレートで�
 | --- | --- | --- |
 | 2025-10-?? | 作成者名 | 雛形作成 |
 | 2025-11-07 | Tim | Day5 Telemetry/OPS サマリーとロードマップを更新。 |
+| 2025-11-08 | Tim | Day12 β統合：KPI表、ロードマップ表、監視・通知スタックを追加。 |

@@ -12,9 +12,11 @@
     "dev": "echo 'Run: npm run start:bs in separate terminal, then ./scripts/c.sh'",
     "report": "bash scripts/progress-report.sh",
     "lint:md": "node scripts/ensure-node20.js && markdown-link-check -c .mlc.json -q **/*.md",
-    "lint:md:local": "bash scripts/lint-md-local.sh",
+    "lint:md:local": "node scripts/docs/link-check.mjs",
     "check:mail:dns": "node scripts/check_mail_dns.mjs starlist.jp",
-    "pricing:final": "bash PRICING_FINAL_SHORTCUT.sh"
+    "pricing:final": "bash PRICING_FINAL_SHORTCUT.sh",
+    "docs:update-dates": "node scripts/docs/update-last-updated.mjs",
+    "docs:diff-log": "node scripts/docs/generate-diff-log.mjs"
   },
   "keywords": [],
   "author": "",

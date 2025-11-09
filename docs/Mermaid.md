@@ -1,10 +1,13 @@
+Last-Updated: 2025-11-09
+
 flowchart TB
   A[docs/overview/COMMON_DOCS_INDEX.md<br/>共通ドキュメント索引]:::core
 
   %% OVERVIEW
-  A --> B[docs/overview/STARLIST_OVERVIEW.md<br/>プロダクト全景と要約]:::overview
-  A --> B0[docs/overview/README.md<br/>運用ルール]:::overview
-  A --> D[guides/CHATGPT_SHARE_GUIDE.md<br/>AI共有SOP]:::share
+  A --> B[docs/overview/STARLIST_OVERVIEW.md<br/>プロダクト全景と要約<br/>β版: KPI表・ロードマップ表]:::overview
+  A --> B0[docs/README.md<br/>運用ルール]:::overview
+  A --> B1[docs/COMPANY_SETUP_GUIDE.md<br/>環境セットアップ<br/>β版: Secrets運用SOP]:::overview
+  A --> D[guides/CHATGPT_SHARE_GUIDE.md<br/>AI共有SOP<br/>β版: doc-share SOP]:::share
 
   %% DEVELOPMENT
   A --> C[docs/development/DEVELOPMENT_GUIDE.md<br/>開発環境ガイド]:::dev
@@ -37,6 +40,23 @@ flowchart TB
   A --> O4[docs/reports/DAY10_SOT_DIFFS.md<br/>OPS Slack Notify（Day10）]:::ops
   O4 --> O2
   O4 --> O5[DAY10_DEPLOYMENT_RUNBOOK.md<br/>デプロイ実行ランブック]:::ops
+  A --> O6[docs/ops/OPS-SUMMARY-EMAIL-001.md<br/>週次メール要約]:::ops
+  A --> O7[docs/ops/LAUNCH_CHECKLIST.md<br/>本番入りチェックリスト]:::ops
+  A --> O8[docs/ops/AUDIT_SYSTEM_ENTERPRISE.md<br/>監査システム全体像]:::ops
+  A --> O9[docs/ops/DASHBOARD_IMPLEMENTATION.md<br/>KPIダッシュボード実装]:::ops
+  
+  %% REPORTS
+  A --> R1[docs/reports/STARLIST_DAY5_SUMMARY.md<br/>Day5進行サマリー]:::biz
+  A --> R2[docs/reports/DAY11_INTEGRATION_LOG.md<br/>Day11統合ログ]:::biz
+  A --> R3[docs/reports/DAY12_SOT_DIFFS.md<br/>Day12ドキュメント統合差分]:::biz
+  
+  %% RELATIONSHIPS (Day12)
+  B --> O6
+  B --> O8
+  B1 --> O7
+  D --> O6
+  O6 --> O4
+  O8 --> O9
 
   %% PLANNING & REPORTS
   A --> P[docs/planning/Task.md<br/>計画/タスク]:::biz
