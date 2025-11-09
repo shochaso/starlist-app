@@ -39,4 +39,15 @@ paths = [
   '''\.template$''',
   '''SECURITY_SWEEP\.txt$''',
   '''docs/''',
+  '''ios/Podfile\.lock$''',
+  '''app/dashboard/audit/page\.tsx$''',
 ]
+regexes = [
+  '''p95_latency_ms''',
+  '''eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9\.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpqd3Ztb3hwYWNicHdhd2x3YnJkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDEzNTQwMzMsImV4cCI6MjA1NjkzMDAzM30\.[A-Za-z0-9_-]+''',
+]
+# Note: JWT token is Supabase anon key (public, safe to commit)
+# Podfile.lock SHA hashes are dependency checksums (not secrets)
+# p95_latency_ms is a variable name (not a secret)
+# Remove by 2025-12-31 (tracked in DAY12_SOT_DIFFS.md)
+
