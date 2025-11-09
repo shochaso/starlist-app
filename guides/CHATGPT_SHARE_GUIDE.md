@@ -55,9 +55,9 @@ Starlist 関連の情報を ChatGPT などの生成 AI に共有するときの�
 
 ## 4. 大容量ドキュメントの扱い
 
-### doc-share署名URL SOP（3行版）
+### doc-share署名URL SOP（3行版・確定）
 
-1) **Supabase Storage `doc-share` に格納し、期限付き署名URLを発行**。  
+1) **Supabase Storage `doc-share` に格納し、期限付き署名URLを発行**（通常7日、最大30日）。  
 2) **共有は最少権限（期限/閲覧のみ）、再配布は禁止**。  
 3) **失効期限前に必要分のみ再発行（旧URLは無効化ログを残す）**。
 
@@ -84,7 +84,19 @@ supabase storage create-signed-url doc-share large-file.pdf --expires-in 604800
 - **期限**: 必要最小限（通常7日、最大30日）
 - **再配布**: 禁止（必要に応じて再発行）
 
-#### 4. ログ・監査
+#### 4. 大容量共有の再配布ガイド
+
+**期限切れ時の再発行手順**:
+
+1. **旧URLの確認**: 期限切れURLを確認（`403 Forbidden`または`404 Not Found`）
+2. **新URL発行**: `supabase storage create-signed-url doc-share file.pdf --expires-in 604800`
+3. **旧URL無効化ログ**: `docs/reports/DAY12_SOT_DIFFS.md`に旧URL無効化日時を記録
+4. **新URL配布**: 必要最小限の相手にのみ新URLを配布
+5. **再配布禁止**: 新URLの再配布は禁止（必要に応じて再発行）
+
+**再発行頻度**: 必要最小限（通常は週1回以内）
+
+#### 5. ログ・監査
 
 - URL発行ログは`docs/reports/DAY12_SOT_DIFFS.md`に記録
 - 再発行時は旧URLを無効化し、ログに残す
@@ -102,9 +114,9 @@ supabase storage create-signed-url doc-share large-file.pdf --expires-in 604800
 
 ---
 
-## 5. Cursor / GitHub プロンプトテンプレート
+## 5. Cursor / GitHub プロンプトテンプレート（正式版）
 
-### Cursor Composer用プロンプト
+### Cursor Composer用プロンプト（標準テンプレート）
 
 ```markdown
 あなたは超一流のコーディングプロンプター「マイン」です。
@@ -144,7 +156,22 @@ supabase storage create-signed-url doc-share large-file.pdf --expires-in 604800
 - 関連ドキュメント
 ```
 
-### GitHub Issue用テンプレート
+**禁止事項**:
+- 機密情報（Secrets、API Key等）をプロンプトに含めない
+- 実行ログにSecretsの値を出力しない
+- `.env.local`や`.envrc`の内容をコミットしない
+
+**出力体裁**:
+- コードブロックには言語タグを付与（`dart`, `typescript`, `bash`等）
+- 変更ファイルは`git diff`形式で出力
+- テスト結果は`✅`/`❌`で明示
+
+**コミット粒度**:
+- 1機能 = 1コミット（原則）
+- 複数ファイルの変更は関連性が高い場合のみ1コミット
+- コミットメッセージは`feat(scope): [簡潔な説明]`形式
+
+### GitHub Issue用テンプレート（標準テンプレート）
 
 ```markdown
 ## 目的
@@ -166,7 +193,30 @@ supabase storage create-signed-url doc-share large-file.pdf --expires-in 604800
 
 ## 参考ドキュメント
 - `docs/path/to/doc.md`
+
+## 受入基準（DoD）
+- [ ] 実装完了
+- [ ] テスト通過（単体テスト・E2Eテスト）
+- [ ] コードレビュー完了
+- [ ] ドキュメント更新完了
+
+## ログ貼り付け形式
+\`\`\`
+[実行ログ・エラーログ・テスト結果]
+\`\`\`
 ```
+
+**受入基準（DoD）**:
+- 実装完了
+- テスト通過（単体テスト・E2Eテスト）
+- コードレビュー完了
+- ドキュメント更新完了
+- CI通過（GitHub Actions全緑）
+
+**ログ貼り付け形式**:
+- コードブロック（\`\`\`）で囲む
+- 実行ログ・エラーログ・テスト結果を貼り付け
+- 機密情報はマスク（`***MASKED***`）してから貼り付け
 
 ---
 
@@ -208,5 +258,18 @@ Day10「OPS Slack Notify」の実装完了を共有する際の例：
 - docs/reports/DAY10_SOT_DIFFS.md（実装詳細）
 - DAY10_DEPLOYMENT_RUNBOOK.md（デプロイ手順）
 ```
+
+---
+
+## 7. テンプレ更新の監査履歴
+
+| 日付 | バージョン | 変更内容 | 適用日 | 差分 |
+| --- | --- | --- | --- | --- |
+| 2025-11-08 | v1.0 | Cursor/GitHubテンプレ正式版追加 | 2025-11-08 | 初版作成 |
+| 2025-11-08 | v1.1 | doc-share SOP簡潔化、再配布ガイド追加 | 2025-11-08 | 再配布ガイド追加 |
+
+**更新頻度**: テンプレ変更時、SOP変更時
+
+---
 
 このガイドを基に、テーマごとに必要な Markdown を選択し、効率的に ChatGPT へ情報提供してください。
