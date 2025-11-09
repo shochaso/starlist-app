@@ -4,6 +4,9 @@ on:
   pull_request:
   push:
     branches: [ main, develop ]
+  schedule:
+    # 毎週月曜09:00 JST (00:00 UTC)
+    - cron: '0 0 * * 1'
 
 permissions:
   contents: read
