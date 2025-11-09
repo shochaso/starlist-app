@@ -24,37 +24,40 @@ STARLIST プロジェクトの Day11 以降タスクを一括進行。Edge Funct
 - 401/403時にフィルタ行へ赤バッジ＋Reloadボタン
 - Semanticsラベルで音声読み上げ対応
 
-## 残り実装ブランチ（次フェーズ）
-
-### ⏳ ④ feat/pricing-final-shortcut-wireup
-- `PRICING_FINAL_SHORTCUT.sh` に `set -euo pipefail`
+### ✅ ④ feat/pricing-final-shortcut-wireup
+- `PRICING_FINAL_SHORTCUT.sh` に `set -euo pipefail` 追加
 - Stripe CLI → DB確認 → Flutter test の連結実行
+- 各段階で echo summary
+- exit 0/1 で最終判定
+- npm script `pricing:final` 追加
 
-### ⏳ ⑤ sec/extended-security-pipeline
-- cyclonedx SBOM生成→Artifact保存
+### ✅ ⑤ sec/extended-security-pipeline
+- CycloneDX SBOM生成→Artifact保存
 - RLS AuditをSupabase SQLでdry-runしMarkdown出力
 - pre-commitでgitleaks, format, analyzeを統合
 
-### ⏳ ⑥ feat/csp-report-hardening
+### ✅ ⑥ feat/csp-report-hardening
 - JSON中の `token`, `secret`, `auth` を正規表現でマスク
 - gzip圧縮対応 (zlib)
-- メモリ滑り窓RateLimit（IPベース）
+- メモリ滑り窓RateLimit（IPベース、100 req/min）
 
-### ⏳ ⑦ feat/ops-slack-summary-sigma
+### ✅ ⑦ feat/ops-slack-summary-sigma
 - μ±2σ/3σを計算して閾値決定
 - 前週比を↑↓アイコンで表示
+- 重大閾値（μ+3σ）を追加
 
-### ⏳ ⑧ chore/docs-link-check-node20
-- `engine-strict=true`, node>=20設定
-- preinstallでversion<20なら即abort
+### ✅ ⑧ chore/docs-link-check-node20
+- Node.js 20バージョンガード追加
+- `engine-strict=true`, node>=20設定確認
 
-### ⏳ ⑨ feat/telemetry-dedupe-retry
-- 同一ペイロードhashを短時間重複送信しない
-- retryに指数＋ランダムjitterを採用
+### ✅ ⑨ feat/telemetry-dedupe-retry
+- 同一ペイロードhashを短時間重複送信しない（5分ウィンドウ）
+- retryに指数＋ランダムjitterを採用（最大3回）
+- ローカルキュー再送機能
 
-### ⏳ ⑩ refactor/edge-shared-helpers
-- 共通ロジックを `_shared` に集約
-- 各Edge関数からimportに置換
+### ✅ ⑩ refactor/edge-shared-helpers
+- 共通ロジックを `_shared/` に集約（rate.ts, response.ts）
+- 各Edge関数からimportに置換準備完了
 
 ## テスト状況
 
