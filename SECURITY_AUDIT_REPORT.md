@@ -1,0 +1,8 @@
+# Security Audit Report
+
+| Severity | Area | File:Line | Why | Fix |
+| --- | --- | --- | --- | --- |
+| High | Supabase Edge functions (ops-alert/telemetry/ops-health/ops-summary-email) | `supabase/functions/shared.ts:12-132` | Wildcard CORS, unrestricted service_role use, and plaintext logs left telemetry endpoints open to CSRF, secret harvesting, and PII leakage. | A shared helper now centralizes allowed origins, enforces `x-ops-secret`, requires ops claims, and masks logged PII before any function responds (see `supabase/functions/shared.ts`). |
+| Medium | Database row-level security | `supabase/migrations/20260101_ops_security_rls.sql:1-40` | `ops_metrics`, `ops_alerts_history`, and `ops_summary_email_logs` previously allowed any authenticated user to read sensitive telemetry/audit data. | New migration tightens SELECT/INSERT policies so only the service role or clients carrying the `ops_admin` JWT claim can access those tables and introduces `public.has_ops_admin_claim()` to keep policy logic simple. |
+| Medium | CI/CD security gate | `.github/workflows/security-audit.yml:1-38` | The repo lacked automated dependency and static analysis checks, increasing the window for supply-chain issues. | Added a weekly/demand-triggered workflow running `npm audit --production`, `dart pub outdated --mode=null-safety`, `semgrep`, and the new Deno helper tests so issues fail fast. |
+| Low | Logged output | `supabase/functions/shared.ts:68-81` | Errors logged Supabase tokens and email addresses verbatim, leaking identifiers to centralized logs. | Introduced `maskPII()` + `safeLog()` to obfuscate tokens before reaching `console.error`, so downstream log retention systems no longer store raw secrets. |

@@ -1,18 +1,74 @@
 name: Ops Alert DryRun
+
 on:
   workflow_dispatch:
+
 permissions:
   contents: read
+
 jobs:
   dryrun:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout (no submodules)
+        uses: actions/checkout@v4
+        with:
+          submodules: false
+          fetch-depth: 1
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - name: DryRun placeholder
+
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+
+      # ▼ どちらか一方を使う。A: 直接URL+Bearer / B: Supabase REST
+      - name: DryRun via direct Edge URL (A)
+        if: ${{ secrets.OPS_ALERT_URL && secrets.OPS_ALERT_TOKEN }}
+        env:
+          OPS_ALERT_URL: ${{ secrets.OPS_ALERT_URL }}
+          OPS_ALERT_TOKEN: ${{ secrets.OPS_ALERT_TOKEN }}
         run: |
-          echo "[ops-alert] dryrun start"
-          # TODO: 実DryRun処理に置換（例：curlでEdge関数をdryRun=trueで叩く）
-          echo "[ops-alert] dryrun success"
+          set -euo pipefail
+          echo "[ops] dryrun start (direct)"
+          RESPONSE=$(curl --fail --show-error --retry 3 --retry-all-errors --max-time 30 \
+            -H "Authorization: Bearer ${OPS_ALERT_TOKEN}" \
+            "${OPS_ALERT_URL}?dryRun=true&limit=50")
+          
+          echo "Response:"
+          echo "$RESPONSE" | jq .
+          
+          # Verify response structure
+          echo "$RESPONSE" | jq -e '.ok != null' >/dev/null || exit 1
+          echo "[ops] dryrun success (direct)"
+
+      - name: DryRun via Supabase REST (B)
+        if: ${{ secrets.SUPABASE_URL && secrets.SUPABASE_ANON_KEY }}
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          set -euo pipefail
+          echo "[ops] dryrun start (supabase)"
+          # Edge Function ops-alert を呼ぶ
+          RESPONSE=$(curl --fail --show-error --retry 3 --retry-all-errors --max-time 30 \
+            -X GET \
+            -H "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
+            -H "Content-Type: application/json" \
+            "${SUPABASE_URL}/functions/v1/ops-alert?dry_run=true&minutes=15")
+          
+          echo "Response:"
+          echo "$RESPONSE" | jq .
+          
+          # Verify dryRun flag
+          echo "$RESPONSE" | jq -e '.dryRun == true' || exit 1
+          
+          # Verify response structure
+          echo "$RESPONSE" | jq -e '.ok == true' || exit 1
+          echo "$RESPONSE" | jq -e '.period_minutes == 15' || exit 1
+          echo "$RESPONSE" | jq -e 'has("metrics")' || exit 1
+          echo "$RESPONSE" | jq -e 'has("alerts")' || exit 1
+          
+          echo "[ops] dryrun success (supabase)"

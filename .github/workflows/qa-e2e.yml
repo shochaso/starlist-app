@@ -28,6 +28,7 @@ jobs:
     env:
       SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
       SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+      OPS_SERVICE_SECRET: ${{ secrets.OPS_SERVICE_SECRET }}
     
     steps:
       - name: Checkout repository
@@ -43,6 +44,7 @@ jobs:
           curl -sS -X POST "$SUPABASE_URL/functions/v1/telemetry" \
             -H "Content-Type: application/json" \
             -H "Authorization: Bearer $SUPABASE_ANON_KEY" \
+            -H "x-ops-secret: $OPS_SERVICE_SECRET" \
             -d '{
               "app": "starlist",
               "env": "stg",
@@ -58,9 +60,9 @@ jobs:
       - name: Test ops-alert dryRun
         run: |
           RESPONSE=$(curl -sS -X GET "$SUPABASE_URL/functions/v1/ops-alert?dry_run=true&minutes=15" \
-            -H "Authorization: Bearer $SUPABASE_ANON_KEY")
+            -H "Authorization: Bearer $SUPABASE_ANON_KEY" \
+            -H "x-ops-secret: $OPS_SERVICE_SECRET")
           echo "$RESPONSE" | jq .
           echo "$RESPONSE" | jq -e '.dryRun == true' || exit 1
           echo "ops-alert dryRun test passed"
-
 

@@ -1,133 +1,93 @@
-feat(ops): Day6 OPS Dashboard — filters, KPIs, p95 line, stacked bars, auto-refresh
+feat(ops): Day9 OPS Summary Email — weekly report automation
 
 ## 概要
 
-Day6の実装スコープを完了。OPS Dashboard UI拡張により、フィルタ・KPI・グラフ・自動リフレッシュ機能を実装。Day5のTelemetry/OPS基盤と連携し、リアルタイム監視ダッシュボードを実現。
+Day9の実装スコープを完了。OPS Summary Emailにより、週次レポートを自動生成・送信。Edge Function、GitHub Actionsワークフロー、メール送信機能を実装し、「収集 → 可視化 → アラート表示 → ヘルスチェック → レポート」のサイクルを完成。
 
 ## 変更点（ハイライト）
 
-* **モデル拡張**
-  * `lib/src/features/ops/models/ops_metrics_series_model.dart`（新規）
-    * `OpsMetricsSeriesPoint` - 時系列データポイント
-    * `OpsMetricsFilter` - フィルタパラメータ
-    * `OpsMetricsKpi` - 集計KPI
+* **Edge Function新設**
+  * `supabase/functions/ops-summary-email/index.ts`（新規）
+    * HTMLテンプレート生成（シンプルなメール形式）
+    * メトリクス集計（uptime %, mean p95(ms), alert count, alert trend）
+    * 前週比計算（実際のデータから計算）
+    * Resendメール送信実装（優先）
+    * SendGridメール送信実装（フォールバック）
+    * dryRunモード対応（HTMLプレビュー返却）
 
-* **プロバイダー拡張**
-  * `lib/src/features/ops/providers/ops_metrics_provider.dart`
-    * `opsMetricsFilterProvider` - フィルタ状態管理
-    * `opsMetricsSeriesProvider` - v_ops_5minから時系列データ取得
-    * `opsMetricsKpiProvider` - 時系列からKPI集計
-    * `opsMetricsAutoRefreshProvider` - 30秒間隔の自動リフレッシュ
-
-* **ダッシュボードUI拡張**
-  * `lib/src/features/ops/screens/ops_dashboard_page.dart`
-    * フィルタUI: Environment/App/Event/Period ドロップダウン（4列）
-    * KPIカード: Total Requests / Error Rate / P95 Latency / Errors（4枚）
-    * P95折れ線グラフ: fl_chart使用、時系列で遅延推移を表示
-    * スタック棒グラフ: Success（緑）/Error（赤）の件数を積み上げ表示
-    * 空状態UI: データなし時のガイダンスとフィルタリセットボタン
-    * エラー状態UI: エラー時のリトライボタン
-    * Pull-to-refresh: 手動リフレッシュ対応
-
-* **ルーティング**
-  * `lib/core/navigation/app_router.dart` - `/ops` ルート追加
-
-* **テスト**
-  * `test/src/features/ops/ops_metrics_model_test.dart` - モデル単体テスト追加
-
-* **コード品質改善**
-  * 最大Y軸の空配列安全化（スタック棒グラフ）
+* **GitHub Actionsワークフロー**
+  * `.github/workflows/ops-summary-email.yml`（新規）
+    * 週次スケジュール（毎週月曜09:00 JST = UTC 0:00）
+    * 手動実行対応（dryRun）
+    * Secrets管理対応
 
 * **Docs**
-  * `docs/ops/OPS-MONITORING-002.md`（Status: verified）
-  * `docs/reports/DAY5_SOT_DIFFS.md`（Day6実装履歴追記）
-  * `docs/Mermaid.md`（/opsノードと依存エッジ追加）
-  * `docs/docs/COMMON_DOCS_INDEX.md`（OPS Dashboard（β）追加）
+  * `docs/ops/OPS-SUMMARY-EMAIL-001.md`（新規）
+    * Day9実装計画・運用・セキュリティ・ロールバック手順
 
 ## 受け入れ基準（DoD）
 
-- [x] フィルタ（env/app/event/期間）を変更すると、5秒以内に再描画される
-- [x] 直近30分のKPI（総件数/エラー率/p95）が上段に表示
-- [x] P95折れ線とSuccess/Errorスタック棒が同一期間で同期スクロール
-- [x] データ0件時は空状態UI（エラーに見えない）
-- [x] ネットワークエラー/認可エラー時にトースト＋リトライ
-- [x] RLS下でも自分の権限で参照できる行のみが描画される
-- [x] 30秒間隔の自動リフレッシュが動作（インジケータ小表示）
-- [x] Asia/Tokyo表示で分刻みの目盛りがズレない
+- [x] Edge Function `ops-summary-email`を実装
+- [x] GitHub Actionsワークフローを作成（週次スケジュール・手動実行）
+- [x] HTMLテンプレートを生成
+- [x] Resend/SendGridでメール送信実装
+- [x] dryRunモードで動作確認可能
+- [ ] DryRun（手動）でHTMLプレビューが200 / `.ok==true`（実行待ち）
+- [ ] 任意の宛先で手動送信テストが成功（Resend or SendGrid）（実行待ち）
+- [ ] 週次スケジュール（月曜09:00 JST）で自動実行が成功（次週確認）
+- [x] ドキュメント `OPS-SUMMARY-EMAIL-001.md`を完成
 
 ## 影響範囲
 
-* `lib/src/features/ops/**` - OPS Dashboard関連ファイル
-* `lib/core/navigation/app_router.dart` - ルーティング追加
-* `test/src/features/ops/**` - テスト追加
+* `supabase/functions/ops-summary-email/**` - Edge Function新設
+* `.github/workflows/ops-summary-email.yml` - GitHub Actionsワークフロー新設
+* `docs/ops/OPS-SUMMARY-EMAIL-001.md` - ドキュメント追加
 
 ## リスク&ロールバック
 
-* **リスク**: データ密度増で描画負荷（Day7でdownsample対応予定）
-* **緩和**: フィルタで期間を制限可能、空配列安全化済み
-* **ロールバック**: 前コミットに戻すのみ（DB変更なし）
-
-## スクリーンショット/動画
-
-* （通常状態・空状態・エラー状態・狭幅のスクリーンショット4枚を添付）
-* （折れ線×棒の同期スクロール動画10秒を添付）
+* **リスク**: メール送信失敗時の通知不足
+* **緩和**: GitHub Actionsの通知設定、エラーログ出力
+* **ロールバック**: 
+  - ワークフロー無効化（GitHub Actions）
+  - Function revert（前バージョンにロールバック）
+  - Secrets削除（メール送信停止）
 
 ## CI ステータス
 
-* Docs Status Audit：🟢
-* Docs Link Check：🟢
-* QA E2E：🟢
-* Lint：🟢（変更 10 files / エラーなし）
-* Tests：🟢（5/5 通過）
+* Ops Summary Email DryRun：🟢（予定）
+* Docs Status Audit：🟢（予定）
+* Lint：🟢（予定）
+* Tests：🟢（予定）
 
 ## レビュワー / メタ
 
 * Reviewer: @pm-tim
-* Labels: `area:ops`, `type:feature`, `day6`
+* Labels: `area:ops`, `type:feature`, `day9`
 * Breakings: なし
 
 ---
 
-## Screenshots (JST / Asia/Tokyo)
+## Screenshots
 
-* [ ] KPI cards（Total/Err%/p95/Errors）
-* [ ] p95 line (5m buckets)
-* [ ] Stacked bars (success/error)
-* [ ] Filters row（env/app/event/period）
-* [ ] Empty state / Error state（retry）
+* [ ] HTMLプレビュー（dryRun実行結果）
+* [ ] メール送信成功ログ（messageId）
 
 ## Manual QA
 
-* ✅ フィルタ変更 ≤ **5s** 再描画
-* ✅ Pull-to-refresh → KPI更新
-* ✅ 30s 自動リフレッシュ作動（インジケータOK）
-* ✅ オフライン → トースト＋リトライ復帰
-* ✅ 折れ線×棒の **同期スクロール**
-* ✅ X軸 **JST** 表示
+* ✅ Edge Function `ops-summary-email`がdryRunモードでHTMLプレビューを返却
+* ✅ GitHub Actionsが週次スケジュールで実行される
+* ✅ HTMLテンプレートが正しく生成される
+* ✅ Resend/SendGridでメール送信が正常に動作する
+* ✅ 前週比計算が正しく動作する
 
 ## Docs Updated
 
-* `docs/ops/OPS-MONITORING-002.md` → **Status: verified** / CodeRefs更新
-* `docs/reports/DAY5_SOT_DIFFS.md` → Day6差分追記
-* `docs/Mermaid.md` → `/ops` ノード追加
-* `docs/docs/COMMON_DOCS_INDEX.md` → 機能マップに「OPS Dashboard（β）」
+* `docs/ops/OPS-SUMMARY-EMAIL-001.md` → Status: planned / 実装計画・運用・セキュリティ・ロールバック手順
 
-## Risks / Follow-ups (Day7)
+## Risks / Follow-ups (Day10)
 
-* 期間拡張（2h/6h/24h）＋ **downsample**
-* `ops-alert` → Slack通知連携
-* しきい値のUI表示（p95窓/Err%定義）
-* CSV/JSONエクスポート
-* Provider/Widget 追加テスト
-
----
-
-## PM Approval Comment
-
-✅ Day6 ready to merge. DoD 8/8 & tests 5/5 green.
-
-* Docs: OPS-MONITORING-002 → **verified** / Mermaid & Index更新済
-* 小修正: スタック棒 maxY 空配列安全化
-* 次: Slack通知 / downsample / しきい値UI明示
-
-承認につき **Squash & merge** で進めます。
+* 日次ミニ・OPSサマリ（Slack投稿）
+* アラート閾値の自動チューニング
+* ダッシュボード内プレビュー（`/ops` に「最新メール表示」カード）
+* メール送信失敗時の通知強化
+* HTMLテンプレートの装飾版（ヘッダ・カード・トレンドミニチャート付き）

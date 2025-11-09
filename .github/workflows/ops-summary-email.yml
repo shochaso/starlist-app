@@ -1,0 +1,69 @@
+name: Ops Summary Email
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 0 * * 1" # 毎週月曜 09:00 JST（UTC+9 → UTC 0:00）
+
+permissions:
+  contents: read
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    env:
+      OPS_SERVICE_SECRET: ${{ secrets.OPS_SERVICE_SECRET }}
+    steps:
+      - name: Checkout (no submodules)
+        uses: actions/checkout@v4
+        with:
+          submodules: false
+          fetch-depth: 1
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+
+      - name: DryRun (preview HTML)
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          set -euo pipefail
+          RESPONSE=$(curl --fail --show-error --retry 3 --retry-all-errors --max-time 30 \
+            -H "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
+            -H "x-ops-secret: ${OPS_SERVICE_SECRET}" \
+            -H "Content-Type: application/json" \
+            "${SUPABASE_URL}/functions/v1/ops-summary-email?dryRun=true")
+          
+          echo "Response:"
+          echo "$RESPONSE" | jq .
+          
+          echo "$RESPONSE" | jq -e '.ok == true and (.preview|length>0)' || exit 1
+          echo "[ops-summary-email] dryrun success"
+
+      - name: Send Weekly Email (prod)
+        if: ${{ github.event_name == 'schedule' }}
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          set -euo pipefail
+          RESPONSE=$(curl --fail --show-error --retry 3 --retry-all-errors --max-time 30 \
+            -H "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
+            -H "x-ops-secret: ${OPS_SERVICE_SECRET}" \
+            -H "Content-Type: application/json" \
+            -X POST \
+            "${SUPABASE_URL}/functions/v1/ops-summary-email" \
+            -d '{}')
+          
+          echo "Response:"
+          echo "$RESPONSE" | jq .
+          
+          echo "$RESPONSE" | jq -e '.ok == true' || exit 1
+          echo "[ops-summary-email] weekly email sent"
