@@ -63,3 +63,6 @@ jobs:
           if [ $broken -eq 1 ]; then
             exit 1
           fi
+      
+      - name: Verify SOT ledger
+        run: scripts/ops/verify-sot-ledger.sh

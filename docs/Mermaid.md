@@ -37,6 +37,8 @@ flowchart TB
   A --> O4[docs/reports/DAY10_SOT_DIFFS.md<br/>OPS Slack Notify（Day10）]:::ops
   O4 --> O2
   O4 --> O5[DAY10_DEPLOYMENT_RUNBOOK.md<br/>デプロイ実行ランブック]:::ops
+  A --> O6[out/logs/*<br/>Opsルーチンログ<br/>（extsec/reports/mlc）]:::ops
+  O6 --> O4
 
   %% PLANNING & REPORTS
   A --> P[docs/planning/Task.md<br/>計画/タスク]:::biz

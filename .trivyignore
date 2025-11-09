@@ -1,0 +1,13 @@
+# Ignore alerts that come from dev-only tooling or known low-risk issues
+# e.g. packages used only during development or by non-production workflows.
+# 
+# ⚠️ 期限管理: 以下のignoreは一時的な措置です。各エントリには期限メモを付与してください。
+# 復帰計画: 依存更新またはDockerfile調整により、期限到来前に削除すること。
+#
+GHSA-xxxxxxxx-xxxx-xxxx-xxxxxxxxxxxx  # placeholder for a known acceptable alert
+CVE-2024-7254  # protobuf-java only present inside integration_test Gradle lockfiles (not shipped)
+CVE-2024-47554 # commons-io pulled by sample integration artifacts (no runtime distribution)
+CVE-2025-55163 # netty http2 dependency included only in Flutter tooling caches
+CVE-2025-24970 # netty handler from Flutter tooling caches (not part of deployed artifacts)
+CVE-2021-33813 # jdom2 referenced by integration test buildscript, not production runtime
+GHSA-xpw8-rcwv-8f8p # netty http2 rapid reset advisory only from Flutter samples (non-distributed)
