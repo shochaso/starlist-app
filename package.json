@@ -13,7 +13,8 @@
     "report": "bash scripts/progress-report.sh",
     "lint:md": "node scripts/ensure-node20.js && markdown-link-check -c .mlc.json -q **/*.md",
     "lint:md:local": "bash scripts/lint-md-local.sh",
-    "check:mail:dns": "node scripts/check_mail_dns.mjs starlist.jp"
+    "check:mail:dns": "node scripts/check_mail_dns.mjs starlist.jp",
+    "pricing:final": "bash PRICING_FINAL_SHORTCUT.sh"
   },
   "keywords": [],
   "author": "",
