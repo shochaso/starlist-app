@@ -201,6 +201,7 @@ class _OpsDashboardPageState extends ConsumerState<OpsDashboardPage>
                       border: OutlineInputBorder(),
                       isDense: true,
                     ),
+                    isExpanded: true,
                     items: const [
                       DropdownMenuItem<String?>(
                           value: null, child: Text('All')),
@@ -228,6 +229,7 @@ class _OpsDashboardPageState extends ConsumerState<OpsDashboardPage>
                       border: OutlineInputBorder(),
                       isDense: true,
                     ),
+                    isExpanded: true,
                     items: const [
                       DropdownMenuItem<String?>(
                           value: null, child: Text('All')),
@@ -251,6 +253,7 @@ class _OpsDashboardPageState extends ConsumerState<OpsDashboardPage>
                       border: OutlineInputBorder(),
                       isDense: true,
                     ),
+                    isExpanded: true,
                     items: const [
                       DropdownMenuItem<String?>(
                           value: null, child: Text('All')),
@@ -281,6 +284,7 @@ class _OpsDashboardPageState extends ConsumerState<OpsDashboardPage>
                       border: OutlineInputBorder(),
                       isDense: true,
                     ),
+                    isExpanded: true,
                     items: const [
                       DropdownMenuItem(value: 30, child: Text('30 min')),
                       DropdownMenuItem(value: 60, child: Text('60 min')),
