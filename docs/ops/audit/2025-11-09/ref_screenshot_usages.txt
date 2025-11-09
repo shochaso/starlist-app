@@ -5,7 +5,4 @@ docs/ops/UI_ONLY_PM_ONEPAGER_V2_20251109.md:66:  - docs/ops/audit/branch_protect
 docs/ops/UI_ONLY_PM_ONEPAGER_V2_20251109.md:78:  - docs/ops/audit/branch_protection_ok.png
 docs/ops/UI_ONLY_PM_ONEPAGER_V2_20251109.md:90:  - docs/ops/audit/branch_protection_ok.png
 docs/ops/UI_ONLY_PM_ONEPAGER_V2_20251109.md:102:  - docs/ops/audit/branch_protection_ok.png
-docs/ops/audit/branch_protection_ok.png.placeholder.txt:3:This file is a placeholder. Please take a screenshot of the Branch Protection verification via GitHub UI and save it as: branch_protection_ok.png
-docs/ops/audit/branch_protection_ok.png.placeholder.txt:9:4. Take screenshot and save as: docs/ops/audit/branch_protection_ok.png
-docs/ops/audit/logs/pr45_changed_files.txt:58:docs/ops/audit/branch_protection_ok.png.placeholder.txt
 docs/ops/audit/ui_only_pack_v2_20251109.json:38:    "branch_protection_screenshot": "docs/ops/audit/branch_protection_ok.png"
