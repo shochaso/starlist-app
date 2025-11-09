@@ -1,0 +1,8 @@
+# Ignore generated, test, and build artifacts during Trivy FS scans
+**/third_party/**
+**/vendor/**
+**/node_modules/**
+**/build/**
+**/.dart_tool/**
+**/generated/**
+**/tests/**
