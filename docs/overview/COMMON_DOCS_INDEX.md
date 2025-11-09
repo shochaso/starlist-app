@@ -125,10 +125,77 @@ Starlist 関連リポジトリ／プロジェクトに共通して参照した�
 
 ---
 
-## 5. 今後の追加候補
+## 5. ER図・シーケンス図
+
+### 5.1 保管場所と命名規則
+
+**保管場所**: `docs/architecture/diagrams/`  
+**命名規則**: `[type]_[name]_[version].{mermaid|png}`
+
+- **ER図**: `er_starlist_v1.mermaid` / `er_starlist_v1.png`
+- **シーケンス図**: `seq_auth_flow_v1.mermaid` / `seq_auth_flow_v1.png`
+- **アーキテクチャ図**: `arch_system_overview_v1.mermaid` / `arch_system_overview_v1.png`
+
+**形式**: Mermaid（推奨）またはPNG（静的画像）
+
+### 5.2 図ファイル一覧
+
+| 図の種類 | ファイル名 | 説明 | リンク |
+| --- | --- | --- | --- |
+| ER図 | `er_starlist_v1.mermaid` | データベーススキーマ全体図 | [ER図](architecture/diagrams/er_starlist_v1.mermaid) |
+| シーケンス図（認証） | `seq_auth_flow_v1.mermaid` | OAuth認証フロー | [認証フロー](architecture/diagrams/seq_auth_flow_v1.mermaid) |
+| シーケンス図（決済） | `seq_payment_flow_v1.mermaid` | Stripe決済フロー | [決済フロー](architecture/diagrams/seq_payment_flow_v1.mermaid) |
+| アーキテクチャ図 | `arch_system_overview_v1.mermaid` | システム全体構成図 | [システム構成](architecture/diagrams/arch_system_overview_v1.mermaid) |
+
+> **注意**: 図ファイルは`docs/architecture/diagrams/`に配置し、Mermaid形式を推奨します。
+
+### 5.3 図内凡例（色/矢印/注釈）
+
+#### ER図の凡例
+
+- **テーブル**: 四角形（`[table_name]`）
+- **リレーション**: 矢印（`-->` 一対多、`<-->` 多対多）
+- **主キー**: 下線付き（`id`）
+- **外部キー**: 点線矢印（`-.->`）
+
+#### シーケンス図の凡例
+
+- **アクター**: 四角形（`[Actor]`）
+- **メッセージ**: 矢印（`-->` 同期、`-->>` 非同期）
+- **ループ**: 四角形（`loop [condition]`）
+- **条件分岐**: ダイヤモンド（`alt [condition]`）
+
+#### アーキテクチャ図の凡例
+
+- **コンポーネント**: 四角形（`[Component]`）
+- **データフロー**: 矢印（`-->`）
+- **外部サービス**: 楕円形（`(External)`）
+- **データストア**: 円筒形（`[(Database)]`）
+
+### 5.4 更新手順テンプレ（誰が・どこを・どう直す）
+
+**誰が**: テックリード / アーキテクト  
+**どこを**: `docs/architecture/diagrams/`配下の図ファイル  
+**どう直す**:
+
+1. **Mermaidファイルを編集**（`docs/architecture/diagrams/[type]_[name]_[version].mermaid`）
+2. **プレビューで確認**（VS CodeのMermaid拡張、または`mermaid-cli`でPNG生成）
+3. **COMMON_DOCS_INDEX.mdの図ファイル一覧を更新**（必要に応じて）
+4. **変更をコミット**（`git add docs/architecture/diagrams/`）
+5. **PR作成**（変更内容を説明）
+
+**更新頻度**: スキーマ変更時、フロー変更時、新機能追加時
+
+### 5.5 双方向リンク
+
+- **Index → 図**: `COMMON_DOCS_INDEX.md`の「図ファイル一覧」から各図へリンク
+- **図 → Index**: 各図ファイルの冒頭に`[← 索引に戻る](../overview/COMMON_DOCS_INDEX.md)`を追加
+
+---
+
+## 6. 今後の追加候補
 
 - プロジェクト別サマリー（モバイル/サーバー/データパイプラインなど）の 1 ページ化。
-- **ER図・シーケンス図**: `docs/architecture/` に配置予定。Mermaid/PlantUMLいずれもOK。生成先パス・命名規則・貼付SOPを`INDEX`から参照可能にする。
 - 開発者オンボーディング用のチェックリスト更新。
 
 ---
