@@ -29,6 +29,10 @@ jobs:
         run: |
           printf '%s\n' 'exclude = ["^https://zjwvmoxpacbpwawlwbrd.functions.supabase.co"]' > .lychee.toml
         continue-on-error: true
+      - name: Run docs:preflight (update dates → link check → diff log)
+        if: github.event_name == 'pull_request'
+        run: npm run docs:preflight || true
+        continue-on-error: true
       - name: Run link check
         run: npm run lint:md || true
         continue-on-error: true
