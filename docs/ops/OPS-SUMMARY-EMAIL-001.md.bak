@@ -193,6 +193,7 @@ Source-of-Truth: Edge Functions (`supabase/functions/ops-summary-email/`) + GitH
 - MVPではOPS/DEVのみに限定（`@starlist.jp`ドメインのみ許可）
 - 将来的な対象拡大時はサプレッションリスト運用を同梱
 
+<<<<<<< HEAD
 ## 13. 本番切替プレイブック
 
 ### 13.1 事前状態の確認
@@ -362,7 +363,9 @@ having count(*) > 1;
 3. **通知**: `DAY9_SOT_DIFFS.md`に障害サマリを追記（Run ID / 事象 / 暫定対応 / 次アクション）
 
 ## 17. 参考リンク
+=======
 ## 13. 参考リンク
+>>>>>>> a87060a (chore(wip): snapshot before integration 20251109-094813)
 
 - `docs/ops/OPS-HEALTH-DASHBOARD-001.md` - OPS Health Dashboard仕様
 - `docs/ops/OPS-ALERT-AUTOMATION-001.md` - OPS Alert Automation仕様

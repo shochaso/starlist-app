@@ -5,13 +5,17 @@ Last-Updated:: 2025-11-07
 
 # DAY9_SOT_DIFFS — OPS Summary Email Implementation Reality vs Spec
 
+<<<<<<< HEAD
 Status: verified ✅ (本番運用可)  
+=======
 Status: in-progress  
+>>>>>>> a87060a (chore(wip): snapshot before integration 20251109-094813)
 Last-Updated: 2025-11-07  
 Source-of-Truth: Edge Functions (`supabase/functions/ops-summary-email/`) + GitHub Actions (`.github/workflows/ops-summary-email.yml`)
 
 ---
 
+<<<<<<< HEAD
 ## ✅ STARLIST OPS Day9 フェーズ完了報告書（COO承認ログ）
 
 **承認日**: 2025-11-07  
@@ -81,6 +85,8 @@ Source-of-Truth: Edge Functions (`supabase/functions/ops-summary-email/`) + GitH
 
 ---
 
+=======
+>>>>>>> a87060a (chore(wip): snapshot before integration 20251109-094813)
 ## 🚀 STARLIST Day9 PR情報
 
 ### 🧭 PR概要
@@ -105,6 +111,7 @@ Day9: OPS Summary Email（週次レポート自動送信）
 | コミット数 | 3件 |
 | 変更ファイル | 4ファイル |
 | コード変更量 | +437行 / -0行 |
+<<<<<<< HEAD
 | DoD（Definition of Done） | 12/12 達成（100%） |
 | テスト結果 | ✅ 予定 |
 | PM承認 | ✅ 取得済み |
@@ -113,11 +120,13 @@ Day9: OPS Summary Email（週次レポート自動送信）
 | Merge方式 | Squash & merge |
 | Merged At | 2025-11-08T01:49:04Z |
 | Tag | v0.9.0-ops-summary-email-beta |
+=======
 | DoD（Definition of Done） | 5/5 達成（100%） |
 | テスト結果 | ✅ 予定 |
 | PM承認 | 待機中 |
 | Merged | （マージ後に追記） |
 | Merge SHA | （マージ後に追記） |
+>>>>>>> a87060a (chore(wip): snapshot before integration 20251109-094813)
 
 ### 🧩 マージ手順
 
@@ -169,13 +178,17 @@ CI緑化後、**Squash & merge実行 → Day10フェーズへ移行可能。**
 - Run ID: （実行後に追記）
 - 実行時刻 (JST): （実行後に追記）
 - 経路: Resend（本送信）/ SendGrid（フォールバック）/ dryRun
+<<<<<<< HEAD
 - Provider: （Resend or SendGrid）
 - Message ID: （実行後に追記）
 - To件数: （実行後に追記）
+=======
+>>>>>>> a87060a (chore(wip): snapshot before integration 20251109-094813)
 - 送信結果: success（messageId: ...）/ failure（エラー要約）
 - プレビュー（抜粋 or 画像）: （実行後に追記）
 - 備考: 期間=7d、指標=uptime/mean p95/alert trend、前週比=...%
 
+<<<<<<< HEAD
 ### 🔍 運用監視ポイント（初週）
 
 - [ ] DBログの健全性: 同一`report_week × channel × provider`が1行のみ
@@ -399,6 +412,8 @@ having count(*) > 1;
 - 対応: Edge Functionをデプロイする必要がある
 - 状態: デプロイ待ち
 
+=======
+>>>>>>> a87060a (chore(wip): snapshot before integration 20251109-094813)
 ---
 
 ## 2025-11-07: Day9 OPS Summary Email 実装完了
@@ -496,4 +511,4 @@ Slack `#release` に PRリンク・要約・スクショを投稿
 ---
 
 最終更新: 2025-11-07
-* merged: <PR URL> (2025-11-09 15:34:40 JST)
+

@@ -1,0 +1,12 @@
+rules:
+  - id: forbid-token-in-localstorage
+    languages: [dart, typescript, javascript]
+    message: "Do not store tokens in localStorage/sessionStorage/cookies"
+    severity: ERROR
+    patterns:
+      - pattern-either:
+          - pattern: localStorage.setItem($KEY, $VAL)
+          - pattern: sessionStorage.setItem($KEY, $VAL)
+          - pattern: document.cookie = $VAL
+    metadata:
+      category: security

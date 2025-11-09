@@ -31,3 +31,11 @@
 ## 関連Issue
 
 <!-- 関連するIssue番号を記載 -->
+
+## OPS Dashboard Verification
+
+- [ ] All update paths call `manualRefresh()` (Pull/Buttons/Retry/Badge)
+- [ ] Filters change via `setFilter()` only (no `ref.refresh`)
+- [ ] `opsMetricsAuthErrorProvider` true on 401/403, badge + notification
+- [ ] Single 30s timer (logs confirm)
+- [ ] `flutter test` (providers) + `dart analyze` green

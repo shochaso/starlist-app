@@ -9,7 +9,10 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
 import '../providers/ops_metrics_provider.dart';
 import '../models/ops_metrics_series_model.dart';
+<<<<<<< HEAD
+=======
 import '../models/ops_alert_model.dart';
+>>>>>>> a87060a (chore(wip): snapshot before integration 20251109-094813)
 import '../models/ops_health_model.dart';
 
 class OpsDashboardPage extends ConsumerStatefulWidget {
@@ -966,6 +969,7 @@ class _OpsDashboardPageState extends ConsumerState<OpsDashboardPage> with Single
       ),
     );
   }
+<<<<<<< HEAD
 }
 
                   ? const Center(child: Text('No data'))
@@ -1029,4 +1033,6 @@ class _OpsDashboardPageState extends ConsumerState<OpsDashboardPage> with Single
       ),
     );
   }
+=======
+>>>>>>> a87060a (chore(wip): snapshot before integration 20251109-094813)
 }
