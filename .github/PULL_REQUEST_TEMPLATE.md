@@ -1,33 +1,39 @@
-## 概要
+## 目的 / 背景
 
-- Day11/ Pricing 監査スイートの実行・改善
+- LIN-XXX: <LinearのIssueリンク>
 
-## 証跡
 
-- 監査票: docs/reports/`<YYYY-MM-DD>_DAY11_AUDIT_<G-WNN>.md`
-- Pricing: docs/reports/`<YYYY-MM-DD>_PRICING_AUDIT.md`
-- Slack: `<permalink>`
-- Artifacts: Actions Run `<link>`
 
-## 自動チェック（貼付）
+## 変更概要
 
-- [ ] slack_permalink_exists
-- [ ] edge_logs_collected
-- [ ] stripe_events_nonzero
-- [ ] day11_send_not_empty
-- [ ] db_price_range_valid
-- [ ] db_integer_ok
-- [ ] db_dup_zero
-- [ ] db_ref_integrity_ok
+- 何を／どこに（ディレクトリや主要ファイル）
 
-## 変更内容
 
-<!-- 変更の概要を記載 -->
+
+## 受け入れ基準（DoD）
+
+- [ ] ユースケースAが通る（手順）
+
+- [ ] テレメトリ/監視が追加または更新
+
+- [ ] 影響範囲の確認（CSP/RLS/CI）
+
+- [ ] ロールバック手順を記載
+
+
 
 ## テスト
 
-<!-- 実行したテストや検証内容を記載 -->
+- 手動/自動の観点・結果（スクショ歓迎）
 
-## 関連Issue
 
-<!-- 関連するIssue番号を記載 -->
+
+## 影響範囲
+
+- UI/UX / API / Infra / Security
+
+
+
+## ロールバック
+
+- このコミットを revert / feature flag / config revert 等

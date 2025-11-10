@@ -1,0 +1,14 @@
+name: Security
+description: セキュリティ課題
+labels: ["security"]
+body:
+  - type: textarea
+    id: risk
+    attributes: { label: リスク/根拠 }
+  - type: textarea
+    id: plan
+    attributes: { label: 対応方針（設定/ポリシー差分・テスト） }
+  - type: textarea
+    id: rollback
+    attributes: { label: ロールバック }
+

@@ -1,0 +1,17 @@
+name: Feature
+description: 新機能・改善の提案
+labels: ["feature"]
+body:
+  - type: textarea
+    id: goal
+    attributes: { label: 目的, placeholder: 何を達成したいか }
+  - type: textarea
+    id: scope
+    attributes: { label: スコープ/非対象 }
+  - type: textarea
+    id: dod
+    attributes: { label: 受け入れ基準(DoD), placeholder: チェックリストで記述 }
+  - type: textarea
+    id: impact
+    attributes: { label: 影響範囲, placeholder: UI/UX, API, Infra, Security など }
+

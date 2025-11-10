@@ -1,0 +1,14 @@
+name: Bug
+description: 不具合報告
+labels: ["bug"]
+body:
+  - type: textarea
+    id: repro
+    attributes: { label: 再現手順, placeholder: 手順/期待/実際/ログ }
+  - type: textarea
+    id: scope
+    attributes: { label: 影響範囲 }
+  - type: textarea
+    id: fix
+    attributes: { label: 修正方針 }
+
