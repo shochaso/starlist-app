@@ -1,0 +1,38 @@
+name: CSP verify
+on:
+  workflow_dispatch:
+  deployment_status:
+
+jobs:
+  verify:
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'deployment_status' && github.event.deployment_status.state == 'success')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set target URL
+        run: |
+          echo "TARGET_URL=${{ secrets.CSP_VERIFY_URL || 'https://starlist.jp' }}" >> $GITHUB_ENV
+      - name: Fetch headers
+        run: |
+          curl -sI "$TARGET_URL" | tr -d '\r' > headers.txt
+          echo "---- HEADERS ----"
+          cat headers.txt
+      - name: Assert single CSP header
+        run: |
+          CNT=$(awk 'BEGIN{IGNORECASE=1} /^content-security-policy:/ {c++} END{print c+0}' headers.txt)
+          test "$CNT" -eq 1 || { echo "Expected 1 CSP header, got $CNT"; exit 1; }
+      - name: Assert key directives
+        run: |
+          H=$(awk 'BEGIN{IGNORECASE=1} /^content-security-policy:/ {print; exit}' headers.txt)
+          miss=""
+          for k in "default-src" "script-src" "object-src" "frame-ancestors"; do
+            echo "$H" | grep -qi "$k" || miss="$miss $k"
+          done
+          if [ -n "$miss" ]; then
+            echo "Missing directives:$miss"
+            exit 1
+          fi
+      - name: Summarize
+        run: |
+          echo "CSP verified ✅ at $TARGET_URL"
