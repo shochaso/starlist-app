@@ -1,0 +1,35 @@
+name: Linear smoke
+
+on:
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+
+      - name: Syntax check
+        run: bash -n scripts/create-linear-issue.sh
+
+      - name: Create Linear issue (smoke test)
+        env:
+          LINEAR_API_KEY: ${{ secrets.LINEAR_API_KEY }}
+          LINEAR_TEAM_ID: ${{ secrets.LINEAR_TEAM_ID }}
+          LINEAR_ISSUE_TITLE: "CI smoke: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          LINEAR_ISSUE_DESCRIPTION: "CI path: {{ISSUE_KEY}}"
+        run: |
+          mkdir -p out/linear
+          bash scripts/create-linear-issue.sh "STA-SMOKE" "$LINEAR_ISSUE_TITLE"
+
+      - name: Upload response logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: linear-smoke-logs
+          path: out/linear/**/*.json
+          retention-days: 7
