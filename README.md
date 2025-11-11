@@ -706,3 +706,4 @@ psql $DATABASE_URL < backup/YYYYMMDDTHHMMSS.sql         # 復旧
 - [ ] PR チェックに `flutter analyze` / `flutter test` / `supabase db push --dry-run` が含まれている
 - [ ] `.env` / `.env.*` は Git 管理対象外
 ```
+
