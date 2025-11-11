@@ -7,7 +7,7 @@
 1. **vercel.json** - Vercel配信用CSPヘッダー設定
 2. **_headers** - Cloudflare Pages用CSPヘッダー設定
 3. **nginx-csp-example.conf** - NGINX用CSPヘッダー設定例
-4. **web/index.html** - Report-Only CSP meta削除（コメント化）
+4. **web/index.html** - Report-Only CSP/セキュリティmetaタグを配信ヘッダーに移行したためコメント化
 5. **CSP_ENFORCE_IMPLEMENTATION.md** - 実装ドキュメント
 
 ---
@@ -90,6 +90,12 @@ grep -R --line-number -E "supabase\.auth\.token|jwt|access_token" build/ web/ ||
 - [ ] ログイン → タスクキル → 再起動でセッション復元（flutter_secure_storage）
 
 ---
+
+## 🔁 CI自動検証
+
+- **Workflow**: `.github/workflows/csp-verify.yml` を `workflow_dispatch` または `deployment_status.success` で起動。
+- **目的**: `curl -sI` で取得したヘッダーに `Content-Security-Policy` が1行だけ出ており、`default-src`/`script-src`/`object-src`/`frame-ancestors` がすべて含まれていることを自動検証。
+- **設定**: `CSP_VERIFY_URL` シークレットが未設定の場合は `https://starlist.jp` をデフォルトとして検証対象に。
 
 ## 🔄 ロールバック手順
 
@@ -254,7 +260,7 @@ grep -R --line-number -E "supabase\.auth\.token|jwt|access_token" build/ web/ ||
 1. **vercel.json** - Vercel配信用CSPヘッダー設定
 2. **_headers** - Cloudflare Pages用CSPヘッダー設定
 3. **nginx-csp-example.conf** - NGINX用CSPヘッダー設定例
-4. **web/index.html** - Report-Only CSP meta削除（コメント化）
+4. **web/index.html** - Report-Only CSP/セキュリティmetaタグを配信ヘッダーに移行したためコメント化
 5. **CSP_ENFORCE_IMPLEMENTATION.md** - 実装ドキュメント
 
 ---
@@ -337,6 +343,12 @@ grep -R --line-number -E "supabase\.auth\.token|jwt|access_token" build/ web/ ||
 - [ ] ログイン → タスクキル → 再起動でセッション復元（flutter_secure_storage）
 
 ---
+
+## 🔁 CI自動検証
+
+- **Workflow**: `.github/workflows/csp-verify.yml` を `workflow_dispatch` または `deployment_status.success` で起動。
+- **目的**: `curl -sI` で取得したヘッダーに `Content-Security-Policy` が1行だけ出ており、`default-src`/`script-src`/`object-src`/`frame-ancestors` がすべて含まれていることを自動検証。
+- **設定**: `CSP_VERIFY_URL` シークレットが未設定の場合は `https://starlist.jp` をデフォルトとして検証対象に。
 
 ## 🔄 ロールバック手順
 
@@ -492,4 +504,3 @@ grep -R --line-number -E "supabase\.auth\.token|jwt|access_token" build/ web/ ||
 ---
 
 **最終更新**: CSP 強化ディレクティブ追加完了時点
-
