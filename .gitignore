@@ -61,6 +61,7 @@ coverage/
 .env.development
 .env.test
 .env.production
+.envrc
 
 # Mac関連
 .DS_Store
