@@ -116,8 +116,21 @@ bash scripts/create-linear-issue.sh STA-TEST "Test issue title"
 1. `LINEAR_ISSUE_DESCRIPTION`に特殊文字が含まれている場合、`$'...'`形式を使用
 2. `jq`が自動的にJSONエスケープするため、通常は問題ありません
 
+## ロールバック手順
+
+**影響範囲**: LinearにIssueを1つ作るだけの無害系
+
+**戻し方**:
+1. `scripts/create-linear-issue.sh` のコミットを revert
+2. `.github/workflows/linear-smoke.yml` のコミットを revert
+3. Branch Protectionから `linear-smoke` を削除（UI）
+
+**注意**: Revertはファイル2点のみで完了します。
+
 ## 関連ファイル
 
 - `scripts/create-linear-issue.sh` - Linear Issue作成スクリプト
 - `.envrc` - 環境変数設定ファイル（direnv使用時）
-- `.github/workflows/linear-smoke.yml` - CI検証ワークフロー（予定）
+- `.github/workflows/linear-smoke.yml` - CI検証ワークフロー
+- `docs/ops/LINEAR_SMOKE_TROUBLESHOOTING.md` - 失敗時のプレイブック
+- `docs/reports/SECURITY/LINEAR_SMOKE/YYYY-MM-DD.md` - 監査ログ

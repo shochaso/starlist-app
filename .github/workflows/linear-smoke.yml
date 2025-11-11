@@ -2,6 +2,9 @@ name: Linear smoke
 
 on:
   workflow_dispatch:
+  schedule:
+    # 12時間ごとに自動実行（任意）
+    - cron: "0 */12 * * *"
 
 jobs:
   check:
@@ -33,3 +36,20 @@ jobs:
           name: linear-smoke-logs
           path: out/linear/**/*.json
           retention-days: 7
+
+      - name: Notify on failure (Slack)
+        if: failure()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: custom
+          custom_payload: |
+            {
+              text: "❌ Linear smoke test failed",
+              attachments: [{
+                color: 'danger',
+                text: "Linearスクリプトの健全性チェックが失敗しました。\nRun: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+              }]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        continue-on-error: true  # Slack通知失敗でもワークフローを継続
