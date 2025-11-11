@@ -1,5 +1,7 @@
 name: CSP verify
 on:
+  pull_request:
+    branches: [ main ]
   workflow_dispatch:
   deployment_status:
 

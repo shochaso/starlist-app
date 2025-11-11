@@ -1,6 +1,8 @@
 name: Linear smoke
 
 on:
+  pull_request:
+    branches: [ main ]
   workflow_dispatch:
   schedule:
     # 12時間ごとに自動実行（任意）
