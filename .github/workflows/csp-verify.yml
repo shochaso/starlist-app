@@ -1,18 +1,24 @@
-name: CSP verify
+name: csp-verify
 on:
   pull_request:
     branches: [ main ]
   workflow_dispatch:
+  push:
+    branches: [ main ]
   deployment_status:
 
 jobs:
   verify:
-    if: >
-      github.event_name == 'workflow_dispatch' ||
-      github.event_name == 'pull_request' ||
-      (github.event_name == 'deployment_status' && github.event.deployment_status.state == 'success')
+    name: csp-verify
     runs-on: ubuntu-latest
+    # PRでも実行。ただしSecret未設定のforkなどでは安全にスキップ
+    if: >
+      (github.event_name != 'pull_request')
+      || (github.event.pull_request.head.repo.fork == false)
+      || (secrets.CSP_VERIFY_URL != '')
+
     steps:
+      - uses: actions/checkout@v4
       - name: Set target URL
         run: |
           echo "TARGET_URL=${{ secrets.CSP_VERIFY_URL || 'https://starlist.jp' }}" >> $GITHUB_ENV

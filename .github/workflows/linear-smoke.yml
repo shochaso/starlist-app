@@ -1,4 +1,4 @@
-name: Linear smoke
+name: linear-smoke
 
 on:
   pull_request:
