@@ -1,0 +1,24 @@
+name: Conventions
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate PR title includes [STA-<num>]
+        run: |
+          TITLE="${{ github.event.pull_request.title }}"
+          if [[ ! "$TITLE" =~ ^\[[A-Z]+-[0-9]+\]\  ]]; then
+            echo "::error ::PR title must start with [STA-<number>] e.g. [STA-6] Short summary"
+            exit 1
+          fi
+      - name: Validate branch name includes STA-<num>
+        run: |
+          REF="${{ github.head_ref }}"
+          if [[ ! "$REF" =~ [A-Z]+-[0-9]+- ]]; then
+            echo "::warning ::Branch should include issue key (e.g. STA-6-xxx)."
+          fi
+

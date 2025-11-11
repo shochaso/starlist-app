@@ -1,33 +1,21 @@
-## 概要
+## Summary
 
-- Day11/ Pricing 監査スイートの実行・改善
+- Linked Issue: [${ISSUE_KEY}](https://linear.app/)  ← 作法: タイトルで [STA-xx] を必ず含める
 
-## 証跡
+- Context: なぜこの変更が必要か（1〜2行）
 
-- 監査票: docs/reports/`<YYYY-MM-DD>_DAY11_AUDIT_<G-WNN>.md`
-- Pricing: docs/reports/`<YYYY-MM-DD>_PRICING_AUDIT.md`
-- Slack: `<permalink>`
-- Artifacts: Actions Run `<link>`
+## Changes
 
-## 自動チェック（貼付）
+- 主要な変更点を箇条書きで
 
-- [ ] slack_permalink_exists
-- [ ] edge_logs_collected
-- [ ] stripe_events_nonzero
-- [ ] day11_send_not_empty
-- [ ] db_price_range_valid
-- [ ] db_integer_ok
-- [ ] db_dup_zero
-- [ ] db_ref_integrity_ok
+## Test
 
-## 変更内容
+- 動作確認手順 or スクショ/ログ
 
-<!-- 変更の概要を記載 -->
+## Checklist
 
-## テスト
+- [ ] タイトルは `[STA-xx]` で始まる
 
-<!-- 実行したテストや検証内容を記載 -->
+- [ ] CI が通る / 失敗原因を把握している
 
-## 関連Issue
-
-<!-- 関連するIssue番号を記載 -->
+- [ ] レビュー観点（破壊的変更、移行、セキュリティ）を明記
