@@ -149,3 +149,14 @@
 
 **Last Updated**: 2025-11-13 (UTC)
 **Next Update**: After workflow execution
+## 2025-11-12 Evidence Files
+
+| File | Type | Purpose | Status |
+|------|------|---------|--------|
+| `EXECUTION_COMMANDS.md` | Commands | Copy-paste ready execution commands | ✅ Ready |
+| `PREFLIGHT_CHECK.md` | Check | Preflight check results | ✅ Complete |
+| `EXECUTION_GUIDE.md` | Guide | Step-by-step execution guide | ✅ Ready |
+| `EXECUTION_STATUS.md` | Status | Execution status tracking | ✅ Created |
+| `PHASE2_2_VALIDATION_REPORT.md` | Report | Validation results | ⏳ Pending execution |
+| `WS06_SHA256_VALIDATION.md` | Validation | SHA256 validation table | ⏳ Pending execution |
+| `_manifest.json` | Manifest | Run manifest entries | ⏳ Pending execution |

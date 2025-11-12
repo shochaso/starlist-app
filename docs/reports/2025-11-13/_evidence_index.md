@@ -44,3 +44,8 @@ All evidence listed below lives under `docs/reports/2025-11-13/` (except where n
 3. Workflow run viewer (phase3 audit failure): https://github.com/shochaso/starlist-app/actions/runs/19303259295  
 4. Branch protection API payload: https://api.github.com/repos/shochaso/starlist-app/branches/main/protection  
 5. PR #61 comment: https://github.com/shochaso/starlist-app/pull/61#issuecomment-3522651640
+
+## 7. Supporting documentation
+
+- `docs/ops/SECRETS_PRECHECK.md`: Steps to verify Supabase/Slack/dispatch secrets before executing the validation suite.
+- `docs/ops/CI_RUNTIME_POLICY.md`: Concurrency, timeout, and retry guidance for the provenance/validation jobs and the Phase 3 observer.

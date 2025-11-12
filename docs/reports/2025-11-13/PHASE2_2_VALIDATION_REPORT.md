@@ -93,6 +93,8 @@ could not create workflow dispatch event: HTTP 422: Workflow does not have 'work
 
 Because each dispatch is blocked, no artifacts have been generated yet (Success run), no failure notifications could fire, and no concurrency group actually executed.
 
+Additional context for the Phase 3 observer plus the current run roster is captured in `docs/reports/2025-11-13/PHASE3_AUDIT_SUMMARY.md` and `docs/reports/2025-11-13/_evidence_index.md`; both documents explicitly mention the HTTP 422 response that keeps these workflows from starting.
+
 ### 1.1 Additional dispatch attempts (explicit path + ref)
 
 ```bash
