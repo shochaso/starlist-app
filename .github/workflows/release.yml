@@ -3,6 +3,19 @@ name: Release (tag & GH release)
 on:
   push:
     branches: [main]
+<<<<<<< HEAD
+  workflow_dispatch:
+    inputs:
+      tag_format:
+        description: 'Tag format (daily/weekly)'
+        required: false
+        default: 'daily'
+        type: choice
+        options:
+          - daily
+          - weekly
+=======
+>>>>>>> origin/main
 
 jobs:
   release:
@@ -12,17 +25,54 @@ jobs:
       contents: write    # tag・release作成に必要
     steps:
       - uses: actions/checkout@v4
+<<<<<<< HEAD
+        with:
+          fetch-depth: 0  # タグ作成に必要
+      
+      # WS-1: 署名者固定
+      - name: Configure Git user
+        run: |
+          git config user.name "STARLIST CI"
+          git config user.email "ops@starlist.jp"
+      
+      - id: ver
+        run: |
+          TAG_FORMAT="${{ github.event.inputs.tag_format || 'daily' }}"
+          if [ "$TAG_FORMAT" = "weekly" ]; then
+            # 週次形式: vYYYY.W##
+            WEEK=$(date +"%V")
+            YEAR=$(date +"%Y")
+            echo "v${YEAR}.W${WEEK}" > .ver
+          else
+            # 日次形式: vYYYY.MM.DD.HHMM
+            date +"%Y.%m.%d.%H%M" | awk '{print "v"$1}' > .ver
+          fi
+          echo "tag=$(cat .ver)" >> $GITHUB_OUTPUT
+          echo "Tag format: $TAG_FORMAT"
+          echo "Generated tag: $(cat .ver)"
+      
+=======
       - id: ver
         run: |
           date +"%Y.%m.%d.%H%M" | awk '{print "v"$1}' > .ver
           echo "tag=$(cat .ver)" >> $GITHUB_OUTPUT
+>>>>>>> origin/main
       - name: Create tag
         run: |
           git tag ${{ steps.ver.outputs.tag }}
           git push origin ${{ steps.ver.outputs.tag }}
+<<<<<<< HEAD
+      
+=======
+>>>>>>> origin/main
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.ver.outputs.tag }}
           generate_release_notes: true
+<<<<<<< HEAD
+          draft: false
+
+=======
+>>>>>>> origin/main
 

@@ -1,0 +1,72 @@
+name: Admin Bypass Audit
+
+on:
+  pull_request:
+    types: [closed]
+
+jobs:
+  audit:
+    name: admin-bypass-audit
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.merged == true
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Check for admin bypass
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const mergedBy = pr.merged_by?.login;
+            const mergeCommitSha = pr.merge_commit_sha;
+            
+            // マージ方法を確認（squash/merge/rebase）
+            const mergeMethod = pr.mergeable_state === 'clean' ? 'normal' : 'bypass';
+            
+            // 管理者バイパスの可能性を検出
+            const isAdminBypass = pr.merged_by?.type === 'User' && 
+                                   (pr.merged_by?.login === 'shochaso' || 
+                                    mergeMethod === 'bypass');
+            
+            if (isAdminBypass) {
+              const comment = `⚠️ Admin bypass detected
+              
+- Merged by: @${mergedBy}
+- Merge commit: ${mergeCommitSha}
+- Date: ${new Date().toISOString()}
+
+This merge bypassed branch protection rules. Please ensure this was intentional.`;
+              
+              // Linearにコメント（Linear APIを使用）
+              // ここではGitHub Issueコメントとして記録
+              await github.rest.issues.createComment({
+                issue_number: pr.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: comment
+              });
+              
+              // 監査ログに記録
+              const fs = require('fs');
+              const path = require('path');
+              const logPath = path.join(process.cwd(), 'docs/reports/admin-bypass-audit.md');
+              const logEntry = `## ${new Date().toISOString()}
+              
+- PR: #${pr.number}
+- Merged by: @${mergedBy}
+- Merge commit: ${mergeCommitSha}
+- URL: ${pr.html_url}
+
+`;
+              
+              fs.appendFileSync(logPath, logEntry);
+            }
+      
+      - name: Generate weekly summary
+        if: github.event_name == 'schedule'
+        run: |
+          # 週次サマリー生成（簡易版）
+          echo "Weekly admin bypass summary will be generated here"
+

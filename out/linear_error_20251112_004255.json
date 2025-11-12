@@ -1,0 +1,38 @@
+{
+  "errors": [
+    {
+      "message": "Argument Validation Error",
+      "path": [
+        "issueCreate"
+      ],
+      "locations": [
+        {
+          "line": 1,
+          "column": 40
+        }
+      ],
+      "extensions": {
+        "code": "INVALID_INPUT",
+        "validationErrors": [
+          {
+            "target": {
+              "title": "Smoke: API call sanity (improved)",
+              "description": "Template test: STA-SMOKE2 — JSON escape check: quotes \" and newlines \n ok.}}",
+              "teamId": "team_xxx"
+            },
+            "value": "team_xxx",
+            "property": "teamId",
+            "children": [],
+            "constraints": {
+              "isUuid": "teamId must be a UUID"
+            }
+          }
+        ],
+        "type": "invalid input",
+        "userError": true,
+        "userPresentableMessage": "teamId must be a UUID."
+      }
+    }
+  ],
+  "data": null
+}

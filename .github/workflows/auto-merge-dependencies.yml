@@ -1,0 +1,75 @@
+name: Auto-merge Dependencies
+
+on:
+  pull_request:
+    types: [opened, synchronize, labeled]
+
+jobs:
+  auto-merge:
+    name: auto-merge-dependencies
+    runs-on: ubuntu-latest
+    if: |
+      contains(github.event.pull_request.labels.*.name, 'dependencies') &&
+      github.event.pull_request.user.login == 'dependabot[bot]'
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Check if patch update
+        id: check
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const title = pr.title.toLowerCase();
+            
+            // パッチ更新かチェック
+            const isPatch = title.includes('patch') || 
+                           title.match(/bump.*from.*to.*/) ||
+                           pr.labels.some(l => l.name === 'patch');
+            
+            return isPatch;
+      
+      - name: Wait for checks
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const requiredChecks = ['build (pull_request)', 'check (pull_request)'];
+            
+            // チェックが完了するまで待機
+            const maxWait = 300; // 5分
+            const interval = 10; // 10秒
+            
+            for (let i = 0; i < maxWait; i += interval) {
+              const { data: checks } = await github.rest.checks.listForRef({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref: pr.head.sha
+              });
+              
+              const allPassed = requiredChecks.every(checkName => {
+                const check = checks.check_runs.find(c => c.name === checkName);
+                return check && check.conclusion === 'success';
+              });
+              
+              if (allPassed) {
+                return true;
+              }
+              
+              await new Promise(resolve => setTimeout(resolve, interval * 1000));
+            }
+            
+            return false;
+      
+      - name: Auto-merge
+        if: steps.check.outputs.result == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.pulls.merge({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.pull_request.number,
+              merge_method: 'squash'
+            });
+
