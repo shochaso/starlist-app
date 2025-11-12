@@ -380,6 +380,16 @@ WHERE day >= NOW() - INTERVAL '14 days';
 
 - Day12候補: OPS Insights（傾向分析＋アラート分類AI）
 
+---
+
+## ⚠️ Phase 2.2 Safe Rollback Checklist
+
+1. **Disable manual dispatch**: remove the `workflow_dispatch` stanza from `.github/workflows/slsa-provenance.yml`, `provenance-validate.yml`, and `phase3-audit-observer.yml` so the workflows only trigger on `release`/`workflow_run` events.
+2. **Revert manifest automation**: restore the backed-up `_manifest.json` (if any) and use `git checkout -- docs/reports/_manifest.json` to drop partial entries; rerun the latest provenance workflow after reapplying the changes if needed.
+3. **Revoke secrets**: delete or rotate `SUPABASE_SERVICE_KEY`, `SUPABASE_ANON_KEY`, `OPS_NOTIFY_TOKEN`, and `PROVENANCE_DISPATCH_TOKEN` via `gh secret delete` so failed runs cannot write telemetry.
+4. **Relax branch protection**: patch `main` branch protection to remove `provenance-validate` from `required_status_checks.contexts` (or drop the `contexts` list if it was the only check) and ensure `strict` remains `true` if you still enforce status checks.
+5. **Notify stakeholders**: add a summary comment to PR #61 and relevant Ops channels explaining the rollback, referencing this SOT diff file for the exact steps.
+
 
 Spec-State:: 確定済み（実装履歴・CodeRefs）
 Last-Updated:: 2025-11-08
@@ -760,4 +770,3 @@ WHERE day >= NOW() - INTERVAL '14 days';
 ## 🚀 次のステップ
 
 - Day12候補: OPS Insights（傾向分析＋アラート分類AI）
-
