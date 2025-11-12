@@ -1,4 +1,4 @@
-# Debug-enabled SLSA provenance workflow
+# SLSA Provenance workflow (Phase 2: Extended with manifest, notify, Supabase)
 
 name: slsa-provenance
 
@@ -16,6 +16,8 @@ permissions:
   id-token: write
   attestations: write
   actions: write
+  issues: write
+  pull-requests: write
 
 concurrency:
   group: slsa-${{ github.ref }}
@@ -26,11 +28,18 @@ jobs:
     # pushで誤起動した場合は即スキップ
     if: github.event_name != 'push'
     runs-on: ubuntu-latest
+    outputs:
+      run_id: ${{ github.run_id }}
+      tag: ${{ steps.resolve_tag.outputs.tag }}
+      sha256: ${{ steps.calculate_sha256.outputs.sha256 }}
+      status: ${{ job.status }}
+      artifact_url: ${{ steps.upload_artifact.outputs.artifact-url }}
     steps:
       - name: Checkout (shallow ok)
         uses: actions/checkout@v4
         with:
           fetch-depth: 2
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Debug context
         run: |
@@ -65,6 +74,7 @@ jobs:
 
       - name: Generate provenance
         if: steps.resolve_tag.outputs.skip != 'true'
+        id: generate_provenance
         run: |
           TAG="${{ steps.resolve_tag.outputs.tag }}"
           echo "Generating provenance for $TAG"
@@ -95,11 +105,178 @@ EOF
           wc -c "$PROVENANCE_DIR/provenance-${TAG}.json" || true
           echo "Provenance content:"
           cat "$PROVENANCE_DIR/provenance-${TAG}.json"
+          echo "provenance_path=$PROVENANCE_DIR/provenance-${TAG}.json" >> $GITHUB_OUTPUT
+
+      - name: Calculate SHA256
+        if: steps.resolve_tag.outputs.skip != 'true'
+        id: calculate_sha256
+        run: |
+          PROVENANCE_FILE="${{ steps.generate_provenance.outputs.provenance_path }}"
+          SHA256=$(sha256sum "$PROVENANCE_FILE" | cut -d' ' -f1)
+          echo "sha256=$SHA256" >> $GITHUB_OUTPUT
+          echo "SHA256: $SHA256"
 
       - name: Upload artifact
         if: steps.resolve_tag.outputs.skip != 'true'
+        id: upload_artifact
         uses: actions/upload-artifact@v4
         with:
           name: "provenance-${{ steps.resolve_tag.outputs.tag }}"
           path: "artifacts/slsa/${{ steps.resolve_tag.outputs.tag }}/provenance-${{ steps.resolve_tag.outputs.tag }}.json"
-          retention-days: 90
+          retention-days: 365
+        continue-on-error: true
+
+      - name: Generate manifest entry
+        if: steps.resolve_tag.outputs.skip != 'true'
+        id: manifest
+        run: |
+          TAG="${{ steps.resolve_tag.outputs.tag }}"
+          RUN_ID="${{ github.run_id }}"
+          SHA256="${{ steps.calculate_sha256.outputs.sha256 }}"
+          DATE=$(date -u +"%Y-%m-%d")
+          MANIFEST_DIR="docs/reports/${DATE}"
+          mkdir -p "$MANIFEST_DIR"
+          
+          ARTIFACT_URL="https://github.com/${{ github.repository }}/actions/runs/${RUN_ID}"
+          RELEASE_URL="https://github.com/${{ github.repository }}/releases/tag/${TAG}"
+          
+          MANIFEST_ENTRY=$(cat <<EOF
+{
+  "run_id": ${RUN_ID},
+  "tag": "${TAG}",
+  "sha": "${SHA256}",
+  "artifact_url": "${ARTIFACT_URL}",
+  "actor": "${{ github.actor }}",
+  "timestamp": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")",
+  "status": "${{ job.status }}",
+  "governance_flag": "provenance-ready",
+  "release_url": "${RELEASE_URL}"
+}
+EOF
+)
+          
+          MANIFEST_FILE="${MANIFEST_DIR}/manifest.json"
+          if [ -f "$MANIFEST_FILE" ]; then
+            # Merge: update existing entry or append
+            jq --argjson entry "$MANIFEST_ENTRY" '. + [$entry] | sort_by(.run_id)' "$MANIFEST_FILE" > "${MANIFEST_FILE}.tmp" && mv "${MANIFEST_FILE}.tmp" "$MANIFEST_FILE"
+          else
+            echo "[$MANIFEST_ENTRY]" > "$MANIFEST_FILE"
+          fi
+          
+          echo "manifest_path=$MANIFEST_FILE" >> $GITHUB_OUTPUT
+          echo "Manifest entry created: $MANIFEST_FILE"
+
+      - name: Commit manifest
+        if: steps.resolve_tag.outputs.skip != 'true' && steps.manifest.outputs.manifest_path != ''
+        run: |
+          git config user.name "STARLIST CI"
+          git config user.email "ops@starlist.jp"
+          git add "${{ steps.manifest.outputs.manifest_path }}"
+          git commit -m "chore(ops): add SLSA provenance manifest entry for ${{ steps.resolve_tag.outputs.tag }}" || echo "No changes to commit"
+          git push origin HEAD:${{ github.ref }} || echo "Push failed (may be in freeze window)"
+
+      - name: Sync to Supabase
+        if: steps.resolve_tag.outputs.skip != 'true'
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          TAG="${{ steps.resolve_tag.outputs.tag }}"
+          RUN_ID="${{ github.run_id }}"
+          SHA256="${{ steps.calculate_sha256.outputs.sha256 }}"
+          
+          PAYLOAD=$(cat <<EOF
+{
+  "app": "starlist",
+  "env": "prod",
+  "event": "slsa_provenance",
+  "ok": true,
+  "latency_ms": null,
+  "extra": {
+    "run_id": ${RUN_ID},
+    "tag": "${TAG}",
+    "sha256": "${SHA256}",
+    "status": "${{ job.status }}"
+  }
+}
+EOF
+)
+          
+          curl -sS --fail --show-error --retry 3 --max-time 30 \
+            -H "Authorization: Bearer ${SUPABASE_SERVICE_KEY}" \
+            -H "apikey: ${SUPABASE_SERVICE_KEY}" \
+            -H "Content-Type: application/json" \
+            -X POST \
+            "${SUPABASE_URL}/functions/v1/telemetry" \
+            -d "$PAYLOAD" || echo "Supabase sync failed (non-blocking)"
+
+  notify-on-failure:
+    if: failure() && github.event_name != 'push'
+    needs: provenance
+    runs-on: ubuntu-latest
+    concurrency:
+      group: provenance-notify-${{ github.run_id }}
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - name: Create failure issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const tag = '${{ needs.provenance.outputs.tag }}' || 'unknown';
+            const runId = '${{ github.run_id }}';
+            const runUrl = `https://github.com/${{ github.repository }}/actions/runs/${runId}`;
+            
+            const issueBody = `## SLSA Provenance Failure
+            
+            **Run ID**: ${runId}
+            **Tag**: ${tag}
+            **Workflow**: ${{ github.workflow }}
+            **Actor**: ${{ github.actor }}
+            
+            **Links**:
+            - [Workflow Run](${runUrl})
+            - [Release](https://github.com/${{ github.repository }}/releases/tag/${tag})
+            
+            **Failure Reason**: Artifact generation or manifest update failed.
+            
+            Please investigate and rerun if needed.
+            `;
+            
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `[SLSA] Provenance failure for ${tag}`,
+              body: issueBody,
+              labels: ['ops-alert', 'provenance-failure', 'automated']
+            });
+
+      - name: Notify Slack
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          TAG="${{ needs.provenance.outputs.tag }}"
+          RUN_ID="${{ github.run_id }}"
+          
+          PAYLOAD=$(cat <<EOF
+{
+  "level": "error",
+  "title": "SLSA Provenance Failure",
+  "message": "Provenance generation failed for tag ${TAG}",
+  "run_id": ${RUN_ID},
+  "tag": "${TAG}",
+  "source": "slsa-provenance"
+}
+EOF
+)
+          
+          curl -sS --fail --show-error --retry 3 --max-time 30 \
+            -H "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
+            -H "apikey: ${SUPABASE_ANON_KEY}" \
+            -H "Content-Type: application/json" \
+            -X POST \
+            "${SUPABASE_URL}/functions/v1/ops-slack-notify" \
+            -d "$PAYLOAD" || echo "Slack notification failed (non-blocking)"
