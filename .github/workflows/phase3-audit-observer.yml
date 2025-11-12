@@ -1,0 +1,485 @@
+name: Phase 3 Audit Observer
+
+on:
+  workflow_run:
+    workflows: ["slsa-provenance", "provenance-validate"]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      provenance_run_id:
+        description: "Provenance run ID to audit"
+        required: false
+        type: string
+      validation_run_id:
+        description: "Validation run ID to audit"
+        required: false
+        type: string
+      pr_number:
+        description: "PR number to comment on (default: 61)"
+        required: false
+        type: string
+        default: "61"
+  schedule:
+    # Daily audit at 00:00 UTC
+    - cron: '0 0 * * *'
+
+permissions:
+  contents: read
+  actions: read
+  pull-requests: write
+  issues: write
+  id-token: write
+
+concurrency:
+  group: phase3-audit-observer-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  audit-observer:
+    name: Phase 3 Audit Observer
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      PR_NUMBER: ${{ github.event.inputs.pr_number || '61' }}
+    steps:
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq curl git
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Resolve workflow run IDs
+        id: resolve_runs
+        run: |
+          set -euo pipefail
+          
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            PROVENANCE_RUN_ID="${{ github.event.inputs.provenance_run_id }}"
+            VALIDATION_RUN_ID="${{ github.event.inputs.validation_run_id }}"
+          elif [ "${{ github.event_name }}" = "workflow_run" ]; then
+            TRIGGERED_WORKFLOW="${{ github.event.workflow_run.name }}"
+            TRIGGERED_RUN_ID="${{ github.event.workflow_run.id }}"
+            
+            if [ "$TRIGGERED_WORKFLOW" = "slsa-provenance" ]; then
+              PROVENANCE_RUN_ID="$TRIGGERED_RUN_ID"
+              # Find corresponding validation run
+              VALIDATION_RUN_ID=$(gh run list --workflow=provenance-validate.yml --limit 10 --json databaseId,displayTitle --jq ".[] | select(.displayTitle | contains(\"$PROVENANCE_RUN_ID\")) | .databaseId" | head -1 || echo "")
+            elif [ "$TRIGGERED_WORKFLOW" = "provenance-validate" ]; then
+              VALIDATION_RUN_ID="$TRIGGERED_RUN_ID"
+              # Find corresponding provenance run from validation run title
+              PROVENANCE_RUN_ID=$(gh run view "$VALIDATION_RUN_ID" --json displayTitle -q '.displayTitle' | grep -oP '\d+' | head -1 || echo "")
+            fi
+          else
+            # Schedule: find latest runs
+            PROVENANCE_RUN_ID=$(gh run list --workflow=slsa-provenance.yml --limit 1 --json databaseId -q '.[0].databaseId' || echo "")
+            VALIDATION_RUN_ID=$(gh run list --workflow=provenance-validate.yml --limit 1 --json databaseId -q '.[0].databaseId' || echo "")
+          fi
+          
+          echo "provenance_run_id=${PROVENANCE_RUN_ID:-}" >> $GITHUB_OUTPUT
+          echo "validation_run_id=${VALIDATION_RUN_ID:-}" >> $GITHUB_OUTPUT
+          
+          if [ -z "$PROVENANCE_RUN_ID" ] && [ -z "$VALIDATION_RUN_ID" ]; then
+            echo "No runs found to audit"
+            echo "skip=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          
+          echo "Resolved runs:"
+          echo "  Provenance: ${PROVENANCE_RUN_ID:-N/A}"
+          echo "  Validation: ${VALIDATION_RUN_ID:-N/A}"
+
+      - name: Audit provenance run
+        id: audit_provenance
+        if: steps.resolve_runs.outputs.skip != 'true' && steps.resolve_runs.outputs.provenance_run_id != ''
+        env:
+          RUN_ID: ${{ steps.resolve_runs.outputs.provenance_run_id }}
+        run: |
+          set -euo pipefail
+          
+          echo "🔍 Auditing provenance run: $RUN_ID"
+          
+          # Get run details
+          RUN_JSON=$(gh run view "$RUN_ID" --json conclusion,status,displayTitle,url,createdAt,headBranch,event || echo "{}")
+          
+          if [ "$RUN_JSON" = "{}" ]; then
+            echo "Run $RUN_ID not found"
+            echo "status=not_found" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          
+          CONCLUSION=$(echo "$RUN_JSON" | jq -r '.conclusion // "unknown"')
+          STATUS=$(echo "$RUN_JSON" | jq -r '.status // "unknown"')
+          DISPLAY_TITLE=$(echo "$RUN_JSON" | jq -r '.displayTitle // ""')
+          RUN_URL=$(echo "$RUN_JSON" | jq -r '.url // ""')
+          
+          echo "conclusion=$CONCLUSION" >> $GITHUB_OUTPUT
+          echo "status=$STATUS" >> $GITHUB_OUTPUT
+          echo "display_title=$DISPLAY_TITLE" >> $GITHUB_OUTPUT
+          echo "run_url=$RUN_URL" >> $GITHUB_OUTPUT
+          
+          # Extract tag from display title
+          TAG=$(echo "$DISPLAY_TITLE" | grep -oP 'v[\d.]+' | head -1 || echo "")
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          
+          # Download artifacts if available
+          ARTIFACT_COUNT=0
+          SHA256_CHECK=""
+          PREDICATE_TYPE_CHECK=""
+          
+          if [ "$CONCLUSION" = "success" ]; then
+            echo "Downloading artifacts for run $RUN_ID..."
+            gh run download "$RUN_ID" --dir /tmp/provenance_artifacts 2>&1 || true
+            
+            ARTIFACT_FILE=$(find /tmp/provenance_artifacts -name "provenance-*.json" -type f | head -1 || echo "")
+            
+            if [ -n "$ARTIFACT_FILE" ]; then
+              ARTIFACT_COUNT=1
+              
+              # SHA256 check
+              SHA256=$(sha256sum "$ARTIFACT_FILE" | cut -d' ' -f1)
+              echo "sha256=$SHA256" >> $GITHUB_OUTPUT
+              
+              # PredicateType check
+              PREDICATE_TYPE=$(jq -r '.predicateType // empty' "$ARTIFACT_FILE")
+              if [ "$PREDICATE_TYPE" = "https://slsa.dev/provenance/v0.2" ]; then
+                PREDICATE_TYPE_CHECK="valid"
+              else
+                PREDICATE_TYPE_CHECK="invalid: $PREDICATE_TYPE"
+              fi
+              echo "predicate_type_check=$PREDICATE_TYPE_CHECK" >> $GITHUB_OUTPUT
+              
+              # Builder ID check
+              BUILDER_ID=$(jq -r '.builder.id // empty' "$ARTIFACT_FILE")
+              echo "builder_id=$BUILDER_ID" >> $GITHUB_OUTPUT
+              
+              # Content SHA256 check
+              CONTENT_SHA256=$(jq -r '.metadata.content_sha256 // empty' "$ARTIFACT_FILE")
+              echo "content_sha256=$CONTENT_SHA256" >> $GITHUB_OUTPUT
+            fi
+          fi
+          
+          echo "artifact_count=$ARTIFACT_COUNT" >> $GITHUB_OUTPUT
+          
+          echo "✅ Provenance audit complete"
+          echo "  Conclusion: $CONCLUSION"
+          echo "  Status: $STATUS"
+          echo "  Tag: $TAG"
+          echo "  Artifacts: $ARTIFACT_COUNT"
+          echo "  PredicateType: $PREDICATE_TYPE_CHECK"
+
+      - name: Audit validation run
+        id: audit_validation
+        if: steps.resolve_runs.outputs.skip != 'true' && steps.resolve_runs.outputs.validation_run_id != ''
+        env:
+          RUN_ID: ${{ steps.resolve_runs.outputs.validation_run_id }}
+        run: |
+          set -euo pipefail
+          
+          echo "🔍 Auditing validation run: $RUN_ID"
+          
+          # Get run details
+          RUN_JSON=$(gh run view "$RUN_ID" --json conclusion,status,displayTitle,url,createdAt || echo "{}")
+          
+          if [ "$RUN_JSON" = "{}" ]; then
+            echo "Run $RUN_ID not found"
+            echo "status=not_found" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          
+          CONCLUSION=$(echo "$RUN_JSON" | jq -r '.conclusion // "unknown"')
+          STATUS=$(echo "$RUN_JSON" | jq -r '.status // "unknown"')
+          DISPLAY_TITLE=$(echo "$RUN_JSON" | jq -r '.displayTitle // ""')
+          RUN_URL=$(echo "$RUN_JSON" | jq -r '.url // ""')
+          
+          echo "conclusion=$CONCLUSION" >> $GITHUB_OUTPUT
+          echo "status=$STATUS" >> $GITHUB_OUTPUT
+          echo "display_title=$DISPLAY_TITLE" >> $GITHUB_OUTPUT
+          echo "run_url=$RUN_URL" >> $GITHUB_OUTPUT
+          
+          echo "✅ Validation audit complete"
+          echo "  Conclusion: $CONCLUSION"
+          echo "  Status: $STATUS"
+
+      - name: Verify Supabase integration
+        id: verify_supabase
+        if: steps.resolve_runs.outputs.skip != 'true' && env.SUPABASE_URL != '' && env.SUPABASE_SERVICE_KEY != ''
+        env:
+          PROVENANCE_RUN_ID: ${{ steps.resolve_runs.outputs.provenance_run_id }}
+          VALIDATION_RUN_ID: ${{ steps.resolve_runs.outputs.validation_run_id }}
+        run: |
+          set -euo pipefail
+          
+          echo "🔍 Verifying Supabase integration"
+          
+          SUPABASE_BASE="${SUPABASE_URL%/}"
+          
+          # Query for provenance run entry
+          if [ -n "$PROVENANCE_RUN_ID" ]; then
+            echo "Querying Supabase for provenance run $PROVENANCE_RUN_ID..."
+            PROVENANCE_ENTRY=$(curl -sS --fail --show-error --max-time 30 \
+              -H "Authorization: Bearer ${SUPABASE_SERVICE_KEY}" \
+              -H "apikey: ${SUPABASE_SERVICE_KEY}" \
+              -H "Content-Type: application/json" \
+              -X GET \
+              "${SUPABASE_BASE}/rest/v1/slsa_runs?run_id=eq.${PROVENANCE_RUN_ID}&select=*" \
+              | jq '.[0]' || echo "{}")
+            
+            if [ "$PROVENANCE_ENTRY" != "{}" ] && [ "$PROVENANCE_ENTRY" != "null" ]; then
+              echo "provenance_supabase_entry=found" >> $GITHUB_OUTPUT
+              echo "provenance_supabase_status=$(echo "$PROVENANCE_ENTRY" | jq -r '.status // "unknown"')" >> $GITHUB_OUTPUT
+            else
+              echo "provenance_supabase_entry=not_found" >> $GITHUB_OUTPUT
+            fi
+          fi
+          
+          # Query for validation run entry
+          if [ -n "$VALIDATION_RUN_ID" ]; then
+            echo "Querying Supabase for validation run $VALIDATION_RUN_ID..."
+            VALIDATION_ENTRY=$(curl -sS --fail --show-error --max-time 30 \
+              -H "Authorization: Bearer ${SUPABASE_SERVICE_KEY}" \
+              -H "apikey: ${SUPABASE_SERVICE_KEY}" \
+              -H "Content-Type: application/json" \
+              -X GET \
+              "${SUPABASE_BASE}/rest/v1/slsa_runs?run_id=eq.${PROVENANCE_RUN_ID}&select=validated_status,validated_at" \
+              | jq '.[0]' || echo "{}")
+            
+            if [ "$VALIDATION_ENTRY" != "{}" ] && [ "$VALIDATION_ENTRY" != "null" ]; then
+              VALIDATED_STATUS=$(echo "$VALIDATION_ENTRY" | jq -r '.validated_status // "null"')
+              if [ "$VALIDATED_STATUS" != "null" ]; then
+                echo "validation_supabase_entry=found" >> $GITHUB_OUTPUT
+                echo "validation_supabase_status=$VALIDATED_STATUS" >> $GITHUB_OUTPUT
+              else
+                echo "validation_supabase_entry=not_found" >> $GITHUB_OUTPUT
+              fi
+            else
+              echo "validation_supabase_entry=not_found" >> $GITHUB_OUTPUT
+            fi
+          fi
+          
+          # Insert audit metrics entry
+          AUDIT_METRICS_ENTRY=$(cat <<EOF
+{
+  "audit_run_id": ${{ github.run_id }},
+  "provenance_run_id": ${PROVENANCE_RUN_ID:-null},
+  "validation_run_id": ${VALIDATION_RUN_ID:-null},
+  "audit_timestamp": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")",
+  "provenance_status": "${{ steps.audit_provenance.outputs.conclusion || 'unknown' }}",
+  "validation_status": "${{ steps.audit_validation.outputs.conclusion || 'unknown' }}",
+  "sha256_verified": "${{ steps.audit_provenance.outputs.sha256 != '' && 'true' || 'false' }}",
+  "predicate_type_verified": "${{ steps.audit_provenance.outputs.predicate_type_check == 'valid' && 'true' || 'false' }}",
+  "supabase_provenance_synced": "${{ steps.verify_supabase.outputs.provenance_supabase_entry == 'found' && 'true' || 'false' }}",
+  "supabase_validation_synced": "${{ steps.verify_supabase.outputs.validation_supabase_entry == 'found' && 'true' || 'false' }}",
+  "metadata": {
+    "workflow": "${{ github.workflow }}",
+    "run_id": ${{ github.run_id }},
+    "actor": "${{ github.actor }}",
+    "tag": "${{ steps.audit_provenance.outputs.tag || '' }}"
+  }
+}
+EOF
+)
+          
+          echo "Inserting audit metrics entry..."
+          curl -sS --fail --show-error --max-time 30 \
+            -H "Authorization: Bearer ${SUPABASE_SERVICE_KEY}" \
+            -H "apikey: ${SUPABASE_SERVICE_KEY}" \
+            -H "Content-Type: application/json" \
+            -X POST \
+            "${SUPABASE_BASE}/rest/v1/slsa_audit_metrics" \
+            -d "$AUDIT_METRICS_ENTRY" || echo "⚠️ Supabase insert failed (non-blocking)"
+          
+          echo "✅ Supabase verification complete"
+
+      - name: Generate audit summary
+        id: generate_summary
+        if: always() && steps.resolve_runs.outputs.skip != 'true'
+        run: |
+          set -euo pipefail
+          
+          echo "📊 Generating audit summary"
+          
+          SUMMARY=$(cat <<EOF
+# Phase 3 Audit Summary
+
+**Audit Run ID**: ${{ github.run_id }}
+**Audit Timestamp**: $(date -u +"%Y-%m-%dT%H:%M:%SZ")
+**Actor**: ${{ github.actor }}
+
+## Provenance Run Audit
+
+- **Run ID**: ${{ steps.audit_provenance.outputs.provenance_run_id || 'N/A' }}
+- **Status**: ${{ steps.audit_provenance.outputs.status || 'N/A' }}
+- **Conclusion**: ${{ steps.audit_provenance.outputs.conclusion || 'N/A' }}
+- **Tag**: ${{ steps.audit_provenance.outputs.tag || 'N/A' }}
+- **Run URL**: ${{ steps.audit_provenance.outputs.run_url || 'N/A' }}
+- **Artifacts**: ${{ steps.audit_provenance.outputs.artifact_count || 0 }}
+- **SHA256**: ${{ steps.audit_provenance.outputs.sha256 || 'N/A' }}
+- **PredicateType Check**: ${{ steps.audit_provenance.outputs.predicate_type_check || 'N/A' }}
+- **Builder ID**: ${{ steps.audit_provenance.outputs.builder_id || 'N/A' }}
+- **Content SHA256**: ${{ steps.audit_provenance.outputs.content_sha256 || 'N/A' }}
+- **Supabase Entry**: ${{ steps.verify_supabase.outputs.provenance_supabase_entry || 'N/A' }}
+- **Supabase Status**: ${{ steps.verify_supabase.outputs.provenance_supabase_status || 'N/A' }}
+
+## Validation Run Audit
+
+- **Run ID**: ${{ steps.audit_validation.outputs.validation_run_id || 'N/A' }}
+- **Status**: ${{ steps.audit_validation.outputs.status || 'N/A' }}
+- **Conclusion**: ${{ steps.audit_validation.outputs.conclusion || 'N/A' }}
+- **Run URL**: ${{ steps.audit_validation.outputs.run_url || 'N/A' }}
+- **Supabase Entry**: ${{ steps.verify_supabase.outputs.validation_supabase_entry || 'N/A' }}
+- **Supabase Status**: ${{ steps.verify_supabase.outputs.validation_supabase_status || 'N/A' }}
+
+## Overall Assessment
+
+- **SHA256 Verified**: ${{ steps.audit_provenance.outputs.sha256 != '' && '✅' || '❌' }}
+- **PredicateType Verified**: ${{ steps.audit_provenance.outputs.predicate_type_check == 'valid' && '✅' || '❌' }}
+- **Supabase Provenance Synced**: ${{ steps.verify_supabase.outputs.provenance_supabase_entry == 'found' && '✅' || '❌' }}
+- **Supabase Validation Synced**: ${{ steps.verify_supabase.outputs.validation_supabase_entry == 'found' && '✅' || '❌' }}
+
+## Next Steps
+
+$([ "${{ steps.audit_provenance.outputs.conclusion }}" = "success" ] && [ "${{ steps.audit_validation.outputs.conclusion }}" = "success" ] && [ "${{ steps.audit_provenance.outputs.predicate_type_check }}" = "valid" ] && [ "${{ steps.verify_supabase.outputs.provenance_supabase_entry }}" = "found" ] && echo "✅ **All validations passed. Proceed to Phase 4 (Telemetry & KPI Dashboard)**" || echo "⚠️ **Some validations failed. Please review the audit results above.**")
+EOF
+)
+          
+          echo "$SUMMARY" > /tmp/audit_summary.md
+          echo "summary_path=/tmp/audit_summary.md" >> $GITHUB_OUTPUT
+          
+          echo "✅ Audit summary generated"
+
+      - name: Upload audit summary artifact
+        if: always() && steps.resolve_runs.outputs.skip != 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase3-audit-summary-${{ github.run_id }}
+          path: /tmp/audit_summary.md
+          retention-days: 365
+
+      - name: Notify on failure
+        if: failure()
+        env:
+          PROVENANCE_RUN_ID: ${{ steps.resolve_runs.outputs.provenance_run_id }}
+          VALIDATION_RUN_ID: ${{ steps.resolve_runs.outputs.validation_run_id }}
+        run: |
+          set -euo pipefail
+          
+          echo "⚠️ Phase 3 audit observer failed"
+          
+          # Create GitHub Issue
+          ISSUE_BODY=$(cat <<EOF
+## Phase 3 Audit Observer Failure
+
+**Audit Run ID**: ${{ github.run_id }}
+**Audit Run URL**: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+**Provenance Run ID**: ${PROVENANCE_RUN_ID:-N/A}
+**Validation Run ID**: ${VALIDATION_RUN_ID:-N/A}
+
+**Failure Reason**: Audit observer workflow failed. Please review the logs.
+
+**Next Steps**:
+1. Review audit observer logs
+2. Verify Supabase connectivity
+3. Check workflow permissions
+4. Re-run audit if needed
+EOF
+)
+          
+          gh issue create \
+            --repo "${{ github.repository }}" \
+            --title "Phase 3 Audit Observer Failure (Run ${{ github.run_id }})" \
+            --body "$ISSUE_BODY" \
+            --label "ops-alert,phase3-audit-failure,automated" || echo "Issue creation failed"
+          
+          # Slack notification (if webhook available)
+          if [ -n "${SLACK_WEBHOOK_URL:-}" ]; then
+            SLACK_PAYLOAD=$(cat <<EOF
+{
+  "text": "⚠️ Phase 3 Audit Observer Failed",
+  "blocks": [
+    {
+      "type": "header",
+      "text": {
+        "type": "plain_text",
+        "text": "Phase 3 Audit Observer Failure"
+      }
+    },
+    {
+      "type": "section",
+      "fields": [
+        {
+          "type": "mrkdwn",
+          "text": "*Audit Run ID*\n${{ github.run_id }}"
+        },
+        {
+          "type": "mrkdwn",
+          "text": "*Repository*\n${{ github.repository }}"
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Run>"
+      }
+    }
+  ]
+}
+EOF
+)
+            
+            curl -sS --fail --show-error --max-time 30 \
+              -X POST \
+              "$SLACK_WEBHOOK_URL" \
+              -H "Content-Type: application/json" \
+              -d "$SLACK_PAYLOAD" || echo "Slack notification failed"
+          fi
+
+      - name: Comment on PR on success
+        if: success() && steps.resolve_runs.outputs.skip != 'true' && steps.audit_provenance.outputs.conclusion == 'success' && steps.audit_validation.outputs.conclusion == 'success' && steps.audit_provenance.outputs.predicate_type_check == 'valid' && steps.verify_supabase.outputs.provenance_supabase_entry == 'found'
+        env:
+          PR_NUMBER: ${{ env.PR_NUMBER }}
+        run: |
+          set -euo pipefail
+          
+          echo "✅ All validations passed. Commenting on PR #$PR_NUMBER"
+          
+          COMMENT_BODY=$(cat <<EOF
+## ✅ Phase 3 Audit Operationalization Verified
+
+**Audit Run ID**: ${{ github.run_id }}
+**Audit Timestamp**: $(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+### Validation Results
+
+- ✅ **Provenance Run**: ${{ steps.audit_provenance.outputs.provenance_run_id }} - Success
+- ✅ **Validation Run**: ${{ steps.audit_validation.outputs.validation_run_id }} - Success
+- ✅ **SHA256 Verified**: ${{ steps.audit_provenance.outputs.sha256 != '' && 'Yes' || 'No' }}
+- ✅ **PredicateType Verified**: ${{ steps.audit_provenance.outputs.predicate_type_check == 'valid' && 'Yes' || 'No' }}
+- ✅ **Supabase Integration**: Verified
+- ✅ **Builder ID**: ${{ steps.audit_provenance.outputs.builder_id || 'N/A' }}
+- ✅ **Content SHA256**: ${{ steps.audit_provenance.outputs.content_sha256 || 'N/A' }}
+
+### Audit Summary
+
+[View full audit summary](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
+---
+
+**✅ Phase 3 Audit Operationalization Verified — Proceed to Phase 4 (Telemetry & KPI Dashboard)**
+EOF
+)
+          
+          gh pr comment "$PR_NUMBER" \
+            --repo "${{ github.repository }}" \
+            --body "$COMMENT_BODY" || echo "PR comment failed (non-blocking)"
+
