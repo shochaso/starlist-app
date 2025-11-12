@@ -72,7 +72,19 @@ GitHub Settings → Branches → Branch protection rules → `main`:
 
 ---
 
+## 監査メモ
+
+- **Required**: `build (pull_request)`, `check (pull_request)`
+- **Optional**: Flutter, security-audit, extended-security
+- **理由**: 安定・可観測・高速。Flutter/セキュリティは失敗を可視化しつつ進行を阻害しない。
+
+## 失敗時ロールバック
+
+- `release.yml` を `git revert <commit>` で戻す
+- `CODEOWNERS` 削除でも保護は維持（ブランチ保護が本丸）
+
 ## 更新履歴
 
 - 2025-11-11: 最終ポリシー確定
+- 2025-11-12: 監査メモとロールバック手順追加
 
