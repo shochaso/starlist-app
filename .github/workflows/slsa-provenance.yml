@@ -6,69 +6,70 @@ on:
   release:
     types: [published]
   workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag name to generate provenance for"
+        required: true
+        type: string
 
 permissions:
-  contents: write
+  contents: read
   id-token: write
-  packages: write
+  attestations: write
+
+concurrency:
+  group: slsa-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   provenance:
+    # pushで誤起動した場合は即スキップ
+    if: github.event_name != 'push'
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout (full)
+      - name: Checkout (shallow ok)
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 2
 
-      - name: Debug: dump event and env
+      - name: Debug context
         run: |
-          echo "=== GITHUB CONTEXT ==="
-          jq . <<< "${{ toJson(github) }}" || true
-          echo "=== GITHUB_EVENT (raw) ==="
-          jq . < $GITHUB_EVENT_PATH || true
-          echo "=== Release tag (jq) ==="
-          jq -r '.release.tag_name // "NO_TAG_FOUND"' $GITHUB_EVENT_PATH || true
-          echo "=== runner env summary ==="
-          env | sort
-          echo "=== which & versions ==="
-          which git || true
-          git --version || true
-          if command -v cosign >/dev/null 2>&1; then cosign version || true; fi
-          if command -v sbom-tool >/dev/null 2>&1; then sbom-tool --version || true; fi
+          echo "event_name=${{ github.event_name }}"
+          echo "event_action=${{ github.event.action }}"
+          echo "release_tag=${{ github.event.release.tag_name }}"
+          echo "inputs_tag=${{ inputs.tag }}"
 
-      - name: Ensure tools / creds (debug)
-        run: |
-          echo "GITHUB_TOKEN: exists -> ${GITHUB_TOKEN:+yes}"  # do not echo token
-          # show minimal API access check (non-sensitive)
-          gh auth status || true
-          # show current permissions granted to GITHUB_TOKEN (best-effort)
-          gh api /rate_limit || true
-
-      - name: Determine release tag
-        id: tag
+      - name: Resolve TAG
+        id: resolve_tag
+        shell: bash
         run: |
           TAG="${{ github.event.release.tag_name }}"
-          if [ -z "$TAG" ]; then
-            echo "⚠️ github.event.release.tag_name is empty, trying git describe..."
-            TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          if [ -z "$TAG" ] && [ -n "${{ inputs.tag }}" ]; then
+            TAG="${{ inputs.tag }}"
           fi
           if [ -z "$TAG" ]; then
-            echo "⚠️ No release tag found, skipping provenance generation"
+            git fetch --tags --force --quiet
+            TAG="$(git describe --tags --abbrev=0 2>/dev/null || true)"
+          fi
+          echo "TAG=$TAG"
+          if [ -z "$TAG" ]; then
+            echo "No tag found. Intentionally skipping."
             echo "skip=true" >> $GITHUB_OUTPUT
-          else
-            echo "tag=$TAG" >> $GITHUB_OUTPUT
-            echo "✅ Using tag: $TAG"
+            exit 0
           fi
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
 
-      - name: Run provenance generation (real step)
-        if: steps.tag.outputs.skip != 'true'
+      - name: Conditional skip
+        if: steps.resolve_tag.outputs.skip == 'true'
+        run: echo "SKIP: no tag context (push or tag not found)."
+
+      - name: Generate provenance
+        if: steps.resolve_tag.outputs.skip != 'true'
         run: |
-          set -euo pipefail
-          TAG="${{ steps.tag.outputs.tag }}"
-          echo "Generating minimal provenance for tag: $TAG"
-          mkdir -p provenance
-          cat <<EOF > provenance/provenance.json
+          TAG="${{ steps.resolve_tag.outputs.tag }}"
+          echo "Generating provenance for $TAG"
+          mkdir -p artifacts
+          cat <<EOF > "artifacts/provenance-${TAG}.json"
 {
   "predicateType": "https://slsa.dev/provenance/v0.2",
   "builder": { "id": "github-actions/slsa-provenance" },
@@ -90,14 +91,14 @@ jobs:
 }
 EOF
           echo "Provenance size:"
-          wc -c provenance/provenance.json || true
-          echo "Provenance content (first lines):"
-          head -n 200 provenance/provenance.json || true
+          wc -c "artifacts/provenance-${TAG}.json" || true
+          echo "Provenance content:"
+          cat "artifacts/provenance-${TAG}.json"
 
-      - name: Upload provenance artifact
-        if: steps.tag.outputs.skip != 'true'
+      - name: Upload artifact
+        if: steps.resolve_tag.outputs.skip != 'true'
         uses: actions/upload-artifact@v4
         with:
-          name: provenance-${{ steps.tag.outputs.tag }}
-          path: provenance/provenance.json
+          name: "provenance-${{ steps.resolve_tag.outputs.tag }}"
+          path: "artifacts/provenance-${{ steps.resolve_tag.outputs.tag }}.json"
           retention-days: 90
