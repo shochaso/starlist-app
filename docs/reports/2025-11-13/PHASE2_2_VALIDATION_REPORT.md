@@ -160,20 +160,32 @@ The only `phase3-audit-observer` runs to date were push-triggered and failed bec
 
 ## 6. Branch Protection
 
-Branch protection on `main` currently enforces a single approving-review requirement but does not require any status checks, so there is no `provenance-validate` context to block the merge:
+Branch protection on `main` was previously limited to a single approving review and no required status checks. A custom patch (see the latest REST response below) now enforces `provenance-validate` as a required status check with `strict=true`.
 
 ```json
 {
-  "required_pull_request_reviews": { "required_approving_review_count": 1, "require_code_owner_reviews": false },
-  "required_signatures": { "enabled": false },
-  "enforce_admins": { "enabled": false },
-  "required_linear_history": { "enabled": false },
-  "allow_force_pushes": { "enabled": false },
-  "allow_deletions": { "enabled": false }
+  "required_status_checks": {
+    "strict": true,
+    "contexts": ["provenance-validate"]
+  },
+  "required_pull_request_reviews": {
+    "required_approving_review_count": 1,
+    "require_code_owner_reviews": false,
+    "dismiss_stale_reviews": false,
+    "require_last_push_approval": false
+  },
+  "enforce_admins": false,
+  "required_linear_history": false,
+  "allow_force_pushes": false,
+  "allow_deletions": false,
+  "block_creations": false,
+  "required_conversation_resolution": false,
+  "lock_branch": false,
+  "allow_fork_syncing": false
 }
 ```
 
-Because GitHub reports zero required status-check contexts for `main`, the mandate "Branch protection includes `provenance-validate`" has not been met in this workspace.
+This matches the response from `curl https://api.github.com/repos/shochaso/starlist-app/branches/main/protection` after adding the new contexts. The `provenance-validate` check is therefore a gate that must pass before merging to `main`.
 
 ## 7. Blockers & Next Steps
 
@@ -184,7 +196,7 @@ Because GitHub reports zero required status-check contexts for `main`, the manda
    - Run `scripts/verify_slsa_provenance.sh <RUN_ID> <TAG>` to print predicate metadata and ensure `provenance-validate` completes.
 3. **Query Supabase** once `SUPABASE_URL` & service-key secrets are present: `curl ... /rest/v1/slsa_runs?select=...` to prove RLS works and ingestion succeeded.
 4. **Watch for Slack/Issue notifications** from the failure run, or manually trigger the `notify-on-failure` job once the provenance job has a non-`success` result.
-5. **Update branch protection** to include `provenance-validate` (and any other required contexts) so that the gating requirement is enforceable.
+5. **Monitor the newly required status check** (`provenance-validate`) in branch protection and ensure it fails fast when provenance creation or validation fails.
 
 Once all three playbook cases complete end-to-end, this report should be updated with:
 - The `manifest.json` diff and commit hash for each run;
@@ -201,28 +213,28 @@ Once all three playbook cases complete end-to-end, this report should be updated
 
 ### 成功ケース
 
-- **Run ID**: [記録待ち]
+- **Run ID**: (not started yet; manual dispatch returns HTTP 422)
 - **Tag**: v2025.11.13-success-test
-- **実行方法**: GitHub UI / CLI
-- **Artifacts**: [記録待ち]
-- **SHA256**: [記録待ち]
-- **Status**: ⏳ Pending
+- **実行方法**: `gh workflow run slsa-provenance.yml --ref feature/slsa-phase2.1-hardened -f tag=v2025.11.13-phase2.2-success`
+- **Artifacts**: blocked because the workflow never starts
+- **SHA256**: blocked
+- **Status**: ⚠️ Awaiting `workflow_dispatch` (missing on default branch)
 
 ### 失敗ケース
 
-- **Run ID**: [記録待ち]
+- **Run ID**: (not started yet; manual dispatch returns HTTP 422)
 - **Tag**: v2025.11.13-fail-test
-- **実行方法**: 意図的失敗挿入
-- **ログ抜粋**: [記録待ち]
-- **Status**: ⏳ Pending
+- **実行方法**: `gh workflow run slsa-provenance.yml --ref feature/slsa-phase2.1-hardened -f tag=v2025.11.13-phase2.2-fail`
+- **ログ抜粋**: tools/REST responded `HTTP 422: Workflow does not have 'workflow_dispatch' trigger`
+- **Status**: ⚠️ Awaiting `workflow_dispatch`
 
 ### 同時実行ケース
 
-- **Run IDs**: [記録待ち]
+- **Run IDs**: (not started yet; manual dispatch returns HTTP 422)
 - **Tags**: v2025.11.13-concurrent-1/2/3
-- **実行方法**: 3並列実行
-- **キュー/キャンセル挙動**: [記録待ち]
-- **Status**: ⏳ Pending
+- **実行方法**: `gh workflow run slsa-provenance.yml --ref feature/slsa-phase2.1-hardened -f tag=...` (three commands)
+- **キュー/キャンセル挙動**: blocked because dispatch cannot run
+- **Status**: ⚠️ Awaiting `workflow_dispatch`
 
 ---
 

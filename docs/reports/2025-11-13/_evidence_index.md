@@ -43,4 +43,4 @@ All evidence listed below lives under `docs/reports/2025-11-13/` (except where n
 2. Workflow run viewer (provenance-validate failure): https://github.com/shochaso/starlist-app/actions/runs/19303257146  
 3. Workflow run viewer (phase3 audit failure): https://github.com/shochaso/starlist-app/actions/runs/19303259295  
 4. Branch protection API payload: https://api.github.com/repos/shochaso/starlist-app/branches/main/protection  
-5. PR #61 comment (new evidence reference once posted) – see comment URL (below)
+5. PR #61 comment: https://github.com/shochaso/starlist-app/pull/61#issuecomment-3522651640

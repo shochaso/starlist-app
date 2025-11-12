@@ -62,3 +62,45 @@
 ---
 
 **Note**: This index will be updated as evidence is collected during execution.
+
+---
+
+## Additional Evidence Files (2025-11-13)
+
+| File | Type | Purpose | Status |
+|------|------|---------|--------|
+| `PROVENANCE_RUN_MANUAL.md` | Manual | UI/CLI execution guide | ✅ Created |
+| `PROVENANCE_VALIDATION_COMMANDS.md` | Commands | Validation command reference | ✅ Created |
+| `BRANCH_PROTECTION.md` | Config | Branch protection setup | ✅ Created |
+| `DAY11_SOT_DIFFS.md` | Rollback | Rollback procedures | ✅ Created |
+
+---
+
+## Execution Status Summary
+
+| WS | Status | Evidence File | Notes |
+|----|--------|---------------|-------|
+| WS01 | ✅ | WS01_workflow_dispatch_added.md | workflow_dispatch追加済み |
+| WS02 | ⏳ | WS02_SUCCESS_CASE_EXECUTION.md | 実行待ち（workflow_dispatch認識待ち） |
+| WS03 | ⏳ | WS03_FAILURE_CASE_EXECUTION.md | 実行待ち |
+| WS04 | ⏳ | WS04_CONCURRENCY_EXECUTION.md | 実行待ち |
+| WS05 | ✅ | PHASE2_2_VALIDATION_REPORT.md | 実績テンプレート追記済み |
+| WS06 | ⏳ | WS06_SHA256_VALIDATION.md | 検証コマンド準備済み |
+| WS07 | ✅ | _manifest.json | 初期エントリ追加済み |
+| WS08 | ⏳ | WS08_SUPABASE_REST_VERIFICATION.md | Secrets未設定のため保留 |
+| WS09 | ⏳ | WS09_SLACK_WEBHOOK_VERIFICATION.md | Webhook未設定のため保留 |
+| WS10 | ✅ | BRANCH_PROTECTION.md | provenance-validate追加済み（ユーザー確認済み） |
+| WS11 | ⏳ | WS11_PR_COMMENT.md | 条件整うまで待機 |
+| WS12 | ⏳ | WS12_PHASE3_OBSERVER_STARTUP.md | 起動確認待ち |
+| WS13 | ✅ | PHASE3_AUDIT_SUMMARY.md | テンプレート作成済み |
+| WS14 | ⏳ | WS14_OBSERVER_SUPABASE_POST.md | 実行待ち |
+| WS15 | ✅ | SECRETS_PRECHECK.md | 手順作成済み |
+| WS16 | ✅ | CI_RUNTIME_POLICY.md | ポリシー作成済み |
+| WS17 | ✅ | _evidence_index.md | 索引作成済み |
+| WS18 | ✅ | PHASE2_2_VALIDATION_REPORT.md | 課題/原因/対策/確認追加済み |
+| WS19 | ✅ | NAMING_GUIDE.md | ガイド作成済み |
+| WS20 | ✅ | TELEMETRY_HANDOFF.md | ハンドオフドキュメント作成済み |
+
+---
+
+**Last Updated**: 2025-11-13 (UTC)
