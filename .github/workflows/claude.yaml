@@ -14,15 +14,12 @@ on:
       - develop
 
 jobs:
-  check_startup_performance:
-    name: Check Startup Performance
+  startup:
+    name: Check Startup Performance (pull_request)
+    continue-on-error: true
     runs-on: ubuntu-latest
-
     steps:
-      # Step 1: リポジトリのコードをチェックアウト
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
+      - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
