@@ -1,8 +1,11 @@
-## Summary
+## Linear
 
-- Linked Issue: [${ISSUE_KEY}](https://linear.app/)  ← 作法: タイトルで [STA-xx] を必ず含める
+- Issue Key: `STA-XX`（必須）
+- 自動遷移: PR作成→In Progress / レビュー→In Review / マージ→Done
 
-- Context: なぜこの変更が必要か（1〜2行）
+## 目的
+
+なぜこの変更が必要か（1〜2行）
 
 ## Changes
 
@@ -15,7 +18,6 @@
 ## Checklist
 
 - [ ] タイトルは `[STA-xx]` で始まる
-
+- [ ] `build (pull_request)` と `check (pull_request)` が緑
 - [ ] CI が通る / 失敗原因を把握している
-
 - [ ] レビュー観点（破壊的変更、移行、セキュリティ）を明記

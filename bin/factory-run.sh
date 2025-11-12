@@ -14,6 +14,12 @@ fi
 ISSUE_KEY="$1"
 TITLE="$2"
 
+echo "[Factory] health-check start"
+gh workflow run "Lint & Build Check" || true
+gh run list --limit 5 | head -n 5
+echo "[Factory] done"
+
+echo ""
 echo "🔧 Factory CLI連携: ${ISSUE_KEY} - ${TITLE}"
 echo ""
 echo "このスクリプトはFactory環境での実行を想定しています。"
@@ -37,4 +43,3 @@ echo "   - レビュー依頼 → In Review"
 echo "   - マージ → Done"
 echo ""
 echo "📝 詳細: docs/ops/WORKFLOW_MODEL.md"
-

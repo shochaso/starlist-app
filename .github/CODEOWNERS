@@ -1,4 +1,6 @@
-*                                     @pm-tim
-/docs/**                              @pm-tim
-/supabase/**                          @pm-tim
-/lib/**                               @pm-tim
+# Default owner（将来メンバーを追記しやすい粒度）
+* @shochaso
+
+# セクション別に将来追加しやすく
+docs/** @shochaso
+.github/** @shochaso

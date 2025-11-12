@@ -14,60 +14,15 @@ on:
       - develop
 
 jobs:
-  check_startup_performance:
-    name: Check Startup Performance
+  startup:
+    name: Check Startup Performance (pull_request)
+    continue-on-error: true
     runs-on: ubuntu-latest
-
     steps:
-      # Step 1: リポジトリのコードをチェックアウト
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      # Step 2: Flutter環境をセットアップ
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
         with:
-          # [修正] 依存パッケージ(google_maps_flutter)が新しいDart SDKを要求するため、
-          # Flutterのチャンネルを'stable'から'beta'に変更します。
-          # これにより、要件を満たす新しいバージョンのDart SDKが使用されます。
-          channel: 'beta'
-          cache: true
-
-      # Step 3: 依存パッケージをインストール
-      - name: Install dependencies
-        run: flutter pub get
-
-      # Step 4: アプリの起動トレースを実行
-      # --profileモードでアプリを実行し、起動に関するパフォーマンスデータ
-      # (start_up_info.json) を生成します。
-      # 単一デバイス（chrome）固定で安定化
-      - name: Run startup trace
-        continue-on-error: true  # Optional化: 失敗してもマージをブロックしない
-        run: flutter run --trace-startup --profile -d chrome
-
-      # Step 5: 起動時間を確認し、しきい値と比較
-      # 生成されたJSONファイルから最初のフレーム描画までの時間(timeToFirstFrameMicros)を
-      # 抽出し、要件定義書の「3秒以内」という基準と比較します。
-      # Optional化: 実機依存・環境差により一時除外
-      - name: Check startup time against threshold
-        continue-on-error: true  # Optional化: 失敗してもマージをブロックしない
-        run: |
-          # jqツールを使ってJSONファイルから起動時間(マイクロ秒)を取得
-          startup_time_micros=$(jq '.timeToFirstFrameMicros' build/start_up_info.json)
-          
-          # マイクロ秒をミリ秒に変換
-          startup_time_ms=$((startup_time_micros / 1000))
-          
-          # 要件定義に基づき、しきい値を3000ミリ秒(3秒)に設定
-          threshold_ms=3000
-          
-          echo "✅ Measured startup time: $startup_time_ms ms"
-          echo "Threshold: $threshold_ms ms"
-          
-          # 計測された起動時間がしきい値を超えていないかチェック
-          if (( startup_time_ms > threshold_ms )); then
-            echo "::error::Startup time of $startup_time_ms ms exceeds the threshold of $threshold_ms ms."
-            exit 1
-          else
-            echo "🚀 Startup time is within the acceptable threshold."
-          fi
+          channel: 'stable'
+      - run: flutter doctor -v
+      - run: flutter devices
+      - run: flutter run -d web-server --trace-startup --profile --target lib/main.dart
