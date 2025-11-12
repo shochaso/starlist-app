@@ -1,0 +1,18 @@
+{
+  "freeze_windows": [
+    {
+      "start": "2025-12-20T00:00:00Z",
+      "end": "2026-01-05T00:00:00Z",
+      "reason": "年末年始フリーズ",
+      "scope": "all"
+    },
+    {
+      "start": "2025-12-24T00:00:00Z",
+      "end": "2025-12-26T00:00:00Z",
+      "reason": "クリスマスフリーズ",
+      "scope": "production"
+    }
+  ],
+  "emergency_override": false
+}
+

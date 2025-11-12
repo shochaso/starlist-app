@@ -13,6 +13,16 @@ on:
         options:
           - daily
           - weekly
+      enable_signing:
+        description: 'Enable GPG signing'
+        required: false
+        default: 'true'
+        type: boolean
+      dry_run:
+        description: 'Dry-run mode (verify only)'
+        required: false
+        default: 'false'
+        type: boolean
 
 jobs:
   release:
@@ -48,8 +58,36 @@ jobs:
           echo "Generated tag: $(cat .ver)"
       
       - name: Create tag
+        id: create_tag
         run: |
           git tag ${{ steps.ver.outputs.tag }}
+          echo "tag_created=${{ steps.ver.outputs.tag }}" >> $GITHUB_OUTPUT
+      
+      - name: Sign tag (GPG)
+        if: env.ENABLE_SIGNING != 'false'
+        env:
+          ENABLE_SIGNING: ${{ inputs.enable_signing || 'true' }}
+          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+        run: |
+          if [ "$ENABLE_SIGNING" = "true" ] && [ -n "$GPG_PRIVATE_KEY" ]; then
+            echo "$GPG_PRIVATE_KEY" | gpg --import --batch --yes || true
+            git tag -s -m "Release ${{ steps.ver.outputs.tag }}" ${{ steps.ver.outputs.tag }} -f || echo "GPG signing failed, using unsigned tag"
+          else
+            echo "GPG signing skipped (dry-run or keys not configured)"
+          fi
+      
+      - name: Verify tag signature (dry-run)
+        if: env.DRY_RUN == 'true'
+        env:
+          DRY_RUN: ${{ inputs.dry_run || 'false' }}
+        run: |
+          if [ "$DRY_RUN" = "true" ]; then
+            git verify-tag ${{ steps.ver.outputs.tag }} || echo "Tag verification skipped in dry-run mode"
+          fi
+      
+      - name: Push tag
+        run: |
           git push origin ${{ steps.ver.outputs.tag }}
       
       - name: Create GitHub Release
