@@ -1,289 +1,134 @@
-# SLSA Provenance Validation (Security CI)
-
 name: provenance-validate
 
 on:
   workflow_run:
     workflows: ["slsa-provenance"]
-    types:
-      - completed
+    types: [completed]
   workflow_dispatch:
     inputs:
-      tag:
-        description: "Release tag to validate"
-        required: false
       run_id:
-        description: "Workflow run ID to validate"
-        required: false
+        description: "Run ID of the provenance workflow to validate"
+        required: true
+        type: string
+      tag:
+        description: "Tag associated with the provenance artifact"
+        required: true
+        type: string
 
-# Workflow-level permissions (minimal)
 permissions:
   contents: read
+  actions: read
   id-token: write
   attestations: read
-  actions: read
+  checks: read
 
 concurrency:
-  group: provenance-validate-${{ github.ref }}-result
-  cancel-in-progress: false
+  group: provenance-validate-${{ github.ref }}-${{ github.event.workflow_run.id || github.run_id }}
+  cancel-in-progress: true
 
 jobs:
   validate:
+    name: Validate provenance predicate
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
-    # Per-job permissions (minimal)
-    permissions:
-      contents: read
-      id-token: write
-      attestations: read
-      actions: read
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SLSA_MANIFEST_SERVICE_KEY: ${{ secrets.SLSA_MANIFEST_SERVICE_KEY }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
 
-      - name: Resolve run ID and tag
+      - name: Resolve provenance run metadata
         id: resolve
         run: |
+          set -euo pipefail
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            RUN_ID="${{ inputs.run_id }}"
-            TAG="${{ inputs.tag }}"
+            RUN_ID="${{ github.event.inputs.run_id }}"
+            TAG="${{ github.event.inputs.tag }}"
           else
             RUN_ID="${{ github.event.workflow_run.id }}"
-            # Extract tag from manifest or workflow run
-            TAG=$(gh run view "$RUN_ID" --json displayTitle -q '.displayTitle' | grep -oP 'v[\d.]+' | head -1 || echo "")
+            ARTIFACT_NAME=$(gh run view "$RUN_ID" --json artifacts --jq '.artifacts[] | select(.name | startswith("provenance-")) | .name' | head -n 1)
+            if [ -z "$ARTIFACT_NAME" ]; then
+              echo "No provenance artifact found for run $RUN_ID"
+              exit 1
+            fi
+            TAG="${ARTIFACT_NAME#provenance-}"
           fi
-          
-          if [ -z "$RUN_ID" ]; then
-            echo "::error::Run ID not found"
-            exit 1
-          fi
-          
           echo "run_id=$RUN_ID" >> $GITHUB_OUTPUT
           echo "tag=$TAG" >> $GITHUB_OUTPUT
-          echo "Resolved: RUN_ID=$RUN_ID, TAG=$TAG"
 
-      - name: Download artifact
-        id: download
+      - name: Download provenance artifact
         run: |
-          RUN_ID="${{ steps.resolve.outputs.run_id }}"
-          gh run download "$RUN_ID" --dir /tmp/provenance-artifact || {
-            echo "::error::Failed to download artifact for run $RUN_ID"
-            exit 1
-          }
-          
-          PROVENANCE_FILE=$(find /tmp/provenance-artifact -name "provenance-*.json" | head -1)
-          if [ -z "$PROVENANCE_FILE" ]; then
-            echo "::error::Provenance file not found"
-            exit 1
-          fi
-          
-          echo "provenance_file=$PROVENANCE_FILE" >> $GITHUB_OUTPUT
-          echo "Found provenance file: $PROVENANCE_FILE"
+          gh run download "${{ steps.resolve.outputs.run_id }}" --name "provenance-${{ steps.resolve.outputs.tag }}" --dir artifacts
 
-      - name: Validate predicateType
-        id: validate_predicate
-        run: |
-          PROVENANCE_FILE="${{ steps.download.outputs.provenance_file }}"
-          PREDICATE_TYPE=$(jq -r '.predicateType // empty' "$PROVENANCE_FILE")
-          
-          if [ -z "$PREDICATE_TYPE" ]; then
-            echo "::error::predicateType not found"
-            exit 1
-          fi
-          
-          if [[ ! "$PREDICATE_TYPE" =~ ^https://slsa.dev/provenance/v[0-9.]+$ ]]; then
-            echo "::error::Invalid predicateType: $PREDICATE_TYPE"
-            exit 1
-          fi
-          
-          echo "✅ predicateType: $PREDICATE_TYPE"
-          echo "predicate_type=$PREDICATE_TYPE" >> $GITHUB_OUTPUT
-
-      - name: Validate builder ID
-        id: validate_builder
-        run: |
-          PROVENANCE_FILE="${{ steps.download.outputs.provenance_file }}"
-          BUILDER_ID=$(jq -r '.builder.id // empty' "$PROVENANCE_FILE")
-          EXPECTED_BUILDER="github-actions/slsa-provenance"
-          
-          if [ "$BUILDER_ID" != "$EXPECTED_BUILDER" ]; then
-            echo "::error::Builder ID mismatch: expected $EXPECTED_BUILDER, got $BUILDER_ID"
-            exit 1
-          fi
-          
-          echo "✅ Builder ID: $BUILDER_ID"
-          echo "builder_id=$BUILDER_ID" >> $GITHUB_OUTPUT
-
-      - name: Validate SHA256
-        id: validate_sha
-        run: |
-          PROVENANCE_FILE="${{ steps.download.outputs.provenance_file }}"
-          TAG="${{ steps.resolve.outputs.tag }}"
-          
-          # Calculate SHA256 of provenance file
-          CALCULATED_SHA=$(sha256sum "$PROVENANCE_FILE" | cut -d' ' -f1)
-          
-          # Get commit SHA for tag
-          if [ -n "$TAG" ]; then
-            COMMIT_SHA=$(git rev-parse "$TAG" 2>/dev/null || echo "")
-            if [ -n "$COMMIT_SHA" ]; then
-              echo "Tag $TAG points to commit: $COMMIT_SHA"
-            fi
-          fi
-          
-          echo "✅ Provenance SHA256: $CALCULATED_SHA"
-          echo "sha256=$CALCULATED_SHA" >> $GITHUB_OUTPUT
-
-      - name: Validate invocation release
-        id: validate_invocation
-        run: |
-          PROVENANCE_FILE="${{ steps.download.outputs.provenance_file }}"
-          TAG="${{ steps.resolve.outputs.tag }}"
-          PROVENANCE_TAG=$(jq -r '.invocation.release // empty' "$PROVENANCE_FILE")
-          
-          if [ -n "$TAG" ] && [ "$PROVENANCE_TAG" != "$TAG" ]; then
-            echo "::warning::Tag mismatch: expected $TAG, got $PROVENANCE_TAG"
-          fi
-          
-          echo "✅ Invocation release: $PROVENANCE_TAG"
-          echo "provenance_tag=$PROVENANCE_TAG" >> $GITHUB_OUTPUT
-
-      - name: Report to Supabase
+      - name: Validate predicate and builder
         env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          TAG: ${{ steps.resolve.outputs.tag }}
+          RUN_ID: ${{ steps.resolve.outputs.run_id }}
         run: |
-          RUN_ID="${{ steps.resolve.outputs.run_id }}"
-          TAG="${{ steps.resolve.outputs.tag }}"
-          SHA256="${{ steps.validate_sha.outputs.sha256 }}"
-          
-          PAYLOAD=$(cat <<EOF
-{
-  "app": "starlist",
-  "env": "prod",
-  "event": "slsa_provenance_validate",
-  "ok": true,
-  "latency_ms": null,
-  "extra": {
-    "run_id": ${RUN_ID},
-    "tag": "${TAG}",
-    "sha256": "${SHA256}",
-    "predicate_type": "${{ steps.validate_predicate.outputs.predicate_type }}",
-    "builder_id": "${{ steps.validate_builder.outputs.builder_id }}",
-    "status": "success"
+          set -euo pipefail
+          ARTIFACT_FILE=$(find artifacts -name "provenance-${TAG}.json" -print -quit)
+          if [ -z "$ARTIFACT_FILE" ]; then
+            echo "Artifact provenance-${TAG}.json not found"
+            exit 1
+          fi
+          PREDICATE=$(jq -r '.predicateType // empty' "$ARTIFACT_FILE")
+          if [ "$PREDICATE" != "https://slsa.dev/provenance/v0.2" ]; then
+            echo "Unexpected predicateType: $PREDICATE"
+            exit 1
+          fi
+          BUILDER=$(jq -r '.builder.id // empty' "$ARTIFACT_FILE")
+          if [ -z "$BUILDER" ]; then
+            echo "builder.id is missing"
+            exit 1
+          fi
+          INV_RELEASE=$(jq -r '.invocation.release // empty' "$ARTIFACT_FILE")
+          if [ "$INV_RELEASE" != "$TAG" ]; then
+            echo "invocation.release ($INV_RELEASE) does not match tag ($TAG)"
+            exit 1
+          fi
+          git fetch --tags --force --quiet
+          TAG_SHA=$(git rev-parse "${TAG}^{commit}" 2>/dev/null || git rev-parse HEAD)
+          CONTENT_SHA=$(jq -r '.metadata.content_sha256 // empty' "$ARTIFACT_FILE")
+          if [ -z "$CONTENT_SHA" ]; then
+            echo "content_sha256 is missing"
+            exit 1
+          fi
+          if [ "$CONTENT_SHA" != "$TAG_SHA" ]; then
+            echo "content_sha256 does not match tag commit ($CONTENT_SHA != $TAG_SHA)"
+            exit 1
+          fi
+          echo "Provenance artifact for $TAG validated (run $RUN_ID)"
+
+      - name: Record validation status
+        if: always()
+        env:
+          RUN_ID: ${{ steps.resolve.outputs.run_id }}
+          TAG: ${{ steps.resolve.outputs.tag }}
+          STATUS: ${{ job.status }}
+        run: |
+          set -euo pipefail
+          VALIDATED_AT="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+          export VALIDATED_AT
+          python - <<'PY' > /tmp/validation.json
+import json, os
+
+entry = {
+  "run_id": int(os.environ["RUN_ID"]),
+  "tag": os.environ["TAG"],
+  "validation_status": os.environ["STATUS"],
+  "validated_at": os.environ["VALIDATED_AT"],
+  "validation_method": "provenance-validate",
+  "metadata": {
+    "workflow_run_id": os.environ["RUN_ID"],
+    "validated_by": "provenance-validate"
   }
 }
-EOF
-)
-          
-          curl -sS --fail --show-error --retry 3 --max-time 30 \
-            -H "Authorization: Bearer ${SUPABASE_SERVICE_KEY}" \
-            -H "apikey: ${SUPABASE_SERVICE_KEY}" \
+print(json.dumps(entry))
+PY
+          curl -sSf -X POST "${SUPABASE_URL%/}/rest/v1/slsa_runs?on_conflict=run_id" \
+            -H "apikey: ${SLSA_MANIFEST_SERVICE_KEY}" \
+            -H "Authorization: Bearer ${SLSA_MANIFEST_SERVICE_KEY}" \
             -H "Content-Type: application/json" \
-            -X POST \
-            "${SUPABASE_URL}/functions/v1/telemetry" \
-            -d "$PAYLOAD" || echo "Supabase sync failed (non-blocking)"
-
-  notify-on-failure:
-    if: failure()
-    needs: validate
-    runs-on: ubuntu-latest
-    concurrency:
-      group: provenance-validate-notify-${{ github.run_id }}
-      cancel-in-progress: false
-    # Per-job permissions for notifications
-    permissions:
-      contents: read
-      issues: write
-    steps:
-      - name: Resolve run ID and tag (for notification)
-        id: resolve_notify
-        run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            RUN_ID="${{ inputs.run_id }}"
-            TAG="${{ inputs.tag }}"
-          else
-            RUN_ID="${{ github.event.workflow_run.id }}"
-            TAG=$(gh run view "$RUN_ID" --json displayTitle -q '.displayTitle' | grep -oP 'v[\d.]+' | head -1 || echo "")
-          fi
-          echo "run_id=${RUN_ID:-${{ github.run_id }}}" >> $GITHUB_OUTPUT
-          echo "tag=${TAG:-unknown}" >> $GITHUB_OUTPUT
-
-      - name: Create validation failure issue
-        id: create_issue
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const runId = '${{ steps.resolve_notify.outputs.run_id }}';
-            const tag = '${{ steps.resolve_notify.outputs.tag }}';
-            const validationRunId = '${{ github.run_id }}';
-            const runUrl = `https://github.com/${{ github.repository }}/actions/runs/${runId}`;
-            const validationRunUrl = `https://github.com/${{ github.repository }}/actions/runs/${validationRunId}`;
-            
-            const issueBody = `## SLSA Provenance Validation Failure
-            
-            **Validation Run ID**: ${validationRunId}
-            **Provenance Run ID**: ${runId}
-            **Tag**: ${tag}
-            
-            **Links**:
-            - [Validation Run](${validationRunUrl})
-            - [Provenance Run](${runUrl})
-            
-            **Failure Reason**: Predicate validation failed (predicateType, builder ID, or SHA256 mismatch).
-            
-            **Next Steps**:
-            1. Check validation logs for specific failure reason
-            2. Verify provenance artifact integrity
-            3. Re-run provenance generation if needed
-            
-            Please investigate and fix the provenance generation.
-            `;
-            
-            const issue = await github.rest.issues.create({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              title: `[SLSA] Validation failure for ${tag}`,
-              body: issueBody,
-              labels: ['ops-alert', 'provenance-validation-failure', 'automated']
-            });
-            
-            core.setOutput('issue_number', issue.data.number);
-            core.setOutput('issue_url', issue.data.html_url);
-
-      - name: Notify Slack (dual alert)
-        env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
-        run: |
-          TAG="${{ steps.resolve_notify.outputs.tag }}"
-          RUN_ID="${{ steps.resolve_notify.outputs.run_id }}"
-          VALIDATION_RUN_ID="${{ github.run_id }}"
-          ISSUE_NUMBER="${{ steps.create_issue.outputs.issue_number }}"
-          ISSUE_URL="${{ steps.create_issue.outputs.issue_url }}"
-          
-          PAYLOAD=$(cat <<EOF
-{
-  "level": "error",
-  "title": "SLSA Provenance Validation Failure",
-  "message": "Provenance validation failed for tag ${TAG}",
-  "run_id": ${VALIDATION_RUN_ID},
-  "provenance_run_id": ${RUN_ID},
-  "tag": "${TAG}",
-  "issue_number": ${ISSUE_NUMBER},
-  "issue_url": "${ISSUE_URL}",
-  "source": "provenance-validate",
-  "action_required": true
-}
-EOF
-)
-          
-          curl -sS --fail --show-error --retry 3 --max-time 30 \
-            -H "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
-            -H "apikey: ${SUPABASE_ANON_KEY}" \
-            -H "Content-Type: application/json" \
-            -X POST \
-            "${SUPABASE_URL}/functions/v1/ops-slack-notify" \
-            -d "$PAYLOAD" || echo "Slack notification failed (non-blocking)"
-
+            -d "@/tmp/validation.json"

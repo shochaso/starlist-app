@@ -8,12 +8,13 @@
 - **構成**:
   1. Input manifest entry (from docs manifest) provides `tag`, `run_id`, `artifact_url`.
   2. Download artifact via `gh run download` and verify:
-     - `predicateType` is `https://slsa.dev/provenance/v1` (or `v0.2` + governance override) and `invocation.release == tag`.
+     - `predicateType` is `https://slsa.dev/provenance/v0.2` and `invocation.release == tag`.
      - Materials SHA256 matches release commit `sha`.
      - Builder ID equals expected `github-actions/slsa-provenance`.
   3. Run `slsa-verifier verify` using OIDC `id-token` to fetch provenance as attestation; fallback to `cosign verify-attestation`.
   4. `Slack` and `Issue` notifications call `ops-slack-notify` and/or `gh issue create` if verification fails.
   5. On success, call Supabase API (`/functions/v1/provenance-validate`) with payload `{ tag, run_id, status: success, verified_at }`; failure submissions include `failure_reason`.
+  6. All of the above now lives in `.github/workflows/provenance-validate.yml`, which is triggered on the completion of `slsa-provenance` (via `workflow_run`) and as a manual dispatch; it is configured as a required check and pushes its findings into `slsa_runs` through the `SLSA_MANIFEST_SERVICE_KEY` service role so the governance dashboard can audit predicateType=0.2 + builder.id + sha continuity.
 
 - **リスク / Risks**:
   - OIDC failure: `id-token` permission not granted; job gracefully degrades to cosign but logs missing attestation.

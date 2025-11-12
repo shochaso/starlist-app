@@ -86,6 +86,8 @@
   - Triggers `supabase/kpi` view calculation for dashboards.
 - KPI view fields: `tag`, `status`, `validated_at`, `run_id`, `release_url`.
 - `audit-table` schema stores `failure_reason`, `artifact_url`, `manifest_hash` for forensic queries.
+ - Table definition now lives in `supabase/migrations/DDL_slsa_runs.sql` and captures run metadata, content SHA, validation_status, and manifest hash so ETL consumers can audit every entry.
+ - ETL uses a narrow service key (`SLSA_MANIFEST_SERVICE_KEY`) that only grants insert/upsert on `slsa_runs` so automation cannot access broader Supabase APIs.
 
 ### 5.1 リスク
 - Ingestion failure may skip KPI; detect via `manifest.ingest_failures` metric and `ops-slack-notify` alert.
