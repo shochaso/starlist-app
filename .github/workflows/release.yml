@@ -41,7 +41,41 @@ jobs:
           git config user.name "STARLIST CI"
           git config user.email "ops@starlist.jp"
       
+      - name: Check freeze window
+        id: freeze_check
+        run: |
+          if [ -f "release/freeze_window.json" ]; then
+            FREEZE_DATA=$(cat release/freeze_window.json)
+            OVERRIDE=$(echo "$FREEZE_DATA" | jq -r '.emergency_override // false')
+            if [ "$OVERRIDE" = "true" ]; then
+              echo "freeze_skip=false" >> $GITHUB_OUTPUT
+              echo "freeze_reason=" >> $GITHUB_OUTPUT
+            else
+              NOW=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+              FREEZE_WINDOWS=$(echo "$FREEZE_DATA" | jq -r '.freeze_windows[]? | select(.start <= "'"$NOW"'" and .end >= "'"$NOW"'")')
+              if [ -n "$FREEZE_WINDOWS" ]; then
+                REASON=$(echo "$FREEZE_WINDOWS" | jq -r '.reason // "Freeze window active"')
+                echo "freeze_skip=true" >> $GITHUB_OUTPUT
+                echo "freeze_reason=$REASON" >> $GITHUB_OUTPUT
+                echo "⚠️ Release skipped: $REASON"
+              else
+                echo "freeze_skip=false" >> $GITHUB_OUTPUT
+                echo "freeze_reason=" >> $GITHUB_OUTPUT
+              fi
+            fi
+          else
+            echo "freeze_skip=false" >> $GITHUB_OUTPUT
+            echo "freeze_reason=" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Skip release if freeze window active
+        if: steps.freeze_check.outputs.freeze_skip == 'true'
+        run: |
+          echo "::warning::Release skipped due to freeze window: ${{ steps.freeze_check.outputs.freeze_reason }}"
+          exit 0
+      
       - id: ver
+        if: steps.freeze_check.outputs.freeze_skip != 'true'
         run: |
           TAG_FORMAT="${{ github.event.inputs.tag_format || 'daily' }}"
           if [ "$TAG_FORMAT" = "weekly" ]; then
@@ -59,12 +93,13 @@ jobs:
       
       - name: Create tag
         id: create_tag
+        if: steps.freeze_check.outputs.freeze_skip != 'true'
         run: |
           git tag ${{ steps.ver.outputs.tag }}
           echo "tag_created=${{ steps.ver.outputs.tag }}" >> $GITHUB_OUTPUT
       
       - name: Sign tag (GPG)
-        if: env.ENABLE_SIGNING != 'false'
+        if: steps.freeze_check.outputs.freeze_skip != 'true' && env.ENABLE_SIGNING != 'false'
         env:
           ENABLE_SIGNING: ${{ inputs.enable_signing || 'true' }}
           GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
@@ -78,7 +113,7 @@ jobs:
           fi
       
       - name: Verify tag signature (dry-run)
-        if: env.DRY_RUN == 'true'
+        if: steps.freeze_check.outputs.freeze_skip != 'true' && env.DRY_RUN == 'true'
         env:
           DRY_RUN: ${{ inputs.dry_run || 'false' }}
         run: |
@@ -87,10 +122,12 @@ jobs:
           fi
       
       - name: Push tag
+        if: steps.freeze_check.outputs.freeze_skip != 'true'
         run: |
           git push origin ${{ steps.ver.outputs.tag }}
       
       - name: Create GitHub Release
+        if: steps.freeze_check.outputs.freeze_skip != 'true'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.ver.outputs.tag }}
