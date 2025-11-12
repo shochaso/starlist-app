@@ -9,32 +9,70 @@ on:
 jobs:
   provenance:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Debug event context
+        run: |
+          echo "GITHUB_EVENT_NAME=$GITHUB_EVENT_NAME"
+          echo "Release tag: ${{ github.event.release.tag_name }}"
+          jq -r '.release.tag_name // empty' < "$GITHUB_EVENT_PATH" || echo "No release tag found"
+      
+      - name: Determine release tag
+        id: tag
+        run: |
+          TAG="${{ github.event.release.tag_name }}"
+          if [ -z "$TAG" ]; then
+            # Fallback: get latest tag from git
+            TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          fi
+          if [ -z "$TAG" ]; then
+            echo "⚠️ No release tag found, skipping provenance generation"
+            echo "skip=true" >> $GITHUB_OUTPUT
+          else
+            echo "tag=$TAG" >> $GITHUB_OUTPUT
+            echo "✅ Using tag: $TAG"
+          fi
       
       - name: Gather release metadata
+        if: steps.tag.outputs.skip != 'true'
         run: |
           mkdir -p provenance
-          echo "{}" > provenance/provenance.json
-          # Minimal provenance skeleton; replace with your SLSA tool invocation
+          TAG="${{ steps.tag.outputs.tag }}"
           cat <<EOF > provenance/provenance.json
 {
   "predicateType": "https://slsa.dev/provenance/v0.2",
-  "builder": { "id": "github-actions/rls-audit" },
-  "buildType": "https://github.com/shochaso/starlist-app/runs/release",
+  "builder": { "id": "github-actions/slsa-provenance" },
+  "buildType": "https://github.com/${{ github.repository }}/actions/workflows/slsa-provenance.yml",
   "invocation": {
     "environment": "github",
     "workflow": "${{ github.workflow }}",
     "run_id": "${{ github.run_id }}",
-    "release": "${{ github.event.release.tag_name }}"
+    "release": "$TAG"
+  },
+  "metadata": {
+    "buildInvocationId": "${{ github.run_id }}",
+    "completeness": {
+      "parameters": true,
+      "environment": false,
+      "materials": false
+    }
   }
 }
 EOF
+          cat provenance/provenance.json
       
       - name: Upload provenance
+        if: steps.tag.outputs.skip != 'true'
         uses: actions/upload-artifact@v4
         with:
-          name: provenance-${{ github.event.release.tag_name }}
+          name: provenance-${{ steps.tag.outputs.tag }}
           path: provenance/provenance.json
+          retention-days: 90
 
