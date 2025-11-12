@@ -9,11 +9,6 @@ on:
         description: "Tag name to generate provenance for"
         required: false
         type: string
-    inputs:
-      tag:
-        description: "Tag name to generate provenance for"
-        required: true
-        type: string
 
 permissions:
   contents: read
