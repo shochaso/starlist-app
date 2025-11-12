@@ -43,4 +43,3 @@ echo "   - レビュー依頼 → In Review"
 echo "   - マージ → Done"
 echo ""
 echo "📝 詳細: docs/ops/WORKFLOW_MODEL.md"
-

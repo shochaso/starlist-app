@@ -87,4 +87,3 @@ GitHub Settings → Branches → Branch protection rules → `main`:
 
 - 2025-11-11: 最終ポリシー確定
 - 2025-11-12: 監査メモとロールバック手順追加
-

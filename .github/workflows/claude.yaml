@@ -26,4 +26,3 @@ jobs:
       - run: flutter doctor -v
       - run: flutter devices
       - run: flutter run -d web-server --trace-startup --profile --target lib/main.dart
-
