@@ -1,64 +1,21 @@
-# Incident Runbook
+# Minimal incident runbook (summary)
 
-## 概要
+1) Detection:
 
-インシデント発生時の対応手順を定義します。
+   - Alerts from Actions, external monitoring
 
-## インシデント分類
+2) Triage:
 
-### P0: Critical
-- サービス完全停止
-- データ損失の可能性
-- セキュリティ侵害
+   - Assign on-call, create issue with label incident/severity
 
-### P1: High
-- 主要機能の停止
-- パフォーマンス大幅低下
-- 部分的なデータ不整合
+3) KillSwitch:
 
-### P2: Medium
-- 一部機能の停止
-- 軽微なパフォーマンス低下
+   - Set repo variable KILL_SWITCH=true or call admin to enable protection
 
-### P3: Low
-- 軽微な問題
-- ユーザー影響が限定的
+4) Mitigation:
 
-## 対応フロー
+   - Revert last merge: git revert -m 1 <merge_sha>
 
-### 1. 検知・報告
-- 監視アラート
-- ユーザー報告
-- 内部発見
+5) Postmortem:
 
-### 2. トリアージ
-- 影響範囲の特定
-- 優先度の決定
-- 対応チームの招集
-
-### 3. 対応
-- 原因調査
-- 影響範囲の拡大防止
-- 復旧作業
-
-### 4. 事後対応
-- インシデントレポート作成
-- 再発防止策の検討
-- 改善アクションの実施
-
-## エスカレーション
-
-- **P0/P1**: 即座にエスカレーション
-- **P2**: 1時間以内にエスカレーション
-- **P3**: 通常のチケット管理
-
-## コミュニケーション
-
-- ステータスページ更新
-- 関係者への通知
-- 事後レポートの共有
-
-## 参考資料
-
-- [Incident Response Plan](https://docs.github.com/en/actions/managing-workflow-runs/canceling-a-workflow)
-- [Postmortem Template](docs/ops/POSTMORTEM_TEMPLATE.md)
+   - Fill docs/reports/YYYY-MM-DD/INCIDENT.md and schedule RCA

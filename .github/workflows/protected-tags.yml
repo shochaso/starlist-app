@@ -1,0 +1,40 @@
+# Verify tag signatures on tag push; if unsigned, create an issue and notify
+
+name: protected-tags
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  verify-tag:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout tag
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.ref }}
+      
+      - name: Check annotated tag signature (best-effort)
+        run: |
+          TAG=${GITHUB_REF#refs/tags/}
+          echo "Tag: $TAG"
+          git fetch --unshallow || true
+          # try to fetch tag object and verify signature (requires GPG keys on runner if verifying)
+          if git for-each-ref --format='%(objectname) %(objecttype)' refs/tags/$TAG | grep -q 'tag'; then
+            # annotated tag: verify signature if runner has keys
+            git cat-file tag refs/tags/$TAG | sed -n '1,40p' || true
+            # Best-effort: if tag contains "-----BEGIN PGP SIGNATURE-----" we consider it signed (simple heuristic)
+            if git cat-file tag refs/tags/$TAG | grep -q 'BEGIN PGP SIGNATURE'; then
+              echo "Tag appears annotated and contains signature (heuristic)"
+            else
+              echo "Tag not annotated or not PGP-signed"
+              gh issue create --title "Unsigned tag pushed: $TAG" --body "Tag $TAG was pushed without PGP signature. Please verify and re-create signed tag." --label "security" --repo ${{ github.repository }}
+            fi
+          else
+            echo "Lightweight tag or unknown tag type — cannot verify signature"
+            gh issue create --title "Tag push: unknown type $TAG" --body "Tag $TAG may be lightweight; consider using annotated signed tags." --label "security" --repo ${{ github.repository }}
+          fi
+

@@ -1,0 +1,23 @@
+# KillSwitch: on manual dispatch, flip a repo variable and open an issue to stop merges
+
+name: killswitch
+
+on:
+  workflow_dispatch:
+
+jobs:
+  engage:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      contents: write
+    steps:
+      - name: Create emergency issue & set variable
+        run: |
+          # create an incident issue
+          gh issue create --title "KILLSWITCH ENGAGED - Immediate stop merges" \
+            --body "KILL SWITCH enabled by $GITHUB_ACTOR. Stop merges; investigate immediately." \
+            --label "incident,high" --repo ${{ github.repository }} || true
+          # set a repo variable (visible to admins) to indicate killswitch state (requires gh 2.0+)
+          gh variable set KILL_SWITCH true --repo ${{ github.repository }} || true
+

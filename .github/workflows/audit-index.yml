@@ -1,0 +1,49 @@
+# Generate _index.json under docs/reports/* with metadata for auditing
+
+name: audit-index
+
+on:
+  schedule:
+    - cron: '0 2 * * *'  # daily
+  workflow_dispatch:
+
+jobs:
+  index:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Build audit index
+        run: |
+          mkdir -p docs/reports
+          python3 - <<'PY'
+import os, json, datetime
+
+root='docs/reports'
+
+index={}
+
+for dirpath, dirs, files in os.walk(root):
+    for f in files:
+        p=os.path.join(dirpath,f)
+        stat=os.stat(p)
+        rel=os.path.relpath(p,root)
+        index.setdefault(dirpath.replace(root+'/',''),[]).append({
+            "path": rel,
+            "size": stat.st_size,
+            "mtime": datetime.datetime.utcfromtimestamp(stat.st_mtime).isoformat()+"Z"
+        })
+
+with open(os.path.join(root,"_index.json"),"w") as fh:
+    json.dump({"generated": datetime.datetime.utcnow().isoformat()+"Z","index":index}, fh, indent=2)
+
+print("Wrote docs/reports/_index.json")
+PY
+      
+      - name: Upload index
+        uses: actions/upload-artifact@v4
+        with:
+          name: audit-index
+          path: docs/reports/_index.json
+
