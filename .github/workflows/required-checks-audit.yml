@@ -1,0 +1,61 @@
+name: Required Checks Audit
+
+on:
+  schedule:
+    - cron: '0 0 * * 0'  # 週次（日曜深夜）
+  workflow_dispatch:
+
+jobs:
+  audit:
+    name: required-checks-audit
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Check branch protection
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: protection } = await github.rest.repos.getBranchProtection({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              branch: 'main'
+            });
+            
+            const requiredChecks = protection.required_status_checks?.contexts || [];
+            const expectedChecks = ['build (pull_request)', 'check (pull_request)'];
+            
+            const missing = expectedChecks.filter(check => !requiredChecks.includes(check));
+            const extra = requiredChecks.filter(check => !expectedChecks.includes(check));
+            
+            if (missing.length > 0 || extra.length > 0) {
+              const issueBody = `## Required Checks Audit Alert
+              
+**Expected checks:**
+${expectedChecks.map(c => `- ${c}`).join('\n')}
+
+**Current checks:**
+${requiredChecks.map(c => `- ${c}`).join('\n')}
+
+**Missing:**
+${missing.map(c => `- ${c}`).join('\n') || 'None'}
+
+**Extra:**
+${extra.map(c => `- ${c}`).join('\n') || 'None'}
+
+Please review branch protection settings.`;
+              
+              // Issueを作成
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: '[AUDIT] Required checks deviation detected',
+                body: issueBody,
+                labels: ['audit', 'ci-governance']
+              });
+            }
+            
+            return { requiredChecks, expectedChecks, missing, extra };
+

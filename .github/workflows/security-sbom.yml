@@ -1,0 +1,55 @@
+name: Security SBOM
+
+on:
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: '0 3 * * 0'  # 週次（日曜深夜）
+  workflow_dispatch:
+
+jobs:
+  sbom:
+    name: sbom-generation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Install dependencies
+        run: npm ci || pnpm i --frozen-lockfile || true
+      
+      - name: Generate CycloneDX SBOM
+        run: |
+          npm install -g @cyclonedx/cyclonedx-npm || true
+          cyclonedx-npm --output-file sbom-cyclonedx.json || echo "cyclonedx-npm failed"
+      
+      - name: Generate Trivy SBOM
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'cyclonedx'
+          output: 'sbom-trivy.json'
+        continue-on-error: true
+      
+      - name: Upload SBOM artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sbom-artifacts
+          path: |
+            sbom-cyclonedx.json
+            sbom-trivy.json
+          retention-days: 90
+      
+      - name: Upload SARIF
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: sbom-cyclonedx.json
+        continue-on-error: true
+

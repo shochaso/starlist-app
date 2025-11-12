@@ -1,0 +1,103 @@
+name: CI Weekly Report
+
+on:
+  schedule:
+    - cron: '0 0 * * 1'  # 週次（月曜深夜）
+  workflow_dispatch:
+
+jobs:
+  report:
+    name: ci-weekly-report
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Generate CI report
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: runs } = await github.rest.actions.listWorkflowRunsForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              per_page: 100,
+              created: `>${new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()}`
+            });
+            
+            const stats = {
+              total: runs.workflow_runs.length,
+              success: 0,
+              failure: 0,
+              cancelled: 0,
+              totalDuration: 0,
+              byWorkflow: {}
+            };
+            
+            for (const run of runs.workflow_runs) {
+              if (run.conclusion === 'success') stats.success++;
+              else if (run.conclusion === 'failure') stats.failure++;
+              else if (run.conclusion === 'cancelled') stats.cancelled++;
+              
+              if (run.updated_at && run.created_at) {
+                const duration = new Date(run.updated_at) - new Date(run.created_at);
+                stats.totalDuration += duration;
+              }
+              
+              const name = run.name || 'unknown';
+              if (!stats.byWorkflow[name]) {
+                stats.byWorkflow[name] = { total: 0, success: 0, failure: 0 };
+              }
+              stats.byWorkflow[name].total++;
+              if (run.conclusion === 'success') stats.byWorkflow[name].success++;
+              else if (run.conclusion === 'failure') stats.byWorkflow[name].failure++;
+            }
+            
+            const avgDuration = stats.total > 0 ? Math.round(stats.totalDuration / stats.total / 1000 / 60) : 0;
+            const successRate = stats.total > 0 ? Math.round((stats.success / stats.total) * 100) : 0;
+            
+            const report = `# CI Weekly Report
+
+Generated: ${new Date().toISOString()}
+
+## Summary
+
+- Total runs: ${stats.total}
+- Success: ${stats.success} (${successRate}%)
+- Failure: ${stats.failure}
+- Cancelled: ${stats.cancelled}
+- Average duration: ${avgDuration} minutes
+
+## By Workflow
+
+${Object.entries(stats.byWorkflow).map(([name, data]) => 
+  `### ${name}\n- Total: ${data.total}\n- Success: ${data.success}\n- Failure: ${data.failure}`
+).join('\n\n')}
+
+## Top Failed Workflows
+
+${Object.entries(stats.byWorkflow)
+  .filter(([_, data]) => data.failure > 0)
+  .sort((a, b) => b[1].failure - a[1].failure)
+  .slice(0, 5)
+  .map(([name, data]) => `- ${name}: ${data.failure} failures`)
+  .join('\n')}
+`;
+            
+            const fs = require('fs');
+            const path = require('path');
+            const reportPath = path.join(process.cwd(), 'docs/reports/ci-weekly.md');
+            fs.mkdirSync(path.dirname(reportPath), { recursive: true });
+            fs.writeFileSync(reportPath, report);
+            
+            return report;
+      
+      - name: Commit report
+        run: |
+          git config user.name "STARLIST CI"
+          git config user.email "ops@starlist.jp"
+          git add docs/reports/ci-weekly.md
+          git commit -m "chore: update CI weekly report" || exit 0
+          git push || exit 0
+

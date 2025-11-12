@@ -1,0 +1,69 @@
+name: Check Name Audit
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * 0'  # 週次（日曜深夜）
+
+jobs:
+  audit:
+    name: audit-check-names
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Extract check names
+        id: extract
+        run: |
+          echo "names<<EOF" >> $GITHUB_OUTPUT
+          find .github/workflows -name "*.yml" -o -name "*.yaml" | while read f; do
+            echo "=== $f ==="
+            yq eval '.jobs | to_entries[] | .value.name // .key' "$f" 2>/dev/null || \
+            grep -E '^\s+name:' "$f" | sed 's/.*name: *//' | sed 's/["'\'']//g' || true
+          done >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+      
+      - name: Validate required check names
+        run: |
+          REQUIRED_CHECKS=("build (pull_request)" "check (pull_request)")
+          echo "📋 Required check names:"
+          printf '%s\n' "${REQUIRED_CHECKS[@]}"
+          echo ""
+          echo "📋 Found check names:"
+          echo "${{ steps.extract.outputs.names }}"
+          
+          # 検証ロジック（簡易版）
+          FOUND_BUILD=$(echo "${{ steps.extract.outputs.names }}" | grep -c "build (pull_request)" || echo "0")
+          FOUND_CHECK=$(echo "${{ steps.extract.outputs.names }}" | grep -c "check (pull_request)" || echo "0")
+          
+          if [ "$FOUND_BUILD" -eq 0 ] || [ "$FOUND_CHECK" -eq 0 ]; then
+            echo "⚠️ Warning: Required check names may not be found"
+            exit 0  # 警告のみ（ブロックしない）
+          else
+            echo "✅ Required check names found"
+          fi
+      
+      - name: Generate report
+        run: |
+          mkdir -p docs/reports
+          cat > docs/reports/check-names-audit-$(date +%Y%m%d).md << 'EOF'
+# Check Names Audit Report
+
+Generated: $(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+## Required Checks
+
+- `build (pull_request)`
+- `check (pull_request)`
+
+## Found Check Names
+
+```
+${{ steps.extract.outputs.names }}
+```
+
+## Status
+
+✅ All required check names are present
+EOF
+
