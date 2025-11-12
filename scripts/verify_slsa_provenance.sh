@@ -88,3 +88,62 @@ echo "✅ 検証完了"
 echo "  - predicateType: $PREDICATE_TYPE"
 echo "  - SHA256: $SHA256"
 echo "  - Release Tag: ${PROVENANCE_TAG:-N/A}"
+
+# Supabase sync (if credentials available)
+if [ -n "${SUPABASE_URL:-}" ] && [ -n "${SUPABASE_SERVICE_KEY:-}" ]; then
+  echo ""
+  echo "📊 Supabase同期中..."
+  
+  PAYLOAD=$(cat <<EOF
+{
+  "app": "starlist",
+  "env": "prod",
+  "event": "slsa_provenance_verify",
+  "ok": true,
+  "latency_ms": null,
+  "extra": {
+    "run_id": ${RUN_ID},
+    "tag": "${PROVENANCE_TAG:-}",
+    "sha256": "${SHA256}",
+    "predicate_type": "${PREDICATE_TYPE}",
+    "status": "success"
+  }
+}
+EOF
+)
+  
+  curl -sS --fail --show-error --retry 3 --max-time 30 \
+    -H "Authorization: Bearer ${SUPABASE_SERVICE_KEY}" \
+    -H "apikey: ${SUPABASE_SERVICE_KEY}" \
+    -H "Content-Type: application/json" \
+    -X POST \
+    "${SUPABASE_URL}/functions/v1/telemetry" \
+    -d "$PAYLOAD" && echo "✅ Supabase同期完了" || echo "⚠️ Supabase同期失敗（非ブロッキング）"
+fi
+
+# Slack notification (if credentials available)
+if [ -n "${SUPABASE_URL:-}" ] && [ -n "${SUPABASE_ANON_KEY:-}" ]; then
+  echo ""
+  echo "📢 Slack通知送信中..."
+  
+  PAYLOAD=$(cat <<EOF
+{
+  "level": "info",
+  "title": "SLSA Provenance Verified",
+  "message": "Provenance verification successful for tag ${PROVENANCE_TAG:-unknown}",
+  "run_id": ${RUN_ID},
+  "tag": "${PROVENANCE_TAG:-}",
+  "sha256": "${SHA256}",
+  "source": "verify_slsa_provenance"
+}
+EOF
+)
+  
+  curl -sS --fail --show-error --retry 3 --max-time 30 \
+    -H "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
+    -H "apikey: ${SUPABASE_ANON_KEY}" \
+    -H "Content-Type: application/json" \
+    -X POST \
+    "${SUPABASE_URL}/functions/v1/ops-slack-notify" \
+    -d "$PAYLOAD" && echo "✅ Slack通知送信完了" || echo "⚠️ Slack通知失敗（非ブロッキング）"
+fi
