@@ -1,0 +1,69 @@
+name: Backport to LTS
+
+on:
+  pull_request:
+    types: [closed]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'PR number to backport'
+        required: true
+        type: string
+      target_branch:
+        description: 'Target branch (e.g., release/1.0)'
+        required: true
+        type: string
+
+jobs:
+  backport:
+    name: backport-to-lts
+    runs-on: ubuntu-latest
+    if: |
+      github.event.pull_request.merged == true &&
+      contains(github.event.pull_request.labels.*.name, 'backport-to-lts')
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Determine target branch
+        id: target
+        run: |
+          TARGET_BRANCH="${{ github.event.inputs.target_branch }}"
+          if [ -z "$TARGET_BRANCH" ]; then
+            # Extract from PR labels or default to release/latest
+            TARGET_BRANCH="release/$(date +%Y.%m)"
+          fi
+          echo "branch=$TARGET_BRANCH" >> $GITHUB_OUTPUT
+      
+      - name: Create backport branch
+        run: |
+          git config user.name "STARLIST CI"
+          git config user.email "ops@starlist.jp"
+          BACKPORT_BRANCH="backport/${{ github.event.pull_request.number }}-to-${{ steps.target.outputs.branch }}"
+          git checkout -b "$BACKPORT_BRANCH" "${{ steps.target.outputs.branch }}" || git checkout -b "$BACKPORT_BRANCH" origin/main
+          git cherry-pick -x "${{ github.event.pull_request.merge_commit_sha }}" || echo "Cherry-pick failed, manual intervention needed"
+      
+      - name: Create backport PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const backportBranch = `backport/${{ github.event.pull_request.number }}-to-${{ steps.target.outputs.branch }}`;
+            const targetBranch = '${{ steps.target.outputs.branch }}';
+            
+            await github.rest.pulls.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `[Backport] #${{ github.event.pull_request.number }} to ${targetBranch}`,
+              head: backportBranch,
+              base: targetBranch,
+              body: `Backport of #${{ github.event.pull_request.number }}\n\nOriginal PR: ${{ github.event.pull_request.html_url }}`
+            });
+      
+      - name: Push backport branch
+        run: |
+          git push origin "backport/${{ github.event.pull_request.number }}-to-${{ steps.target.outputs.branch }}"
+
