@@ -207,6 +207,11 @@ Once all three playbook cases complete end-to-end, this report should be updated
 
 ---
 
+## Evidence tracking
+
+- The `docs/reports/2025-11-13/_evidence_index.md` file lists every command, GIF URL, and API link we can point to while the workflows are waiting for `workflow_dispatch`.
+- Branch protection changes and the PR #61 comment (https://github.com/shochaso/starlist-app/pull/61#issuecomment-3522651640) are captured there as well so reviewers can follow the tracing chain.
+
 ## WS05: 3ケース実績追記
 
 **追記日時**: 2025-11-13
