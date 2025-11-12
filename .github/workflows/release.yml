@@ -3,7 +3,6 @@ name: Release (tag & GH release)
 on:
   push:
     branches: [main]
-<<<<<<< HEAD
   workflow_dispatch:
     inputs:
       tag_format:
@@ -14,8 +13,6 @@ on:
         options:
           - daily
           - weekly
-=======
->>>>>>> origin/main
 
 jobs:
   release:
@@ -25,7 +22,6 @@ jobs:
       contents: write    # tag・release作成に必要
     steps:
       - uses: actions/checkout@v4
-<<<<<<< HEAD
         with:
           fetch-depth: 0  # タグ作成に必要
       
@@ -51,28 +47,14 @@ jobs:
           echo "Tag format: $TAG_FORMAT"
           echo "Generated tag: $(cat .ver)"
       
-=======
-      - id: ver
-        run: |
-          date +"%Y.%m.%d.%H%M" | awk '{print "v"$1}' > .ver
-          echo "tag=$(cat .ver)" >> $GITHUB_OUTPUT
->>>>>>> origin/main
       - name: Create tag
         run: |
           git tag ${{ steps.ver.outputs.tag }}
           git push origin ${{ steps.ver.outputs.tag }}
-<<<<<<< HEAD
       
-=======
->>>>>>> origin/main
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.ver.outputs.tag }}
           generate_release_notes: true
-<<<<<<< HEAD
           draft: false
-
-=======
->>>>>>> origin/main
-
