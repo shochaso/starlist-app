@@ -4,3 +4,12 @@
 # セクション別に将来追加しやすく
 docs/** @shochaso
 .github/** @shochaso
+
+# クリティカル領域（UI/セキュリティ/CI）
+lib/src/features/**/ui/** @shochaso
+lib/src/features/**/widgets/** @shochaso
+**/security/** @shochaso
+**/secrets/** @shochaso
+.github/workflows/** @shochaso
+.github/CODEOWNERS @shochaso
+scripts/** @shochaso
