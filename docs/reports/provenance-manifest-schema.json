@@ -1,0 +1,59 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "SLSA Provenance Manifest Entry",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "required": ["run_id", "tag", "sha", "timestamp", "status"],
+    "properties": {
+      "run_id": {
+        "type": "integer",
+        "description": "GitHub Actions run ID"
+      },
+      "tag": {
+        "type": "string",
+        "pattern": "^v[0-9]+\\.[0-9]+\\.[0-9]+",
+        "description": "Release tag (e.g., v2025.11.12)"
+      },
+      "sha": {
+        "type": "string",
+        "pattern": "^[a-f0-9]{64}$",
+        "description": "SHA256 hash of provenance artifact"
+      },
+      "artifact_url": {
+        "type": "string",
+        "format": "uri",
+        "description": "URL to GitHub Actions artifact"
+      },
+      "actor": {
+        "type": "string",
+        "description": "GitHub actor who triggered the workflow"
+      },
+      "timestamp": {
+        "type": "string",
+        "format": "date-time",
+        "description": "ISO 8601 timestamp"
+      },
+      "status": {
+        "type": "string",
+        "enum": ["success", "failure", "skipped"],
+        "description": "Workflow run status"
+      },
+      "governance_flag": {
+        "type": "string",
+        "default": "provenance-ready",
+        "description": "Governance status flag"
+      },
+      "release_url": {
+        "type": "string",
+        "format": "uri",
+        "description": "URL to GitHub release"
+      },
+      "failure_reason": {
+        "type": "string",
+        "description": "Reason for failure (if status is failure)"
+      }
+    }
+  }
+}
+

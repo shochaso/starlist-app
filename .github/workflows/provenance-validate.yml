@@ -16,11 +16,11 @@ on:
         description: "Workflow run ID to validate"
         required: false
 
+# Workflow-level permissions (minimal)
 permissions:
   contents: read
   id-token: write
   attestations: read
-  issues: write
   actions: read
 
 concurrency:
@@ -30,6 +30,12 @@ concurrency:
 jobs:
   validate:
     runs-on: ubuntu-latest
+    # Per-job permissions (minimal)
+    permissions:
+      contents: read
+      id-token: write
+      attestations: read
+      actions: read
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -186,7 +192,9 @@ EOF
     concurrency:
       group: provenance-validate-notify-${{ github.run_id }}
       cancel-in-progress: false
+    # Per-job permissions for notifications
     permissions:
+      contents: read
       issues: write
     steps:
       - name: Resolve run ID and tag (for notification)
@@ -203,52 +211,70 @@ EOF
           echo "tag=${TAG:-unknown}" >> $GITHUB_OUTPUT
 
       - name: Create validation failure issue
+        id: create_issue
         uses: actions/github-script@v7
         with:
           script: |
             const runId = '${{ steps.resolve_notify.outputs.run_id }}';
             const tag = '${{ steps.resolve_notify.outputs.tag }}';
+            const validationRunId = '${{ github.run_id }}';
             const runUrl = `https://github.com/${{ github.repository }}/actions/runs/${runId}`;
+            const validationRunUrl = `https://github.com/${{ github.repository }}/actions/runs/${validationRunId}`;
             
             const issueBody = `## SLSA Provenance Validation Failure
             
-            **Validation Run ID**: ${{ github.run_id }}
+            **Validation Run ID**: ${validationRunId}
             **Provenance Run ID**: ${runId}
             **Tag**: ${tag}
             
             **Links**:
-            - [Validation Run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            - [Validation Run](${validationRunUrl})
             - [Provenance Run](${runUrl})
             
             **Failure Reason**: Predicate validation failed (predicateType, builder ID, or SHA256 mismatch).
             
+            **Next Steps**:
+            1. Check validation logs for specific failure reason
+            2. Verify provenance artifact integrity
+            3. Re-run provenance generation if needed
+            
             Please investigate and fix the provenance generation.
             `;
             
-            await github.rest.issues.create({
+            const issue = await github.rest.issues.create({
               owner: context.repo.owner,
               repo: context.repo.repo,
               title: `[SLSA] Validation failure for ${tag}`,
               body: issueBody,
               labels: ['ops-alert', 'provenance-validation-failure', 'automated']
             });
+            
+            core.setOutput('issue_number', issue.data.number);
+            core.setOutput('issue_url', issue.data.html_url);
 
-      - name: Notify Slack
+      - name: Notify Slack (dual alert)
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
         run: |
           TAG="${{ steps.resolve_notify.outputs.tag }}"
           RUN_ID="${{ steps.resolve_notify.outputs.run_id }}"
+          VALIDATION_RUN_ID="${{ github.run_id }}"
+          ISSUE_NUMBER="${{ steps.create_issue.outputs.issue_number }}"
+          ISSUE_URL="${{ steps.create_issue.outputs.issue_url }}"
           
           PAYLOAD=$(cat <<EOF
 {
   "level": "error",
   "title": "SLSA Provenance Validation Failure",
   "message": "Provenance validation failed for tag ${TAG}",
-  "run_id": ${RUN_ID},
+  "run_id": ${VALIDATION_RUN_ID},
+  "provenance_run_id": ${RUN_ID},
   "tag": "${TAG}",
-  "source": "provenance-validate"
+  "issue_number": ${ISSUE_NUMBER},
+  "issue_url": "${ISSUE_URL}",
+  "source": "provenance-validate",
+  "action_required": true
 }
 EOF
 )
