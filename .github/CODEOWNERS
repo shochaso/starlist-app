@@ -1,6 +1,14 @@
-# Default owner（将来メンバーを追記しやすい粒度）
+# CODEOWNERS: default owners; path-based owners can be added later
+
+# Example: /ui/ @ui-team
+
 * @shochaso
 
-# セクション別に将来追加しやすく
-docs/** @shochaso
-.github/** @shochaso
+# クリティカル領域（UI/セキュリティ/CI）
+lib/src/features/**/ui/** @shochaso
+lib/src/features/**/widgets/** @shochaso
+**/security/** @shochaso
+**/secrets/** @shochaso
+.github/workflows/** @shochaso
+.github/CODEOWNERS @shochaso
+scripts/** @shochaso

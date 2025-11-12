@@ -1,0 +1,32 @@
+# DORA metrics collection (periodic)
+
+name: dora-metrics
+
+on:
+  schedule:
+    - cron: '0 6 * * 1'  # weekly on Monday 06:00 UTC
+  workflow_dispatch:
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Fetch deployments & runs (example)
+        env:
+          REPO: shochaso/starlist-app
+        run: |
+          mkdir -p dora
+          # Example: use gh api to fetch deployments & runs; implement specific metric calculations as needed
+          gh api repos/$REPO/actions/runs --paginate -q '.workflow_runs[] | {id:.id,name:.name,conclusion:.conclusion,created_at:.created_at}' > dora/runs.json || true
+          # Add simple counts
+          jq -s ' {runs: add} ' dora/runs.json > dora/summary.json || true
+      
+      - name: Upload DORA artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dora-metrics
+          path: dora
+

@@ -1,0 +1,11 @@
+{
+  "freeze_windows": [
+    {
+      "start": "2025-11-12T00:00:00Z",
+      "end": "2025-11-13T00:00:00Z",
+      "reason": "governance test",
+      "scope": "all"
+    }
+  ],
+  "emergency_override": false
+}

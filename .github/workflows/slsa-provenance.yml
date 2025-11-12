@@ -1,0 +1,40 @@
+# Generate SLSA-like provenance for releases and attach as artifact
+
+name: slsa-provenance
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  provenance:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Gather release metadata
+        run: |
+          mkdir -p provenance
+          echo "{}" > provenance/provenance.json
+          # Minimal provenance skeleton; replace with your SLSA tool invocation
+          cat <<EOF > provenance/provenance.json
+{
+  "predicateType": "https://slsa.dev/provenance/v0.2",
+  "builder": { "id": "github-actions/rls-audit" },
+  "buildType": "https://github.com/shochaso/starlist-app/runs/release",
+  "invocation": {
+    "environment": "github",
+    "workflow": "${{ github.workflow }}",
+    "run_id": "${{ github.run_id }}",
+    "release": "${{ github.event.release.tag_name }}"
+  }
+}
+EOF
+      
+      - name: Upload provenance
+        uses: actions/upload-artifact@v4
+        with:
+          name: provenance-${{ github.event.release.tag_name }}
+          path: provenance/provenance.json
+

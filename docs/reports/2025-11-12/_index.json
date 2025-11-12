@@ -1,0 +1,45 @@
+{
+  "generated": "2025-11-12T14:31:19Z",
+  "items": [
+    {
+      "path": "./SUMMARY.md",
+      "type": "markdown"
+    },
+    {
+      "path": "./_index.json",
+      "type": "json"
+    },
+    {
+      "path": "./ci/ci_weekly_report.md",
+      "type": "markdown"
+    },
+    {
+      "path": "./ci/flaky_tests.csv",
+      "type": "csv"
+    },
+    {
+      "path": "./governance/admin_bypass.csv",
+      "type": "csv"
+    },
+    {
+      "path": "./governance/permissions_audit.md",
+      "type": "markdown"
+    },
+    {
+      "path": "./governance/required_checks.json",
+      "type": "json"
+    },
+    {
+      "path": "./governance/revert_dryrun.log",
+      "type": "log"
+    },
+    {
+      "path": "./killswitch_test.md",
+      "type": "markdown"
+    },
+    {
+      "path": "./release_check.txt",
+      "type": "text"
+    }
+  ]
+}

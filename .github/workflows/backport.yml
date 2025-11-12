@@ -1,0 +1,44 @@
+# Backport automation: when a PR has label backport-to:release/X, create PR to that branch
+
+name: backport
+
+on:
+  pull_request:
+    types: [closed]
+
+jobs:
+  backport:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Check labels
+        id: check_labels
+        run: |
+          LABELS=$(jq -r '.pull_request.labels[]?.name' < "$GITHUB_EVENT_PATH" | grep -E '^backport-to:' || echo "")
+          if [ -n "$LABELS" ]; then
+            echo "backport_needed=true" >> $GITHUB_OUTPUT
+            echo "$LABELS" | head -1 > backport_target.txt
+            echo "Backport label found: $(cat backport_target.txt)"
+          else
+            echo "backport_needed=false" >> $GITHUB_OUTPUT
+            echo "No backport label found"
+          fi
+      
+      - name: Create backport PR(s)
+        if: steps.check_labels.outputs.backport_needed == 'true'
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "Backport: ${{ github.event.pull_request.title }} (#${{ github.event.pull_request.number }})"
+          base: "$(cat backport_target.txt | cut -d: -f2)"
+          head: "${{ github.event.pull_request.head.ref }}-backport"
+          title: "Backport: ${{ github.event.pull_request.title }}"
+          body: "Automated backport of #${{ github.event.pull_request.number }}
+
+Original PR: ${{ github.event.pull_request.html_url }}"

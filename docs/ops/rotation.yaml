@@ -1,0 +1,38 @@
+# On-Call Rotation
+
+## スケジュール
+
+### 2025年11月
+- Week 1-2: @shochaso
+- Week 3-4: @shochaso
+
+### 2025年12月
+- Week 1-2: @shochaso
+- Week 3-4: @shochaso
+
+## ローテーションルール
+
+- 週次ローテーション
+- 2週間単位
+- 休日・祝日は次の担当者に引き継ぎ
+
+## エスカレーションパス
+
+1. Primary On-Call
+2. Secondary On-Call
+3. Engineering Manager
+4. CTO
+
+## 連絡方法
+
+- Slack: #incidents
+- Email: incidents@starlist.jp
+- PagerDuty: (設定後)
+
+## 責任範囲
+
+- インシデント対応
+- 監視アラート対応
+- デプロイ監視
+- 週次レポート作成
+

@@ -13,6 +13,16 @@ on:
         options:
           - daily
           - weekly
+      enable_signing:
+        description: 'Enable GPG signing'
+        required: false
+        default: 'true'
+        type: boolean
+      dry_run:
+        description: 'Dry-run mode (verify only)'
+        required: false
+        default: 'false'
+        type: boolean
 
 jobs:
   release:
@@ -31,7 +41,41 @@ jobs:
           git config user.name "STARLIST CI"
           git config user.email "ops@starlist.jp"
       
+      - name: Check freeze window
+        id: freeze_check
+        run: |
+          if [ -f "release/freeze_window.json" ]; then
+            FREEZE_DATA=$(cat release/freeze_window.json)
+            OVERRIDE=$(echo "$FREEZE_DATA" | jq -r '.emergency_override // false')
+            if [ "$OVERRIDE" = "true" ]; then
+              echo "freeze_skip=false" >> $GITHUB_OUTPUT
+              echo "freeze_reason=" >> $GITHUB_OUTPUT
+            else
+              NOW=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+              FREEZE_WINDOWS=$(echo "$FREEZE_DATA" | jq -r '.freeze_windows[]? | select(.start <= "'"$NOW"'" and .end >= "'"$NOW"'")')
+              if [ -n "$FREEZE_WINDOWS" ]; then
+                REASON=$(echo "$FREEZE_WINDOWS" | jq -r '.reason // "Freeze window active"')
+                echo "freeze_skip=true" >> $GITHUB_OUTPUT
+                echo "freeze_reason=$REASON" >> $GITHUB_OUTPUT
+                echo "⚠️ Release skipped: $REASON"
+              else
+                echo "freeze_skip=false" >> $GITHUB_OUTPUT
+                echo "freeze_reason=" >> $GITHUB_OUTPUT
+              fi
+            fi
+          else
+            echo "freeze_skip=false" >> $GITHUB_OUTPUT
+            echo "freeze_reason=" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Skip release if freeze window active
+        if: steps.freeze_check.outputs.freeze_skip == 'true'
+        run: |
+          echo "::warning::Release skipped due to freeze window: ${{ steps.freeze_check.outputs.freeze_reason }}"
+          exit 0
+      
       - id: ver
+        if: steps.freeze_check.outputs.freeze_skip != 'true'
         run: |
           TAG_FORMAT="${{ github.event.inputs.tag_format || 'daily' }}"
           if [ "$TAG_FORMAT" = "weekly" ]; then
@@ -48,11 +92,42 @@ jobs:
           echo "Generated tag: $(cat .ver)"
       
       - name: Create tag
+        id: create_tag
+        if: steps.freeze_check.outputs.freeze_skip != 'true'
         run: |
           git tag ${{ steps.ver.outputs.tag }}
+          echo "tag_created=${{ steps.ver.outputs.tag }}" >> $GITHUB_OUTPUT
+      
+      - name: Sign tag (GPG)
+        if: steps.freeze_check.outputs.freeze_skip != 'true' && env.ENABLE_SIGNING != 'false'
+        env:
+          ENABLE_SIGNING: ${{ inputs.enable_signing || 'true' }}
+          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+        run: |
+          if [ "$ENABLE_SIGNING" = "true" ] && [ -n "$GPG_PRIVATE_KEY" ]; then
+            echo "$GPG_PRIVATE_KEY" | gpg --import --batch --yes || true
+            git tag -s -m "Release ${{ steps.ver.outputs.tag }}" ${{ steps.ver.outputs.tag }} -f || echo "GPG signing failed, using unsigned tag"
+          else
+            echo "GPG signing skipped (dry-run or keys not configured)"
+          fi
+      
+      - name: Verify tag signature (dry-run)
+        if: steps.freeze_check.outputs.freeze_skip != 'true' && env.DRY_RUN == 'true'
+        env:
+          DRY_RUN: ${{ inputs.dry_run || 'false' }}
+        run: |
+          if [ "$DRY_RUN" = "true" ]; then
+            git verify-tag ${{ steps.ver.outputs.tag }} || echo "Tag verification skipped in dry-run mode"
+          fi
+      
+      - name: Push tag
+        if: steps.freeze_check.outputs.freeze_skip != 'true'
+        run: |
           git push origin ${{ steps.ver.outputs.tag }}
       
       - name: Create GitHub Release
+        if: steps.freeze_check.outputs.freeze_skip != 'true'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.ver.outputs.tag }}
