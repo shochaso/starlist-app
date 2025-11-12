@@ -1,6 +1,10 @@
 name: extended-security
 
 on:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
   pull_request:
     branches: [ main ]
   push:

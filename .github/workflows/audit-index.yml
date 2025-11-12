@@ -3,6 +3,10 @@
 name: audit-index
 
 on:
+
+concurrency:
+  group: schedule-${{ github.workflow }}
+  cancel-in-progress: true
   schedule:
     - cron: '0 2 * * *'  # daily
   workflow_dispatch:

@@ -3,6 +3,10 @@
 name: dora-metrics
 
 on:
+
+concurrency:
+  group: schedule-${{ github.workflow }}
+  cancel-in-progress: true
   schedule:
     - cron: '0 6 * * 1'  # weekly on Monday 06:00 UTC
   workflow_dispatch:

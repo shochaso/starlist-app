@@ -1,6 +1,10 @@
 name: CI Weekly Report
 
 on:
+
+concurrency:
+  group: schedule-${{ github.workflow }}
+  cancel-in-progress: true
   schedule:
     - cron: '0 0 * * 1'  # 週次（月曜深夜）
   workflow_dispatch:
