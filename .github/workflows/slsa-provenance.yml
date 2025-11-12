@@ -3,19 +3,19 @@
 name: slsa-provenance
 
 on:
-  release:
-    types: [published]
   workflow_dispatch:
     inputs:
       tag:
-        description: "Tag name to generate provenance for"
+        description: "Release tag (e.g., v2025.11.12)"
         required: true
-        type: string
+  release:
+    types: [published]
 
 permissions:
   contents: read
   id-token: write
   attestations: write
+  actions: write
 
 concurrency:
   group: slsa-${{ github.ref }}
@@ -68,8 +68,9 @@ jobs:
         run: |
           TAG="${{ steps.resolve_tag.outputs.tag }}"
           echo "Generating provenance for $TAG"
-          mkdir -p artifacts
-          cat <<EOF > "artifacts/provenance-${TAG}.json"
+          PROVENANCE_DIR="artifacts/slsa/${TAG}"
+          mkdir -p "$PROVENANCE_DIR"
+          cat <<EOF > "$PROVENANCE_DIR/provenance-${TAG}.json"
 {
   "predicateType": "https://slsa.dev/provenance/v0.2",
   "builder": { "id": "github-actions/slsa-provenance" },
@@ -91,14 +92,14 @@ jobs:
 }
 EOF
           echo "Provenance size:"
-          wc -c "artifacts/provenance-${TAG}.json" || true
+          wc -c "$PROVENANCE_DIR/provenance-${TAG}.json" || true
           echo "Provenance content:"
-          cat "artifacts/provenance-${TAG}.json"
+          cat "$PROVENANCE_DIR/provenance-${TAG}.json"
 
       - name: Upload artifact
         if: steps.resolve_tag.outputs.skip != 'true'
         uses: actions/upload-artifact@v4
         with:
           name: "provenance-${{ steps.resolve_tag.outputs.tag }}"
-          path: "artifacts/provenance-${{ steps.resolve_tag.outputs.tag }}.json"
+          path: "artifacts/slsa/${{ steps.resolve_tag.outputs.tag }}/provenance-${{ steps.resolve_tag.outputs.tag }}.json"
           retention-days: 90

@@ -27,6 +27,8 @@ on:
 jobs:
   release:
     name: release (main)
+    outputs:
+      release_tag: ${{ steps.ver.outputs.tag }}
     runs-on: ubuntu-latest
     permissions:
       contents: write    # tag・release作成に必要
@@ -139,10 +141,12 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
+            const dispatchTag = "${{ steps.ver.outputs.tag }}";
+            console.log(`Dispatching slsa-provenance for ${dispatchTag}`);
             await github.rest.actions.createWorkflowDispatch({
               owner: context.repo.owner,
               repo: context.repo.repo,
               workflow_id: "slsa-provenance.yml",
               ref: "main",
-              inputs: { tag: "${{ steps.ver.outputs.tag }}" }
+              inputs: { tag: dispatchTag }
             })
