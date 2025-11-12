@@ -1,35 +1,56 @@
-# Generate SLSA-like provenance for releases and attach as artifact
+# Debug-enabled SLSA provenance workflow
 
 name: slsa-provenance
 
 on:
   release:
     types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  id-token: write
+  packages: write
 
 jobs:
   provenance:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      id-token: write
     steps:
-      - name: Checkout
+      - name: Checkout (full)
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      
-      - name: Debug event context
+
+      - name: Debug: dump event and env
         run: |
-          echo "GITHUB_EVENT_NAME=$GITHUB_EVENT_NAME"
-          echo "Release tag: ${{ github.event.release.tag_name }}"
-          jq -r '.release.tag_name // empty' < "$GITHUB_EVENT_PATH" || echo "No release tag found"
-      
+          echo "=== GITHUB CONTEXT ==="
+          jq . <<< "${{ toJson(github) }}" || true
+          echo "=== GITHUB_EVENT (raw) ==="
+          jq . < $GITHUB_EVENT_PATH || true
+          echo "=== Release tag (jq) ==="
+          jq -r '.release.tag_name // "NO_TAG_FOUND"' $GITHUB_EVENT_PATH || true
+          echo "=== runner env summary ==="
+          env | sort
+          echo "=== which & versions ==="
+          which git || true
+          git --version || true
+          if command -v cosign >/dev/null 2>&1; then cosign version || true; fi
+          if command -v sbom-tool >/dev/null 2>&1; then sbom-tool --version || true; fi
+
+      - name: Ensure tools / creds (debug)
+        run: |
+          echo "GITHUB_TOKEN: exists -> ${GITHUB_TOKEN:+yes}"  # do not echo token
+          # show minimal API access check (non-sensitive)
+          gh auth status || true
+          # show current permissions granted to GITHUB_TOKEN (best-effort)
+          gh api /rate_limit || true
+
       - name: Determine release tag
         id: tag
         run: |
           TAG="${{ github.event.release.tag_name }}"
           if [ -z "$TAG" ]; then
-            # Fallback: get latest tag from git
+            echo "⚠️ github.event.release.tag_name is empty, trying git describe..."
             TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
           fi
           if [ -z "$TAG" ]; then
@@ -39,12 +60,14 @@ jobs:
             echo "tag=$TAG" >> $GITHUB_OUTPUT
             echo "✅ Using tag: $TAG"
           fi
-      
-      - name: Gather release metadata
+
+      - name: Run provenance generation (real step)
         if: steps.tag.outputs.skip != 'true'
         run: |
-          mkdir -p provenance
+          set -euo pipefail
           TAG="${{ steps.tag.outputs.tag }}"
+          echo "Generating minimal provenance for tag: $TAG"
+          mkdir -p provenance
           cat <<EOF > provenance/provenance.json
 {
   "predicateType": "https://slsa.dev/provenance/v0.2",
@@ -66,13 +89,15 @@ jobs:
   }
 }
 EOF
-          cat provenance/provenance.json
-      
-      - name: Upload provenance
+          echo "Provenance size:"
+          wc -c provenance/provenance.json || true
+          echo "Provenance content (first lines):"
+          head -n 200 provenance/provenance.json || true
+
+      - name: Upload provenance artifact
         if: steps.tag.outputs.skip != 'true'
         uses: actions/upload-artifact@v4
         with:
           name: provenance-${{ steps.tag.outputs.tag }}
           path: provenance/provenance.json
           retention-days: 90
-
