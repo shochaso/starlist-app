@@ -20,6 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+<<<<<<< HEAD
       
       # WS-7: デバイス固定をジョブ先頭に宣言
       - name: Set Flutter device
@@ -58,3 +59,11 @@ jobs:
       
       - name: Run startup trace
         run: flutter run -d ${{ env.FLUTTER_DEVICE }} --trace-startup --profile --target lib/main.dart
+=======
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+      - run: flutter doctor -v
+      - run: flutter devices
+      - run: flutter run -d web-server --trace-startup --profile --target lib/main.dart
+>>>>>>> origin/main

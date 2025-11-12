@@ -1,0 +1,13 @@
+{
+  "data": {
+    "issueCreate": {
+      "success": true,
+      "issue": {
+        "id": "fe3c4f93-d2ce-42d9-9d43-d016aacdb658",
+        "identifier": "STA-11",
+        "title": "Smoke: API call sanity (final)",
+        "url": "https://linear.app/starlist-app/issue/STA-11/smoke-api-call-sanity-final"
+      }
+    }
+  }
+}
