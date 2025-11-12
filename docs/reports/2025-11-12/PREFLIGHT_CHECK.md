@@ -1,6 +1,6 @@
 # Preflight Check Results
 
-**Date**: 2025-11-13 (UTC)
+**Date**: 2025-11-13 (UTC) / $(TZ=Asia/Tokyo date +%Y-%m-%d\ %H:%M:%S\ %z) (JST)
 **Collector**: Cursor AI
 
 ---
@@ -11,15 +11,26 @@
 ```bash
 grep -n "workflow_dispatch" .github/workflows/slsa-provenance.yml
 ```
-**Result**: [実行結果]
+**Result**: 
+```
+6:  workflow_dispatch:
+7:  workflow_dispatch:
+```
+✅ workflow_dispatch configured with inputs
 
 ### provenance-validate.yml
 ```bash
 grep -n "workflow_dispatch" .github/workflows/provenance-validate.yml
 ```
-**Result**: [実行結果]
+**Result**:
+```
+7:  workflow_dispatch:
+```
+✅ workflow_dispatch configured with inputs
 
 **Status**: ✅ Both workflows have workflow_dispatch configured
+
+**Note**: ⚠️ GitHub may not recognize workflow_dispatch on feature branch immediately. Use GitHub UI or merge PR first.
 
 ---
 
@@ -30,17 +41,21 @@ gh secret list --repo shochaso/starlist-app | grep -E "SUPABASE_URL|SUPABASE_SER
 ```
 
 **Result**: 
-- SUPABASE_URL: [記録待ち]
-- SUPABASE_SERVICE_KEY: [記録待ち]
-- SLACK_WEBHOOK_URL: [記録待ち]
+- SUPABASE_URL: ✅ Found (created: 2025-11-08T06:37:57Z)
+- SUPABASE_SERVICE_KEY: ❌ Not found
+- SLACK_WEBHOOK_URL: ❌ Not found
 
-**Status**: ⏸️ Secrets not configured (will skip Supabase/Slack verification)
+**Status**: ⚠️ Partial configuration (SUPABASE_URL only)
+
+**Impact**: 
+- Supabase queries may work if SERVICE_KEY is set in workflow secrets
+- Slack verification will be skipped
 
 ---
 
 ## C. Report Directory
 
-**REPORT_DIR**: `docs/reports/2025-11-13`
+**REPORT_DIR**: `docs/reports/2025-11-12`
 **Status**: ✅ Created
 
 **Subdirectories**:
@@ -48,13 +63,50 @@ gh secret list --repo shochaso/starlist-app | grep -E "SUPABASE_URL|SUPABASE_SER
 - `artifacts/` - ✅ Created
 - `observer/` - ✅ Created
 
+**Full Path**: `/Users/shochaso/Downloads/starlist-appのコピー/$REPORT_DIR`
+
+---
+
+## D. Branch Protection Check
+
+```bash
+gh api repos/shochaso/starlist-app/branches/main/protection --jq '.required_status_checks.contexts'
+```
+
+**Result**: `["provenance-validate"]`
+
+**Status**: ✅ provenance-validate is required check
+
 ---
 
 ## Execution Readiness
 
 - [x] workflow_dispatch configured
-- [ ] Secrets configured (optional)
+- [x] SUPABASE_URL secret found
+- [ ] SUPABASE_SERVICE_KEY secret (check in workflow context)
+- [ ] SLACK_WEBHOOK_URL secret (optional)
 - [x] Report directories created
 - [x] Execution commands prepared
+- [x] Branch protection configured
 
 **Next Step**: Execute workflows via GitHub UI or wait for PR merge
+
+---
+
+## Recommended Execution Method
+
+Due to workflow_dispatch recognition issues on feature branch:
+
+1. **Option 1**: Merge PR to `main` (recommended)
+   - Enables workflow_dispatch recognition
+   - Allows CLI execution
+
+2. **Option 2**: Use GitHub UI
+   - Navigate to Actions → Workflows
+   - Click "Run workflow"
+   - Select branch and inputs
+   - Execute manually
+
+---
+
+**Last Updated**: 2025-11-13 (UTC)
