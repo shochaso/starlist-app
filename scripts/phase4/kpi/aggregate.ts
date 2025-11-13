@@ -6,7 +6,7 @@
 
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import { jstFolderNameForToday, nowUtcIso } from '../../lib/phase4/time';
+import { jstFolderNameForToday, nowUtcIso } from '../../../lib/phase4/time';
 
 interface RunSummary {
   run_id: number;

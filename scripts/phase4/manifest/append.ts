@@ -91,20 +91,20 @@ export async function atomicAppendManifest(
       // Append new entry
       existing.push(entry);
 
-      // Write to temp file with fsync for durability
-      const tmpContent = JSON.stringify(existing, null, 2) + '\n';
-      const tmpHandle = await fs.open(tmpPath, 'w');
-      try {
-        await tmpHandle.write(tmpContent, 0, 'utf-8');
-        // Fsync to ensure data is written to disk before rename
-        try {
-          await tmpHandle.sync();
-        } catch (fsyncError) {
-          // Continue even if fsync fails - rename will still be atomic
-        }
-      } finally {
-        await tmpHandle.close();
-      }
+            // Write to temp file with fsync for durability
+            const tmpContent = JSON.stringify(existing, null, 2) + '\n';
+            await fs.writeFile(tmpPath, tmpContent, 'utf-8');
+            // Fsync for durability (if file handle available)
+            try {
+              const tmpHandle = await fs.open(tmpPath, 'r+');
+              try {
+                await tmpHandle.sync();
+              } finally {
+                await tmpHandle.close();
+              }
+            } catch {
+              // Continue even if fsync fails - rename will still be atomic
+            }
 
       // Validate JSON before atomic move
       const validationContent = await fs.readFile(tmpPath, 'utf-8');

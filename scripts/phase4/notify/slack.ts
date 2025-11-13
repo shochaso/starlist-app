@@ -6,7 +6,7 @@
 
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import { nowUtcIso } from '../../lib/phase4/time';
+import { nowUtcIso } from '../../../lib/phase4/time';
 
 /**
  * Write masked Slack excerpt to file

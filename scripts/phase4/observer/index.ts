@@ -11,7 +11,7 @@ import { execSync } from 'child_process';
 import { atomicAppendManifest, ManifestEntry } from '../manifest/append';
 import { upsertByRunId, TelemetryEntry } from '../telemetry/telemetry';
 import { writeMaskedSlackExcerpt, extractHttpStatus } from '../notify/slack';
-import { jstFolderNameForToday, nowUtcIso } from '../../lib/phase4/time';
+import { jstFolderNameForToday, nowUtcIso } from '../../../lib/phase4/time';
 import { compare, computeSha256 } from '../sha-compare';
 
 interface ObserverConfig {

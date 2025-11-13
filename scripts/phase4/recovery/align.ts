@@ -7,7 +7,7 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { upsertByRunId, TelemetryEntry } from '../telemetry/telemetry';
-import { nowUtcIso } from '../../lib/phase4/time';
+import { nowUtcIso } from '../../../lib/phase4/time';
 
 interface AlignmentResult {
   recovery_required: boolean;
