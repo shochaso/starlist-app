@@ -1,12 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import dynamic from "next/dynamic";
 import Link from "next/link";
-import type { AuditKPI } from "@/types/audit";
-import KPIStat from "@/components/kpi/KPIStat";
-
-const TrendChart = dynamic(() => import("@/components/kpi/TrendChart"), { ssr: false });
+import type { AuditKPI } from "../../../types/audit.ts";
+import KPIStat from "../../components/kpi/KPIStat.tsx";
+import TrendChart from "../../components/kpi/TrendChart.tsx";
 
 function calculateVerdict(value: number, mean: number, stdDev: number): "pass" | "warning" | "fail" {
   const diff = Math.abs(value - mean);

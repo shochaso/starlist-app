@@ -21,7 +21,8 @@
       "@/components/*": ["./app/components/*"],
       "@/components/kpi/*": ["./app/components/kpi/*"],
       "@/types/*": ["./types/*"]
-    }
+    },
+    "allowImportingTsExtensions": true
   },
   "include": ["next-env.d.ts", "app/**/*", "components/**/*", "types/**/*", ".next/types/**/*.ts"],
   "exclude": [

@@ -95,7 +95,7 @@ export async function atomicAppendManifest(
       const tmpContent = JSON.stringify(existing, null, 2) + '\n';
       const tmpHandle = await fs.open(tmpPath, 'w');
       try {
-        await tmpHandle.writeFile(tmpContent, 'utf-8');
+        await tmpHandle.write(tmpContent, 0, 'utf-8');
         // Fsync to ensure data is written to disk before rename
         try {
           await tmpHandle.sync();
