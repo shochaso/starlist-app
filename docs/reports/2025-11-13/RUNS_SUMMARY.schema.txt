@@ -1,0 +1,29 @@
+RUNS_SUMMARY (Phase 3 Manual Dispatch) – Schema Guidance
+Last updated (UTC): 2025-11-12T15:05:00Z
+
+How to use during 2025-11-13 event:
+  1. 各手動ラン完了後、下記フィールドを JSON 配列のエントリとして追加。
+  2. 時刻は `run_started_at_utc` / `run_completed_at_utc` の双方を ISO8601 (Z) 形式で記録。
+  3. `sha_parity` は `phase4-sha-compare.sh` の結果を true/false で反映。
+
+Required fields per entry:
+  - run_id (string)               : GitHub Actions run ID。必ず一意。
+  - tag (string|null)             : 手動指定したタグ。タグ無しの場合は null。
+  - status (string)               : success / failure / cancelled。
+  - trigger_mode (string)         : manual_dispatch 固定。
+  - sha_parity (boolean)          : Provenance metadata SHA とアーティファクトの一致可否。
+  - retries (integer)             : 手動リトライ回数。Phase3 では 0 または 1 を想定。
+  - run_started_at_utc (string)   : ISO8601 timestamp (例: 2025-11-13T03:00:00Z)。
+  - run_completed_at_utc (string) : ISO8601 timestamp。
+  - prov_sha (string)             : Provenance 側 SHA256。40+ 文字の hex。
+  - computed_sha (string)         : アーティファクトから算出した SHA256。
+  - observer_notes (string)       : Phase3 オブザーバーからの短い補足（英数字のみ）。
+
+Optional fields:
+  - window_days (integer)         : Phase4 オブザーバーに渡す観測対象期間 (デフォルト 7)。
+  - audit_ticket_id (string)      : 外部チケットシステムとの連携 ID。
+
+Validation:
+  - JSON スキーマ検証は `jq type` と `jq has("<field>")` で最小限実施。
+  - `status` は `["success","failure","cancelled"]` のみ許可。
+  - `sha_parity` が false の場合、`observer_notes` に理由を記載すること。

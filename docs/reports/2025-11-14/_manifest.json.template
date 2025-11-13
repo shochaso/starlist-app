@@ -1,0 +1,14 @@
+{
+  "//": "Phase 4 manifest template. 使用時は atomic append 手順に従い、TMP ファイルを mv してください。",
+  "generated_at_utc": "2025-11-12T15:26:00Z",
+  "entries": [
+    {
+      "run_id": "1234567890",
+      "artifact_path": "docs/reports/2025-11-14/artifacts/1234567890/",
+      "evidence_type": "provenance",
+      "recorded_at_utc": "2025-11-14T04:00:00Z",
+      "sha_parity": true,
+      "notes": "Sample placeholder entry – remove before use."
+    }
+  ]
+}

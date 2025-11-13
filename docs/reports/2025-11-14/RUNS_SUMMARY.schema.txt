@@ -1,0 +1,32 @@
+RUNS_SUMMARY (Phase 4 Auto Audit) – Schema Guidance
+Last updated (UTC): 2025-11-12T15:20:00Z
+
+How to use during 2025-11-14 event:
+  1. Phase 3 手動結果を取り込み後、自動オブザーバーが対象期間のランを追記します。
+  2. `phase4-auto-collect.sh` でラン単位の JSON エントリを生成し、`phase4-manifest-atomic.sh` を通じて整合性を保つ。
+  3. 変更後は `jq '.'` でフォーマット整形し、`AUTO_OBSERVER_SUMMARY.md` にハッシュを記載。
+
+Required fields:
+  - run_id (string)                : GitHub Actions run ID (unique, stable)。
+  - trigger_mode (string)          : manual_dispatch / scheduled / retry。
+  - status (string)                : success / failure / cancelled。
+  - sha_parity (boolean)           : `phase4-sha-compare.sh` の結果。
+  - retries (integer)              : 該当ランで実行されたリトライ回数。
+  - retry_origin (string|null)     : どのトリガーでリトライされたか (例: observer-auto)。
+  - run_started_at_utc (string)    : ISO8601 timestamp。
+  - run_completed_at_utc (string)  : ISO8601 timestamp。
+  - duration_sec (number)          : 実行時間(秒)。小数可。
+  - prov_sha (string)              : Provenance SHA256。
+  - computed_sha (string)          : ローカル計算 SHA256。
+  - observer_run_id (string)       : 監査ジョブの run_id。
+  - observer_notes (string)        : 監査コメント (英数字+制御外記号)。
+
+Optional fields:
+  - window_days (integer)          : オブザーバーの対象期間。
+  - retry_exhausted (boolean)      : ポリシー上限に達した場合 true。
+  - supabase_response_code (integer): Supabase upsert の HTTP コード。
+
+Validation hints:
+  - `run_started_at_utc <= run_completed_at_utc` を検証。
+  - `sha_parity=false` の場合、`observer_notes`で理由を説明。
+  - `duration_sec` は 0 より大きい数値。

@@ -1,0 +1,59 @@
+name: phase4-retry-guard
+
+on:
+  workflow_dispatch:
+    inputs:
+      policy_version:
+        description: "Retry policy revision to validate (default: phase4-v1)"
+        required: false
+        default: "phase4-v1"
+
+permissions:
+  contents: read
+
+jobs:
+  lint-policy-definition:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Ensure retry policy document enumerates required status classes
+        run: |
+          set -euo pipefail
+          POLICY="docs/ops/phase4-retry-policy.md"
+          for code in "422" "403" "429" "500-504"; do
+            if ! grep -q "$code" "$POLICY"; then
+              echo "::error::Missing HTTP status reference '$code' in $POLICY"
+              exit 1
+            fi
+          done
+          echo "Policy document contains required status references."
+
+  verify-enforcement-script:
+    runs-on: ubuntu-latest
+    needs:
+      - lint-policy-definition
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Placeholder - ensure retry enforcement scripts follow policy
+        run: |
+          echo "Retry enforcement verification placeholder."
+          echo "Once scripts/phase4-auto-collect.sh and related helpers are implemented,"
+          echo "add automated checks here to confirm 5xx-only retry logic."
+
+  shellcheck-phase4:
+    runs-on: ubuntu-latest
+    needs:
+      - lint-policy-definition
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install shellcheck
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y shellcheck
+
+      - name: Run shellcheck on Phase 4 scripts
+        run: |
+          shellcheck scripts/phase4-auto-collect.sh scripts/phase4-sha-compare.sh scripts/phase4-observer-report.sh scripts/phase4-manifest-atomic.sh scripts/phase4-supabase-upsert.sh
