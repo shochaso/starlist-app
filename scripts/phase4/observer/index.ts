@@ -181,8 +181,45 @@ async function upsertToSupabase(
     validator_verdict: entry.validator_verdict,
   };
 
-  const result = await upsertByRunId(telemetryEntry, supabaseUrl, supabaseServiceKey);
-  return result.status === 'ok';
+  // Wrap telemetry upsert in retry for transient failures
+  const { retry } = await import('../../lib/phase4/retry');
+  
+  const retryResult = await retry(async () => {
+    const result = await upsertByRunId(telemetryEntry, supabaseUrl, supabaseServiceKey);
+    if (result.status === 'error') {
+      throw new Error(result.message || 'Telemetry upsert failed');
+    }
+    return result;
+  });
+
+  if (retryResult.success) {
+    const result = retryResult.result!;
+    if (result.status === 'ci-guard-required') {
+      console.info(JSON.stringify({
+        event: 'telemetrySkipped',
+        run_id: entry.run_id,
+        reason: 'SUPABASE_SERVICE_KEY not set',
+        timestamp: nowUtcIso(),
+      }));
+      return false;
+    }
+    console.info(JSON.stringify({
+      event: 'telemetryUpsert',
+      run_id: entry.run_id,
+      status: result.status,
+      timestamp: nowUtcIso(),
+    }));
+    return result.status === 'ok';
+  } else {
+    console.warn(JSON.stringify({
+      event: 'telemetryError',
+      run_id: entry.run_id,
+      error: retryResult.error?.message || 'Unknown error',
+      attempts: retryResult.attempts,
+      timestamp: nowUtcIso(),
+    }));
+    return false;
+  }
 }
 
 async function appendManifestAtomically(
@@ -191,7 +228,13 @@ async function appendManifestAtomically(
 ): Promise<void> {
   const result = await atomicAppendManifest(entry, manifestPath);
   if (!result.success && result.error?.startsWith('duplicate-run-id:')) {
-    console.warn(`Run ${entry.run_id} already in manifest, skipping`);
+    // Handle duplicate gracefully - log and continue
+    console.info(JSON.stringify({
+      event: 'manifestDuplicate',
+      run_id: entry.run_id,
+      note: 'Run already in manifest, skipping append',
+      timestamp: nowUtcIso(),
+    }));
   } else if (!result.success) {
     throw new Error(`Failed to append manifest: ${result.error}`);
   }

@@ -73,7 +73,7 @@ describe('SHA Compare', () => {
 
   it('should handle missing metadata gracefully', async () => {
     const artifactFile = path.join(testDir, 'artifact.bin');
-    await fs.writeFile(artifactFile, 'content', 'utf-8');
+    await fs.writeFile(artifactFile, Buffer.from('content'), 'utf-8');
 
     const provFile = path.join(testDir, 'provenance.json');
     const provenance = {

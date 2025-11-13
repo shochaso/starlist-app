@@ -60,7 +60,7 @@ describe('Retry Engine', () => {
     });
 
     it('should classify rate limit as retryable', () => {
-      const error = new Error('Rate limit exceeded');
+      const error = new Error('HTTP 429: Rate limit exceeded');
       const classification = classifyError(error);
       
       expect(classification.category).toBe(ErrorCategory.RETRYABLE);

@@ -1,61 +1,77 @@
-# Phase4 WS01-WS05 Verification Steps
+# Phase 4 Verification Steps
 
-## Prerequisites
-- Node.js 18+ (tested with Node 20)
-- npm installed
+## Pre-Merge Verification
 
-## Step 1: Install Dependencies
-\`\`\`bash
+### 1. Install Dependencies
+```bash
 npm ci
-\`\`\`
-**Expected**: Dependencies installed successfully
+```
+**Expected**: All dependencies installed successfully
 
-## Step 2: Run Unit Tests
-\`\`\`bash
+### 2. Run Unit Tests
+```bash
 npm test
-\`\`\`
-**Expected Output**:
-- Test Files: 6 passed
-- Tests: 27+ passed
-- All Phase4 tests green
+```
+**Expected**: All tests pass (28/28)
 
-## Step 3: Dry-Run Observer
-\`\`\`bash
+### 3. Dry-Run Observer
+```bash
 npm run phase4:observer -- --dry-run
-\`\`\`
-**Expected Output**: JSON lines including:
-- `{"event":"dry_run",...}`
-- `{"event":"shaCompare","match":true,"note":"provenance_missing_or_empty_using_computed",...}`
-
-## Step 4: Security Sweep
-\`\`\`bash
-npm run phase4:sweep -- docs/reports/2025-11-14
-\`\`\`
+```
 **Expected Output**:
-- Exit code: 0 (clean) or 2 (tokens found)
-- JSON: `{"event":"sweepClean"}` or `{"event":"sweepFound",...}`
+- JSON logs with `event: "shaCompare"`
+- `match: true` for fixture-run-1
+- No files written to `docs/reports/*`
 
-## Step 5: Telemetry Guard Test
-\`\`\`bash
-# Without secrets
-unset SUPABASE_SERVICE_KEY
-npm run phase4:observer -- --dry-run 2>&1 | grep -i "ci-guard" || echo "Guard check passed"
+### 4. Security Sweep
+```bash
+npm run phase4:sweep -- docs/reports/2025-11-14
+```
+**Expected**: `{"event":"sweepClean"}` and exit code 0
 
-# With stub secret
-SUPABASE_SERVICE_KEY=stub SUPABASE_URL=https://test.supabase.co npm run phase4:observer -- --dry-run
-\`\`\`
-**Expected**: No errors, dry-run completes
+### 5. TypeScript Compilation
+```bash
+npx tsc --noEmit
+```
+**Expected**: No compilation errors
 
-## Git Commands
-\`\`\`bash
-git add -A
-git commit -m "fix(phase4): enhance telemetry with Supabase client integration"
-git push -u origin feat/phase4-auto-audit-20251114
-\`\`\`
+## Post-Merge Verification (CI)
 
-## Create PR
-\`\`\`bash
-gh pr create --base main --head feat/phase4-auto-audit-20251114 \
-  --title "feat(phase4): Automated Audit & Self-Heal — WS01–WS05" \
-  --body-file PR_BODY_PHASE4.md
-\`\`\`
+### 1. Guard Workflow
+```bash
+gh workflow run phase4-retry-guard.yml
+```
+**Expected**: 
+- Fails with "ci-guard-required: SUPABASE_SERVICE_KEY missing" when secrets absent
+- Passes when secrets present
+- No secret values in logs
+
+### 2. Auto-Audit Workflow
+```bash
+gh workflow run phase4-auto-audit.yml --field window_days=7 --field run_mode=full
+```
+**Expected**:
+- Guard job passes
+- Observer job runs and logs shaCompare events
+- Collector job runs
+- KPI job runs
+
+### 3. Verify Artifacts
+```bash
+gh run download <RUN_ID>
+ls -la docs/reports/*/
+```
+**Expected**:
+- `_manifest.json` exists
+- `RUNS_SUMMARY.json` exists
+- `PHASE3_AUDIT_SUMMARY.md` exists
+- No secret values in any files
+
+## Test Results Summary
+
+- ✅ Retry Engine: Error classification and exponential backoff
+- ✅ Manifest Atomicity: tmp→mv pattern with fsync
+- ✅ Telemetry: Supabase client integration with env guard
+- ✅ Observer: Dry-run mode and provenance handling
+- ✅ Security Sweep: Token detection
+- ✅ Time Helpers: JST folder, UTC timestamps
