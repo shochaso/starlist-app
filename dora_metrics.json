@@ -1,0 +1,14 @@
+{
+  "generated": "2025-11-12T14:39:50Z",
+  "metrics": {
+    "deployment_frequency": 0.06,
+    "lead_time_days": 0.09,
+    "mttr_days": 0.09,
+    "change_failure_rate_percent": 40.0000
+  },
+  "metadata": {
+    "deployment_count": 2,
+    "failed_deployments": 2,
+    "total_deployments": 5
+  }
+}

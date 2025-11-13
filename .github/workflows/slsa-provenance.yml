@@ -1,21 +1,19 @@
-# Debug-enabled SLSA provenance workflow
-
 name: slsa-provenance
 
 on:
+  release:
+    types: [published]
   workflow_dispatch:
     inputs:
       tag:
-        description: "Release tag (e.g., v2025.11.12)"
+        description: "Tag name to generate provenance for"
         required: false
-  release:
-    types: [published]
+        type: string
 
 permissions:
   contents: read
   id-token: write
-  attestations: write
-  actions: write
+  actions: read
 
 concurrency:
   group: slsa-${{ github.ref }}
@@ -23,9 +21,21 @@ concurrency:
 
 jobs:
   provenance:
-    # pushで誤起動した場合は即スキップ
-    if: github.event_name != 'push'
+    name: Generate provenance
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+      id-token: write
+    outputs:
+      tag: ${{ steps.resolve_tag.outputs.tag }}
+      artifact_path: ${{ steps.metadata.outputs.artifact_path }}
+      artifact_url: ${{ steps.metadata.outputs.artifact_url }}
+      commit_sha: ${{ steps.metadata.outputs.commit_sha }}
+      content_sha: ${{ steps.metadata.outputs.content_sha }}
+      release_url: ${{ steps.metadata.outputs.release_url }}
+      timestamp: ${{ steps.metadata.outputs.timestamp }}
+      actor: ${{ steps.metadata.outputs.actor }}
     steps:
       - name: Checkout (shallow ok)
         uses: actions/checkout@v4
@@ -59,14 +69,45 @@ jobs:
           fi
           echo "tag=$TAG" >> $GITHUB_OUTPUT
 
+      - name: Prepare provenance metadata
+        id: metadata
+        if: steps.resolve_tag.outputs.skip != 'true'
+        env:
+          EVENT_RELEASE_URL: ${{ github.event.release.html_url || '' }}
+        run: |
+          set -euo pipefail
+          TAG="${{ steps.resolve_tag.outputs.tag }}"
+          git fetch --tags --force --quiet
+          TIMESTAMP="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+          COMMIT_SHA="$(git rev-parse "${TAG}^{commit}" 2>/dev/null || git rev-parse HEAD)"
+          CONTENT_SHA="$COMMIT_SHA"
+          ARTIFACT_PATH="artifacts/slsa/${TAG}/provenance-${TAG}.json"
+          ARTIFACT_URL="https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/artifacts"
+          if [ -n "$EVENT_RELEASE_URL" ]; then
+            RELEASE_URL="$EVENT_RELEASE_URL"
+          else
+            RELEASE_URL="https://github.com/${GITHUB_REPOSITORY}/releases/tag/${TAG}"
+          fi
+          ACTOR="${GITHUB_ACTOR}"
+          echo "artifact_path=$ARTIFACT_PATH" >> $GITHUB_OUTPUT
+          echo "artifact_url=$ARTIFACT_URL" >> $GITHUB_OUTPUT
+          echo "commit_sha=$COMMIT_SHA" >> $GITHUB_OUTPUT
+          echo "content_sha=$CONTENT_SHA" >> $GITHUB_OUTPUT
+          echo "release_url=$RELEASE_URL" >> $GITHUB_OUTPUT
+          echo "timestamp=$TIMESTAMP" >> $GITHUB_OUTPUT
+          echo "actor=$ACTOR" >> $GITHUB_OUTPUT
+
       - name: Conditional skip
         if: steps.resolve_tag.outputs.skip == 'true'
         run: echo "SKIP: no tag context (push or tag not found)."
 
       - name: Generate provenance
         if: steps.resolve_tag.outputs.skip != 'true'
+        env:
+          TAG: ${{ steps.resolve_tag.outputs.tag }}
+          CONTENT_SHA: ${{ steps.metadata.outputs.content_sha }}
         run: |
-          TAG="${{ steps.resolve_tag.outputs.tag }}"
+          TAG="${TAG}"
           echo "Generating provenance for $TAG"
           PROVENANCE_DIR="artifacts/slsa/${TAG}"
           mkdir -p "$PROVENANCE_DIR"
@@ -83,6 +124,7 @@ jobs:
   },
   "metadata": {
     "buildInvocationId": "${{ github.run_id }}",
+    "content_sha256": "$CONTENT_SHA",
     "completeness": {
       "parameters": true,
       "environment": false,
@@ -103,3 +145,187 @@ EOF
           name: "provenance-${{ steps.resolve_tag.outputs.tag }}"
           path: "artifacts/slsa/${{ steps.resolve_tag.outputs.tag }}/provenance-${{ steps.resolve_tag.outputs.tag }}.json"
           retention-days: 90
+
+  manifest-sync:
+    name: Sync manifest to docs
+    needs: provenance
+    if: ${{ always() && needs.provenance.outputs.tag != '' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      ENTRY_TAG: ${{ needs.provenance.outputs.tag }}
+      ENTRY_ARTIFACT_PATH: ${{ needs.provenance.outputs.artifact_path }}
+      ENTRY_ARTIFACT_URL: ${{ needs.provenance.outputs.artifact_url }}
+      ENTRY_COMMIT_SHA: ${{ needs.provenance.outputs.commit_sha }}
+      ENTRY_CONTENT_SHA: ${{ needs.provenance.outputs.content_sha }}
+      ENTRY_RELEASE_URL: ${{ needs.provenance.outputs.release_url }}
+      ENTRY_TIMESTAMP: ${{ needs.provenance.outputs.timestamp }}
+      ENTRY_ACTOR: ${{ needs.provenance.outputs.actor }}
+      ENTRY_STATUS: ${{ needs.provenance.result }}
+    steps:
+      - name: Checkout repository (manifest)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Configure Git user
+        run: |
+          git config user.name "STARLIST CI"
+          git config user.email "ops@starlist.jp"
+
+      - name: Ensure manifest directory
+        run: |
+          mkdir -p docs/reports
+          if [ ! -f docs/reports/_manifest.json ]; then
+            echo "[]" > docs/reports/_manifest.json
+          fi
+
+      - name: Merge manifest entry
+        id: merge_manifest
+        run: |
+          hash=$(python - <<'PY'
+import hashlib
+import json
+import os
+
+from pathlib import Path
+
+manifest_path = Path("docs") / "reports" / "_manifest.json"
+try:
+    data = json.loads(manifest_path.read_text())
+except Exception:
+    data = []
+
+status = os.environ["ENTRY_STATUS"]
+failure_reason = ""
+if status != "success":
+    failure_reason = f"provenance job {status}"
+
+entry = {
+    "run_id": int(os.environ["GITHUB_RUN_ID"]),
+    "tag": os.environ["ENTRY_TAG"],
+    "sha": os.environ["ENTRY_COMMIT_SHA"],
+    "content_sha256": os.environ["ENTRY_CONTENT_SHA"],
+    "artifact_path": os.environ["ENTRY_ARTIFACT_PATH"],
+    "artifact_url": os.environ["ENTRY_ARTIFACT_URL"],
+    "release_url": os.environ["ENTRY_RELEASE_URL"],
+    "actor": os.environ["ENTRY_ACTOR"],
+    "timestamp": os.environ["ENTRY_TIMESTAMP"],
+    "status": status,
+    "failure_reason": failure_reason,
+    "governance_flag": "provenance-ready",
+    "metadata": {
+        "workflow": "${{ github.workflow }}",
+        "run_id": int(os.environ["GITHUB_RUN_ID"])
+    }
+}
+
+data = [item for item in data if item["tag"] != entry["tag"]]
+data.append(entry)
+data = sorted(data, key=lambda item: item["timestamp"])
+
+manifest_path.write_text(json.dumps(data, indent=2) + "\n")
+print(hashlib.sha256(manifest_path.read_bytes()).hexdigest())
+PY
+)
+          echo "MANIFEST_HASH=$hash" >> $GITHUB_OUTPUT
+
+      - name: Commit manifest
+        run: |
+          if ! git diff --quiet docs/reports/_manifest.json; then
+            git add docs/reports/_manifest.json
+            git commit -m "Update provenance manifest for ${ENTRY_TAG} [manifest update]" || true
+            git push origin HEAD
+          else
+            echo "Manifest unchanged"
+          fi
+
+      - name: Upload manifest artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: "slsa-manifest-${{ needs.provenance.outputs.tag }}"
+          path: docs/reports/_manifest.json
+          retention-days: 365
+
+      - name: Upsert Supabase audit row
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SLSA_MANIFEST_SERVICE_KEY: ${{ secrets.SLSA_MANIFEST_SERVICE_KEY }}
+        run: |
+          set -euo pipefail
+          MANIFEST_HASH="${{ steps.merge_manifest.outputs.MANIFEST_HASH }}"
+          python - <<'PY'
+import json, os
+
+entry = {
+  "run_id": int(os.environ["GITHUB_RUN_ID"]),
+  "tag": os.environ["ENTRY_TAG"],
+  "status": os.environ["ENTRY_STATUS"],
+  "commit_sha": os.environ["ENTRY_COMMIT_SHA"],
+  "content_sha": os.environ["ENTRY_CONTENT_SHA"],
+  "artifact_path": os.environ["ENTRY_ARTIFACT_PATH"],
+  "artifact_url": os.environ["ENTRY_ARTIFACT_URL"],
+  "release_url": os.environ["ENTRY_RELEASE_URL"],
+  "actor": os.environ["ENTRY_ACTOR"],
+  "timestamp": os.environ["ENTRY_TIMESTAMP"],
+  "failure_reason": "" if os.environ["ENTRY_STATUS"] == "success" else f"provenance job {os.environ['ENTRY_STATUS']}",
+  "manifest_hash": os.environ["MANIFEST_HASH"]
+}
+print(json.dumps(entry))
+PY
+          > /tmp/payload.json
+          curl -sSf -X POST "${SUPABASE_URL%/}/rest/v1/slsa_runs?on_conflict=run_id" \
+            -H "apikey: ${SLSA_MANIFEST_SERVICE_KEY}" \
+            -H "Authorization: Bearer ${SLSA_MANIFEST_SERVICE_KEY}" \
+            -H "Content-Type: application/json" \
+            -d "@/tmp/payload.json"
+
+  notify-on-failure:
+    name: Notify on failure
+    needs: provenance
+    if: ${{ needs.provenance.result == 'failure' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    concurrency:
+      group: slsa-notify-${{ github.run_id }}
+      cancel-in-progress: true
+    steps:
+      - name: Notify ops Slack
+        id: slack
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          OPS_NOTIFY_TOKEN: ${{ secrets.OPS_NOTIFY_TOKEN }}
+          RUN_ID: ${{ github.run_id }}
+          TAG: ${{ needs.provenance.outputs.tag }}
+          RELEASE_URL: ${{ needs.provenance.outputs.release_url }}
+        run: |
+          set -euo pipefail
+          BASE="${SUPABASE_URL%/}"
+          URL="${BASE}/functions/v1/ops-slack-notify?source=slsa-provenance&run_id=${RUN_ID}&tag=${TAG}"
+          RESPONSE=$(curl -sS --retry 3 --retry-all-errors --fail --show-error \
+            -H "Authorization: Bearer ${OPS_NOTIFY_TOKEN}" \
+            -H "apikey: ${OPS_NOTIFY_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -X POST \
+            "$URL" \
+            -d "{\"failure_reason\":\"provenance job failed\",\"run_id\":${RUN_ID},\"tag\":\"${TAG}\",\"release_url\":\"${RELEASE_URL}\"}")
+          echo "$RESPONSE"
+        continue-on-error: true
+
+      - name: Open fallback issue
+        if: steps.slack.conclusion != 'success'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const body = `SLSA provenance job failed for tag **${{ needs.provenance.outputs.tag }}** (run <${{ github.run_url }}>). Please review <${{ github.event.repository.html_url }}/actions/runs/${{ github.run_id }}> and the manifest entry in \`docs/reports/_manifest.json\`.`;
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `SLSA provenance failure (${{ needs.provenance.outputs.tag }})`,
+              labels: ['ops-alert', 'provenance-failure'],
+              body
+            })

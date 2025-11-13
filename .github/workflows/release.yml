@@ -26,6 +26,7 @@ on:
 
 jobs:
   release:
+    if: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && !contains(github.event.head_commit.message, '[manifest update]')) }}
     name: release (main)
     outputs:
       release_tag: ${{ steps.ver.outputs.tag }}

@@ -1,0 +1,32 @@
+# Example: Per-job permissions pattern for GitHub Actions
+# Reference: https://docs.github.com/en/actions/using-jobs/assigning-permissions-to-jobs
+
+jobs:
+  example-job:
+    runs-on: ubuntu-latest
+    # Job-level permissions override workflow-level permissions
+    permissions:
+      contents: read      # Minimal read-only access
+      actions: read       # Read-only for workflow inspection
+      # No write permissions unless explicitly needed
+    
+    steps:
+      - name: Step with write access
+        # Step-level permissions are not directly supported
+        # Use separate job with minimal permissions instead
+        uses: actions/checkout@v4
+      
+      - name: Step requiring write access
+        # For write operations, create separate job with write permissions
+        run: echo "Write operation"
+
+  write-job:
+    runs-on: ubuntu-latest
+    needs: example-job
+    permissions:
+      contents: write     # Only when write is absolutely necessary
+      issues: write       # Only for issue creation
+    steps:
+      - name: Write operation
+        run: echo "Write operation"
+
