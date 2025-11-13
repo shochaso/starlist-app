@@ -1,7 +1,7 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "jsx": "react-jsx",
+    "jsx": "preserve",
     "module": "ESNext",
     "moduleResolution": "NodeNext",
     "target": "ES2022",
@@ -9,8 +9,21 @@
     "allowJs": true,
     "noEmit": true,
     "isolatedModules": true,
-    "types": ["node", "next"]
+    "types": ["node", "next"],
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "baseUrl": ".",
+    "paths": {
+      "@/components/*": ["app/components/*"],
+      "@/types/*": ["types/*"]
+    }
   },
-  "include": ["next-env.d.ts", "app/**/*", "app/*", "components/**/*", "next-env.d.ts", "**/*.ts", "**/*.tsx"],
-  "exclude": ["node_modules"]
+  "include": ["next-env.d.ts", "app/**/*", "components/**/*", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "exclude": [
+    "node_modules"
+  ]
 }

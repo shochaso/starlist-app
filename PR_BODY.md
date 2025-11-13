@@ -1,93 +1,102 @@
-feat(ops): Day9 OPS Summary Email — weekly report automation
+# feat(phase4): Auto-Audit & Self-Healing — Foundation (2025-11-14)
 
-## 概要
+## Summary
 
-Day9の実装スコープを完了。OPS Summary Emailにより、週次レポートを自動生成・送信。Edge Function、GitHub Actionsワークフロー、メール送信機能を実装し、「収集 → 可視化 → アラート表示 → ヘルスチェック → レポート」のサイクルを完成。
+Implements Phase 4 Auto-Audit & Self-Healing foundation with automated auditing, evidence collection, and self-healing capabilities for SLSA Provenance workflows.
 
-## 変更点（ハイライト）
+## Changes
 
-* **Edge Function新設**
-  * `supabase/functions/ops-summary-email/index.ts`（新規）
-    * HTMLテンプレート生成（シンプルなメール形式）
-    * メトリクス集計（uptime %, mean p95(ms), alert count, alert trend）
-    * 前週比計算（実際のデータから計算）
-    * Resendメール送信実装（優先）
-    * SendGridメール送信実装（フォールバック）
-    * dryRunモード対応（HTMLプレビュー返却）
+### Core Implementation (WS01-WS05)
 
-* **GitHub Actionsワークフロー**
-  * `.github/workflows/ops-summary-email.yml`（新規）
-    * 週次スケジュール（毎週月曜09:00 JST = UTC 0:00）
-    * 手動実行対応（dryRun）
-    * Secrets管理対応
+- **WS01: Observer 2.0** - GitHub API integration, artifact download, SHA validation, manifest append, telemetry upsert
+- **WS02: Retry Engine** - Error classification, exponential backoff (5s/10s/20s), max 3 attempts
+- **WS03: CI Guard** - Secrets presence checks, no values logged, guard output integration
+- **WS04: Evidence Collector** - Run logs, artifacts, SHA comparison, masked Slack excerpts
+- **WS05: KPI Aggregator** - Metrics calculation, audit summary generation
 
-* **Docs**
-  * `docs/ops/OPS-SUMMARY-EMAIL-001.md`（新規）
-    * Day9実装計画・運用・セキュリティ・ロールバック手順
+### Supporting Modules
 
-## 受け入れ基準（DoD）
+- Manifest atomic append (tmp→mv pattern)
+- Timezone helpers (JST folder, UTC timestamps)
+- Masked Slack excerpt writer
+- Telemetry upsert (Supabase stub)
+- Security sweep for token detection
+- Recovery handler for alignment
 
-- [x] Edge Function `ops-summary-email`を実装
-- [x] GitHub Actionsワークフローを作成（週次スケジュール・手動実行）
-- [x] HTMLテンプレートを生成
-- [x] Resend/SendGridでメール送信実装
-- [x] dryRunモードで動作確認可能
-- [ ] DryRun（手動）でHTMLプレビューが200 / `.ok==true`（実行待ち）
-- [ ] 任意の宛先で手動送信テストが成功（Resend or SendGrid）（実行待ち）
-- [ ] 週次スケジュール（月曜09:00 JST）で自動実行が成功（次週確認）
-- [x] ドキュメント `OPS-SUMMARY-EMAIL-001.md`を完成
+### Testing
 
-## 影響範囲
+- Unit tests for retry, time, manifest, sha-compare, telemetry, observer
+- Test fixtures for provenance and artifacts
+- Vitest configuration
 
-* `supabase/functions/ops-summary-email/**` - Edge Function新設
-* `.github/workflows/ops-summary-email.yml` - GitHub Actionsワークフロー新設
-* `docs/ops/OPS-SUMMARY-EMAIL-001.md` - ドキュメント追加
+## Acceptance Checklist
 
-## リスク&ロールバック
+### Pre-Merge
 
-* **リスク**: メール送信失敗時の通知不足
-* **緩和**: GitHub Actionsの通知設定、エラーログ出力
-* **ロールバック**: 
-  - ワークフロー無効化（GitHub Actions）
-  - Function revert（前バージョンにロールバック）
-  - Secrets削除（メール送信停止）
+- [x] All workflows lint successfully
+- [x] TypeScript compiles without errors
+- [x] Unit tests pass (`npm test`)
+- [x] No secret values in code or logs
+- [x] Dry-run mode works for all scripts
+- [x] Manifest updates are atomic
+- [x] Retry policy correctly classifies errors
+- [x] CI Guard fails cleanly on missing secrets
+- [x] Evidence stored under `docs/reports/<JST-date>/`
+- [x] Timestamps in UTC ISO8601 format
 
-## CI ステータス
+### Post-Merge (Same Day)
 
-* Ops Summary Email DryRun：🟢（予定）
-* Docs Status Audit：🟢（予定）
-* Lint：🟢（予定）
-* Tests：🟢（予定）
+- [ ] Workflow dispatch succeeds
+- [ ] Guard job passes with secrets present
+- [ ] Observer discovers runs correctly
+- [ ] Collector downloads artifacts
+- [ ] KPI aggregator generates summary
+- [ ] Security sweep finds no tokens
+- [ ] Manifest entries are unique
+- [ ] Supabase upsert returns ci-guard-required when key missing
 
-## レビュワー / メタ
+## Testing
 
-* Reviewer: @pm-tim
-* Labels: `area:ops`, `type:feature`, `day9`
-* Breakings: なし
+### Local Development
 
----
+```bash
+# Install dependencies (Node 18+)
+npm install
 
-## Screenshots
+# Run unit tests
+npm test
 
-* [ ] HTMLプレビュー（dryRun実行結果）
-* [ ] メール送信成功ログ（messageId）
+# Dry-run observer
+npm run phase4:observer -- --dry-run
 
-## Manual QA
+# Dry-run collector
+npm run phase4:collect -- --dry-run
 
-* ✅ Edge Function `ops-summary-email`がdryRunモードでHTMLプレビューを返却
-* ✅ GitHub Actionsが週次スケジュールで実行される
-* ✅ HTMLテンプレートが正しく生成される
-* ✅ Resend/SendGridでメール送信が正常に動作する
-* ✅ 前週比計算が正しく動作する
+# KPI aggregation
+npm run phase4:kpi
 
-## Docs Updated
+# Security sweep
+npm run phase4:sweep
+```
 
-* `docs/ops/OPS-SUMMARY-EMAIL-001.md` → Status: planned / 実装計画・運用・セキュリティ・ロールバック手順
+### CI Verification
 
-## Risks / Follow-ups (Day10)
+1. Run `phase4-retry-guard.yml` workflow_dispatch
+2. Verify guard fails without secrets
+3. Set secrets and verify guard passes
+4. Run `phase4-auto-audit.yml` workflow_dispatch
+5. Verify all jobs execute successfully
 
-* 日次ミニ・OPSサマリ（Slack投稿）
-* アラート閾値の自動チューニング
-* ダッシュボード内プレビュー（`/ops` に「最新メール表示」カード）
-* メール送信失敗時の通知強化
-* HTMLテンプレートの装飾版（ヘッダ・カード・トレンドミニチャート付き）
+## Rollback
+
+If issues occur:
+
+1. Disable workflows: Rename `.github/workflows/phase4-*.yml` files
+2. Revert commits: `git revert <commit-sha>`
+3. Remove secrets: `gh secret delete SUPABASE_SERVICE_KEY --repo <repo>`
+
+## Related
+
+- Design: `docs/ops/PHASE4_AUTO_AUDIT_SELF_HEALING_DESIGN.md`
+- Summary: `docs/ops/PHASE4_IMPLEMENTATION_SUMMARY.md`
+- Micro-tasks: `docs/ops/PHASE4_MICROTASKS.md`
