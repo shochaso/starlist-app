@@ -42,31 +42,13 @@ export async function upsertByRunId(
     };
   }
 
+  // Use real Supabase client if available and env is set
   try {
-    // Use Supabase client if available (behind env guard)
-    // Only execute real upsert when service key is present
-    let supabaseClient: any = null;
+    // Dynamic import to avoid requiring @supabase/supabase-js at build time
+    const { createClient } = await import('@supabase/supabase-js');
+    const supabase = createClient(url, serviceKey);
     
-    try {
-      // Dynamic import to avoid requiring @supabase/supabase-js at build time
-      const { createClient } = await import('@supabase/supabase-js');
-      supabaseClient = createClient(url, serviceKey);
-    } catch (importError) {
-      // Library not available, fall back to stub
-      console.warn(JSON.stringify({
-        event: 'telemetry_stub_fallback',
-        reason: 'supabase_client_not_available',
-        timestamp: new Date().toISOString(),
-      }));
-      return {
-        status: 'ok',
-        rowId: entry.run_id,
-        message: 'Stub: Supabase client not available',
-      };
-    }
-
-    // Real Supabase upsert
-    const { data, error } = await supabaseClient
+    const { data, error } = await supabase
       .from('phase4_runs')
       .upsert(
         {
@@ -94,6 +76,16 @@ export async function upsertByRunId(
       rowId: entry.run_id,
     };
   } catch (error) {
+    // If @supabase/supabase-js is not available or other error, fall back to stub
+    if (error instanceof Error && error.message.includes('Cannot find module')) {
+      // Library not available, return stub success
+      return {
+        status: 'ok',
+        rowId: entry.run_id,
+        message: 'Supabase client not available, using stub',
+      };
+    }
+    
     return {
       status: 'error',
       message: error instanceof Error ? error.message : String(error),

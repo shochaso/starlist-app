@@ -72,7 +72,7 @@ export function classifyError(error: any): ErrorClassification {
   }
 
   // Rate limit (retryable with backoff)
-  if (error.message?.includes('rate limit') || error.status === 429) {
+  if (error.message?.includes('rate limit') || error.message?.includes('429') || error.status === 429) {
     return {
       category: ErrorCategory.RETRYABLE,
       httpCode: 429,
