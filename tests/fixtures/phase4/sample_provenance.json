@@ -1,0 +1,48 @@
+{
+  "_type": "https://in-toto.io/Statement/v0.1",
+  "predicateType": "https://slsa.dev/provenance/v0.2",
+  "subject": [
+    {
+      "name": "artifact.bin",
+      "digest": {
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  ],
+  "predicate": {
+    "buildType": "https://github.com/slsa-framework/slsa-github-generator@v1",
+    "builder": {
+      "id": "https://github.com/actions/runner/github-hosted"
+    },
+    "invocation": {
+      "configSource": {
+        "uri": "git+https://github.com/shochaso/starlist-app",
+        "digest": {
+          "sha1": "abc123def456"
+        },
+        "entryPoint": ".github/workflows/slsa-provenance.yml"
+      },
+      "parameters": {
+        "tag": "vtest-20251114"
+      }
+    },
+    "metadata": {
+      "buildInvocationID": "test-run-123",
+      "completeness": {
+        "parameters": true,
+        "environment": true,
+        "materials": true
+      },
+      "content_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "materials": [
+      {
+        "uri": "git+https://github.com/shochaso/starlist-app",
+        "digest": {
+          "sha1": "abc123def456"
+        }
+      }
+    ]
+  }
+}
+

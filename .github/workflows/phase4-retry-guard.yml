@@ -1,0 +1,54 @@
+name: Phase 4 Retry Guard
+
+on:
+  workflow_dispatch:
+    inputs:
+      check_secrets:
+        description: 'Check secrets presence'
+        required: false
+        default: 'true'
+        type: boolean
+  workflow_call:
+
+jobs:
+  guard:
+    name: Secrets Presence Guard
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check SUPABASE_SERVICE_KEY presence
+        id: check_supabase
+        run: |
+          if [ -z "${{ secrets.SUPABASE_SERVICE_KEY }}" ]; then
+            echo "presence=false" >> $GITHUB_OUTPUT
+            echo "❌ SUPABASE_SERVICE_KEY is not set"
+            echo "Please set it using: gh secret set SUPABASE_SERVICE_KEY --repo ${{ github.repository }}"
+            exit 1
+          else
+            echo "presence=true" >> $GITHUB_OUTPUT
+            echo "✅ SUPABASE_SERVICE_KEY is set (value not displayed)"
+          fi
+
+      - name: Check SLACK_WEBHOOK_URL presence
+        id: check_slack
+        run: |
+          if [ -z "${{ secrets.SLACK_WEBHOOK_URL }}" ]; then
+            echo "presence=false" >> $GITHUB_OUTPUT
+            echo "⚠️ SLACK_WEBHOOK_URL is not set (optional but recommended)"
+          else
+            echo "presence=true" >> $GITHUB_OUTPUT
+            echo "✅ SLACK_WEBHOOK_URL is set (value not displayed)"
+          fi
+
+      - name: Guard summary
+        id: guard_summary
+        run: |
+          if [ "${{ steps.check_supabase.outputs.presence }}" != "true" ]; then
+            echo "guard-passed=false" >> $GITHUB_OUTPUT
+            echo "❌ Guard failed: Required secrets missing"
+            echo "ci-guard-required: SUPABASE_SERVICE_KEY missing"
+            exit 1
+          else
+            echo "guard-passed=true" >> $GITHUB_OUTPUT
+            echo "✅ Guard passed: All required secrets present"
+          fi
+
