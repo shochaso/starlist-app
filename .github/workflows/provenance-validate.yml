@@ -1,0 +1,42 @@
+name: provenance-validate
+
+on:
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: "SLSA provenance workflow run ID (required when invoked manually)"
+        required: true
+      tag:
+        description: "Optional release tag for parity checks"
+        required: false
+  workflow_run:
+    workflows: ["slsa-provenance"]
+    types:
+      - completed
+
+permissions:
+  contents: read
+
+jobs:
+  validate-provenance:
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Resolve target run id
+        id: settings
+        run: |
+          if [ "${GITHUB_EVENT_NAME}" = "workflow_dispatch" ]; then
+            echo "run_id=${{ github.event.inputs.run_id }}" >> "$GITHUB_OUTPUT"
+            echo "tag_input=${{ github.event.inputs.tag }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "run_id=${{ github.event.workflow_run.id }}" >> "$GITHUB_OUTPUT"
+            echo "tag_input=" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Validate SLSA provenance artifact
+        run: ./scripts/verify_slsa_provenance.sh "${{ steps.settings.outputs.run_id }}" "${{ steps.settings.outputs.tag_input }}"

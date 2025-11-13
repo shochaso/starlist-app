@@ -25,6 +25,19 @@
 
 ---
 
+## 🤖 Phase 4 Auto Audit ドライラン (UI + CLI)
+
+1. Actions で `phase4-auto-audit` を選択し、`Run workflow` → `window_days=1`, `run_mode=dry-run` で開始。
+2. ローカルで以下コマンドを順に実行 (シークレットは環境変数経由で設定済みとする)。
+   ```
+   ./scripts/phase4-auto-collect.sh <run_id> --dry-run --artifact-pattern '*.zip'
+   ./scripts/phase4-observer-report.sh --observer-run-id UI-DRYRUN --window-days 1
+   ```
+3. `_manifest.json` が更新された場合は `git diff` で確認し、必要なら `scripts/phase4-manifest-atomic.sh` で再適用。
+4. `docs/reports/2025-11-14/PHASE3_AUDIT_SUMMARY.md` に KPI が反映されたことをチェック。
+
+---
+
 ## 📊 Ops健康度更新（UIのみ）
 
 1. `docs/overview/STARLIST_OVERVIEW.md` を開く

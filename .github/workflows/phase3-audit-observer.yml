@@ -1,0 +1,51 @@
+name: phase3-audit-observer
+
+on:
+  workflow_dispatch:
+    inputs:
+      run_label:
+        description: "Optional label describing the manual dispatch batch"
+        required: false
+      run_id:
+        description: "Optional GitHub Actions run ID captured during manual dispatch"
+        required: false
+
+permissions:
+  contents: read
+
+jobs:
+  verify-phase3-scaffold:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Confirm Phase 3 documentation scaffold
+        run: |
+          set -euo pipefail
+          REQUIRED_FILES=(
+            "docs/reports/2025-11-13/PHASE3_MANUAL_DISPATCH_OPERATIONS_GUIDE.md"
+            "docs/reports/2025-11-13/_evidence_index.md"
+            "docs/reports/2025-11-13/RUNS_SUMMARY.schema.txt"
+            "docs/reports/2025-11-13/PHASE3_AUDIT_SUMMARY.md"
+            "docs/reports/2025-11-13/slack_excerpts/README.md"
+          )
+          missing=0
+          for file in "${REQUIRED_FILES[@]}"; do
+            if [ ! -f "$file" ]; then
+              echo "::error::Missing required Phase 3 scaffold file: $file"
+              missing=1
+            else
+              echo "✅ Found $file"
+            fi
+          done
+          if [ "$missing" -ne 0 ]; then
+            exit 1
+          fi
+          echo "Phase 3 manual audit documentation is present. Proceed with evidence collection manually."
+
+      - name: Record dispatch context
+        if: ${{ inputs.run_label != '' || inputs.run_id != '' }}
+        run: |
+          echo "Manual dispatch context"
+          echo "  run_label=${{ inputs.run_label }}"
+          echo "  run_id=${{ inputs.run_id }}"
