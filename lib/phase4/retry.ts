@@ -127,8 +127,11 @@ export async function retry<T>(
 
       // Retryable errors: continue if attempts remain
       if (attempt < config.maxRetries + 1) {
-        const delay = calculateBackoffDelay(attempt, config);
-        console.log(`Attempt ${attempt} failed, retrying in ${delay}ms...`);
+        // Support fast-test mode via environment variable to shorten delays for CI/dev testing
+        const fastEnv = process.env.PHASE4_FAST_RETRY === '1' || process.env.PHASE4_FAST_RETRY === 'true';
+        const delay = fastEnv ? 10 : calculateBackoffDelay(attempt, config);
+        if (fastEnv) console.log(JSON.stringify({ event: 'retryFastMode', attempt, delay, ts: new Date().toISOString() }));
+        else console.log(`Attempt ${attempt} failed, retrying in ${delay}ms...`);
         await sleep(delay);
       }
     }
