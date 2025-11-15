@@ -15,6 +15,7 @@
     "report": "bash scripts/progress-report.sh",
     "lint:md": "node scripts/ensure-node20.js && markdown-link-check -c .mlc.json -q **/*.md",
     "lint:markdownlint": "markdownlint-cli --config ./.markdownlint.json --ignore node_modules --ignore .next --ignore build --ignore dist --ignore out --ignore artifact_4544009766_dir --ignore docs/ops/MD_CI_REPORT.md \"**/*.md\"",
+    "lint:md:starlist": "python3 scripts/starlist_md_validator.py",
     "lint:md:local": "node scripts/docs/link-check.mjs",
     "check:mail:dns": "node scripts/check_mail_dns.mjs starlist.jp",
     "pricing:final": "bash PRICING_FINAL_SHORTCUT.sh",

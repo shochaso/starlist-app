@@ -7,6 +7,7 @@ on:
   pull_request:
     paths:
       - "**/*.md"
+  workflow_dispatch:
 
 jobs:
   markdown:
@@ -14,20 +15,74 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
         with:
-          node-version: 18
-          cache: "npm"
-      - uses: actions/setup-python@v6
-        with:
-          python-version: "3.11"
-      - name: Install dependencies
-        run: npm ci
-      - name: Run STARLIST Markdown validator
+          fetch-depth: 0  # Full history needed for diff operations
+
+      - name: Get changed Markdown files
+        id: changed-files
         run: |
-          find . -name '*.md' -print0 | xargs -0 python validate_md_starlist.py --stdin-0 --autofix --report docs/ops/MD_CI_REPORT.md
-      - name: Run markdownlint CLI
-        run: npx markdownlint-cli --config ./.markdownlint.json --ignore node_modules --ignore .next --ignore build --ignore dist --ignore out --ignore artifact_4544009766_dir --ignore docs/ops/MD_CI_REPORT.md "**/*.md"
-      - name: Run markdown link check
-        run: npm run lint:md
+          if [ "${{ github.event_name }}" == "push" ]; then
+            # For push events, compare with previous commit
+            CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD -- '*.md' || echo "")
+          elif [ "${{ github.event_name }}" == "pull_request" ]; then
+            # For pull requests, compare with base branch
+            git fetch origin ${{ github.base_ref }}
+            CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }} -- '*.md' || echo "")
+          else
+            # For workflow_dispatch or other cases, check all .md files
+            CHANGED_FILES=$(find . -name '*.md' -not -path './node_modules/*' -not -path './.next/*' -not -path './build/*' -not -path './dist/*' -not -path './out/*' | sed 's|^\./||')
+          fi
+
+          # Remove empty lines and filter out unwanted paths
+          CHANGED_FILES=$(echo "$CHANGED_FILES" | grep -v '^$' | grep -v '^node_modules/' | grep -v '^\.next/' | grep -v '^build/' | grep -v '^dist/' | grep -v '^out/' | grep -v '^docs/ops/MD_CI_REPORT.md$' || echo "")
+
+          echo "files=$CHANGED_FILES" >> $GITHUB_OUTPUT
+          echo "count=$(echo "$CHANGED_FILES" | wc -l | tr -d ' ')" >> $GITHUB_OUTPUT
+
+          if [ -z "$CHANGED_FILES" ]; then
+            echo "No Markdown files changed. Skipping validation."
+          else
+            echo "Changed Markdown files:"
+            echo "$CHANGED_FILES"
+          fi
+
+      - name: Setup Node.js 18.x
+        if: steps.changed-files.outputs.count != '0'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18.x'
+          cache: 'npm'
+
+      - name: Setup Python 3.11
+        if: steps.changed-files.outputs.count != '0'
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        if: steps.changed-files.outputs.count != '0'
+        run: npm ci
+
+      - name: Run STARLIST Markdown validator (changed files only)
+        if: steps.changed-files.outputs.count != '0'
+        run: |
+          echo "${{ steps.changed-files.outputs.files }}" | tr '\n' '\0' | xargs -0 python validate_md_starlist.py --stdin-0 --report docs/ops/MD_CI_REPORT.md
+
+      - name: Run markdownlint CLI (changed files only)
+        if: steps.changed-files.outputs.count != '0'
+        run: |
+          for file in ${{ steps.changed-files.outputs.files }}; do
+            if [ -f "$file" ]; then
+              npx markdownlint-cli --config ./.markdownlint.json "$file" || exit 1
+            fi
+          done
+
+      - name: Run markdown link check (changed files only)
+        if: steps.changed-files.outputs.count != '0'
+        run: |
+          for file in ${{ steps.changed-files.outputs.files }}; do
+            if [ -f "$file" ]; then
+              npx markdown-link-check --config .mlc.json "$file" || exit 1
+            fi
+          done
 
