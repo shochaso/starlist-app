@@ -42,7 +42,9 @@ describe('collector normal run', () => {
 
     const runs = path.join(base, 'RUNS_SUMMARY.json');
     expect(fs.existsSync(runs)).toBe(true);
-    const runsContent = JSON.parse(fs.readFileSync(runs, 'utf8'));
+    const raw = fs.readFileSync(runs, 'utf8');
+    console.log('DEBUG RUNS_SUMMARY raw:', raw);
+    const runsContent = JSON.parse(raw);
     expect(runsContent.some((r: any) => String(r.run_id) === runId && r.sha256 === sha)).toBe(true);
   });
 });

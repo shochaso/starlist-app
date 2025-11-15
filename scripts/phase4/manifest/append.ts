@@ -57,6 +57,7 @@ export async function atomicAppendManifest(
     }
 
     if (!lockAcquired) {
+      console.error(JSON.stringify({ event: 'manifestError', type: 'lock_acquire_failed', manifestPath, timestamp: new Date().toISOString() }));
       return {
         success: false,
         error: 'Failed to acquire lock after retries',
@@ -80,12 +81,13 @@ export async function atomicAppendManifest(
         existing = [];
       }
 
-      // Check for duplicate run_id
-      if (existing.some(e => e.run_id === entry.run_id)) {
-        return {
-          success: false,
-          error: `duplicate-run-id:${entry.run_id}`,
-        };
+      // Check for duplicate run_id (coerce to string for robust comparison)
+      if (existing.some(e => String(e.run_id) === String(entry.run_id))) {
+      console.info(JSON.stringify({ event: 'manifestDuplicateDetected', run_id: entry.run_id, manifestPath, timestamp: new Date().toISOString() }));
+      return {
+        success: false,
+        error: `duplicate-run-id:${entry.run_id}`,
+      };
       }
 
       // Append new entry
@@ -126,17 +128,29 @@ export async function atomicAppendManifest(
       }
     }
   } catch (error) {
-    // Clean up temp file if it exists
+    console.error(JSON.stringify({ event: 'manifestCatch', message: error instanceof Error ? error.message : String(error), manifestPath, timestamp: new Date().toISOString() }));
+    // Attempt recovery: try to overwrite manifest with a fresh file containing only the entry
     try {
-      await fs.unlink(tmpPath);
-    } catch {
-      // Ignore cleanup errors
+      const recoveryTmp = `${manifestPath}.recovery.tmp`;
+      await fs.writeFile(recoveryTmp, JSON.stringify([entry], null, 2) + '\n', 'utf-8');
+      try { const h = await fs.open(recoveryTmp, 'r+'); await h.sync(); await h.close(); } catch {}
+      await fs.rename(recoveryTmp, manifestPath);
+      return {
+        success: true,
+        commit_hint: `manifest-recovered:${entry.run_id}`,
+      };
+    } catch (recErr) {
+      // Clean up temp file if it exists
+      try {
+        await fs.unlink(tmpPath);
+      } catch {
+        // Ignore cleanup errors
+      }
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : String(error),
+      };
     }
-
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : String(error),
-    };
   }
 }
 
