@@ -10,6 +10,8 @@ owner: STARLIST Documentation Team
 
 
 
+
+
 # STARLIST ドキュメント更新履歴
 
 ## 背景
@@ -243,3 +245,21 @@ grep "STARLIST Development Team" UPDATE_LOG.md
 ---
 
 *本ログはドキュメント変更の信頼できる監査証跡です。*
+
+## 2025-11-17
+
+#### 14:09 UTC - Markdownガバナンス作業着手
+- **ドキュメント**: docs/ops/UPDATE_LOG.md + Markdownガバナンステンプレート群
+- **変更タイプ**: 追記・整備
+- **変更内容**: ci/extended-markdown-governance ブランチ上でテンプレート整備と validation 検証を始動
+- **影響範囲**: Documentation Team / Ops CI
+- **責任者**: STARLIST Autonomous Engineer
+- **関連チケット**: ci/extended-markdown-governance
+
+#### 14:17 UTC - Markdownガバナンス成果
+- **ドキュメント**: docs/ops/MD_CI_REPORT.md, docs/ops/RISK_REGISTER.md, docs/ops/UPDATE_LOG.md, logs/prompt_history.json
+- **変更タイプ**: 更新・削除
+- **変更内容**: Markdown validator を実行して 2431 件の table-columns/codefence-language エラーを docs/ops/MD_CI_REPORT.md に記録し、RISK_REGISTER.md に Markdown CI ガバナンスのリスクを追加。Node 20 依存の `npm run lint:md` が現行 Node 18 では実行できず（scripts/ensure-node20.js が ES module を import）。logs/prompt_history.json は不要なログのため削除。
+- **影響範囲**: Documentation Team, Ops CI
+- **責任者**: STARLIST Autonomous Engineer
+- **関連チケット**: ci/extended-markdown-governance

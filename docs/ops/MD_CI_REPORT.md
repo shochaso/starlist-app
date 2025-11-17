@@ -1,17 +1,17 @@
 ---
 source_of_truth: true
 version: 1.0.0
-updated_date: 2025-11-15
+updated_date: 2025-11-17
 owner: STARLIST Docs Automation Team
 ---
 
 # Markdown CI Report
 
 ## 最新の実行
-- 実行日時: 2025-11-15T15:26:40Z
-- コマンド: `validate_md_starlist.py --stdin-0 --autofix --report docs/ops/MD_CI_REPORT.md ./PR_READY_FINAL.md ...(+2948 more args)`
-- ファイル数: 426
-- エラー数: 21740
+- 実行日時: 2025-11-17T14:14:07Z
+- コマンド: `validate_md_starlist.py --stdin-0 --autofix --report docs/ops/MD_CI_REPORT.md ./PR_READY_FINAL.md ...(+2953 more args)`
+- ファイル数: 431
+- エラー数: 2431
 - 自動修復: 有効
 - ドライラン: 無効
 
@@ -22,43 +22,6 @@ owner: STARLIST Docs Automation Team
 ## 失敗一覧
 | ファイル | 行 | チェック | メッセージ | 修復可能 |
 | --- | --- | --- | --- | --- |
-| .report/report.md | 30 | forbidden-word | Forbidden wording detected: todo | いいえ |
-| .report/report.md | 30 | forbidden-word | Forbidden wording detected: fixme | いいえ |
-| .report/report.md | 31 | forbidden-word | Forbidden wording detected: todo | いいえ |
-| .report/report.md | 31 | forbidden-word | Forbidden wording detected: fixme | いいえ |
-| .report/report.md | 32 | forbidden-word | Forbidden wording detected: todo | いいえ |
-| .report/report.md | 32 | forbidden-word | Forbidden wording detected: fixme | いいえ |
-| .report/report.md | 33 | forbidden-word | Forbidden wording detected: todo | いいえ |
-| .report/report.md | 33 | forbidden-word | Forbidden wording detected: fixme | いいえ |
-| .report/report.md | 34 | forbidden-word | Forbidden wording detected: todo | いいえ |
-| .report/report.md | 35 | forbidden-word | Forbidden wording detected: todo | いいえ |
-| .report/report.md | 36 | forbidden-word | Forbidden wording detected: todo | いいえ |
-| .report/report.md | 37 | forbidden-word | Forbidden wording detected: todo | いいえ |
-| .report/report.md | 38 | forbidden-word | Forbidden wording detected: todo | いいえ |
-| .report/report.md | 39 | forbidden-word | Forbidden wording detected: todo | いいえ |
-| .report/report.md | 40 | forbidden-word | Forbidden wording detected: todo | いいえ |
-| .report/report.md | 41 | forbidden-word | Forbidden wording detected: todo | いいえ |
-| .report/report.md | 42 | forbidden-word | Forbidden wording detected: todo | いいえ |
-| .report/report.md | 43 | forbidden-word | Forbidden wording detected: todo | いいえ |
-| .report/report.md | 44 | forbidden-word | Forbidden wording detected: todo | いいえ |
-| .report/report.md | 45 | forbidden-word | Forbidden wording detected: todo | いいえ |
-| .report/report.md | 46 | forbidden-word | Forbidden wording detected: todo | いいえ |
-| .report/report.md | 47 | forbidden-word | Forbidden wording detected: todo | いいえ |
-| .report/report.md | 48 | forbidden-word | Forbidden wording detected: todo | いいえ |
-| .report/report.md | 49 | forbidden-word | Forbidden wording detected: todo | いいえ |
-| .report/report.md | 50 | forbidden-word | Forbidden wording detected: todo | いいえ |
-| .report/report.md | 51 | forbidden-word | Forbidden wording detected: todo | いいえ |
-| .report/report.md | 52 | forbidden-word | Forbidden wording detected: todo | いいえ |
-| .report/report.md | 53 | forbidden-word | Forbidden wording detected: todo | いいえ |
-| .report/report.md | 54 | forbidden-word | Forbidden wording detected: todo | いいえ |
-| .report/report.md | 55 | forbidden-word | Forbidden wording detected: todo | いいえ |
-| .report/report.md | 56 | forbidden-word | Forbidden wording detected: todo | いいえ |
-| .report/report.md | 57 | forbidden-word | Forbidden wording detected: todo | いいえ |
-| .report/report.md | 58 | forbidden-word | Forbidden wording detected: todo | いいえ |
-| .report/report.md | 59 | forbidden-word | Forbidden wording detected: todo | いいえ |
-| .report/report.md | 60 | forbidden-word | Forbidden wording detected: todo | いいえ |
-| .report/report.md | 23 | table-columns | Table columns do not align between header and separator. | いいえ |
-| .report/report.md | 32 | table-columns | Table columns do not align between header and separator. | いいえ |
 | 10X_FINALIZATION_PACK_SUMMARY.md | 190 | table-columns | Table columns do not align between header and separator. | いいえ |
 | CI_FIXES_APPLIED.md | 48 | codefence-language-unsupported | Unsupported language: toml | いいえ |
 | CI_FIXES_LATEST.md | 17 | codefence-language | Code fence must declare a language. | いいえ |
@@ -222,4 +185,41 @@ owner: STARLIST Docs Automation Team
 | FINAL_LANDING_STATUS.md | 312 | table-columns | Table columns do not align between header and separator. | いいえ |
 | FINAL_LANDING_VERIFICATION_REPORT.md | 183 | table-columns | Table columns do not align between header and separator. | いいえ |
 | FINAL_POLISH_CHECKLIST_COMPLETE.md | 62 | codefence-language | Code fence must declare a language. | いいえ |
-> 表は先頭 200 件まで表示し、残り 21540 件はログファイルを参照してください。
+| FINAL_POLISH_CHECKLIST_COMPLETE.md | 77 | table-columns | Table columns do not align between header and separator. | いいえ |
+| FINAL_POLISH_CHECKLIST_COMPLETE.md | 78 | table-columns | Table columns do not align between header and separator. | いいえ |
+| FINAL_SUBMISSION_COMPLETE.md | 69 | codefence-language | Code fence must declare a language. | いいえ |
+| FINAL_SUBMISSION_COMPLETE.md | 78 | codefence-language | Code fence must declare a language. | いいえ |
+| FINAL_SUBMISSION_COMPLETE.md | 102 | codefence-language | Code fence must declare a language. | いいえ |
+| FINAL_SUBMISSION_COMPLETE.md | 59 | table-columns | Table columns do not align between header and separator. | いいえ |
+| FINAL_SUBMISSION_COMPLETE.md | 95 | table-columns | Table columns do not align between header and separator. | いいえ |
+| FINAL_SUBMISSION_COMPLETE_FINAL.md | 66 | codefence-language | Code fence must declare a language. | いいえ |
+| FINAL_SUBMISSION_COMPLETE_FINAL.md | 75 | codefence-language | Code fence must declare a language. | いいえ |
+| FINAL_SUBMISSION_COMPLETE_FINAL.md | 81 | codefence-language | Code fence must declare a language. | いいえ |
+| FINAL_SUBMISSION_COMPLETE_FINAL.md | 58 | table-columns | Table columns do not align between header and separator. | いいえ |
+| FINAL_SUBMISSION_COMPLETE_FINAL.md | 106 | table-columns | Table columns do not align between header and separator. | いいえ |
+| FINAL_SUBMISSION_COMPLETE_V2.md | 63 | codefence-language | Code fence must declare a language. | いいえ |
+| FINAL_SUBMISSION_COMPLETE_V2.md | 72 | codefence-language | Code fence must declare a language. | いいえ |
+| FINAL_SUBMISSION_COMPLETE_V2.md | 78 | codefence-language | Code fence must declare a language. | いいえ |
+| FINAL_SUBMISSION_COMPLETE_V2.md | 55 | table-columns | Table columns do not align between header and separator. | いいえ |
+| FINAL_SUBMISSION_COMPLETE_V2.md | 102 | table-columns | Table columns do not align between header and separator. | いいえ |
+| FINAL_SUBMISSION_READY.md | 63 | codefence-language | Code fence must declare a language. | いいえ |
+| FINAL_SUBMISSION_READY.md | 72 | codefence-language | Code fence must declare a language. | いいえ |
+| FINAL_SUBMISSION_READY.md | 78 | codefence-language | Code fence must declare a language. | いいえ |
+| FINAL_SUBMISSION_READY.md | 55 | table-columns | Table columns do not align between header and separator. | いいえ |
+| FINAL_SUBMISSION_READY.md | 105 | table-columns | Table columns do not align between header and separator. | いいえ |
+| FINAL_SUBMISSION_TEMPLATE.md | 37 | codefence-language | Code fence must declare a language. | いいえ |
+| FINAL_SUBMISSION_TEMPLATE.md | 50 | codefence-language | Code fence must declare a language. | いいえ |
+| FINAL_SUBMISSION_TEMPLATE.md | 66 | codefence-language | Code fence must declare a language. | いいえ |
+| FINAL_SUBMISSION_TEMPLATE.md | 82 | codefence-language | Code fence must declare a language. | いいえ |
+| FINAL_SUPPLEMENT_PACK_COMPLETE.md | 64 | codefence-language | Code fence must declare a language. | いいえ |
+| FULL_PACKAGE_EXECUTION_COMPLETE.md | 94 | codefence-language | Code fence must declare a language. | いいえ |
+| FULL_PACKAGE_EXECUTION_COMPLETE.md | 103 | codefence-language | Code fence must declare a language. | いいえ |
+| FULL_PACKAGE_EXECUTION_COMPLETE.md | 86 | table-columns | Table columns do not align between header and separator. | いいえ |
+| FULL_PACKAGE_EXECUTION_COMPLETE.md | 131 | table-columns | Table columns do not align between header and separator. | いいえ |
+| GITHUB_UI_CHECK_GUIDE.md | 163 | codefence-language | Code fence must declare a language. | いいえ |
+| IMMEDIATE_RECOVERY_COMPLETE.md | 60 | codefence-language | Code fence must declare a language. | いいえ |
+| IMMEDIATE_RECOVERY_COMPLETE.md | 71 | codefence-language | Code fence must declare a language. | いいえ |
+| IMMEDIATE_RECOVERY_COMPLETE.md | 83 | codefence-language | Code fence must declare a language. | いいえ |
+| IMMEDIATE_RECOVERY_COMPLETE.md | 117 | codefence-language | Code fence must declare a language. | いいえ |
+| IMMEDIATE_RECOVERY_COMPLETE.md | 52 | table-columns | Table columns do not align between header and separator. | いいえ |
+> 表は先頭 200 件まで表示し、残り 2231 件はログファイルを参照してください。
