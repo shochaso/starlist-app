@@ -62,7 +62,7 @@ class GachaAttemptsManager extends StateNotifier<GachaAttemptsState> {
     _initializeAttempts();
   }
 
-  /// 初期化（自動ログイン後に10回設定）
+  /// 初期化（サーバーから残高を取得）
   Future<void> _initializeAttempts() async {
     if (userId.isEmpty) {
       print('GachaAttemptsManager: userId is empty, using default state');
@@ -74,13 +74,10 @@ class GachaAttemptsManager extends StateNotifier<GachaAttemptsState> {
     try {
       print('GachaAttemptsManager: Initializing attempts for user $userId');
       
-      // 1. 今日のガチャ回数を強制的に10回に設定
-      await _repository.setTodayBaseAttempts(userId, 10);
-      
-      // 2. 最新の統計を取得
+      // サーバーから最新の統計を取得（setTodayBaseAttemptsは削除）
       final stats = await _repository.getGachaAttemptsStats(userId);
       
-      // 3. 状態を更新
+      // 状態を更新
       state = state.copyWith(
         stats: stats,
         isLoading: false,
@@ -94,7 +91,7 @@ class GachaAttemptsManager extends StateNotifier<GachaAttemptsState> {
     } catch (e) {
       print('GachaAttemptsManager: Failed to initialize attempts: $e');
       
-      // エラー時はローカルの10回をそのまま使用
+      // エラー時はデフォルトの状態を使用
       state = state.copyWith(
         isLoading: false,
         isValid: false,
@@ -145,43 +142,23 @@ class GachaAttemptsManager extends StateNotifier<GachaAttemptsState> {
     }
   }
 
-  /// ボーナス回数を追加（広告視聴）
+  /// ボーナス回数を追加（広告視聴） - 非推奨: 新しいRPCを使用してください
+  @Deprecated('Use AdService.completeAdViewAndGrantTicket instead')
   Future<bool> addBonusAttempts(int count) async {
     try {
       print('GachaAttemptsManager: Adding $count bonus attempts for user $userId');
       
-      // 1. 広告視聴をシミュレート（実際のad_serviceから呼ばれる想定）
-      await Future.delayed(const Duration(seconds: 3));
-      
-      // 2. サーバー側でボーナス回数を追加
-      final client = Supabase.instance.client;
-      await client.rpc('add_gacha_bonus_attempts', params: {
-        'user_id_param': userId,
-        'bonus_count': count,
-      });
-      
-      // 3. 最新統計を取得して状態更新
+      // サーバーから最新統計を取得して状態更新（RPCは廃止予定）
       await refreshAttempts();
       
-      print('GachaAttemptsManager: Successfully added $count bonus attempts');
+      print('GachaAttemptsManager: Successfully refreshed attempts after bonus');
       return true;
     } catch (e) {
       print('GachaAttemptsManager: Failed to add bonus attempts: $e');
       
-      // エラー時もローカルで加算（UX優先）
-      final newBonusAttempts = (state.stats.bonusAttempts + count).clamp(0, 3);
-      final newStats = GachaAttemptsStats(
-        baseAttempts: state.stats.baseAttempts,
-        bonusAttempts: newBonusAttempts,
-        usedAttempts: state.stats.usedAttempts,
-        availableAttempts: state.stats.baseAttempts + newBonusAttempts - state.stats.usedAttempts,
-        date: state.stats.date,
-      );
-      
       state = state.copyWith(
-        stats: newStats,
         isValid: false,
-        error: 'ボーナス回数の追加に失敗しました（ローカルで仮適用）',
+        error: 'ボーナス回数の追加に失敗しました',
         lastUpdated: DateTime.now(),
       );
       

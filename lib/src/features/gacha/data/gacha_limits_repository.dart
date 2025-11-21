@@ -233,6 +233,41 @@ class GachaLimitsRepository {
     }
   }
 
+  /// ガチャ回数を消費して結果を記録（新RPC使用）
+  Future<Map<String, dynamic>> consumeGachaAttemptsWithResult(
+    String userId, {
+    int consumeCount = 1,
+    String source = 'normal',
+    int rewardPoints = 0,
+    bool rewardSilverTicket = false,
+    Map<String, dynamic> gachaResult = const {},
+  }) async {
+    try {
+      final result = await _supabaseService.rpc('consume_gacha_attempts', params: {
+        'p_user_id': userId,
+        'p_consume_count': consumeCount,
+        'p_source': source,
+        'p_reward_points': rewardPoints,
+        'p_reward_silver_ticket': rewardSilverTicket,
+        'p_gacha_result': gachaResult,
+      });
+
+      if (result is Map<String, dynamic>) {
+        return result;
+      }
+      
+      return {
+        'new_balance': 0,
+        'history_id': null,
+        'points_awarded': 0,
+        'silver_ticket_awarded': false,
+      };
+    } catch (e) {
+      print('Failed to consume gacha attempts: $e');
+      rethrow;
+    }
+  }
+
   /// 今日のガチャ回数をリセット（デバッグ用）
   Future<void> resetTodayAttempts(String userId) async {
     try {
