@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 # 最終提出テンプレ（4点）完成版 最終版
 
 **実行日時**: 2025-11-09  
@@ -103,3 +112,5 @@ policy: migrate_to_registry
 **実行完了時刻**: 2025-11-09  
 **ステータス**: ✅ **PR #39作成・競合解消完了（マージ可能）**
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

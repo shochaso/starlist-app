@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 Status:: planned
 Source-of-Truth:: (TBD)
 Spec-State:: 
@@ -44,3 +53,6 @@ defines (`DEBUG_ICONS=true`). The current toggles are:
 
 Enable these flags in staging environments to inspect icon/image pipelines
 without modifying source code.
+
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

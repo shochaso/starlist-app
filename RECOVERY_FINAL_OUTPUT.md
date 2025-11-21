@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 # 即時リカバリ 10倍セット 実行結果
 
 **実行日時**: 2025-11-09  
@@ -72,3 +81,5 @@ Security verification: ALL PASS （RUN_ID=weekly:<RID>, allowlist:<RID>）
 **実行完了時刻**: 2025-11-09  
 **ステータス**: ✅ **実行完了（PR #22マージ待ち）**
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

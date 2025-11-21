@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 # 推奨価格機能 最終移行チェックリスト
 
 ## ✅ 最終移行チェック（DB & 関数）
@@ -286,4 +295,5 @@ flutter test test/src/features/pricing/
 # アプリを起動して価格カードの表示とバリデーションを確認
 ```
 
-
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 # feat(phase4): Automated Audit & Self-Healing Ops (WS01–WS05 complete)
 
 ## Summary
@@ -19,3 +28,5 @@
 - Manifest writes use fsync for durability before atomic rename.
 - Observer handles duplicate-run-id gracefully and continues processing.
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

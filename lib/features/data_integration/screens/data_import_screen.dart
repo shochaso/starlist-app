@@ -1051,8 +1051,8 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
     final double iconBoxSize = baseBoxSize * iconScale;
     final String serviceId = service['id'] as String;
     final serviceDefinition = ServiceIcons.getService(serviceId);
-    final Color accentColor = serviceDefinition?.primaryColor ?? 
-        _getServiceColor(serviceId);
+    final Color accentColor =
+        serviceDefinition?.primaryColor ?? _getServiceColor(serviceId);
 
     return _InteractiveServiceCard(
       serviceId: serviceId,
@@ -1205,8 +1205,8 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
     );
 
     final serviceDefinition = ServiceIcons.getService(effectiveServiceId);
-    final Color accentColor = serviceDefinition?.primaryColor ?? 
-        (service['iconColor'] as Color?) ?? 
+    final Color accentColor = serviceDefinition?.primaryColor ??
+        (service['iconColor'] as Color?) ??
         _getServiceColor(effectiveServiceId);
 
     return _InteractiveServiceCard(
@@ -1222,11 +1222,11 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
       isImplemented: isImplemented,
       iconData: iconData,
       iconColor: iconColor,
-          gradient: gradient,
-          border: border,
+      gradient: gradient,
+      border: border,
       showComingSoonBadge: showComingSoonBadge,
       onTap: handleTap,
-                        isPriority: false,
+      isPriority: false,
     );
   }
 
@@ -2931,6 +2931,10 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
     final themeState = ref.watch(themeProviderEnhanced);
     final isDark = themeState.isDarkMode;
 
+    if (selectedCategory == 'youtube') {
+      return const YouTubeImportScreen(showAppBar: false);
+    }
+
     final category = dataCategories.firstWhere(
       (cat) => cat['id'] == selectedCategory,
     );
@@ -3556,7 +3560,7 @@ class _InteractiveServiceCard extends StatefulWidget {
   final IconData? fallbackIcon;
   final VoidCallback onTap;
   final bool isPriority;
-  
+
   // Category card specific
   final bool isManualEntry;
   final bool isCustom;
@@ -3588,7 +3592,8 @@ class _InteractiveServiceCard extends StatefulWidget {
   });
 
   @override
-  State<_InteractiveServiceCard> createState() => _InteractiveServiceCardState();
+  State<_InteractiveServiceCard> createState() =>
+      _InteractiveServiceCardState();
 }
 
 class _InteractiveServiceCardState extends State<_InteractiveServiceCard>
@@ -3644,7 +3649,7 @@ class _InteractiveServiceCardState extends State<_InteractiveServiceCard>
 
   LinearGradient _getGradient() {
     if (widget.gradient != null) return widget.gradient!;
-    
+
     if (widget.isPriority) {
       return widget.isDark
           ? const LinearGradient(
@@ -3658,7 +3663,7 @@ class _InteractiveServiceCardState extends State<_InteractiveServiceCard>
               colors: [Colors.white, Color(0xFFFAFBFC)],
             );
     }
-    
+
     return widget.isDark
         ? LinearGradient(
             begin: Alignment.topLeft,
@@ -3681,7 +3686,7 @@ class _InteractiveServiceCardState extends State<_InteractiveServiceCard>
 
   Border _getBorder() {
     if (widget.border != null) return widget.border!;
-    
+
     final borderColor = widget.isManualEntry
         ? (widget.isDark
             ? Colors.white.withOpacity(0.08)
@@ -3691,11 +3696,9 @@ class _InteractiveServiceCardState extends State<_InteractiveServiceCard>
                 ? const Color(0xFF404040).withOpacity(0.3)
                 : const Color(0xFFE2E8F0).withOpacity(0.6))
             : const Color(0xFFFFC107).withOpacity(0.3);
-    
+
     return Border.all(
-      color: _isHovered
-          ? widget.accentColor.withOpacity(0.4)
-          : borderColor,
+      color: _isHovered ? widget.accentColor.withOpacity(0.4) : borderColor,
       width: widget.isManualEntry
           ? 1.5
           : widget.isImplemented
@@ -3715,7 +3718,7 @@ class _InteractiveServiceCardState extends State<_InteractiveServiceCard>
         spreadRadius: 0,
       ),
     ];
-    
+
     if (_isHovered) {
       baseShadows.add(
         BoxShadow(
@@ -3726,16 +3729,15 @@ class _InteractiveServiceCardState extends State<_InteractiveServiceCard>
         ),
       );
     }
-    
+
     return baseShadows;
   }
 
   @override
   Widget build(BuildContext context) {
     final borderRadius = widget.isPriority ? 20.0 : 18.0;
-    final padding = widget.isPriority
-        ? const EdgeInsets.all(16)
-        : const EdgeInsets.all(14);
+    final padding =
+        widget.isPriority ? const EdgeInsets.all(16) : const EdgeInsets.all(14);
 
     return MouseRegion(
       onEnter: (_) {
@@ -3889,7 +3891,7 @@ class _InteractiveServiceCardState extends State<_InteractiveServiceCard>
         child: _buildIcon(),
       );
     }
-    
+
     return _squareIcon(
       size: widget.iconBoxSize,
       child: _buildIcon(),

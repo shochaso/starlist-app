@@ -1,3 +1,24 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # SLSA Provenance Automation Design (20× Continuous Governance)
 
 ## 1. 目的 / Objective
@@ -99,3 +120,6 @@
 ## 6. Documentation & Reference
 - Document the flow in `docs/ops/workflows.mmd` (Mermaid) and reference `workflow-summary.md`.
 - Maintain `failure-recovery.md` referencing manifest/issue/resolution steps (also cross-links with runbook).
+
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

@@ -1,3 +1,24 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # Run workflow ガイド拡張版 作成完了
 
 **作成日時**: 2025-11-09  
@@ -89,3 +110,5 @@ artifacts: gitleaks/sbom downloaded=YES
 **作成完了時刻**: 2025-11-09  
 **ステータス**: ✅ **Run workflow ガイド拡張版作成完了（完全な運用Runbook）**
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

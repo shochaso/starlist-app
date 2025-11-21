@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 # Day11 本番実行ガイド（最終版）
 
 ## ✅ 実行直前チェック（1分で完了）
@@ -270,4 +279,5 @@ EOF
 
 実行結果（SlackメッセージURL・dryRun抜粋）がそろいましたらお送りください。最終レポートの体裁までこちらで整えます。
 
-
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

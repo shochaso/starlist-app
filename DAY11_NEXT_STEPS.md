@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 # Day11 次のステップ実行ガイド
 
 ## 現在の状況
@@ -133,3 +142,5 @@ curl -sS -X POST "$SUPABASE_URL/functions/v1/ops-slack-summary?dryRun=false&peri
 
 詳細は `DAY11_DEPLOYMENT_CHECKLIST.md` の「失敗時の即応対処」セクションを参照してください。
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

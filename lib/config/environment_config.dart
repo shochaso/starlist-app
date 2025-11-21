@@ -51,4 +51,14 @@ class EnvironmentConfig {
     'API_BASE',
     defaultValue: 'https://ocr-proxy-1092709877001.us-central1.run.app',
   );
+
+  static const String openaiApiKey = String.fromEnvironment(
+    'OPENAI_API_KEY',
+    defaultValue: '',
+  );
+
+  static const String youtubeApiKey = String.fromEnvironment(
+    'YOUTUBE_API_KEY',
+    defaultValue: '',
+  );
 }

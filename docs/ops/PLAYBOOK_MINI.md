@@ -1,3 +1,24 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # 運用教育ミニ教材（5分×5本）
 
 ## 01：最短3コマンドの意味
@@ -62,4 +83,5 @@ Slack Permalinkは監査票とSlack投稿を結ぶ唯一の証跡。欠損する
 
 p95 latencyが予算（2000ms）を超えるとSLO逸脱。Go/No-GoでNo-Go判定。
 
-
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

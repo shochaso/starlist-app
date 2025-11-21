@@ -1,3 +1,24 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 Status:: 
 Source-of-Truth:: (TBD)
 Spec-State:: 
@@ -97,3 +118,6 @@ Match your table schema (`user_id` in the example) and rely on the `sub` claim p
    - 月次で `supabase storage list doc-share --prefix` を利用して不要ファイルを確認。
 
 これらの手順を更新した場合は `docs/COMPANY_SETUP_GUIDE.md` および `docs/CHATGPT_SHARE_GUIDE.md` も合わせて更新すること。
+
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

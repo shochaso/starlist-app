@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 # 仕上げ検収→恒常運用定着 完了レポート
 
 **実行日時**: 2025-11-09  
@@ -206,3 +215,5 @@ scripts/ops/post-merge-routine.sh
 **実行完了時刻**: 2025-11-09  
 **ステータス**: ✅ **即日着地項目は"定常化"レベルまで昇格**
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

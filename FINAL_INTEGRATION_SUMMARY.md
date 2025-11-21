@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 # Day11 & 推奨価格機能 最終統合サマリー
 
 ## 🧭 Day11（Slack週次サマリ）Go-Live構成
@@ -396,4 +405,5 @@ command -v stripe >/dev/null || brew install stripe/stripe-cli/stripe
 **最終更新**: 2025-11-08  
 **状態**: Go-Live準備完了 ✅
 
-
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

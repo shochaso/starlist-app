@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 # 推奨価格機能 最終実務ショートカットガイド
 
 ## ✅ 実行サマリ（最短ルート）
@@ -280,4 +289,5 @@ flutter test test/src/features/pricing/
 
 成果（SlackメッセージURL・Webhookイベント種別と保存後レコード・画面スクショ）が揃いましたらお送りください。すぐに**最終レポート（PRICING_FINAL_CHECKLIST.md 反映版）**の体裁まで整えてご提出いたします。
 
-
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

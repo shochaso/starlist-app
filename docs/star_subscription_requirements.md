@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 Status:: 
 Source-of-Truth:: (TBD)
 Spec-State:: 
@@ -177,3 +186,5 @@ Supabase と Flutter を前提としたスター単位の定期課金モデル�
 - スター別価格の自由度（初期段階の上限/下限ルール設定）。
 - 既存グローバル課金ユーザーへの移行特典の有無。
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

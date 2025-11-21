@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 # WS11: PR #61 Comment Posting Results
 
 **Date**: 2025-11-13 (UTC)
@@ -144,3 +153,6 @@ If comment is incorrect or needs to be removed:
 
 **Status**: ⏳ Awaiting validation conditions
 **Next Action**: Complete validations and trigger comment posting
+
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

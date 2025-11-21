@@ -1,3 +1,24 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # 継続監査KPIダッシュボード — 実装ガイド
 
 ## 目的（1行）
@@ -186,4 +207,5 @@ npm run dev   # → http://localhost:3000/dashboard/audit
 # 4) CI実行後、latest.json が更新されUIに反映される
 ```
 
-
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

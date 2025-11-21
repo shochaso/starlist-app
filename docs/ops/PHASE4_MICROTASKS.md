@@ -1,3 +1,24 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # Phase 4 Micro-Tasks (20× per Workstream)
 
 ## WS01: Observer 2.0 (20 tasks)
@@ -119,3 +140,5 @@
 
 See individual workstream documentation for detailed micro-tasks.
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

@@ -12,6 +12,14 @@ owner: STARLIST Risk Management Team
 
 
 
+
+
+
+
+
+
+
+
 # STARLIST リスクレジスター
 
 ## 背景

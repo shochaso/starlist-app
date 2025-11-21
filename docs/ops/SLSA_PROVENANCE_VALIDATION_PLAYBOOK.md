@@ -1,3 +1,24 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # SLSA Provenance Validation Playbook
 
 ## Objective recap
@@ -119,3 +140,6 @@
 - Draft the `notify-on-failure` job with the Slack/issue logic (place under `.github/workflows/slsa-provenance.yml`).
 - Build the Supabase migration + ingestion function; add SQL + TypeScript doc snippets.
 - Add the Mermaid & table docs; render the diagram and wire it into the main `docs/ops/INCIDENT_RUNBOOK.md` or similar overview.
+
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

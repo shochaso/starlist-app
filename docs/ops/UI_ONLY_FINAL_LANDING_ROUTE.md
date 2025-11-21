@@ -1,3 +1,24 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # UIオンリー最終着地ルート（20×凝縮版）
 
 **目的**: PR #22がクローズ済み／週次WFはmain未反映という前提で、UI操作のみで完全着地まで運ぶ
@@ -185,3 +206,5 @@ Next:
 **作成日**: 2025-11-09  
 **ステータス**: ✅ **UIオンリー最終着地ルート完成**
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

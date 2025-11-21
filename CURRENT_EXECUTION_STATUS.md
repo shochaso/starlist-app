@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 # 現在の実行状態
 
 ## ✅ 実行済み検証
@@ -119,3 +128,5 @@ import 'package:web/web.dart' as web;
 
 問題があれば、`EXECUTION_LOGS.md`のテンプレートにログを貼り付けて送信してください。
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

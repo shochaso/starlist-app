@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 # Phase 4 WS01-WS05 Final Summary
 
 ## ✅ Implementation Complete
@@ -98,3 +107,6 @@ gh pr create --base main --head feat/phase4-auto-audit-20251114 \
 1. **CI Verification**: After PR merge, verify workflows run successfully
 2. **Secrets Setup**: Configure SUPABASE_SERVICE_KEY and SLACK_WEBHOOK_URL in GitHub Secrets
 3. **Follow-up PRs**: WS06-WS20 implementation (see PHASE4_MICROTASKS.md)
+
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

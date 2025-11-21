@@ -1,3 +1,24 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # UI操作のみチェックリスト（ターミナル不要）
 
 **目的**: PR #22の最終着地から週次/セキュリティ運用、監査証跡、ブランチ保護まで、すべてGitHub UIとIDEのボタン操作だけで完了する
@@ -117,3 +138,5 @@
 **作成日**: 2025-11-09  
 **ステータス**: ✅ **UI操作のみチェックリスト完成**
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

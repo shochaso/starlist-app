@@ -1,3 +1,24 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # Release Policy
 
 ## タグ命名ポリシー
@@ -46,3 +67,5 @@ git push origin main --force
 - **ロールバック**: `scripts/release_revert.sh`を使用
 - **タグ命名変更**: `workflow_dispatch`で手動実行
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

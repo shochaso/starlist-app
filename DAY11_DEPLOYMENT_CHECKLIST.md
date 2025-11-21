@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 # Day11「ops-slack-summary」本番デプロイ & 受け入れ確認チェックリスト（実行版）
 
 ## 0) 前提と環境変数（Preflight）
@@ -587,3 +596,6 @@ curl -sS -X POST "$SUPABASE_URL/functions/v1/ops-slack-summary?dryRun=false&peri
 - GitHub Actions Secrets は大文字スネークケース（`SLACK_WEBHOOK_OPS_SUMMARY`）
 - 両方の環境で設定が必要です
 - dryRun実行時は`slack_webhook_ops_summary`が未設定でもエラーになりません（dryRunモードではSlack送信をスキップ）
+
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

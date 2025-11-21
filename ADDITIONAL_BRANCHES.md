@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 # 追加ブランチ作成コマンド
 
 以下のブランチを作成してプッシュしてください。
@@ -72,3 +81,5 @@ git checkout fix/security-hardening-web-csp-lock
 - PRは順次作成してください（先にsecurity-gap-closureから）
 - CSP Enforceは運用観察後に実施してください
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

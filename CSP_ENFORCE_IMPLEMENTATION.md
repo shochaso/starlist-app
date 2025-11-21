@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 # CSP Enforce 実装完了
 
 ## 📋 実装内容
@@ -32,13 +41,13 @@
     }
   ]
 }
-```
+```bash
 
 ### 2. Cloudflare Pages の場合
 
 **作成ファイル**: `_headers`
 
-```
+```bash
 /*
   Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https:; font-src 'self' https://fonts.gstatic.com data:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.segment.io https://sentry.io https://*.sentry.io; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests
   X-Frame-Options: DENY
@@ -50,7 +59,7 @@
 
 **参考ファイル**: `nginx-csp-example.conf`
 
-```nginx
+```bash
 add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https:; font-src 'self' https://fonts.gstatic.com data:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.segment.io https://sentry.io https://*.sentry.io; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests" always;
 ```
 
@@ -131,7 +140,7 @@ grep -R --line-number -E "supabase\.auth\.token|jwt|access_token" build/ web/ ||
 
 `_headers` の `Content-Security-Policy` を `Content-Security-Policy-Report-Only` に変更:
 
-```
+```bash
 Content-Security-Policy-Report-Only: ...
 ```
 
@@ -139,7 +148,7 @@ Content-Security-Policy-Report-Only: ...
 
 `add_header` の `Content-Security-Policy` を `Content-Security-Policy-Report-Only` に変更:
 
-```nginx
+```bash
 add_header Content-Security-Policy-Report-Only "..." always;
 ```
 
@@ -224,7 +233,7 @@ add_header Content-Security-Policy-Report-Only "..." always;
 
 **作成ファイル**: `_headers`
 
-```
+```bash
 /*
   Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https:; font-src 'self' https://fonts.gstatic.com data:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.segment.io https://sentry.io https://*.sentry.io; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests
   X-Frame-Options: DENY
@@ -236,7 +245,7 @@ add_header Content-Security-Policy-Report-Only "..." always;
 
 **参考ファイル**: `nginx-csp-example.conf`
 
-```nginx
+```bash
 add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https:; font-src 'self' https://fonts.gstatic.com data:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.segment.io https://sentry.io https://*.sentry.io; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests" always;
 ```
 
@@ -317,7 +326,7 @@ grep -R --line-number -E "supabase\.auth\.token|jwt|access_token" build/ web/ ||
 
 `_headers` の `Content-Security-Policy` を `Content-Security-Policy-Report-Only` に変更:
 
-```
+```bash
 Content-Security-Policy-Report-Only: ...
 ```
 
@@ -325,7 +334,7 @@ Content-Security-Policy-Report-Only: ...
 
 `add_header` の `Content-Security-Policy` を `Content-Security-Policy-Report-Only` に変更:
 
-```nginx
+```bash
 add_header Content-Security-Policy-Report-Only "..." always;
 ```
 
@@ -371,3 +380,5 @@ add_header Content-Security-Policy-Report-Only "..." always;
 
 **最終更新**: CSP Enforce 実装完了時点
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

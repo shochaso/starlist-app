@@ -1,3 +1,24 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # セキュリティ"戻し運用"SOP（UIオンリー）
 
 **目的**: 緑化を維持しながら段階的に強度を復帰する。常に「小さく戻して緑で着地」を原則とする。
@@ -72,3 +93,5 @@ Semgrepルールを段階的にERRORへ昇格（緑化維持）
 **作成日**: 2025-11-09  
 **ステータス**: ✅ **セキュリティ"戻し運用"SOP完成**
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

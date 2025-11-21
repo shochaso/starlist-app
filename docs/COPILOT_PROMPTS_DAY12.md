@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 # Copilot: 10x-scale prompt pack — Day12 integration (PR #30–#33)
 
 ## 概要
@@ -197,3 +206,6 @@ docs/diagrams/** の *-alt.mmd を本実装へ統合するPRの差分と本文�
 ### 運用提案
 - このファイルをリポジトリに入れておくと再現性が上がります（チーム共有用）。
 - 「Copilot Chat に貼る」→「返ってきた差分を git apply」→「CI 緑を確認」の短ループを推奨。
+
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

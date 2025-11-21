@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 # feat(phase4): Auto-Audit & Self-Healing — Foundation (2025-11-14)
 
 ## Summary
@@ -100,3 +109,6 @@ If issues occur:
 - Design: `docs/ops/PHASE4_AUTO_AUDIT_SELF_HEALING_DESIGN.md`
 - Summary: `docs/ops/PHASE4_IMPLEMENTATION_SUMMARY.md`
 - Micro-tasks: `docs/ops/PHASE4_MICROTASKS.md`
+
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

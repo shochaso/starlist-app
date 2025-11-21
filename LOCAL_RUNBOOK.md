@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 # Phase 4 Local Development Runbook
 
 ## Prerequisites
@@ -181,3 +190,5 @@ find scripts/phase4 lib/phase4 tests/phase4 .github/workflows/phase4* -type f | 
 # - .github/workflows/phase4-auto-audit.yml
 ```
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

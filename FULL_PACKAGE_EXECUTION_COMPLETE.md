@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 # 10倍密度・即完走フルパッケージ 実行完了報告
 
 **実行日時**: 2025-11-09  
@@ -161,3 +170,5 @@ git push
 **実行完了時刻**: 2025-11-09  
 **ステータス**: ✅ **競合解消完了（PR #39マージ待ち）**
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

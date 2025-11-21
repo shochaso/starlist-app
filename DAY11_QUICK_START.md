@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 # Day11 クイックスタートガイド
 
 ## 前提条件
@@ -101,3 +110,5 @@ Slack `#ops-monitor` チャンネルで週次サマリを確認してくださ�
 
 詳細は `DAY11_DEPLOYMENT_CHECKLIST.md` の「失敗時の即応対処」セクションを参照してください。
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

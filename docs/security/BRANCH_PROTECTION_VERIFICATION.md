@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 # Branch保護の実効性担保（検証PRテンプレ）
 
 **Status**: Active  
@@ -62,3 +71,5 @@ gh pr create --title "test: branch protection verification" --body "$(cat docs/s
 
 **作成日**: 2025-11-09
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

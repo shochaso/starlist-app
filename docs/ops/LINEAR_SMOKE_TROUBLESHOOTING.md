@@ -1,3 +1,24 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # Linear Smoke Test - 失敗時のプレイブック
 
 ## 60秒プレイブック
@@ -101,4 +122,5 @@
 - `docs/ops/LINEAR_API_KEY_SETUP.md` - セットアップガイド
 - `docs/reports/SECURITY/LINEAR_SMOKE/YYYY-MM-DD.md` - 監査ログ
 
-
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

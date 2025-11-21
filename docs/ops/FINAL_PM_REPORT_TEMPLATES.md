@@ -1,3 +1,24 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # PM報告テンプレート集
 
 **作成日**: 2025-11-09
@@ -96,3 +117,5 @@ Semgrep 2ルール昇格PR／Trivy strict 1サービス通電、ブランチ保�
 **作成日**: 2025-11-09  
 **ステータス**: ✅ **PM報告テンプレート集完成**
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

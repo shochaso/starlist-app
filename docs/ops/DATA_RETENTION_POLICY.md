@@ -1,3 +1,24 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # データ保持/削除ポリシー（監査/機微）
 
 ## Artifact保持
@@ -45,3 +66,5 @@
 * **保持期間**: Git管理対象（長期保持）
 * **更新頻度**: CI成功時に自動更新
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

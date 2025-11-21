@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 Status:: 
 Source-of-Truth:: (TBD)
 Spec-State:: 
@@ -334,4 +343,7 @@ claude init
 - 環境情報の記録（Node.js version, OS, etc.）
 - 解決方法の記録（今後の参考用）
 
-**制約なし開発モードでも、安定した環境で効率的に開発しましょう！** 🛠 
+**制約なし開発モードでも、安定した環境で効率的に開発しましょう！** 🛠
+
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

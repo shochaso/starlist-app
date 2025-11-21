@@ -1,3 +1,24 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # Phase4 KPI Aggregator README
 
 Overview
@@ -32,4 +53,5 @@ Acceptance
 - `node scripts/phase4/kpi/aggregate.ts --base-dir ./tests/fixtures/kpi --dry-run` logs `kpiComputed`
 - Dry-run does not create files; normal run creates both `.json` and `.md`
 
-
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

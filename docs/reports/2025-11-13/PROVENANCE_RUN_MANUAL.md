@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 # Provenance Run Manual Execution Guide
 
 **Purpose**: Step-by-step guide for manual execution of provenance workflows via UI and CLI.
@@ -201,3 +210,6 @@ If execution causes issues:
 ---
 
 **Note**: This manual is for reference. Actual execution results should be recorded in `PHASE2_2_VALIDATION_REPORT.md`.
+
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

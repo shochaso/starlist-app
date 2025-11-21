@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 # Day11 & Pricing 統合リリース PR テンプレート
 
 ## 概要
@@ -176,4 +185,5 @@ Day11（Slack週次サマリ）と推奨価格機能（Stripe連携）の統合�
 **実行者**: `<user>`  
 **環境**: `<SUPABASE_URL>`
 
-
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

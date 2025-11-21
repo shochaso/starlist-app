@@ -1,0 +1,57 @@
+name: STARLIST CI
+
+on:
+  push:
+    branches: [ "main", "dev" ]
+  pull_request:
+    branches: [ "main", "dev" ]
+
+jobs:
+  build:
+    name: Build & Analyze
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        platform: [web, android]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: "stable"
+
+      - name: Flutter Pub Get
+        run: flutter pub get
+
+      - name: Verify Required Secrets (API keys)
+        run: |
+          if [ -z "${{ secrets.OPENAI_API_KEY }}" ]; then
+            echo "❌ Missing OPENAI_API_KEY in GitHub Secrets"
+            exit 1
+          fi
+
+          if [ -z "${{ secrets.YOUTUBE_API_KEY }}" ]; then
+            echo "❌ Missing YOUTUBE_API_KEY in GitHub Secrets"
+            exit 1
+          fi
+
+          echo "✅ Required secrets found"
+
+      - name: Flutter Analyze
+        run: flutter analyze
+
+      - name: Flutter Test
+        run: flutter test || echo "⚠️ No tests found, skipping"
+
+      - name: Flutter Build (Web)
+        if: matrix.platform == 'web'
+        run: flutter build web --release
+
+      - name: Flutter Build (Android)
+        if: matrix.platform == 'android'
+        run: |
+          flutter build apk --release

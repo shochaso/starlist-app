@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 # Evidence Index (2025-11-13)
 
 All evidence listed below lives under `docs/reports/2025-11-13/` (except where noted) and is referenced by the new Phase 2.2 and Phase 3 reports.
@@ -49,3 +58,6 @@ All evidence listed below lives under `docs/reports/2025-11-13/` (except where n
 
 - `docs/ops/SECRETS_PRECHECK.md`: Steps to verify Supabase/Slack/dispatch secrets before executing the validation suite.
 - `docs/ops/CI_RUNTIME_POLICY.md`: Concurrency, timeout, and retry guidance for the provenance/validation jobs and the Phase 3 observer.
+
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

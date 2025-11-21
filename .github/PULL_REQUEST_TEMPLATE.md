@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 ## Linear
 
 - Issue Key: `STA-XX`（必須）
@@ -21,3 +30,6 @@
 - [ ] `build (pull_request)` と `check (pull_request)` が緑
 - [ ] CI が通る / 失敗原因を把握している
 - [ ] レビュー観点（破壊的変更、移行、セキュリティ）を明記
+
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

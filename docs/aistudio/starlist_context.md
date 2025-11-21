@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 ## 1. ディレクトリ構成（概要）
 
 ```
@@ -476,3 +485,6 @@ Future<Response> exchange(req);           // Auth0 ⇨ Supabase JWT
 
 **Missing Sections**  
 現時点で `link_enricher_provider` の Flutter 実装は未確認（NestJS enrich service のみ）。利用する場合は `server/src/ingest/services/enrich.service.ts` と BullMQ Processor を参照し、Flutter 側の Provider/API 契約を定義してください。
+
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

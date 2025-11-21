@@ -1,3 +1,24 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # 🧭 STARLIST 監査運用体制 ― 最終統合サマリー
 
 ## ✅ 目的
@@ -325,3 +346,5 @@ Slack／Edge Functions／Stripe／DB の 4面監査を自動化し、
 **承認**: COO兼PM ティム  
 **バージョン**: Summary Edition
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

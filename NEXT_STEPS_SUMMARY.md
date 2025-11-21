@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 # 次のステップ実行サマリ
 
 ## 実行済みチェック
@@ -139,3 +148,5 @@ flutter run -d ios    # または -d android
 - `SUPABASE_ENV_SETUP.md` - Supabase環境変数設定ガイド
 - `ADDITIONAL_BRANCHES.md` - 追加ブランチの説明
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

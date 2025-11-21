@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 # CSP Enforce 実装プロンプト
 
 ## 【目的】
@@ -110,7 +119,7 @@ ls -la nginx-csp-example.conf
 
 **ファイル**: `_headers`
 
-```
+```bash
 /*
   Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https:; font-src 'self' https://fonts.gstatic.com data:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.segment.io https://sentry.io https://*.sentry.io; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'; manifest-src 'self'; worker-src 'self' blob:; media-src 'self' https: blob:; upgrade-insecure-requests
   X-Frame-Options: DENY
@@ -122,7 +131,7 @@ ls -la nginx-csp-example.conf
 
 **ファイル**: `nginx-csp-example.conf`
 
-```nginx
+```bash
 server {
     # ... 既存の設定 ...
 
@@ -238,7 +247,7 @@ grep -R --line-number -E "supabase\.auth\.token|jwt|access_token" build/ web/ ||
 
 **ファイル**: `_headers`
 
-```
+```bash
 Content-Security-Policy-Report-Only: ...
 ```
 
@@ -251,7 +260,7 @@ Content-Security-Policy-Report-Only: ...
 
 **ファイル**: `nginx-csp-example.conf`
 
-```nginx
+```bash
 add_header Content-Security-Policy-Report-Only "..." always;
 ```
 
@@ -322,7 +331,7 @@ add_header Content-Security-Policy-Report-Only "..." always;
 - `media-src 'self' https: blob:;` - メディアリソースの許可
 
 ### Stripe iframe用（将来使用時）
-```csp
+```bash
 frame-src https://js.stripe.com https://hooks.stripe.com;
 ```
 
@@ -441,7 +450,7 @@ ls -la nginx-csp-example.conf
 
 **ファイル**: `_headers`
 
-```
+```bash
 /*
   Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https:; font-src 'self' https://fonts.gstatic.com data:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.segment.io https://sentry.io https://*.sentry.io; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'; manifest-src 'self'; worker-src 'self' blob:; media-src 'self' https: blob:; upgrade-insecure-requests
   X-Frame-Options: DENY
@@ -453,7 +462,7 @@ ls -la nginx-csp-example.conf
 
 **ファイル**: `nginx-csp-example.conf`
 
-```nginx
+```bash
 server {
     # ... 既存の設定 ...
 
@@ -569,7 +578,7 @@ grep -R --line-number -E "supabase\.auth\.token|jwt|access_token" build/ web/ ||
 
 **ファイル**: `_headers`
 
-```
+```bash
 Content-Security-Policy-Report-Only: ...
 ```
 
@@ -582,7 +591,7 @@ Content-Security-Policy-Report-Only: ...
 
 **ファイル**: `nginx-csp-example.conf`
 
-```nginx
+```bash
 add_header Content-Security-Policy-Report-Only "..." always;
 ```
 
@@ -653,7 +662,7 @@ add_header Content-Security-Policy-Report-Only "..." always;
 - `media-src 'self' https: blob:;` - メディアリソースの許可
 
 ### Stripe iframe用（将来使用時）
-```csp
+```bash
 frame-src https://js.stripe.com https://hooks.stripe.com;
 ```
 
@@ -661,3 +670,5 @@ frame-src https://js.stripe.com https://hooks.stripe.com;
 
 **最終更新**: CSP Enforce 実装プロンプト作成時点
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

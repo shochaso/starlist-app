@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 Status:: 
 Source-of-Truth:: (TBD)
 Spec-State:: 
@@ -136,3 +145,6 @@ assets/icons/services/
 ---
 *最終更新: 2024年7月12日*
 *次回レビュー予定: 2024年10月12日*
+
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

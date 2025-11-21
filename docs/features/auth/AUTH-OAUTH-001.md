@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 Status:: 
 Source-of-Truth:: (TBD)
 Spec-State:: 
@@ -230,3 +239,6 @@ OAUTH_APPLE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-
 - [ ] Edge: `auth-sync` 実装 & idempotent upsert  
 - [ ] DB: `audit_auth` 追加 & ポリシー  
 - [ ] Docs: 本仕様を *source_of_truth* に昇格（Day4完了時）
+
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

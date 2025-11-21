@@ -1,3 +1,24 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # Cursor / Factory / Linear 運用モデル
 
 ## 全体方針（1行要約）
@@ -174,3 +195,5 @@ Merged via squash. Linear should be in "Done" ✅
 * `.github/workflows/conventions.yml` - PRタイトル規約チェック
 * `.github/PULL_REQUEST_TEMPLATE.md` - PRテンプレート
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

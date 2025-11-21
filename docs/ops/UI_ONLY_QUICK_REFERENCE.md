@@ -1,3 +1,24 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # UI操作オンリー クイックリファレンス
 
 **目的**: よく使う操作を1ページにまとめたクイックリファレンス
@@ -77,3 +98,5 @@
 **作成日**: 2025-11-09  
 **ステータス**: ✅ **クイックリファレンス完成**
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

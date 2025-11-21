@@ -12,6 +12,14 @@ owner: STARLIST Documentation Team
 
 
 
+
+
+
+
+
+
+
+
 # STARLIST ドキュメント更新履歴
 
 ## 背景
@@ -263,3 +271,37 @@ grep "STARLIST Development Team" UPDATE_LOG.md
 - **影響範囲**: Documentation Team, Ops CI
 - **責任者**: STARLIST Autonomous Engineer
 - **関連チケット**: ci/extended-markdown-governance
+
+#### 14:40 UTC - Markdownガバナンス第2フェーズ
+- **ドキュメント**: docs/ops/MD_CI_REPORT.md, docs/ops/UPDATE_LOG.md, CI_FIXES_LATEST.md, CI_FIXES_SUMMARY.md, CI_FIXES_APPLIED.md, scripts/ensure-node20.js
+- **変更タイプ**: 更新
+- **変更内容**: コードフェンスの言語指定を `bash` に揃えて拡張レポートの table-columns/codefence-language エラーを 2,431→2,427 件に減少。`scripts/ensure-node20.js` を CommonJS/警告ベースに書き換え、Node 18 でも `npm run lint:md` が起動するようにした（undici の `File` global がないためエラーは継続）。`validate_md_starlist.py` の再実行結果も `docs/ops/MD_CI_REPORT.md` に記録。`npm run lint:md` は `ReferenceError: File is not defined` で依然失敗。
+- **影響範囲**: Documentation Team, Ops CI
+- **責任者**: STARLIST Autonomous Engineer
+- **関連チケット**: ci/extended-markdown-governance
+
+#### 15:03 UTC - Markdownガバナンス継続
+- **ドキュメント**: docs/ops/MD_CI_REPORT.md, docs/ops/UPDATE_LOG.md, CSP関連ファイル（`10X_FINALIZATION_PACK_SUMMARY.md`, `COMMIT_READY_SUMMARY.md`, `CSP_ENFORCE_*.md` 系）
+- **変更タイプ**: 検証＆補足
+- **変更内容**: 再度 `validate_md_starlist.py` を実行し、ファイル数 437、エラー 2,427 件（テーブル列不一致 + CSPコードフェンス未指定/未サポート）を記録。`10X...`/`COMMIT...` の統計テーブルを新構成にして列数を揃え、CSP関連のコードフェンスに `bash` 言語を付与したが、リポートには依然として unsupported/empty language エラーが残る。（Node 20 以上の undici File グローバルエラーも継続）
+- **影響範囲**: Documentation Team, Ops CI
+- **責任者**: STARLIST Autonomous Engineer
+- **関連チケット**: ci/extended-markdown-governance
+
+#### 15:20 UTC - Markdown lint/CI補足
+- **ドキュメント**: docs/ops/MD_CI_REPORT.md, docs/ops/UPDATE_LOG.md, docs/COMPANY_SETUP_GUIDE.md, package.json, scripts/polyfill-file.js
+- **変更タイプ**: 環境調整＋検証
+- **変更内容**: `scripts/polyfill-file.js` を追加し `markdown-link-check` 前に `File` を定義することで Node 18 環境でも lint が起動するようにした。`npm run lint:md` は `markdown-link-check` の `docs/COMPANY_SETUP_GUIDE.md` 内リンク `#アカウント・権限一覧` が 404 で途切れるため完走せず、現時点では `File` polyfill と脱 Node 20 が両立した上でのリンク修正が次のステップ。`validate_md_starlist.py` の再実行で 437/2,427 を維持する一方、Lint 失敗時のエラーメッセージも `docs/ops/MD_CI_REPORT.md` に追記。
+- **影響範囲**: Documentation Team, Ops CI
+- **責任者**: STARLIST Autonomous Engineer
+- **関連チケット**: ci/extended-markdown-governance
+
+#### 15:25 UTC - Markdownリンクと CI の再検証
+- **ドキュメント**: docs/COMPANY_SETUP_GUIDE.md, docs/ops/MD_CI_REPORT.md, docs/ops/UPDATE_LOG.md
+- **変更タイプ**: 修正＋検証完了
+- **変更内容**: `docs/COMPANY_SETUP_GUIDE.md` の目次リンクを `#account-roles` に更新し、`<a name="account-roles">` を付与。`npm run lint:md` が再実行で成功し `markdown-link-check` の 404 を解消したため、polyfill + Node 18 での lint 実行が成立。`validate_md_starlist.py` も 15:23:44 実行により 437/2,427 の状態を継続し、残課題（CSP、landing table など）は手動の codefence/table の修正で継続する旨を `docs/ops/MD_CI_REPORT.md` に記録。
+- **影響範囲**: Documentation Team, Ops CI
+- **責任者**: STARLIST Autonomous Engineer
+- **関連チケット**: ci/extended-markdown-governance
+
+

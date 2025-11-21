@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 # Day11 & Pricing 統合監査レポート テンプレート
 
 **実行日時**: `<timestamp>`  
@@ -284,4 +293,5 @@ limit 10;
 **監査者**: `<user>`  
 **承認**: `<approver>`
 
-
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

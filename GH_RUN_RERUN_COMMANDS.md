@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 # GitHub Actions Run 再実行コマンド一覧
 
 ## 📊 直近の失敗Run一覧
@@ -115,3 +124,5 @@ gh run list --repo shochaso/starlist-app --branch fix/security-hardening-web-csp
 
 **最終更新**: GitHub Actions Run 再実行コマンド一覧作成時点
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

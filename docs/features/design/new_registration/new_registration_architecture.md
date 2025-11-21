@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 Status:: 
 Source-of-Truth:: (TBD)
 Spec-State:: 
@@ -66,4 +75,7 @@ SNSアカウントによる初回ログイン後、ユーザーはスターと�
 | `consent_document_url`   | `text`    | 同意書のStorage URL                |
 | `status`                 | `text`    | 同意書の状態 (`submitted`, `approved`) |
 | `created_at`             | `timestamptz` | 作成日時                           |
-| `updated_at`             | `timestamptz` | 更新日時                           | 
+| `updated_at`             | `timestamptz` | 更新日時                           |
+
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

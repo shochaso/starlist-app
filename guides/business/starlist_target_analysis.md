@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 **Starlist ターゲット層分析レポート**
 
 1\. エグゼクティブサマリー
@@ -178,5 +187,7 @@ Starlistの各スター層の定義、特徴、ニーズ、および日本国内
 *   
 * 人口比: Z世代・ミレニアル世代の約30%、推定600万人  
 *   
-  - 
+  -
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

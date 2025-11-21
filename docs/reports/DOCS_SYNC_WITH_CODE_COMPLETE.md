@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 Status:: 
 Source-of-Truth:: (TBD)
 Spec-State:: 
@@ -248,5 +257,5 @@ grep "✅ 完了" docs/planning/Task.md | wc -l
 更新ドキュメント: 2ファイル（新規1、更新1）  
 ステータス: ✅ 完了
 
-
-
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

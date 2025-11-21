@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 Status:: 
 Source-of-Truth:: (TBD)
 Spec-State:: 
@@ -152,11 +161,11 @@ flutter run -d chrome --web-port=8080 --release
 #### 1. `ai_secretary_implementation_guide.md`
 **概要:** AI秘書の包括的実装ガイド
 **内容:**
-- 初心者層（Notion AI型）：直感的なダッシュボード設計
+- 初心者層（LINEAR AI型）：直感的なダッシュボード設計
 - 中級層（MCP連携）：Multi-Cloud Platform統合
 - 上級層（Obsidian + Cursor + Git）：開発者向けワークフロー
 - STARLISTでの具体的応用例
-- Notionライクなデータカード構造の提案
+- LINEARライクなデータカード構造の提案
 
 #### 2. `ai_scheduler_model.md`
 **概要:** AIスケジューラーモデルの設計
@@ -311,3 +320,6 @@ flutter run -d chrome --web-port=8080 --release
 **実装準備完了度:** 95% - 次のフェーズ（AI機能実装）に進む準備が整いました
 
 このセッションにより、STARLISTアプリケーションは安定した開発基盤を確保し、AI統合機能の実装に向けた包括的な設計が完了しました。
+
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

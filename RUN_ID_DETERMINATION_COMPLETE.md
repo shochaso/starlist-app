@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 # PR #39 マージ完了後の RUN_ID確定→Security可視化→受入完了 実行完了報告
 
 **実行日時**: 2025-11-09  
@@ -142,3 +151,5 @@ git push
 **実行完了時刻**: 2025-11-09  
 **ステータス**: ✅ **実行完了（RUN_ID取得待ち）**
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

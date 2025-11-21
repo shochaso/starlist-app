@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 # Pricing Final Shortcut Guide
 
 ## Overview
@@ -131,23 +140,27 @@ Use Supabase Dashboard to verify:
 2. Check `subscriptions` table
 3. Verify `plan_price` column contains integers only
 
-## 未成年/成人の推奨料金テーブル
+## 有料プラン価格仕様 v1（MVP）
 
-| 区分 | プラン | 最小価格 | 推奨価格 | 上限価格 | 刻み | 根拠 |
+| 区分 | プラン | 推奨価格 | 最小価格 | 最大価格 | 刻み | 備考 |
 | --- | --- | --- | --- | --- | --- | --- |
-| **未成年（student）** | Light | 100円 | 100円 | 9,999円 | 10円 | 学生向け軽量プラン |
-| | Standard | 100円 | 200円 | 9,999円 | 10円 | 学生向け標準プラン |
-| | Premium | 100円 | 500円 | 9,999円 | 10円 | 学生向けプレミアムプラン |
-| **成人（adult）** | Light | 300円 | 480円 | 29,999円 | 10円 | 成人向け軽量プラン |
-| | Standard | 300円 | 1,980円 | 29,999円 | 10円 | 成人向け標準プラン |
-| | Premium | 300円 | 4,980円 | 29,999円 | 10円 | 成人向けプレミアムプラン |
+| **未成年（student）** | Light | 100円 | 100円 | 300円 | 10円 | 保護者負担感を考慮し、上限は1,000円未満に抑制 |
+| | Standard | 200円 | 300円 | 500円 | 10円 | 保護者同意のもと、安全な標準価格帯 |
+| | Premium | 500円 | 500円 | 1,000円 | 10円 | プレミアムでも上限1,000円（保護者同意） |
+| **成人（adult）** | Light | 980円 | 980円 | 30,000円 | 10円 | MVPでは最も柔軟なエントリープラン |
+| | Standard | 1,980円 | 1,980円 | 50,000円 | 10円 | 人気プランの中心レンジ |
+| | Premium | 2,980円 | 2,980円 | 100,000円 | 10円 | 特別体験を提供するハイエンドプラン |
 
-**根拠**:
-- **未成年**: 保護者同意が必要なため、上限を9,999円に設定（`app_settings.pricing.recommendations.limits.student.max`）
-- **成人**: より柔軟な価格設定を許可し、上限を29,999円に設定（`app_settings.pricing.recommendations.limits.adult.max`）
-- **刻み**: 10円単位で統一（`app_settings.pricing.recommendations.limits.step`）
+価格はすべて税込表示とし、Flutter UI では各ティアの「おすすめ」バッジで推奨価格（上表の推奨価格列）を明示します。
 
-**参考**: `docs/pricing/RECOMMENDED_PRICING-001.md`, `supabase/migrations/20251108_app_settings_pricing.sql`
+## スーパーチャット（投げ銭）ティア v1
+
+- ティア金額: 100円 / 500円 / 1,000円 / 2,000円 / 5,000円 / 10,000円 / 30,000円 / 50,000円 / 100,000円
+- 上限: 100,000円（10万円）までをハード制約とし、それ以上の入力はバリデーションで拒否
+- 各ティアは `super_chat_pricing` の `tier_x_threshold` に連動し、Tier 1〜9 でピン留め/表示時間/バッジなどの特典を切り替える
+- 未成年スター向けには 1,000円以下のティアを推奨し、Super Chat 送金時に保護者同意表示を併設
+
+この表は `docs/pricing/RECOMMENDED_PRICING-001.md` と Supabase `pricing.recommendations` 設定の `limits`/`tiers` と同期させること。
 
 ## 失敗時ロールバック手順
 
@@ -344,24 +357,6 @@ Use Supabase Dashboard to verify:
 2. Check `subscriptions` table
 3. Verify `plan_price` column contains integers only
 
-## 未成年/成人の推奨料金テーブル
-
-| 区分 | プラン | 最小価格 | 推奨価格 | 上限価格 | 刻み | 根拠 |
-| --- | --- | --- | --- | --- | --- | --- |
-| **未成年（student）** | Light | 100円 | 100円 | 9,999円 | 10円 | 学生向け軽量プラン |
-| | Standard | 100円 | 200円 | 9,999円 | 10円 | 学生向け標準プラン |
-| | Premium | 100円 | 500円 | 9,999円 | 10円 | 学生向けプレミアムプラン |
-| **成人（adult）** | Light | 300円 | 480円 | 29,999円 | 10円 | 成人向け軽量プラン |
-| | Standard | 300円 | 1,980円 | 29,999円 | 10円 | 成人向け標準プラン |
-| | Premium | 300円 | 4,980円 | 29,999円 | 10円 | 成人向けプレミアムプラン |
-
-**根拠**:
-- **未成年**: 保護者同意が必要なため、上限を9,999円に設定（`app_settings.pricing.recommendations.limits.student.max`）
-- **成人**: より柔軟な価格設定を許可し、上限を29,999円に設定（`app_settings.pricing.recommendations.limits.adult.max`）
-- **刻み**: 10円単位で統一（`app_settings.pricing.recommendations.limits.step`）
-
-**参考**: `docs/pricing/RECOMMENDED_PRICING-001.md`, `supabase/migrations/20251108_app_settings_pricing.sql`
-
 ## 失敗時ロールバック手順
 
 ### 1コマンドロールバック
@@ -425,3 +420,5 @@ Use Supabase Dashboard to verify:
 **Last Updated**: 2025-11-08
 **Maintainer**: SRE Team
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

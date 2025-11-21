@@ -1,3 +1,24 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # リカバリ即応ガイド（現場メモ）
 
 > **クイックリファレンス**: [LAUNCH_CHECKLIST.md](./LAUNCH_CHECKLIST.md) も参照してください。
@@ -201,3 +222,5 @@ printf 'a@b.com 090-1234-5678 4242424242424242\n' | scripts/utils/redact.sh
 **最終更新**: 2025-11-08  
 **責任者**: Ops Team
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

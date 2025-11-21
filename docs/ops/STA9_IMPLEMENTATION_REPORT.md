@@ -1,3 +1,24 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # STA-9 データインポート精度改善 - 実装完了レポート
 
 ## 実装日時
@@ -73,3 +94,5 @@
 - `server/src/ingest/services/enrich.service.ts` - データエンリッチメント
 - `docs/ops/WORKFLOW_MODEL.md` - 運用モデル（今回作成）
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

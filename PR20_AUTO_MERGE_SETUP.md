@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 # PR #20 Auto-merge 設定完了
 
 ## ✅ 実行したアクション
@@ -199,3 +208,5 @@ Trivyがpendingで落ちた場合の暫定対応として、`extended-security.y
 
 **最終更新**: PR #20 Auto-merge 設定完了時点
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

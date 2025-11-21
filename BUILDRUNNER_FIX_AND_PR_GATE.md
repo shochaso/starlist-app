@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 # build_runner バージョン固定とPRゲート設定
 
 ## 🔍 問題
@@ -88,3 +97,5 @@ on:
 
 **最終更新**: build_runner バージョン固定とPRゲート設定適用完了時点
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

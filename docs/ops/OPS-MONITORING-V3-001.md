@@ -1,3 +1,24 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 Status:: planned
 Source-of-Truth:: docs/ops/OPS-MONITORING-V3-001.md
 Spec-State:: 確定済み（自動閾値調整＋週次レポート可視化）
@@ -7,7 +28,7 @@ Last-Updated:: 2025-11-08
 
 ## 概要
 
-Slack通知履歴（`ops_slack_notify_logs`）をもとに、通知頻度や傾向を学習して自動的に閾値を再計算し、結果を週次サマリとしてSlackやNotionに自動投稿することで、「アラートの最適化」と「運用負荷の削減」を実現する。
+Slack通知履歴（`ops_slack_notify_logs`）をもとに、通知頻度や傾向を学習して自動的に閾値を再計算し、結果を週次サマリとしてSlackやLINEARに自動投稿することで、「アラートの最適化」と「運用負荷の削減」を実現する。
 
 ---
 
@@ -211,7 +232,7 @@ Last-Updated:: 2025-11-08
 
 ## 概要
 
-Slack通知履歴（`ops_slack_notify_logs`）をもとに、通知頻度や傾向を学習して自動的に閾値を再計算し、結果を週次サマリとしてSlackやNotionに自動投稿することで、「アラートの最適化」と「運用負荷の削減」を実現する。
+Slack通知履歴（`ops_slack_notify_logs`）をもとに、通知頻度や傾向を学習して自動的に閾値を再計算し、結果を週次サマリとしてSlackやLINEARに自動投稿することで、「アラートの最適化」と「運用負荷の削減」を実現する。
 
 ---
 
@@ -406,4 +427,5 @@ ORDER BY day DESC, level;
 |------|--------|----------|
 | 2025-11-08 | Tim | Day11仕様ドラフト作成 |
 
-
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

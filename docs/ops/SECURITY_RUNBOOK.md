@@ -1,3 +1,24 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # Security Runbook
 
 ## Purpose
@@ -50,3 +71,6 @@ STARLIST's ops stack (Supabase Edge Functions, telemetry tables, and scheduled e
    - The calling token carries `ops_admin` metadata if the function requires it.
 2. Rotate `OPS_SERVICE_SECRET` immediately if it leaks; follow the secret rotation steps above and re-run the `security-audit` workflow.
 3. Document every rotation in `SECURITY_AUDIT_REPORT.md` and in this runbook's changelog section.
+
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

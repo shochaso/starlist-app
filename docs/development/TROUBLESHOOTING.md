@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 Status:: 
 Source-of-Truth:: (TBD)
 Spec-State:: 
@@ -219,3 +228,5 @@ A: 可能ですが、ログ管理やエラー検出がないため推奨しま�
 - [BrowserSync ドキュメント](https://browsersync.io/docs)
 - [pubspec.yaml 仕様](https://dart.dev/tools/pub/pubspec)
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

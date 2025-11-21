@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 # WS04: 同時実行（3並列）証跡
 
 **実行日時**: 2025-11-13
@@ -31,3 +40,6 @@ wait
 - cancel-in-progress=trueの場合、新しい実行が古い実行をキャンセル
 
 **状態**: ⏳ 実行待ち
+
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

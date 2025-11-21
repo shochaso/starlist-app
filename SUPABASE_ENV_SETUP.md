@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 # Supabase環境変数設定ガイド
 
 ## 必要な環境変数
@@ -71,3 +80,5 @@ curl -X POST "https://<project-ref>.supabase.co/functions/v1/ops-slack-summary" 
 - 定期的にローテーション（3-6ヶ月ごと）を推奨
 - 本番環境とステージング環境で異なる値を設定してください
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

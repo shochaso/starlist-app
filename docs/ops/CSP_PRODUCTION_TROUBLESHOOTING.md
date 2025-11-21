@@ -1,3 +1,24 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # CSP本番反映 - トラブルシューティング結果
 
 ## 実行日時
@@ -99,4 +120,5 @@ Vercel側で反映されない場合、Cloudflare側でCSPを設定する方法�
 - `.github/workflows/csp-verify.yml` - CSP検証ワークフロー
 - `docs/ops/CSP_VERIFICATION_REPORT.md` - 検証レポート
 
-
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 # Day7 キック準備
 
 ## ブランチ情報
@@ -34,4 +43,5 @@
 - fl_chart 追加後の `flutter pub get` 実施をPR本文に明記
 - `/ops` 空データ系の回帰はスクショで担保（empty/data 両パターン）
 
-
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

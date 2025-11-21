@@ -1,3 +1,24 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 Status:: aligned-with-Flutter  
 Source-of-Truth:: supabase/migrations/20251107_ops_metrics.sql, supabase/functions/telemetry/index.ts, lib/src/features/ops/ops_telemetry.dart, lib/core/telemetry/prod_search_telemetry.dart  
 Spec-State:: 確定済み（DBスキーマ・Edge受口・Flutter送信ラッパ）/ 初期案（サンプリング戦略・しきい値）  
@@ -328,3 +349,5 @@ SUPABASE_SERVICE_ROLE_KEY=...  # Edge Function用
 - **After**: `ProdSearchTelemetry`と`OpsTelemetry`を実装し、Edge Function経由で`ops_metrics`に保存。サンプリング率制御とDry-runモードを実装。
 - **追加**: 監査イベント命名統一（`auth.*`, `rls.*`, `ops.subscription.*`）に準拠した送信機能を追加。
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 # Branch Protection Required Checks
 
 ## provenance-validate.yml Registration
@@ -34,3 +43,6 @@ gh api repos/:owner/:repo/branches/main/protection | jq '.required_status_checks
 - This check ensures that all provenance artifacts are validated before merging to main
 - The check runs automatically after `slsa-provenance.yml` completes
 - Manual dispatch is also supported for re-validation
+
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

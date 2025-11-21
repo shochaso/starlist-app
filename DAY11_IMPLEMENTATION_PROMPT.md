@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 # Day11実装指示プロンプト（Mine向け）
 
 ## 🎯 タスク
@@ -446,4 +455,5 @@ Make sure the code is complete and ready to deploy as-is.
 
 実装完了後、dryRunテストと本送信テストを実行し、動作確認を行ってください。
 
-
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

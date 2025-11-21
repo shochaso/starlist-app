@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 Status:: planned
 Source-of-Truth:: (TBD)
 Spec-State:: 
@@ -16,7 +25,7 @@ Last-Updated::
 - AI秘書機能で「推しの誕生日リマインダー」を自動生成
 - ガチャでスターの「レア行動カード」（例: 朝活投稿、深夜配信等）を実装
 - データ統合で「推しとの共通点スコア」を算出（同じ映画見た、同じ音楽聴いた等）
-- Notion風のドラッグ&ドロップでタスクをカンバンボード化
+- LINEAR風のドラッグ&ドロップでタスクをカンバンボード化
 - スターの活動を「年表ビュー」で可視化
 - ファンが「応援エネルギー」を送れる機能（可視化されたハート等）
 - AI秘書が週次で「あなたの推し活レポート」を自動生成
@@ -108,5 +117,5 @@ Last-Updated::
 
 最終更新: 2025-10-15
 
-
-
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

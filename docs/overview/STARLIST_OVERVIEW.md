@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 Status: beta
 Source-of-Truth: docs/overview/STARLIST_OVERVIEW.md
 Spec-State: beta
@@ -269,3 +278,6 @@ Starlist の全体像を短時間で共有するためのドキュメントで�
 | 2025-10-?? | 作成者名 | 雛形作成 |
 | 2025-11-07 | Tim | Day5 Telemetry/OPS サマリーとロードマップを更新。 |
 | 2025-11-08 | Tim | Day12 β統合：KPI表、ロードマップ表、監視・通知スタックを追加。 |
+
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

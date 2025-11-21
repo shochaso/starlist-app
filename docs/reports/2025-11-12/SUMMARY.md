@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 # 2025-11-12 Governance Evidence
 
 Generated: $(date -u +"%Y-%m-%dT%H:%M:%SZ")
@@ -94,3 +103,6 @@ Generated: $(date -u +"%Y-%m-%dT%H:%M:%SZ")
 - 状態: ❌ failure（原因調査が必要）
 - 備考: トリガーは `release: published` だが、`push` イベントで実行されている可能性
 - 次のrelease作成時に再実行予定
+
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

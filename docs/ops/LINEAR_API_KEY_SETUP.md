@@ -1,3 +1,24 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # Linear API Key セットアップガイド
 
 ## 概要
@@ -90,6 +111,18 @@ bash scripts/create-linear-issue.sh STA-TEST "Test issue title"
 ✅ Linear: created STA-123 https://linear.app/starlist-app/issue/STA-123
 ```
 
+#### Node.js/TypeScript スクリプトを使う場合
+
+`.env` に `LINEAR_API_KEY` を設定済みであれば、以下でも issue を作成できます:
+
+```bash
+npm run linear:create-issue -- "【自動生成】ISSUE テスト" "Cursor から Linear API 経由で作成したテスト issue です。" --team STA --priority 2
+```
+
+- `--team` はチームID/UUIDまたはチームキー（例: `STA`）のどちらも指定可能。未指定の場合は `LINEAR_TEAM_ID` または `LINEAR_TEAM_KEY` を使用
+- `--priority` は 0-4 の整数（Linear標準の優先度）
+- 第1/第2引数を省略したい場合は `LINEAR_ISSUE_TITLE` / `LINEAR_ISSUE_DESCRIPTION` を環境変数として定義
+
 ### 5. トラブルシューティング
 
 #### API Keyが無効な場合
@@ -134,3 +167,6 @@ bash scripts/create-linear-issue.sh STA-TEST "Test issue title"
 - `.github/workflows/linear-smoke.yml` - CI検証ワークフロー
 - `docs/ops/LINEAR_SMOKE_TROUBLESHOOTING.md` - 失敗時のプレイブック
 - `docs/reports/SECURITY/LINEAR_SMOKE/YYYY-MM-DD.md` - 監査ログ
+
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

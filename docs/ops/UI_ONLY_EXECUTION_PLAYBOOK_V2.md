@@ -1,3 +1,24 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # UI-Only Execution Playbook v2（10×仕上げ拡張）
 
 目的：PR/CI/週次/セキュリティ/証跡/保護設定まで、UI操作だけで当日完結。
@@ -85,3 +106,5 @@
 **作成日**: 2025-11-09  
 **ステータス**: ✅ **UI-Only Execution Playbook v2完成**
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

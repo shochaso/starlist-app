@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 Status:: 
 Source-of-Truth:: (TBD)
 Spec-State:: 
@@ -256,3 +265,5 @@ verifyEvents();
 - **After**: GitHub ActionsでE2Eテストを自動実行。headless Chromeで主要フローを検証。テレメトリイベントを`ops_metrics`から検証。
 - **追加**: 失敗時のログとスクリーンショット自動保存、PRコメントへの結果自動投稿を実装。
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

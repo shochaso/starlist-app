@@ -5,6 +5,16 @@ updated_date: 2025-11-15
 owner: STARLIST Docs Automation Team
 ---
 
+
+
+
+
+
+
+
+
+
+
 # Markdown CI Report
 
 ## 最新の実行
@@ -47,3 +57,6 @@ owner: STARLIST Docs Automation Team
 | docs/ops/MD_CHECKLIST.md | 1 | toc-missing | Table of Contents (目次) is required. | いいえ |
 | docs/ops/MD_CHECKLIST.md | 1 | cursor-prompt-missing | Document must contain 'Cursor Implementation Prompt' section. | いいえ |
 | docs/ops/MD_CHECKLIST.md | 1 | copilot-prompt-missing | Document must contain 'GitHub Copilot Implementation Prompt' section. | いいえ |
+
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

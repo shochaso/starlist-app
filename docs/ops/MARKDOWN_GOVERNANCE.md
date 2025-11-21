@@ -5,6 +5,16 @@ updated_date: 2025-11-15
 owner: STARLIST Docs Automation Team
 ---
 
+
+
+
+
+
+
+
+
+
+
 # Markdown Governance Guide
 
 ## 概要
@@ -206,3 +216,5 @@ find docs/ops -name "*.md" | head -5 | xargs python scripts/starlist_md_validato
 
 - 2025-11-15: 初回導入。20+チェック項目の実装完了。
 - 2025-11-15: CIワークフロー統合とテストコード整備。
+
+

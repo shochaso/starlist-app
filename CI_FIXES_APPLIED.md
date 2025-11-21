@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 # CIワークフロー修正パッチ適用完了
 
 ## ✅ 適用した修正
@@ -36,7 +45,7 @@
 **対応**: `.lychee.toml` を作成して除外設定を追加
 
 **作成ファイル**: `.lychee.toml`
-```toml
+```bash
 exclude = [
   "^https://zjwvmoxpacbpwawlwbrd.functions.supabase.co", # CSP受け口（403/非公開の可能性）
 ]
@@ -103,3 +112,5 @@ curl -i -X POST \
 
 **最終更新**: CI修正パッチ適用完了時点
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

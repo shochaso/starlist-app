@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 # 🔒 セキュリティ修正PR 検証チェックリスト
 
 ## 基本チェック
@@ -71,3 +80,5 @@ GitHub Actionsで以下を確認:
 2. **SecurePrefs→従来実装へ戻す**: `lib/core/prefs/local_store.dart` の `_assertKey` チェックを削除
 3. **セキュリティCIを無効化**: `.github/workflows/security-audit.yml` を削除または無効化
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

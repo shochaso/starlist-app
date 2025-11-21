@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 # UI-Only Supplement Pack v2 検収完了サマリー
 
 **作成日時**: 2025-11-09  
@@ -86,3 +95,5 @@ link pass: ✅ link-check pass (重複インポート修正済み)
 **作成完了時刻**: 2025-11-09  
 **ステータス**: ✅ **UI-Only Supplement Pack v2 検収完了（PR #45作成済み）**
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

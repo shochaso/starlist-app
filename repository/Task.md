@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 \# Starlist タスク管理
 
 このファイルはStarlistプロジェクトの開発タスクを管理・追跡するために使用します。タスクは優先度と開発フェーズに基づいて整理されています。
@@ -177,3 +186,6 @@
 \- \[Planning.txr\](Planning.txr) - プロジェクトの全体計画
 
 \- \[README.txr\](README.txr) - プロジェクト概要と要件定義
+
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 Status:: 
 Source-of-Truth:: (TBD)
 Spec-State:: 
@@ -59,3 +68,6 @@ Source-of-Truth: Flutter code (`lib/…`)
 > - Supabase OAuth (Google/Apple) 実装のターゲット時期  
 > - Edge Functions (`auth-sync`, `auth-link`) の Dry-run API 仕様  
 > - 個人スター課金のテーブル設計（`subscription_plans` を拡張か、新テーブルか）
+
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

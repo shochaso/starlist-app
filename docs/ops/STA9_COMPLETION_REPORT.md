@@ -1,3 +1,24 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # STA-9 完了レポート
 
 ## ✅ 完了日時
@@ -78,3 +99,5 @@
 
 **完了確認**: ✅ すべてのタスクが完了し、PR #55は正常にマージされました。
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

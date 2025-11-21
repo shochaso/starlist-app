@@ -135,10 +135,6 @@ class _TierCardState extends ConsumerState<TierCard> {
 // Spec-State:: 確定済み（価格カードUI）
 // Last-Updated:: 2025-11-08
 
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../data/pricing_repository.dart';
-import '../domain/pricing_validator.dart';
 
 /// 価格カードウィジェット
 class TierCard extends ConsumerStatefulWidget {

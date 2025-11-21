@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 # 10× 最短着地・完全版実行レポート
 
 **実行日時**: 2025-11-09  
@@ -292,3 +301,5 @@ gh run view "$RID" --log | sed -n '$-180,$p' | sed -n '/\(ERROR\|FAIL\|panic\|Tr
 **実行完了時刻**: 2025-11-09  
 **ステータス**: ✅ **10×最短着地・完全版実行完了（PRマージ待ち）**
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

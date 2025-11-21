@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 # OCR Proxy 修正のテスト手順
 
 ## 1. 事前準備
@@ -86,3 +95,6 @@ gcloud run deploy ocr-proxy \
 ```
 
 デプロイ後は、Cloud Run のサービス URL に対して curl を実行し、ログに `[OCR] incoming` / `[OCR] result` が出力されることを確認してください。
+
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

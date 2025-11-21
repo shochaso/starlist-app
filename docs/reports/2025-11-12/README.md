@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 # Evidence Collection Execution Guide
 
 **Date**: 2025-11-13 (UTC)
@@ -77,3 +86,6 @@ After workflows complete:
 ---
 
 **Status**: ⏳ Ready for execution (awaiting workflow completion)
+
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

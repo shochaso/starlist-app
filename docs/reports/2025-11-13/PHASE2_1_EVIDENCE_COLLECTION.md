@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 # Phase 2.1 Verification Evidence Collection
 
 **Collection Date**: 2025-11-13
@@ -119,3 +128,6 @@ export SUPABASE_SERVICE_KEY="your-service-key"
 ---
 
 **Note**: Evidence collection will be updated after test execution via GitHub UI.
+
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

@@ -1,3 +1,24 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # CI 重大度ルール（赤/黄/緑）
 
 ## 概要
@@ -189,3 +210,5 @@ CIジョブの結果を重大度に応じて分類し、適切な対応を定義
 **Last Updated**: 2025-11-08
 **Maintainer**: SRE Team
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

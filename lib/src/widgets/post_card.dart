@@ -79,23 +79,54 @@ class PostCard extends ConsumerWidget {
         ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(cardRadius),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // ヘッダー
-              _buildHeader(isDark, canAccess),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final hasBoundedHeight = constraints.hasBoundedHeight &&
+                  constraints.maxHeight.isFinite;
 
-              // コンテンツ
-              canAccess
-                  ? _buildContent(isDark)
-                  : _buildRestrictedContent(isDark),
+              Widget buildBody({required bool scrollable}) {
+                final body = Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    canAccess
+                        ? _buildContent(isDark)
+                        : _buildRestrictedContent(isDark),
+                    _buildSectionDivider(isDark),
+                    _buildFooter(ref, isDark, canAccess),
+                  ],
+                );
 
-              _buildSectionDivider(isDark),
+                if (!scrollable) return body;
 
-              // フッター
-              _buildFooter(ref, isDark, canAccess),
-            ],
+                return SingleChildScrollView(
+                  padding: EdgeInsets.zero,
+                  physics: const BouncingScrollPhysics(),
+                  child: body,
+                );
+              }
+
+              if (hasBoundedHeight) {
+                return SizedBox(
+                  height: constraints.maxHeight,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildHeader(isDark, canAccess),
+                      Expanded(child: buildBody(scrollable: true)),
+                    ],
+                  ),
+                );
+              }
+
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildHeader(isDark, canAccess),
+                  buildBody(scrollable: false),
+                ],
+              );
+            },
           ),
         ),
       ),

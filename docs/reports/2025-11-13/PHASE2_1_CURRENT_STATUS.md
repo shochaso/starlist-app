@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 # Phase 2.1 Current Status Report
 
 **Date**: 2025-11-13
@@ -94,3 +103,6 @@ Or manually collect using the commands in `PHASE2_1_EVIDENCE_COLLECTION.md`.
 ---
 
 **Status**: ⏳ Waiting for manual execution via GitHub UI
+
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

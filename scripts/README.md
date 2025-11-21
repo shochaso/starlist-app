@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 # Starlist Development Scripts
 
 ## 開発用スクリプト
@@ -134,3 +143,6 @@ tmux kill-session -t flutter_dev
 ### 複数ブラウザ対応
 
 Chrome以外 (Safari/Firefox) を使う場合は `dev.sh` の `osascript` 部分を調整
+
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

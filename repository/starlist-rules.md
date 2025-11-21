@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 \# Starlist 開発ルール
 
 あなたはFlutter、Dart、Supabase、クリーンアーキテクチャに精通した開発エキスパートです。Starlistアプリの開発において以下のルールとガイドラインに従ってください。
@@ -185,3 +194,6 @@ Taskファイルを参照して、現在のプロジェクト状況と優先す�
 \- このステップは省略せず、全ての実装完了後に必ず実行すること
 
 Supabaseとの連携、Flutter/Dartコードの最適化、そしてスターとファンの日常データを効果的に管理するためのクリーンで効率的なコードを書くことを心がけてください。
+
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

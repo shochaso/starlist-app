@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 Status:: 
 Source-of-Truth:: (TBD)
 Spec-State:: 
@@ -48,4 +57,5 @@ Owner: PM (Tim) / Impl DRI: Mine
 - docs/ops/OPS-MONITORING-001.md (正準)  
 - scripts/ensure-node20.js, scripts/lint-md-local.sh
 
-
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

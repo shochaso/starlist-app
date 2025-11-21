@@ -1,3 +1,24 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # Postmortem Template (軽量版：5分で書ける)
 
 ## 基本情報
@@ -130,4 +151,5 @@
 **承認者**: [名前]  
 **作成日**: YYYY-MM-DD
 
-
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

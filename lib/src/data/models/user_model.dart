@@ -2,13 +2,13 @@ import 'package:flutter/foundation.dart';
 
 /// スターランクを表すenum
 enum StarRank {
-  /// レギュラースター（1000人以下）：収益分配率 80%
+  /// レギュラースター（500人〜1万人）
   regular,
-  
-  /// プラチナスター（10000人以上）：収益分配率 82%
+
+  /// プラチナスター（1万人〜10万人）
   platinum,
-  
-  /// スーパースター（100000人以上）：収益分配率 85%
+
+  /// スーパースター（10万人以上）
   super,
 }
 
@@ -194,13 +194,13 @@ class User {
   double getRevenueShare() {
     switch (starRank) {
       case StarRank.regular:
-        return 0.80; // 80%
+        return 0.80; // スター80%／運営20%
       case StarRank.platinum:
-        return 0.82; // 82%
+        return 0.80; // スター80%／運営20%
       case StarRank.super:
-        return 0.85; // 85%
+        return 0.80; // スター80%／運営20%
       default:
-        return 0.80; // デフォルトは80%
+        return 0.80; // デフォルトもスター80%
     }
   }
 

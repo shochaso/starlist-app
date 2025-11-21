@@ -1,3 +1,24 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 Status:: 
 Source-of-Truth:: (TBD)
 Spec-State:: 
@@ -62,3 +83,6 @@ Source-of-Truth: Flutter code (`lib/src/features/**`) / Planned Edge Functions
 - **Before**: `auth.*` ログや `auth-sync` 連携が既に稼働している前提で記載。  
 - **After**: Flutter Reality（ログ送信なし、Edge なし）に合わせ、命名規約と Dry-run 運用を明記。新規課金仕様の OPS イベント (`ops.subscription.*`) を追加。  
 - **追加**: `rls.access.denied` を QA/SEC 仕様と共有し、OPS で捕捉する方針を定義。
+
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

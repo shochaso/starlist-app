@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 # Day10 Go/No-Go チェックリスト
 
 **作成日**: 2025-11-08  
@@ -459,3 +468,5 @@ limit 1;
 **承認者**: （実行後に追記）  
 **承認日時**: （実行後に追記）
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

@@ -33,7 +33,7 @@ class OpsTelemetry {
   factory OpsTelemetry.prod() {
     const supabaseUrl = EnvironmentConfig.supabaseUrl;
     // Edge Functions URL format: {supabaseUrl}/functions/v1/{functionName}
-    final baseUrl = '$supabaseUrl/functions/v1';
+    const baseUrl = '$supabaseUrl/functions/v1';
     return OpsTelemetry(
       baseUrl: baseUrl,
       app: 'starlist',
@@ -44,7 +44,7 @@ class OpsTelemetry {
   /// Factory constructor for staging environment
   factory OpsTelemetry.staging() {
     const supabaseUrl = EnvironmentConfig.supabaseUrl;
-    final baseUrl = '$supabaseUrl/functions/v1';
+    const baseUrl = '$supabaseUrl/functions/v1';
     return OpsTelemetry(
       baseUrl: baseUrl,
       app: 'starlist',
@@ -55,7 +55,7 @@ class OpsTelemetry {
   /// Factory constructor for development environment
   factory OpsTelemetry.dev() {
     const supabaseUrl = EnvironmentConfig.supabaseUrl;
-    final baseUrl = '$supabaseUrl/functions/v1';
+    const baseUrl = '$supabaseUrl/functions/v1';
     return OpsTelemetry(
       baseUrl: baseUrl,
       app: 'starlist',
@@ -189,7 +189,7 @@ class OpsTelemetry {
 
 
     final jitter = Random().nextInt(1000); // Random 0-1s
-    await Future.delayed(Duration(milliseconds: baseDelay + jitter));
+    await Future.delayed(Duration(milliseconds = baseDelay + jitter));
   }
 
   /// Send telemetry event to Edge Function with retry and deduplication
@@ -265,7 +265,7 @@ class OpsTelemetry {
   }
   
   /// Retry failed sends from queue
-  static Future<void> retryFailed() async {
+  Future<void> retryFailed() async {
     if (_retryQueue.isEmpty) return;
     
     final now = DateTime.now().millisecondsSinceEpoch;

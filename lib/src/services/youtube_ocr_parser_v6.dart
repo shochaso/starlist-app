@@ -135,108 +135,94 @@ class YouTubeOCRParserV6 {
     return videos;
   }
   
-  // 自然なOCRフォーマットの処理（ユーザー提供データ用）
-  static List<VideoData> _parseNaturalFormat(List<String> lines) {
+  // 自然なOCRフォーマットの処理（ユーザー提供データ用） - GAI Studio Logic Integrated
+  static List<VideoData> _parseNaturalFormat(List<String> allLines) {
+    print('Trying natural format parsing (Enhanced with GAI Studio Logic)...');
+    
+    // Filter out empty lines
+    final lines = allLines.where((line) => line.trim().isNotEmpty).toList();
+
+    // Find the index of the first plausible video title. This helps skip preambles.
+    // Logic from GAI Studio's parserService.ts
+    int startIndex = lines.indexWhere((line) {
+      final isPreamble = RegExp(r'^(here are|sure, here|Sure, |Here are|以下に|はい、)', caseSensitive: false).hasMatch(line);
+      final isHeaderLike = line.endsWith(':');
+      // A plausible title is not a preamble, not a header, and has some length.
+      return !isPreamble && !isHeaderLike && line.length > 5;
+    });
+
+    if (startIndex == -1) {
+      // If no clear start found, check if it's because the list is very short
+      // and doesn't contain preamble. If so, process from start.
+      final hasPreamble = lines.any((line) => RegExp(r'^(here are|sure, here|Sure, |Here are|以下に|はい、)', caseSensitive: false).hasMatch(line));
+      if (hasPreamble) return []; // Contains preamble but no clear start, likely junk.
+      startIndex = 0;
+    }
+
     final videos = <VideoData>[];
-    final processedLines = List.filled(lines.length, false);
-    
-    print('Trying natural format parsing...');
-    
-    // ステップ1: チャンネル名と視聴回数のペアを先に検出
-    final channelViewPairs = <int, Map<String, String>>{};
-    
-    for (int i = 0; i < lines.length; i++) {
-      if (processedLines[i]) continue;
-      
-      final line = lines[i];
-      
-      // パターン1: "チャンネル名・視聴回数" (・でつながっている)
-      final pattern1 = RegExp(r'^(.+?)・\s*([\d\.]+万?\s*回視聴)$');
-      final match1 = pattern1.firstMatch(line);
-      if (match1 != null) {
-        channelViewPairs[i] = {
-          'channel': match1.group(1)!.trim(),
-          'viewCount': match1.group(2)!.trim(),
-        };
+    final relevantLines = lines.sublist(startIndex);
+
+    for (int i = 0; i < relevantLines.length; i++) {
+      // Clean the line from any leading list markers.
+      String currentLine = relevantLines[i].replaceFirst(RegExp(r'^[\*\-\d\.]+\s*'), '').trim();
+      if (currentLine.isEmpty) continue;
+
+      // Pattern A: Title and Channel on the same line, separated by ' - '
+      // GAI Studio Logic
+      final dashIndex = currentLine.lastIndexOf(' - ');
+      if (dashIndex > 0 && dashIndex < currentLine.length - 3) {
+        final title = currentLine.substring(0, dashIndex).trim();
+        final channel = currentLine.substring(dashIndex + 3).trim();
+        
+        videos.add(VideoData(
+          title: title,
+          channel: channel,
+          confidence: 0.95,
+        ));
         continue;
       }
-      
-      // パターン2: "チャンネル名・" のみ (次の行に視聴回数がある可能性)
-      if (line.endsWith('・') && i + 1 < lines.length) {
-        final nextLine = lines[i + 1];
-        if (_isViewCountOnly(nextLine)) {
-          channelViewPairs[i] = {
-            'channel': line.substring(0, line.length - 1).trim(),
-            'viewCount': nextLine.trim(),
-          };
-          processedLines[i + 1] = true;
-          continue;
-        }
-      }
-      
-      // パターン3: 視聴回数のみの行 (前の行がチャンネル名の可能性)
-      if (_isViewCountOnly(line) && i > 0) {
-        final prevLine = lines[i - 1];
-        if (!processedLines[i - 1] && _isPossibleChannelName(prevLine)) {
-          channelViewPairs[i - 1] = {
-            'channel': prevLine.trim(),
-            'viewCount': line.trim(),
-          };
-          processedLines[i] = true;
-        }
-      }
-    }
-    
-    // ステップ2: 各チャンネル・視聴回数ペアに対してタイトルを探す
-    for (final entry in channelViewPairs.entries) {
-      final lineIndex = entry.key;
-      final channelView = entry.value;
-      
-      // タイトルを前方から探す（複数行対応）
-      String title = '';
-      final List<int> titleLines = [];
-      
-      // 最大10行前まで探索
-      for (int i = lineIndex - 1; i >= 0 && i >= lineIndex - 10; i--) {
-        if (processedLines[i]) continue;
-        
-        final line = lines[i];
-        
-        // スキップすべき行
-        if (_shouldSkipLine(line)) continue;
-        
-        // タイトルの可能性がある行
-        if (_isPossibleTitle(line)) {
-          // 連続したタイトル行を結合
-          if (titleLines.isEmpty || titleLines.first == i + 1) {
-            title = line + (title.isEmpty ? '' : title);
-            titleLines.insert(0, i);
-          } else {
-            // 連続していない場合は最後のタイトルとして確定
-            if (title.isNotEmpty) break;
+
+      // Pattern B: Title is the current line, channel might be the next.
+      // GAI Studio Logic
+      String title = currentLine;
+      String channel = '';
+
+      // Check if next line exists and could be a channel name.
+      if (i + 1 < relevantLines.length) {
+        final nextLine = relevantLines[i + 1];
+        // A channel line should NOT look like a new video title (i.e., not start with a list marker, and not contain ' - ').
+        final isNextLineAnotherTitle = RegExp(r'^[\*\-\d\.]+\s*').hasMatch(nextLine) || nextLine.lastIndexOf(' - ') > 0;
+
+        if (!isNextLineAnotherTitle) {
+          // We'll assume this is the channel line.
+          channel = nextLine;
+
+          // Clean up common channel line artifacts.
+          final splitters = ['・', '•', '—', '視聴回数', '回視聴'];
+          for (final s in splitters) {
+            if (channel.contains(s)) {
+              channel = channel.split(s).first.trim();
+              break;
+            }
           }
+          
+          // Clean leading markers from channel if any (rare but possible)
+          channel = channel.replaceFirst(RegExp(r'^[\*\-\d\.]+\s*'), '').trim();
+          
+          i++; // Consume the channel line, so we skip it in the next iteration.
         }
       }
       
-      // タイトルが見つかった場合、動画データを作成
-      if (title.isNotEmpty) {
-        final video = VideoData(
-          title: title,
-          channel: channelView['channel']!,
-          viewCount: channelView['viewCount'],
-          confidence: 0.9,
-        );
-        videos.add(video);
-        
-        // 処理済みとしてマーク
-        processedLines[lineIndex] = true;
-        for (final idx in titleLines) {
-          processedLines[idx] = true;
-        }
-      }
+      // Add only if we have at least a title
+      videos.add(VideoData(
+        title: title,
+        channel: channel, // Channel might be empty if not found
+        confidence: 0.9,
+      ));
     }
-    
-    return videos;
+
+    // A final cleanup step: if an item looks like a preamble that slipped through, remove it.
+    return videos.where((v) => !RegExp(r'^(here are|sure, here|Sure, |Here are|以下に|はい、)', caseSensitive: false).hasMatch(v.title)).toList();
   }
   
   static bool _isViewCountOnly(String line) {

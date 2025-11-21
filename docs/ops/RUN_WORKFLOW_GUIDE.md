@@ -1,3 +1,24 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # Run workflow ボタン到達 → 手動実行 → RUN_ID取得 → 成功確認 ガイド
 
 **目的**: GitHub Actionsのワークフローを手動実行し、RUN_IDを取得して成功を確認する
@@ -498,3 +519,5 @@ git push
 **作成日**: 2025-11-09  
 **ステータス**: ✅ **Run workflow ガイド完成（付録V2追加済み）**
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

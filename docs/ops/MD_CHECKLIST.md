@@ -10,6 +10,16 @@ owner: STARLIST Docs Automation Team
 
 
 
+
+
+
+
+
+
+
+
+
+
 # Markdown Governance チェックリスト
 
 ## 背景
@@ -65,3 +75,5 @@ STARLIST の Markdown ドキュメントは、AI 作成コンテンツや高速�
 
 ## DoD (Definition of Done)
 - [ ] 文書の目的と完了基準を明記しました。
+
+

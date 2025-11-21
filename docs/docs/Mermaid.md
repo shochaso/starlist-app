@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 flowchart TB
   A[docs/overview/COMMON_DOCS_INDEX.md<br/>共通ドキュメント索引]:::core
 
@@ -46,3 +55,6 @@ flowchart TB
   classDef ops fill:#e9fff2,stroke:#13a36e,color:#333;
   classDef biz fill:#fff5e1,stroke:#f57c00,color:#5d3300;
   classDef guides fill:#fff0f5,stroke:#c2185b,color:#5d1030;
+
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

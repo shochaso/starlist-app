@@ -1,3 +1,24 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # CI Required / Optional 最終ポリシー
 
 ## 確定日時
@@ -87,3 +108,6 @@ GitHub Settings → Branches → Branch protection rules → `main`:
 
 - 2025-11-11: 最終ポリシー確定
 - 2025-11-12: 監査メモとロールバック手順追加
+
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 # Rollbackログひな形
 
 **日付**: YYYY-MM-DD HH:MM JST  
@@ -97,3 +106,5 @@
 **最終更新**: YYYY-MM-DD  
 **承認**: [承認者名]
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 # CSP Report-Only 観測チェックリスト（48-72時間）
 
 ## 📋 観測期間
@@ -249,3 +258,5 @@ CSP Report ログから以下を抽出:
 
 **最終更新**: CSP Report-Only 観測チェックリスト作成時点
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

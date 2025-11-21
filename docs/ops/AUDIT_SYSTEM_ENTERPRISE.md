@@ -1,3 +1,24 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # 🏁 STARLIST 監査運用体制 — フルエンタープライズ版（最終確定稿）
 
 ## 1️⃣ アーキテクチャ全体像（運用設計の最上位層）
@@ -310,4 +331,5 @@ FINAL_INTEGRATION_SUITE.sh
 **承認**: COO兼PM ティム  
 **バージョン**: Enterprise Edition (最終確定稿)
 
-
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

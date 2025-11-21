@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 flowchart TB
   A[docs/overview/COMMON_DOCS_INDEX.md<br/>共通ドキュメント索引<br/>← 索引中心]:::core
   
@@ -203,3 +212,6 @@ flowchart TB
   %% biz: ビジネス・レポート（オレンジ）
   %% guides: ガイド・読み物（ピンク）
   %% legal: 法的文書（紫）
+
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

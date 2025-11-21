@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 # Phase 3 Audit Summary (2025-11-13)
 
 **Observer Run ID**: Not dispatched (workflow_dispatch missing on default branch)  
@@ -40,3 +49,6 @@ These push-triggered audits fail because there is no successful provenance/valid
 1. Merge the workflow changes that add `workflow_dispatch` to `slsa-provenance.yml` and `phase3-audit-observer.yml` into `main` so `gh workflow run ...` no longer bumps into Workflow ID 206345562.  
 2. Rerun the manual audit after the Phase 2.2 success/failure/concurrency cases complete to populate this report with concrete run metadata (artifact files, SHA256, predicate type, Supabase rows).  
 3. Once the observer succeeds, copy the populated JSON snippet into `docs/reports/PHASE3_AUDIT_SUMMARY.md` (daily file) and post the Supabase response/Slack request IDs into `docs/reports/2025-11-13/_evidence_index.md`.
+
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 # Day8 最終チェックリスト実行用コマンド
 
 ## 1. Secrets登録（どちらか一方）
@@ -65,3 +74,5 @@ gh pr view --web
 - [ ] PR 作成・ラベル付与（ops, docs, ci）
 - [ ] PR 本文に DoD & スクショ要約
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

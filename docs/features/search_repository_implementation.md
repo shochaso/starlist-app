@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 Status:: 
 Source-of-Truth:: (TBD)
 Spec-State:: 
@@ -189,6 +198,5 @@ DBは残置可（RLSにより安全性は確保）
 **バージョン**: v1.0  
 **ステータス**: ✅ 実装完了
 
-
-
-
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

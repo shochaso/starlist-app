@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 ![Docs Link Check](https://github.com/shochaso/starlist-app/actions/workflows/docs-link-check.yml/badge.svg)
 ![QA E2E](https://github.com/shochaso/starlist-app/actions/workflows/qa-e2e.yml/badge.svg)
 ![Docs Status Audit](https://github.com/shochaso/starlist-app/actions/workflows/docs-status-audit.yml/badge.svg)
@@ -707,3 +716,5 @@ psql $DATABASE_URL < backup/YYYYMMDDTHHMMSS.sql         # 復旧
 - [ ] `.env` / `.env.*` は Git 管理対象外
 ```
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

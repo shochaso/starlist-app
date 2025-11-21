@@ -1,3 +1,24 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # Telemetry Handoff Document
 
 **Purpose**: Define Phase 4 telemetry integration requirements and handoff criteria.
@@ -204,3 +225,5 @@ Workflows → Telemetry Events → KPI Aggregation → Dashboard
 **Last Updated**: 2025-11-13
 **Status**: Ready for Phase 4 handoff
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

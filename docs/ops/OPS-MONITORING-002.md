@@ -1,3 +1,24 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 Status:: verified  
 Source-of-Truth:: lib/src/features/ops/screens/ops_dashboard_page.dart, lib/src/features/ops/providers/ops_metrics_provider.dart, lib/src/features/ops/models/ops_metrics_series_model.dart  
 Spec-State:: 確定済み（Dashboard UI・フィルタ・グラフ・自動リフレッシュ）  
@@ -423,3 +444,5 @@ serve(async (req) => {
 - **After**: OPSダッシュボード画面を実装し、主要KPIを可視化。アラートルールを設定し、Slack通知とPagerDuty連携を実現。
 - **追加**: 指標マップとアラート閾値を明文化し、運用KPIを一元管理できる設計に昇格。
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

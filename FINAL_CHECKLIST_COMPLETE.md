@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 # 最終チェックリスト完全実行結果
 
 実行日時: 2025-11-09 14:39:22 JST  
@@ -206,3 +215,5 @@ scripts/ops/post-merge-routine.sh
 **実行完了時刻**: 2025-11-09 14:45:00 JST  
 **ステータス**: ✅ **緑化完了・恒常運用準備完了**
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

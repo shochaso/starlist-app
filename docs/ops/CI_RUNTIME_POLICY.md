@@ -1,3 +1,24 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # CI Runtime Policy
 
 **Purpose**: Define recommended values for retry, timeout, and concurrency in CI workflows.
@@ -188,3 +209,6 @@ gh run list --workflow=slsa-provenance.yml --limit 100 \
 ---
 
 **Last Updated**: 2025-11-13
+
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

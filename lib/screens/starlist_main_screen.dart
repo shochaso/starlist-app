@@ -2290,7 +2290,6 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
   Widget _buildPaidFollowContentSection() {
     final posts = ref.watch(hanayamaMizukiPostsProvider);
     final currentUser = ref.watch(currentUserProvider);
-    final isDark = ref.watch(themeProviderEnhanced).isDarkMode;
 
     final paidPosts = posts.where((post) {
       if (post.accessLevel == AccessLevel.public) {
@@ -2634,15 +2633,20 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
                               ? Colors.white38
                               : const Color(0xFF94A3B8)),
                       const SizedBox(width: 4),
-                      Text(
-                        item['time'] as String,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color:
-                              isDark ? Colors.white54 : const Color(0xFF64748B),
+                      Expanded(
+                        child: Text(
+                          item['time'] as String,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: isDark
+                                ? Colors.white54
+                                : const Color(0xFF64748B),
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      const Spacer(),
+                      const SizedBox(width: 8),
                       Text(
                         (item['accessLevel'] as AccessLevel).displayName,
                         style: TextStyle(

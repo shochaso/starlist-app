@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 # PR #45 最終締め切り（Go/No-Go）完了サマリー
 
 **作成日時**: 2025-11-09  
@@ -136,3 +145,5 @@ jq '{state, mergeStateStatus, reviewDecision, checks: [.statusCheckRollup[]?.sta
 **作成完了時刻**: 2025-11-09  
 **ステータス**: ✅ **PR #45 最終締め切り（Go/No-Go）準備完了**
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

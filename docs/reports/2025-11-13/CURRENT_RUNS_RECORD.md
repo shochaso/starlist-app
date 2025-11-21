@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 # Current Runs Record
 
 **Date**: 2025-11-13 (UTC)
@@ -59,3 +68,6 @@
 
 **Last Updated**: 2025-11-13 (UTC)
 **Next Update**: After successful workflow_dispatch execution
+
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

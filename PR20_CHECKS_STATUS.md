@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 # PR #20 Checks ステータス確認レポート
 
 ## 📊 最新のワークフロー実行状況
@@ -117,3 +126,5 @@ Docs Link Checkは成功済みです。Functions直URLの除外は継続で問�
 
 **最終更新**: PR #20 Checks ステータス確認完了時点
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

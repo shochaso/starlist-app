@@ -7,11 +7,11 @@ owner: STARLIST Docs Automation Team
 
 # Markdown CI Report
 
-## 最新の実行
-- 実行日時: 2025-11-17T14:14:07Z
-- コマンド: `validate_md_starlist.py --stdin-0 --autofix --report docs/ops/MD_CI_REPORT.md ./PR_READY_FINAL.md ...(+2953 more args)`
-- ファイル数: 431
-- エラー数: 2431
+-## 最新の実行
+- 実行日時: 2025-11-17T15:23:44Z
+- コマンド: `validate_md_starlist.py --stdin-0 --autofix --report docs/ops/MD_CI_REPORT.md ./PR_READY_FINAL.md ...(+2959 more args)`
+- ファイル数: 437
+- エラー数: 2427
 - 自動修復: 有効
 - ドライラン: 無効
 
@@ -22,63 +22,7 @@ owner: STARLIST Docs Automation Team
 ## 失敗一覧
 | ファイル | 行 | チェック | メッセージ | 修復可能 |
 | --- | --- | --- | --- | --- |
-| 10X_FINALIZATION_PACK_SUMMARY.md | 190 | table-columns | Table columns do not align between header and separator. | いいえ |
-| CI_FIXES_APPLIED.md | 48 | codefence-language-unsupported | Unsupported language: toml | いいえ |
-| CI_FIXES_LATEST.md | 17 | codefence-language | Code fence must declare a language. | いいえ |
-| CI_FIXES_LATEST.md | 28 | codefence-language | Code fence must declare a language. | いいえ |
-| CI_FIXES_SUMMARY.md | 19 | codefence-language | Code fence must declare a language. | いいえ |
-| CI_FIXES_SUMMARY.md | 35 | codefence-language | Code fence must declare a language. | いいえ |
-| CI_FIXES_SUMMARY.md | 45 | codefence-language | Code fence must declare a language. | いいえ |
-| COMMIT_READY_SUMMARY.md | 167 | table-columns | Table columns do not align between header and separator. | いいえ |
 | COMPLETE_LANDING_EXECUTION.md | 282 | codefence-language | Code fence must declare a language. | いいえ |
-| CSP_ENFORCE_IMPLEMENTATION.md | 50 | codefence-language | Code fence must declare a language. | いいえ |
-| CSP_ENFORCE_IMPLEMENTATION.md | 62 | codefence-language-unsupported | Unsupported language: nginx | いいえ |
-| CSP_ENFORCE_IMPLEMENTATION.md | 143 | codefence-language | Code fence must declare a language. | いいえ |
-| CSP_ENFORCE_IMPLEMENTATION.md | 151 | codefence-language-unsupported | Unsupported language: nginx | いいえ |
-| CSP_ENFORCE_IMPLEMENTATION.md | 236 | codefence-language | Code fence must declare a language. | いいえ |
-| CSP_ENFORCE_IMPLEMENTATION.md | 248 | codefence-language-unsupported | Unsupported language: nginx | いいえ |
-| CSP_ENFORCE_IMPLEMENTATION.md | 329 | codefence-language | Code fence must declare a language. | いいえ |
-| CSP_ENFORCE_IMPLEMENTATION.md | 337 | codefence-language-unsupported | Unsupported language: nginx | いいえ |
-| CSP_ENFORCE_IMPLEMENTATION_PROMPT.md | 122 | codefence-language | Code fence must declare a language. | いいえ |
-| CSP_ENFORCE_IMPLEMENTATION_PROMPT.md | 134 | codefence-language-unsupported | Unsupported language: nginx | いいえ |
-| CSP_ENFORCE_IMPLEMENTATION_PROMPT.md | 250 | codefence-language | Code fence must declare a language. | いいえ |
-| CSP_ENFORCE_IMPLEMENTATION_PROMPT.md | 263 | codefence-language-unsupported | Unsupported language: nginx | いいえ |
-| CSP_ENFORCE_IMPLEMENTATION_PROMPT.md | 334 | codefence-language-unsupported | Unsupported language: csp | いいえ |
-| CSP_ENFORCE_IMPLEMENTATION_PROMPT.md | 453 | codefence-language | Code fence must declare a language. | いいえ |
-| CSP_ENFORCE_IMPLEMENTATION_PROMPT.md | 465 | codefence-language-unsupported | Unsupported language: nginx | いいえ |
-| CSP_ENFORCE_IMPLEMENTATION_PROMPT.md | 581 | codefence-language | Code fence must declare a language. | いいえ |
-| CSP_ENFORCE_IMPLEMENTATION_PROMPT.md | 594 | codefence-language-unsupported | Unsupported language: nginx | いいえ |
-| CSP_ENFORCE_IMPLEMENTATION_PROMPT.md | 665 | codefence-language-unsupported | Unsupported language: csp | いいえ |
-| CSP_ENFORCE_PROMPT.md | 122 | codefence-language | Code fence must declare a language. | いいえ |
-| CSP_ENFORCE_PROMPT.md | 134 | codefence-language-unsupported | Unsupported language: nginx | いいえ |
-| CSP_ENFORCE_PROMPT.md | 250 | codefence-language | Code fence must declare a language. | いいえ |
-| CSP_ENFORCE_PROMPT.md | 263 | codefence-language-unsupported | Unsupported language: nginx | いいえ |
-| CSP_ENFORCE_PROMPT.md | 334 | codefence-language-unsupported | Unsupported language: csp | いいえ |
-| CSP_ENFORCE_PROMPT.md | 453 | codefence-language | Code fence must declare a language. | いいえ |
-| CSP_ENFORCE_PROMPT.md | 465 | codefence-language-unsupported | Unsupported language: nginx | いいえ |
-| CSP_ENFORCE_PROMPT.md | 581 | codefence-language | Code fence must declare a language. | いいえ |
-| CSP_ENFORCE_PROMPT.md | 594 | codefence-language-unsupported | Unsupported language: nginx | いいえ |
-| CSP_ENFORCE_PROMPT.md | 665 | codefence-language-unsupported | Unsupported language: csp | いいえ |
-| CSP_ENFORCE_PR_TEMPLATE.md | 14 | codefence-language | Code fence must declare a language. | いいえ |
-| CSP_ENFORCE_PR_TEMPLATE.md | 20 | codefence-language-unsupported | Unsupported language: markdown | いいえ |
-| CSP_ENFORCE_PR_TEMPLATE.md | 47 | codefence-language | Code fence must declare a language. | いいえ |
-| CSP_ENFORCE_PR_TEMPLATE.md | 52 | codefence-language | Code fence must declare a language. | いいえ |
-| CSP_ENFORCE_PR_TEMPLATE.md | 65 | codefence-language | Code fence must declare a language. | いいえ |
-| CSP_ENFORCE_PR_TEMPLATE.md | 85 | codefence-language | Code fence must declare a language. | いいえ |
-| CSP_ENFORCE_PR_TEMPLATE.md | 105 | codefence-language-unsupported | Unsupported language: diff | いいえ |
-| CSP_ENFORCE_PR_TEMPLATE.md | 185 | codefence-language | Code fence must declare a language. | いいえ |
-| CSP_ENFORCE_PR_TEMPLATE.md | 191 | codefence-language-unsupported | Unsupported language: markdown | いいえ |
-| CSP_ENFORCE_PR_TEMPLATE.md | 218 | codefence-language | Code fence must declare a language. | いいえ |
-| CSP_ENFORCE_PR_TEMPLATE.md | 223 | codefence-language | Code fence must declare a language. | いいえ |
-| CSP_ENFORCE_PR_TEMPLATE.md | 236 | codefence-language | Code fence must declare a language. | いいえ |
-| CSP_ENFORCE_PR_TEMPLATE.md | 256 | codefence-language | Code fence must declare a language. | いいえ |
-| CSP_ENFORCE_PR_TEMPLATE.md | 276 | codefence-language-unsupported | Unsupported language: diff | いいえ |
-| CSP_ENFORCE_VERIFICATION.md | 126 | codefence-language | Code fence must declare a language. | いいえ |
-| CSP_ENFORCE_VERIFICATION.md | 134 | codefence-language-unsupported | Unsupported language: nginx | いいえ |
-| CSP_ENFORCE_VERIFICATION.md | 197 | codefence-language-unsupported | Unsupported language: csp | いいえ |
-| CSP_ENFORCE_VERIFICATION.md | 379 | codefence-language | Code fence must declare a language. | いいえ |
-| CSP_ENFORCE_VERIFICATION.md | 387 | codefence-language-unsupported | Unsupported language: nginx | いいえ |
-| CSP_ENFORCE_VERIFICATION.md | 450 | codefence-language-unsupported | Unsupported language: csp | いいえ |
 | CSP_MONITORING_CHECKLIST.md | 90 | codefence-language | Code fence must declare a language. | いいえ |
 | CSP_MONITORING_CHECKLIST.md | 98 | codefence-language | Code fence must declare a language. | いいえ |
 | CSP_MONITORING_CHECKLIST.md | 107 | codefence-language | Code fence must declare a language. | いいえ |
@@ -222,4 +166,65 @@ owner: STARLIST Docs Automation Team
 | IMMEDIATE_RECOVERY_COMPLETE.md | 83 | codefence-language | Code fence must declare a language. | いいえ |
 | IMMEDIATE_RECOVERY_COMPLETE.md | 117 | codefence-language | Code fence must declare a language. | いいえ |
 | IMMEDIATE_RECOVERY_COMPLETE.md | 52 | table-columns | Table columns do not align between header and separator. | いいえ |
-> 表は先頭 200 件まで表示し、残り 2231 件はログファイルを参照してください。
+| IMMEDIATE_RECOVERY_STATUS.md | 84 | codefence-language | Code fence must declare a language. | いいえ |
+| IMMEDIATE_RECOVERY_STATUS.md | 93 | codefence-language | Code fence must declare a language. | いいえ |
+| IMMEDIATE_RECOVERY_STATUS.md | 99 | codefence-language | Code fence must declare a language. | いいえ |
+| IMMEDIATE_RECOVERY_STATUS.md | 76 | table-columns | Table columns do not align between header and separator. | いいえ |
+| IMMEDIATE_RECOVERY_STATUS.md | 122 | table-columns | Table columns do not align between header and separator. | いいえ |
+| LOCAL_RUNBOOK.md | 113 | codefence-language | Code fence must declare a language. | いいえ |
+| MEGAPACK_COMPLETE.md | 65 | codefence-language | Code fence must declare a language. | いいえ |
+| MEGAPACK_COMPLETE.md | 79 | table-columns | Table columns do not align between header and separator. | いいえ |
+| MEGAPACK_COMPLETE.md | 80 | table-columns | Table columns do not align between header and separator. | いいえ |
+| POST_MERGE_STEPS.md | 30 | codefence-language | Code fence must declare a language. | いいえ |
+| POST_MERGE_STEPS.md | 55 | codefence-language | Code fence must declare a language. | いいえ |
+| PR20_SECURITY_AUDIT_FIX.md | 20 | codefence-language | Code fence must declare a language. | いいえ |
+| PR22_FINAL_STATUS.md | 161 | codefence-language | Code fence must declare a language. | いいえ |
+| PR22_RESOLUTION_STATUS.md | 67 | codefence-language | Code fence must declare a language. | いいえ |
+| PR45_10X_WORKSTREAM_COMPLETE.md | 28 | forbidden-word | Forbidden wording detected: placeholder | いいえ |
+| PR45_10X_WORKSTREAM_COMPLETE.md | 67 | forbidden-word | Forbidden wording detected: placeholder | いいえ |
+| PR45_10X_WORKSTREAM_COMPLETE.md | 57 | codefence-language | Code fence must declare a language. | いいえ |
+| PR45_FINAL_GO_NOGO_COMPLETE.md | 48 | codefence-language | Code fence must declare a language. | いいえ |
+| PR45_FINAL_GO_NOGO_COMPLETE.md | 103 | codefence-language | Code fence must declare a language. | いいえ |
+| PRICING_FINAL_CHECKLIST.md | 27 | codefence-language-unsupported | Unsupported language: sql | いいえ |
+| PRICING_FINAL_CHECKLIST.md | 171 | codefence-language-unsupported | Unsupported language: sql | いいえ |
+| PRICING_FINAL_CHECKLIST.md | 113 | table-columns | Table columns do not align between header and separator. | いいえ |
+| PRICING_FINAL_CHECKLIST.md | 257 | table-columns | Table columns do not align between header and separator. | いいえ |
+| PRICING_FINAL_SHORTCUT_GUIDE.md | 62 | codefence-language-unsupported | Unsupported language: sql | いいえ |
+| PRICING_FINAL_SHORTCUT_GUIDE.md | 114 | codefence-language | Code fence must declare a language. | いいえ |
+| PRICING_FINAL_SHORTCUT_GUIDE.md | 203 | codefence-language-unsupported | Unsupported language: sql | いいえ |
+| PRICING_FINAL_SHORTCUT_GUIDE.md | 255 | codefence-language | Code fence must declare a language. | いいえ |
+| PRICING_FINAL_SHORTCUT_GUIDE.md | 91 | table-columns | Table columns do not align between header and separator. | いいえ |
+| PRICING_FINAL_SHORTCUT_GUIDE.md | 232 | table-columns | Table columns do not align between header and separator. | いいえ |
+| PRICING_TROUBLESHOOTING.md | 120 | codefence-language-unsupported | Unsupported language: sql | いいえ |
+| PRICING_TROUBLESHOOTING.md | 260 | codefence-language-unsupported | Unsupported language: sql | いいえ |
+| PRICING_TROUBLESHOOTING.md | 14 | table-columns | Table columns do not align between header and separator. | いいえ |
+| PRICING_TROUBLESHOOTING.md | 154 | table-columns | Table columns do not align between header and separator. | いいえ |
+| PR_CREATION_STEPS.md | 20 | codefence-language | Code fence must declare a language. | いいえ |
+| PR_CREATION_STEPS.md | 49 | codefence-language | Code fence must declare a language. | いいえ |
+| PR_CREATION_STEPS.md | 55 | codefence-language-unsupported | Unsupported language: markdown | いいえ |
+| PR_CREATION_STEPS.md | 87 | codefence-language | Code fence must declare a language. | いいえ |
+| PR_CREATION_STEPS.md | 93 | codefence-language-unsupported | Unsupported language: markdown | いいえ |
+| PR_READY_FINAL.md | 37 | codefence-language | Code fence must declare a language. | いいえ |
+| PR_READY_SUMMARY.md | 41 | codefence-language | Code fence must declare a language. | いいえ |
+| PR_READY_SUMMARY.md | 48 | codefence-language-unsupported | Unsupported language: markdown | いいえ |
+| README.md | 18 | link-missing | Link target `/dashboard/audit` not found. | いいえ |
+| README.md | 717 | codefence-unclosed | Code fence opened but never closed. | いいえ |
+| README.md | 670 | table-columns | Table columns do not align between header and separator. | いいえ |
+| RECOVERY_FINAL_OUTPUT.md | 32 | codefence-language | Code fence must declare a language. | いいえ |
+| RECOVERY_FINAL_OUTPUT.md | 44 | codefence-language | Code fence must declare a language. | いいえ |
+| RECOVERY_FINAL_OUTPUT.md | 67 | codefence-language | Code fence must declare a language. | いいえ |
+| RECOVERY_MINIMAL_OUTPUT.md | 36 | codefence-language | Code fence must declare a language. | いいえ |
+| RECOVERY_MINIMAL_OUTPUT.md | 50 | codefence-language | Code fence must declare a language. | いいえ |
+| RECOVERY_MINIMAL_OUTPUT.md | 77 | codefence-language | Code fence must declare a language. | いいえ |
+| RUN_ID_DETERMINATION_COMPLETE.md | 65 | codefence-language | Code fence must declare a language. | いいえ |
+| RUN_ID_DETERMINATION_COMPLETE.md | 74 | codefence-language | Code fence must declare a language. | いいえ |
+| RUN_ID_DETERMINATION_COMPLETE.md | 82 | codefence-language | Code fence must declare a language. | いいえ |
+| RUN_ID_DETERMINATION_COMPLETE.md | 106 | codefence-language | Code fence must declare a language. | いいえ |
+| RUN_ID_DETERMINATION_COMPLETE.md | 55 | table-columns | Table columns do not align between header and separator. | いいえ |
+| RUN_ID_DETERMINATION_COMPLETE.md | 99 | table-columns | Table columns do not align between header and separator. | いいえ |
+> 表は先頭 200 件まで表示し、残り 2199 件はログファイルを参照してください。
+
+
+## Notes
+- 2025-11-17 15:23:44Z: `validate_md_starlist.py` は 437 ファイル／2,427 件の table-columns/codefence-language エラーを報告。CSP 系、`COMPLETE_LANDING_EXECUTION.md`、`DAY10_DEPLOYMENT_RUNBOOK.md` 等が残っているため、一つずつ言語指定と列数の整合を取る必要がある。
+- 2025-11-17 15:23:30Z: `npm run lint:md` が `docs/COMPANY_SETUP_GUIDE.md` の `#account-roles` アンカー追加を反映し、Node 18 上でも polyfill + markdown-link-check を通過。リンク切れは今後の URL/アンカー整理で潰します。

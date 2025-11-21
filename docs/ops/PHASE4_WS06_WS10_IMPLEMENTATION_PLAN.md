@@ -1,3 +1,24 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # Phase 4 WS06-WS10 Implementation Plan (20× Microtasks)
 
 ## Overview
@@ -303,3 +324,5 @@ This document outlines 20 microtasks for implementing Phase4 Workstreams 06-10:
 - Idempotency maintained throughout
 - CI workflows updated to use new components
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

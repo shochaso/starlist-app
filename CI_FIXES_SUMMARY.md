@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 # CIワークフロー修正サマリ
 
 ## 🔧 修正した問題
@@ -7,7 +16,7 @@
 **問題**: `dart pub get`が失敗（Flutter SDKが利用できない）
 
 **エラー**:
-```
+```bash
 Because starlist_app depends on flutter_test from sdk which doesn't exist (the Flutter SDK is not available), version solving failed.
 Flutter users should use `flutter pub` instead of `dart pub`.
 ```
@@ -23,7 +32,7 @@ Flutter users should use `flutter pub` instead of `dart pub`.
 **問題1**: pnpmが見つからない
 
 **エラー**:
-```
+```bash
 Unable to locate executable file: pnpm. Please verify either the file path exists or the file can be found within the PATH environment variable.
 ```
 
@@ -33,7 +42,7 @@ Unable to locate executable file: pnpm. Please verify either the file path exist
 **問題2**: trivy-results.sarifが存在しない
 
 **エラー**:
-```
+```bash
 Path does not exist: trivy-results.sarif
 ```
 
@@ -93,3 +102,5 @@ Path does not exist: trivy-results.sarif
 
 **最終更新**: CIワークフロー修正完了時点
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

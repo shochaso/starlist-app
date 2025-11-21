@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 ## **Starlist コミュニティガイドライン**
 
 **最終更新日: 2025年5月19日**
@@ -259,3 +268,5 @@ Starlistが、すべてのスターとファンにとって、安全で、信頼
 
 Starlist運営チーム
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

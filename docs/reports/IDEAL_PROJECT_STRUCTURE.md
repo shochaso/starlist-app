@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 Status:: 
 Source-of-Truth:: (TBD)
 Spec-State:: 
@@ -274,7 +283,7 @@ mv AI_SECRETARY_POC_PLAN.md docs/reports/
 - **GitHub Wiki** - 補足的なドキュメント
 
 #### 2. リアルタイム協業
-- **Notion** - ブレインストーミング、会議メモ、ロードマップ
+- **LINEAR** - ブレインストーミング、会議メモ、ロードマップ
 - **Obsidian** - 個人のナレッジ管理、Markdownリンク活用
 - **Cursor** - AI支援コード開発
 
@@ -337,3 +346,6 @@ mkdir -p docs/{planning,architecture,business,user-journey,ai-integration,legal,
 ```
 
 **今すぐ実行しますか？**
+
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

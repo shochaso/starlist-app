@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 # Web Cookie-based Auth (Tokenless)
 
 ## Goals
@@ -16,3 +25,6 @@
 ## Verification
 - ページ再読込でセッション維持
 - Application/Storage で機密未保存を確認
+
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

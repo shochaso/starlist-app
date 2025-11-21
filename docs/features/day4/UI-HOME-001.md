@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 Status:: 
 Source-of-Truth:: (TBD)
 Spec-State:: 
@@ -67,3 +76,6 @@ Source-of-Truth: Flutter code (`lib/src/features/app/**`, `lib/src/features/subs
 - **Before**: OAuth UI・再認証モーダル・スター別価格表示が実装済みと仮定していた。  
 - **After**: Flutter Reality（メールログイン＋固定価格）に合わせ、未実装箇所を TODO 化し、PAY-STAR-SUBS-PER-STAR-PRICING と連動する価格/文言要件を追加。  
 - **追加**: `AUTH_OAUTH_V1` フラグの出し分け、成人/未成年ラベルの表示仕様、テスト観点を明記。
+
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

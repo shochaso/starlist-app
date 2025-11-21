@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 # ブランチ保護設定ガイド（WS-D）
 
 **Status**: Active  
@@ -118,3 +127,5 @@ gh pr create --title "test: branch protection" --body "Testing branch protection
 **作成日**: 2025-11-09  
 **次回レビュー**: 設定完了後
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

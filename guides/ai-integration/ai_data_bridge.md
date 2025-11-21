@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 # AIデータブリッジ：STARLISTにおけるSupabase/MCP接続技術ノート
 
 ## 概要
@@ -100,3 +109,6 @@ class DataSyncService {
 - Supabase Edge FunctionsでのAI処理基盤構築
 - セキュリティ監査とコンプライアンス確認
 - パフォーマンステストとスケーラビリティ検証
+
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

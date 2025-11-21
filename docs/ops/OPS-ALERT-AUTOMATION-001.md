@@ -1,3 +1,24 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 Status:: planned  
 Source-of-Truth:: docs/ops/OPS-ALERT-AUTOMATION-001.md  
 Spec-State:: 確定済み（Recent Alerts・CI検証）  
@@ -253,3 +274,5 @@ jobs:
 - `docs/ops/OPS-TELEMETRY-SYNC-001.md` - Telemetry同期仕様
 - `supabase/functions/ops-alert/index.ts` - Edge Function実装
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

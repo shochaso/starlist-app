@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 # AIスケジューラーモデル：STARLISTにおける自動連携スケジュールの設計
 
 ## 概要
@@ -45,3 +54,6 @@
 - スケジューラーモデルのプロトタイプ開発に着手。
 - 既存の**Supabase**データとの連携を確立。
 - スター向けダッシュボードへのUI/UX統合設計を開始。
+
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

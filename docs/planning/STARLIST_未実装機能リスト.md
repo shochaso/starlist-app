@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 Status:: 
 Source-of-Truth:: (TBD)
 Spec-State:: 
@@ -278,4 +287,7 @@ Last-Updated::
 ---
 
 **最終更新:** 2025年1月3日  
-**作成者:** AI Assistant（Meta-Prompt分析結果） 
+**作成者:** AI Assistant（Meta-Prompt分析結果）
+
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

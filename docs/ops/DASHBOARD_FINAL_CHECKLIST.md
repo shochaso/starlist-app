@@ -1,3 +1,24 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # ✅ 最終合格（Go/No-Go）チェック — Dashboard編（8項）
 
 ## 最終Go/No-Goクイックチェック（当日用・60秒）
@@ -319,3 +340,5 @@ npm run build && npm run start   # もしくは デプロイCIを発火
 **責任者**: Ops Team  
 **承認**: COO兼PM ティム
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

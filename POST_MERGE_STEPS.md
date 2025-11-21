@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 # Post-Merge作業手順（マージ後すぐ実行）
 
 ## 1. ローカルをmainに更新
@@ -61,4 +70,5 @@ git checkout -b feature/day7-ops-alert-automation
 git push -u origin feature/day7-ops-alert-automation
 ```
 
-
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

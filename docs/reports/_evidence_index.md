@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 # Evidence Index
 
 **Purpose**: Centralized index of all evidence collected during Phase 2/3 implementation and validation.
@@ -160,3 +169,6 @@
 | `PHASE2_2_VALIDATION_REPORT.md` | Report | Validation results | ⏳ Pending execution |
 | `WS06_SHA256_VALIDATION.md` | Validation | SHA256 validation table | ⏳ Pending execution |
 | `_manifest.json` | Manifest | Run manifest entries | ⏳ Pending execution |
+
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

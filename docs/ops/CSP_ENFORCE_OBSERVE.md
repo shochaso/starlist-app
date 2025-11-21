@@ -1,3 +1,24 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # CSP Enforcement Observation Guide
 
 ## 1. DevTools確認
@@ -17,3 +38,6 @@
 ## 4. 運用観測
 - `docs/reports/OPS-SUMMARY-LOGS.md` に `CSP REPORT` 経由で届いたタイムスタンプと IP を追記
 - 1週間以上 0 件なら `CSP_ENFORCE_OBSERVE.md` の「Weekly review」セクションへ記録
+
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

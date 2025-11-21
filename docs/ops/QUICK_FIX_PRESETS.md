@@ -1,3 +1,24 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # 最短でGreenに戻す微修正プリセット（文言置換一覧）
 
 **目的**: CIエラーを最短で修正するための文言置換プリセット
@@ -119,3 +140,5 @@ USER app
 **作成日**: 2025-11-09  
 **ステータス**: ✅ **微修正プリセット完成**
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

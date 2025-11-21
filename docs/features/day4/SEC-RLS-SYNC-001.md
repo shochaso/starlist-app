@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 Status:: 
 Source-of-Truth:: (TBD)
 Spec-State:: 
@@ -63,3 +72,6 @@ Source-of-Truth: Flutter code (`lib/src/features/subscription/**`)
 - **Before**: entitlements ベースの RLS 同期が実装済みという前提で記述。  
 - **After**: Flutter Reality（`subscriptions` 直接参照、Edge 未導入）を反映し、必要な移行ステップと Dry-run 環境変数を明記。  
 - **追加**: スター単位課金仕様への依存と、OPS監査イベント（`rls.access.denied`）の利用を追記。
+
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

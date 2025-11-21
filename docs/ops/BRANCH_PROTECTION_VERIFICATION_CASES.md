@@ -1,3 +1,24 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # Branch Protection 検証ケース
 
 **作成日**: 2025-11-09
@@ -31,3 +52,5 @@
 **作成日**: 2025-11-09  
 **ステータス**: ✅ **Branch Protection検証ケース完成**
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

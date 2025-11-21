@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 # 即時リカバリ実行状況
 
 **実行日時**: 2025-11-09  
@@ -119,3 +128,5 @@ policy: migrate_to_registry
 **実行完了時刻**: 2025-11-09  
 **ステータス**: ✅ **PR #39作成完了（マージ待ち）**
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

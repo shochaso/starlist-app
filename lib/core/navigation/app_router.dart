@@ -22,7 +22,9 @@ import 'package:starlist_app/screens/bootstrap_screen.dart';
 import 'package:starlist_app/screens/fan_register_screen.dart';
 import 'package:starlist_app/screens/star_teaser_screen.dart';
 import 'package:starlist_app/screens/landing_screen.dart';
+import 'package:starlist_app/features/data_integration/screens/data_import_screen.dart';
 
+// ignore: unused_element
 class _AuthStreamListenable extends ChangeNotifier {
   _AuthStreamListenable(Stream<AuthState> stream) {
     _sub = stream.listen((_) => notifyListeners());
@@ -62,6 +64,10 @@ GoRouter createAppRouter() {
       GoRoute(
         path: '/home',
         builder: (context, state) => const StarlistMainScreen(),
+      ),
+      GoRoute(
+        path: '/data-import',
+        builder: (context, state) => const DataImportScreen(),
       ),
       GoRoute(
         path: '/password-reset-request',

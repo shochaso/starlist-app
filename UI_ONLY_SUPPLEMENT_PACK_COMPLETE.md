@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 # UIオンリー運用 増補セット（10倍スケール追加パック）作成完了
 
 **作成日時**: 2025-11-09  
@@ -130,3 +139,5 @@ docs/ops/
 **作成完了時刻**: 2025-11-09  
 **ステータス**: ✅ **UIオンリー運用 増補セット（10倍スケール追加パック）作成完了**
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

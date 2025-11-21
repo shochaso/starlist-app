@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 # CI修正パッチ（最新版）
 
 ## 🔍 検出された新しい問題
@@ -5,7 +14,7 @@
 ### 1. security-audit (ID: 19194130669)
 
 **問題**: Flutter SDKバージョン互換性エラー
-```
+```bash
 Because starlist_app depends on build_runner >=2.4.14 which requires SDK version >=3.6.0 <4.0.0, version solving failed.
 ```
 
@@ -16,7 +25,7 @@ Because starlist_app depends on build_runner >=2.4.14 which requires SDK version
 ### 2. extended-security (ID: 19194130670)
 
 **問題**: GitleaksのSARIFファイルが見つからない
-```
+```bash
 Error: File results.sarif does not exist
 ```
 
@@ -75,3 +84,5 @@ Error: File results.sarif does not exist
 
 **最終更新**: CI修正パッチ適用完了時点
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

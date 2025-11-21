@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 Status:: planned
 Source-of-Truth:: docs/reports/DAY11_SOT_DIFFS.md
 Spec-State:: 確定済み（実装履歴・CodeRefs）
@@ -770,3 +779,6 @@ WHERE day >= NOW() - INTERVAL '14 days';
 ## 🚀 次のステップ
 
 - Day12候補: OPS Insights（傾向分析＋アラート分類AI）
+
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

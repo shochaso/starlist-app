@@ -1,3 +1,24 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # SLSA Provenance 20×拡張計画：完全運用・監査・可観測基盤の確立
 
 ## 📋 エグゼクティブサマリー
@@ -451,3 +472,6 @@ sequenceDiagram
 **「手動介入ゼロ、監査証跡100%、可観測性完全自動化」**
 
 SLSA Provenanceワークフローが、STARLIST全体の透明性・信頼性を可視化・維持する基幹基盤として機能する。
+
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

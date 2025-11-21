@@ -1,3 +1,24 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # Phase 4 WS06-WS10 Quick Start Guide
 
 ## Overview
@@ -286,3 +307,5 @@ kpi:
 - [ ] CI workflows updated
 - [ ] Documentation updated
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

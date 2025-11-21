@@ -1,3 +1,24 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # CSP検証 - トラブルシューティング結果
 
 ## 実行日時
@@ -93,3 +114,5 @@ curl -sI https://starlist.jp | tr -d '\r' | grep -i '^content-security-policy:'
 - `.github/workflows/csp-verify.yml` - CSP検証ワークフロー
 - `docs/ops/CSP_VERIFICATION_REPORT.md` - 検証レポート
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 # Day12 SOT DIFFS
 
 **Generated**: 2025-11-09T01:04:06.849Z
@@ -253,3 +262,6 @@ index 20852a9..56eb34c 100644
 * merged: https://github.com/shochaso/starlist-app/pull/31  (2025-11-09 14:14:52 JST)
 * merged: https://github.com/shochaso/starlist-app/pull/32  (2025-11-09 14:14:53 JST)
 * merged: https://github.com/shochaso/starlist-app/pull/33  (2025-11-09 14:36:48 JST)
+
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

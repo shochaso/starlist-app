@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 # Provenance Validation Commands
 
 **Purpose**: Commands for validating provenance artifacts (predicateType, SHA256, content integrity).
@@ -212,3 +221,6 @@ If validation fails:
 ---
 
 **Note**: Validation results should be recorded in `WS06_SHA256_VALIDATION.md` and `PHASE2_2_VALIDATION_REPORT.md`.
+
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

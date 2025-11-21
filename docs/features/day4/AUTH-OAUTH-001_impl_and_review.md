@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 Status:: 
 Source-of-Truth:: (TBD)
 Spec-State:: 
@@ -143,3 +152,6 @@ labels: [docs, auth, day4]
 1. **レビュー依頼**：上記チェックリストでセルフチェック→source_of_truth レビューへ。  
 2. **承認後**：本ファイルの Implementation Prompts をマインへ共有し、Flutter / Edge / SQL の 3 並行タスクを開始。  
 3. **完了時**：AUTH-OAUTH-001 の Exit Criteria を満たしたら Day4 Gate を更新し、Mermaid ノードのステータスを最新化。
+
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

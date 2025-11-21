@@ -1,3 +1,24 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # Phase 2.1 Validation Suite
 
 ## 🎯 Test Objectives
@@ -165,3 +186,6 @@ cat docs/reports/$(date +%Y-%m-%d)/manifest.json | jq '[.[] | .run_id] | unique 
 - Slack notifications require SUPABASE_URL and SUPABASE_ANON_KEY secrets
 - Supabase sync requires SUPABASE_SERVICE_ROLE_KEY secret
 - All tests should be run on feature branch before merging to main
+
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 # トラブルシューティングガイド（即応コマンド集）
 
 ## 実行直後に送ってほしいログ
@@ -335,3 +344,5 @@ paths = [
 
 **重要**: エラーが発生したら、上記のログを取得して送ってください。最短で修正パッチを作成します。
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

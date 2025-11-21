@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 Status:: in-progress  
 Source-of-Truth:: docs/reports/DAY10_SOT_DIFFS.md  
 Spec-State:: 確定済み（実装履歴・CodeRefs）  
@@ -1191,3 +1200,5 @@ limit 10;
 
 - Day11候補: 閾値自動チューニング、Dashboard統合、即時アラート（Webhook連携）
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

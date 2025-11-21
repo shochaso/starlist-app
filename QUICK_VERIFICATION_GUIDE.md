@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 # クイック検証ガイド
 
 ## Web検証（Chrome）
@@ -139,3 +148,5 @@ curl -i -X POST \
 - Edge Functionを再デプロイ
 - 環境変数の名前が正確か確認（大文字小文字に注意）
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

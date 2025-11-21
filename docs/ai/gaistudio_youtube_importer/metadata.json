@@ -1,0 +1,5 @@
+{
+  "name": "YouTube視聴履歴OCRインポーター",
+  "description": "YouTubeの視聴履歴のスクリーンショットをアップロードし、OCRでテキストを抽出し、編集可能なテキストエリアに表示するアプリケーションです。",
+  "requestFramePermissions": []
+}

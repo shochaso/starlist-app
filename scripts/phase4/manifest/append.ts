@@ -7,6 +7,19 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
 
+/**
+ * Ensure directory exists
+ */
+async function ensureDir(dirPath: string): Promise<void> {
+  try {
+    await fs.mkdir(dirPath, { recursive: true });
+  } catch (error) {
+    if ((error as any).code !== 'EEXIST') {
+      throw error;
+    }
+  }
+}
+
 export interface ManifestEntry {
   run_id: number;
   tag?: string;
@@ -33,6 +46,9 @@ export async function atomicAppendManifest(
   entry: ManifestEntry,
   manifestPath: string
 ): Promise<AppendResult> {
+  // Ensure manifest directory exists
+  await ensureDir(path.dirname(manifestPath));
+
   const tmpPath = `${manifestPath}.tmp`;
   const lockPath = `${manifestPath}.lock`;
 

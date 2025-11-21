@@ -1,3 +1,24 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # PM One-Pager（UI-only）
 
 - 日付（JST）/ 実施者
@@ -21,3 +42,5 @@
 **作成日**: 2025-11-09  
 **ステータス**: ✅ **PM One-Pagerテンプレート完成**
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

@@ -1,14 +1,23 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 # CSP Enforce 化 PR 雛形
 
 ## 📋 PR タイトル
 
-```
+```bash
 🔐 CSP Enforce: tighten connect/img/font-src based on 72h RO logs
 ```
 
 ## 📝 PR 説明テンプレート
 
-```markdown
+```bash
 ## 概要
 
 CSP Report-Only の 48-72時間観測結果に基づき、最小限の許可セットで CSP を Enforce 化します。
@@ -35,12 +44,12 @@ CSP Report-Only の 48-72時間観測結果に基づき、最小限の許可セ�
 **変更前** (`web/index.html`):
 ```html
 <meta http-equiv="Content-Security-Policy-Report-Only" ...>
-```
+```bash
 
 **変更後** (`web/index.html`):
 ```html
 <meta http-equiv="Content-Security-Policy" ...>
-```
+```bash
 
 ### 2. 配信ヘッダでの CSP 適用（推奨）
 
@@ -53,7 +62,7 @@ Supabase Edge Function または CDN で CSP ヘッダーを設定する場合�
     "Content-Security-Policy": "default-src 'self'; script-src 'self'; connect-src 'self' https://*.supabase.co https://api.segment.io https://sentry.io https://*.sentry.io; img-src 'self' data: blob: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; frame-ancestors 'none'; object-src 'none'; base-uri 'self';"
   }
 }
-```
+```bash
 
 ### 3. 許可先の最小追加
 
@@ -73,7 +82,7 @@ Supabase Edge Function または CDN で CSP ヘッダーを設定する場合�
         object-src 'none';
         base-uri 'self';
       ">
-```
+```bash
 
 ## 検証項目
 
@@ -93,7 +102,7 @@ Supabase Edge Function または CDN で CSP ヘッダーを設定する場合�
 
 ### web/index.html の変更
 
-```diff
+```bash
 -     <!-- Report-Only CSP: まずは運用観察フェーズ -->
 -     <meta http-equiv="Content-Security-Policy-Report-Only"
 +     <!-- Enforce CSP: 観測結果に基づく最小許可セット -->
@@ -173,13 +182,13 @@ CSP Report ログから以下を抽出:
 
 ## 📋 PR タイトル
 
-```
+```bash
 🔐 CSP Enforce: tighten connect/img/font-src based on 72h RO logs
 ```
 
 ## 📝 PR 説明テンプレート
 
-```markdown
+```bash
 ## 概要
 
 CSP Report-Only の 48-72時間観測結果に基づき、最小限の許可セットで CSP を Enforce 化します。
@@ -206,12 +215,12 @@ CSP Report-Only の 48-72時間観測結果に基づき、最小限の許可セ�
 **変更前** (`web/index.html`):
 ```html
 <meta http-equiv="Content-Security-Policy-Report-Only" ...>
-```
+```bash
 
 **変更後** (`web/index.html`):
 ```html
 <meta http-equiv="Content-Security-Policy" ...>
-```
+```bash
 
 ### 2. 配信ヘッダでの CSP 適用（推奨）
 
@@ -224,7 +233,7 @@ Supabase Edge Function または CDN で CSP ヘッダーを設定する場合�
     "Content-Security-Policy": "default-src 'self'; script-src 'self'; connect-src 'self' https://*.supabase.co https://api.segment.io https://sentry.io https://*.sentry.io; img-src 'self' data: blob: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; frame-ancestors 'none'; object-src 'none'; base-uri 'self';"
   }
 }
-```
+```bash
 
 ### 3. 許可先の最小追加
 
@@ -244,7 +253,7 @@ Supabase Edge Function または CDN で CSP ヘッダーを設定する場合�
         object-src 'none';
         base-uri 'self';
       ">
-```
+```bash
 
 ## 検証項目
 
@@ -264,7 +273,7 @@ Supabase Edge Function または CDN で CSP ヘッダーを設定する場合�
 
 ### web/index.html の変更
 
-```diff
+```bash
 -     <!-- Report-Only CSP: まずは運用観察フェーズ -->
 -     <meta http-equiv="Content-Security-Policy-Report-Only"
 +     <!-- Enforce CSP: 観測結果に基づく最小許可セット -->
@@ -341,3 +350,5 @@ CSP Report ログから以下を抽出:
 
 **最終更新**: CSP Enforce 化 PR 雛形作成時点
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 # CSP Enforce 実装検証ログ
 
 ## 📋 実装完了サマリ
@@ -114,7 +123,7 @@ grep -R --line-number -E "supabase\.auth\.token|jwt|access_token" build/ web/ ||
 
 `_headers` の `Content-Security-Policy` を `Content-Security-Policy-Report-Only` に変更:
 
-```
+```bash
 Content-Security-Policy-Report-Only: ...
 ```
 
@@ -122,7 +131,7 @@ Content-Security-Policy-Report-Only: ...
 
 `add_header` の `Content-Security-Policy` を `Content-Security-Policy-Report-Only` に変更:
 
-```nginx
+```bash
 add_header Content-Security-Policy-Report-Only "..." always;
 ```
 
@@ -185,7 +194,7 @@ curl -I https://your-domain.com | grep -i content-security-policy
 - `media-src 'self' https: blob:;` - メディアリソースの許可（CanvasKit使用時）
 
 ### Stripe iframe 用（将来使用時）
-```csp
+```bash
 frame-src https://js.stripe.com https://hooks.stripe.com;
 ```
 
@@ -367,7 +376,7 @@ grep -R --line-number -E "supabase\.auth\.token|jwt|access_token" build/ web/ ||
 
 `_headers` の `Content-Security-Policy` を `Content-Security-Policy-Report-Only` に変更:
 
-```
+```bash
 Content-Security-Policy-Report-Only: ...
 ```
 
@@ -375,7 +384,7 @@ Content-Security-Policy-Report-Only: ...
 
 `add_header` の `Content-Security-Policy` を `Content-Security-Policy-Report-Only` に変更:
 
-```nginx
+```bash
 add_header Content-Security-Policy-Report-Only "..." always;
 ```
 
@@ -438,7 +447,7 @@ curl -I https://your-domain.com | grep -i content-security-policy
 - `media-src 'self' https: blob:;` - メディアリソースの許可（CanvasKit使用時）
 
 ### Stripe iframe 用（将来使用時）
-```csp
+```bash
 frame-src https://js.stripe.com https://hooks.stripe.com;
 ```
 
@@ -504,3 +513,6 @@ grep -R --line-number -E "supabase\.auth\.token|jwt|access_token" build/ web/ ||
 ---
 
 **最終更新**: CSP 強化ディレクティブ追加完了時点
+
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

@@ -1,3 +1,24 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # 最終仕上げ Rollup Checks（UIオンリー）
 
 目的：本日内の「通電→可視化→証跡→復帰」までを 1 ページで俯瞰し、未完を0にする。
@@ -54,3 +75,5 @@
 **作成日**: 2025-11-09  
 **ステータス**: ✅ **最終仕上げ Rollup Checks完成**
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

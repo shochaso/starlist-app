@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 # 週次監査サマリ（YYYY-MM-DD 〜 YYYY-MM-DD）
 
 **報告週**: YYYY-WXX  
@@ -127,3 +136,5 @@
 **承認**: [承認者名]  
 **次回生成予定**: YYYY-MM-DD（毎週月曜09:00 JST）
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

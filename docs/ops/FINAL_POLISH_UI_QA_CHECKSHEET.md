@@ -1,3 +1,24 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # UIオンリー・受入検収シート（最終仕上げ 10×）
 
 - リポジトリ：`shochaso/starlist-app`
@@ -54,3 +75,5 @@
 **作成日**: 2025-11-09  
 **ステータス**: ✅ **UIオンリー受入検収シート完成**
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

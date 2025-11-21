@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 # **Starlistアプリ ログインフロー Flutter移植仕様書**
 
 ## **1\. はじめに**
@@ -346,3 +355,5 @@ Flutterで再利用可能なウィジェットとして実装します。
 * `font_awesome_flutter`: Font Awesome アイコン用。  
 * その他、状態管理やHTTP通信などで必要なパッケージは適宜導入する。
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

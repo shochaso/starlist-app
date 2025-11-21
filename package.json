@@ -13,7 +13,7 @@
     "build": "next build",
     "lint": "next lint",
     "report": "bash scripts/progress-report.sh",
-    "lint:md": "node scripts/ensure-node20.js && markdown-link-check -c .mlc.json -q **/*.md",
+    "lint:md": "node scripts/ensure-node20.js && NODE_OPTIONS=--require=./scripts/polyfill-file.js markdown-link-check -c .mlc.json -q **/*.md",
     "lint:markdownlint": "markdownlint-cli --config ./.markdownlint.json --ignore node_modules --ignore .next --ignore build --ignore dist --ignore out --ignore artifact_4544009766_dir --ignore docs/ops/MD_CI_REPORT.md \"**/*.md\"",
     "lint:md:starlist": "python3 scripts/starlist_md_validator.py",
     "lint:md:local": "node scripts/docs/link-check.mjs",
@@ -22,6 +22,7 @@
     "docs:update-dates": "node scripts/docs/update-last-updated.mjs",
     "docs:diff-log": "node scripts/docs/generate-diff-log.mjs",
     "docs:preflight": "npm run docs:update-dates && npm run lint:md:local && npm run docs:diff-log",
+    "linear:create-issue": "ts-node scripts/linear/create_linear_issue.ts",
     "security:runner": "bash scripts/extended_security_runner.sh",
     "security:install:brew": "brew install gitleaks trivy || true",
     "security:install:pipx": "pipx install semgrep || pip install semgrep || true",
@@ -34,6 +35,7 @@
     "phase4:kpi": "ts-node scripts/phase4/kpi/aggregate.ts",
     "phase4:sha": "ts-node scripts/phase4/sha-compare.ts",
     "phase4:sweep": "ts-node scripts/phase4/sweep/scan.ts",
+    "test:openai": "ts-node src/openai-test.ts",
     "test": "vitest run",
     "test:watch": "vitest watch"
   },
@@ -45,10 +47,10 @@
     "@types/react": "19.2.4",
     "autoprefixer": "^10.4.0",
     "browser-sync": "^2.29.3",
-    "markdown-link-check": "^3.14.1",
-    "markdownlint-cli": "^0.34.0",
     "eslint": "^8.46.0",
     "eslint-config-next": "^13.5.0",
+    "markdown-link-check": "^3.14.1",
+    "markdownlint-cli": "^0.34.0",
     "postcss": "^8.4.0",
     "tailwindcss": "^3.4.0",
     "ts-node": "^10.9.2",
@@ -56,8 +58,11 @@
     "vitest": "^1.1.0"
   },
   "dependencies": {
+    "@linear/sdk": "^64.0.0",
     "@supabase/supabase-js": "^2.39.0",
+    "dotenv": "^17.2.3",
     "next": "^13.5.0",
+    "openai": "^6.9.0",
     "react": "^18.3.0",
     "react-dom": "^18.3.0"
   }

@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 # PR #20 レビュー依頼 & Auto-merge 準備
 
 ## 📋 PR #20 の状態
@@ -98,3 +107,5 @@ gh run rerun <RUN_ID> --repo shochaso/starlist-app
 
 **最終更新**: PR #20 レビュー依頼 & Auto-merge 準備完了時点
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

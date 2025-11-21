@@ -1,3 +1,24 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # STA-11完了チェックリスト
 
 ## ✅ 完了した作業
@@ -86,4 +107,5 @@ gh pr merge 56 --squash --delete-branch --admin
 - `.github/workflows/claude.yaml` - Flutter Startup Performance Check（Optional化済み）
 - `docs/ops/CI_REQUIRED_OPTIONAL_POLICY.md` - CIポリシー文書（削除された可能性あり）
 
-
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

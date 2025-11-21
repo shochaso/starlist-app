@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 Status:: 
 Source-of-Truth:: (TBD)
 Spec-State:: 
@@ -66,3 +75,6 @@ Last-Updated::
 ---
 
 上記の通り、Starlist の現行実装は Stripe を利用した単一の PaymentIntent 作成フローにとどまっている。コンビニ・キャリア決済を導入するには UI、データモデル、サービス層、計測の全面的な拡張が必要となる。
+
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

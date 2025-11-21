@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 # Starlist 共通ドキュメント索引
 
 Starlist 関連リポジトリ／プロジェクトに共通して参照したい資料を集約したインデックス。ChatGPT など外部ツールに概要を渡す際は、本ファイルとリンク先の要約を共有すると効率的です。
@@ -107,3 +116,6 @@ Starlist 関連リポジトリ／プロジェクトに共通して参照した�
 
 
 必要な情報が不足している場合はこのファイルまたは `docs/README.md` を更新し、各チームに共有してください。
+
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

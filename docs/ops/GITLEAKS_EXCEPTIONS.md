@@ -1,3 +1,24 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # Gitleaks 例外管理表
 
 ## 概要
@@ -97,3 +118,5 @@ Gitleaksで検出されたシークレットのうち、許容される例外を
 **Last Updated**: 2025-11-08
 **Maintainer**: SRE Team
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 Status: beta
 Source-of-Truth: docs/COMPANY_SETUP_GUIDE.md
 Spec-State: beta
@@ -13,7 +22,7 @@ Last-Updated: 2025-11-08
 ## 目次
 
 1. [概要と対象範囲](#概要と対象範囲)
-2. [アカウント・権限一覧](#アカウント・権限一覧)
+2. [アカウント・権限一覧](#account-roles)
 3. [リポジトリとバージョン管理](#リポジトリとバージョン管理)
 4. [開発環境構築手順](#開発環境構築手順)
 5. [環境変数・機密情報の取り扱い](#環境変数機密情報の取り扱い)
@@ -34,6 +43,7 @@ Last-Updated: 2025-11-08
 
 ---
 
+<a name="account-roles"></a>
 ## アカウント・権限一覧
 
 | サービス | 利用目的 | 申請先/担当者 | 備考・URL | チェック |
@@ -584,3 +594,6 @@ supabase storage create-signed-url doc-share file.pdf --expires-in 604800
 | --- | --- | --- |
 | 2025-10-?? | 作成者名 | 初版雛形 |
 | 2025-11-08 | Tim | Day12 β統合：Secrets運用SOP、doc-share運用SOP、必須ツールバージョン固定を追加。 |
+
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

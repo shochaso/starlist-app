@@ -10,6 +10,16 @@ owner: STARLIST Documentation Team
 
 
 
+
+
+
+
+
+
+
+
+
+
 # STARLIST ドキュメントインデックス
 
 ## 背景
@@ -79,10 +89,15 @@ STARLISTプロジェクトのドキュメントを体系的に整理し、関係
 - [**PHASE4_AUTO_AUDIT_SELF_HEALING_DESIGN.md**](../PHASE4_AUTO_AUDIT_SELF_HEALING_DESIGN.md) - 自動監査設計
 - [**PHASE4_MICROTASKS.md**](../PHASE4_MICROTASKS.md) - 詳細タスク一覧
 - [**PHASE4_WS06_WS10_IMPLEMENTATION_PLAN.md**](../PHASE4_WS06_WS10_IMPLEMENTATION_PLAN.md) - WS06-10実装計画
+ - [**DATA_LICENSE_AND_EXTERNAL_API_POLICY.md**](../legal/DATA_LICENSE_AND_EXTERNAL_API_POLICY.md) - データライセンスと外部APIポリシー
+ - [**API_TERMS_OF_USE_DRAFT.md**](../legal/API_TERMS_OF_USE_DRAFT.md) - 外部API利用規約ドラフト（契約指針）
+ - [**DATA_ANONYMIZATION_GUIDE.md**](../legal/DATA_ANONYMIZATION_GUIDE.md) - 匿名化ガイド（集計粒度/丸めルール）
 
 #### セキュリティ・運用
 - [**SECURITY.md**](../../../SECURITY.md) - セキュリティポリシー
 - [**SLSA_PROVENANCE_20X_IMPLEMENTATION_PLAN.md**](../SLSA_PROVENANCE_20X_IMPLEMENTATION_PLAN.md) - SLSA拡張計画
+ - [**EXTERNAL_API_KEY_RUNBOOK.md**](EXTERNAL_API_KEY_RUNBOOK.md) - 外部APIキー運用手順
+ - [**DATA_ABUSE_INCIDENT_RUNBOOK.md**](DATA_ABUSE_INCIDENT_RUNBOOK.md) - データ悪用インシデント対応
 
 ### 🔄 更新履歴・運用 (Updates & Operations)
 

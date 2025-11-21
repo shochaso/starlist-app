@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 # 🚀 本番デプロイ実行ランブック（Day10 OPS Slack Notify）
 
 **作成日**: 2025-11-08  
@@ -736,4 +745,5 @@ gh workflow disable ops-slack-notify.yml
 
 **全て完了したら、Day10は「本番運用クローズ」判定です。**
 
-
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

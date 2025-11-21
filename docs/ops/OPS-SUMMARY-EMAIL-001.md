@@ -1,3 +1,24 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 Status:: planned  
 Source-of-Truth:: docs/ops/OPS-SUMMARY-EMAIL-001.md  
 Spec-State:: 確定済み（週次レポート自動送信）  
@@ -367,3 +388,5 @@ having count(*) > 1;
 - `docs/ops/OPS-ALERT-AUTOMATION-001.md` - OPS Alert Automation仕様
 - `supabase/functions/ops-health/index.ts` - ops-health Edge Function実装
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

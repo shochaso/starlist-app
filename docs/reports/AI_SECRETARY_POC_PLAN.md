@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 Status:: 
 Source-of-Truth:: (TBD)
 Spec-State:: 
@@ -38,7 +47,7 @@ Last-Updated::
 - [ ] `ai_secretary_screen.dart` 作成
 - [ ] チャットインターフェース実装
 - [ ] データカード表示コンポーネント
-- [ ] Notionライクなカード配置機能
+- [ ] LINEARライクなカード配置機能
 
 #### タスク2.2: スケジュール提案機能
 - [ ] 過去の投稿データ分析
@@ -497,3 +506,6 @@ class AiSecretaryRepository {
    ```
 
 実装を開始しますか？どのタスクから始めたいか指示してください！
+
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

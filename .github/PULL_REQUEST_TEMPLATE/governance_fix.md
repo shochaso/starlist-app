@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 ## 概要
 
 ガバナンス逸脱（{項目}）の是正。Release/監査/保護ルールの整合。
@@ -19,3 +28,6 @@
 ## ロールバック
 
 - `git revert -m 1 <commit>` で復元可能
+
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

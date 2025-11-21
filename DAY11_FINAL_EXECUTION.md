@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 # Day11 最終実行セット（貼り付け即実行）
 
 ## 前提条件
@@ -441,3 +450,5 @@ jq -r '.message
 
 実行結果（JSON抜粋 or SlackメッセージURL）が取れましたら、そのまま貼っていただければ**最終レポート整形**まで一気に仕上げます。
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 # 10× Final Landing — 完全実行完了サマリー
 
 **実行日時**: 2025-11-09  
@@ -158,3 +167,5 @@ done
 **実行完了時刻**: 2025-11-09  
 **ステータス**: ✅ **10× Final Landing実行完了（GitHub反映待ち）**
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

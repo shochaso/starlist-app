@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 Status:: aligned-with-Flutter  
 Source-of-Truth:: scripts/audit/md_header_apply.sh, scripts/audit/md_header_check.sh, .github/workflows/docs-status-audit.yml  
 Spec-State:: 確定済み（運用ルール・スクリプト・CI統合）  
@@ -53,3 +62,5 @@ gsed -i "1,100s/^Last-Updated:: .*/Last-Updated:: $(date +%Y-%m-%d)/" docs/path/
 4. 実装が進んだら `Status::` を `in-progress` → `aligned-with-Flutter` に更新
 5. その都度、`DAY5_SOT_DIFFS.md` に **差分履歴＋CodeRefs** を追記
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

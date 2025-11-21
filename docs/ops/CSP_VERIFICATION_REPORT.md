@@ -1,3 +1,24 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # CSP検証結果レポート
 
 ## 実行日時
@@ -99,3 +120,5 @@ gh workflow run csp-verify.yml
 - `vercel.json` - Vercel設定（CSPヘッダー含む）
 - `_headers` - Cloudflare Pages用ヘッダー設定
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

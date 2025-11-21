@@ -1,3 +1,24 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # SLSA Security CI Scenario — Branches, Rollbacks, and Governance (20×)
 
 ## Overview
@@ -127,3 +148,6 @@
   - `governance.manifest_diff_count`.
   - `governance.token_rotation_age`.
   - `governance.review_lead_time`.
+
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

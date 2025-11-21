@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 # Phase 2.1 Validation Suite Report
 
 **Date**: 2025-11-13
@@ -119,3 +128,6 @@ SELECT * FROM slsa_runs ORDER BY created_at DESC LIMIT 5;
 ---
 
 **Note**: This report will be updated as test execution progresses.
+
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

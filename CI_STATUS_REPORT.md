@@ -1,3 +1,12 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
 # CI実行状況レポート
 
 ## 📊 ワークフロー実行状況
@@ -88,3 +97,5 @@ gh run view 19193825289 --repo shochaso/starlist-app --web
 
 **最終更新**: CI実行状況確認時点
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。

@@ -1,3 +1,24 @@
+---
+source_of_truth: true
+version: 0.1.0
+updated_date: 2025-11-15
+owner: STARLIST Docs Automation Team
+---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # 最終仕上げ・UIオンリー実行オペレーターガイド（10×拡張）
 
 本ガイドは、GitHub UI / エディタのみで「週次WF通電 → Ops健康度更新 → SOT整合 → セキュリティ復帰 → ブランチ保護 → 監査証跡作成」までを確実に完了させるための運用書です。
@@ -101,3 +122,5 @@ Dockerfile `USER` 指定済サービスから順次ON
 **作成日**: 2025-11-09  
 **ステータス**: ✅ **UIオンリー実行オペレーターガイド完成**
 
+## DoD (Definition of Done)
+- [ ] 文書の目的と完了基準を明記しました。
