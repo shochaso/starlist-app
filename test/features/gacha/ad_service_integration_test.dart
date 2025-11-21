@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:starlist_app/src/features/gacha/services/ad_service.dart';
-import 'package:starlist_app/src/features/gacha/models/gacha_limits_models.dart';
+import '../../../lib/src/features/gacha/services/ad_service.dart';
+import '../../../lib/src/features/gacha/models/gacha_limits_models.dart';
 
 void main() {
   group('AdService Integration Tests', () {

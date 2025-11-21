@@ -85,6 +85,14 @@ class GachaAttemptsManager extends StateNotifier<GachaAttemptsState> {
         final balance = data['balance'] as int? ?? 0;
         final todayGranted = data['today_granted'] as int? ?? 0;
         
+        // NOTE: Data model mapping explanation:
+        // - Server returns 'balance' (total available tickets)
+        // - Legacy GachaAttemptsStats expects baseAttempts + bonusAttempts
+        // - Since we removed auto-granted base attempts, we map:
+        //   * baseAttempts = 0 (no longer auto-granted)
+        //   * bonusAttempts = balance (all tickets are from ads or other sources)
+        //   * availableAttempts = balance (same as bonusAttempts)
+        // This preserves the UI display logic while reflecting new server reality.
         final stats = GachaAttemptsStats(
           baseAttempts: 0, // No longer auto-granting 10 base attempts
           bonusAttempts: balance,

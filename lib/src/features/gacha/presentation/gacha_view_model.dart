@@ -85,24 +85,10 @@ class GachaViewModel extends StateNotifier<GachaState> {
         print('Successfully consumed gacha attempt and recorded history');
       } catch (e) {
         print('Failed to consume gacha attempt via RPC: $e');
-        // Fallback to legacy method if RPC not available
-        try {
-          final limitsRepo = _ref.read(gachaLimitsRepositoryProvider);
-          final Map<String, dynamic> resultJson = result.when(
-            point: (amount) => {
-              'type': 'point',
-              'amount': amount,
-            },
-            ticket: (type, name, color) => {
-              'type': 'ticket',
-              'ticketType': type,
-              'displayName': name,
-            },
-          );
-          await limitsRepo.recordGachaResult(userId, resultJson, 1, 'normal');
-        } catch (legacyError) {
-          print('Legacy recordGachaResult also failed: $legacyError');
-        }
+        // Re-throw to prevent inconsistent state
+        // If server-side consumption fails, the draw should fail
+        // to avoid user having tickets deducted without server record
+        throw Exception('ガチャの記録に失敗しました。管理者にお問い合わせください。');
       }
 
       // 5. ポイント付与（チケット以外）

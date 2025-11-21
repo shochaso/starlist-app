@@ -7,12 +7,14 @@
 --
 -- Usage:
 -- Replace 'YOUR_TEST_USER_ID' with an actual UUID from your users table
+-- To get a test user ID, run: SELECT id FROM public.users LIMIT 1;
+-- Example UUID format: '550e8400-e29b-41d4-a716-446655440000'
 -- Run this script in a SQL client connected to your Supabase database
 
 -- Setup: Clean test data for user
 DO $$
 DECLARE
-  test_user_id UUID := 'YOUR_TEST_USER_ID'; -- Replace with actual user ID
+  test_user_id UUID := 'YOUR_TEST_USER_ID'; -- Replace with actual user ID (get with: SELECT id FROM public.users LIMIT 1;)
 BEGIN
   -- Clean existing test data
   DELETE FROM public.ad_views WHERE user_id = test_user_id;

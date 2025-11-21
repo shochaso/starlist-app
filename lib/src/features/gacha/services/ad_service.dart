@@ -150,8 +150,17 @@ class MockAdService implements AdService {
   }
 
   /// デバイスIDを取得
+  /// 
+  /// NOTE: This is a placeholder implementation. For production fraud detection,
+  /// use device_info_plus package to get real device identifiers:
+  /// - Android: Android ID or advertising ID
+  /// - iOS: identifierForVendor or advertising ID
+  /// 
+  /// Current implementation uses platform + user_id which is NOT sufficient
+  /// for fraud detection as all sessions from the same user will have the
+  /// same device_id.
   String _getDeviceId() {
-    // In production, use device_info_plus or similar to get real device ID
+    // TODO: Implement real device fingerprinting using device_info_plus
     // For now, generate a pseudo-device ID
     if (kIsWeb) {
       return 'web_${_supabaseService.auth.currentUser?.id ?? "unknown"}';

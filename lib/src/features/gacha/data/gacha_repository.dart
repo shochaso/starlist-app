@@ -19,6 +19,12 @@ abstract class GachaRepository {
 /// 合計期待値: 35.0ポイント/回
 ///
 /// ※ チケットはポイント換算で計算（シルバー500pt、ゴールド1200pt）
+/// 
+/// Server Integration:
+/// - Gacha draws consume tickets via the consume_gacha_attempts() RPC
+/// - Draw results (reward_points, reward_silver_ticket, reward_gold_ticket) 
+///   are recorded in gacha_history table by gacha_view_model.dart
+/// - Balance management is handled server-side, not client-side
 class GachaRepositoryImpl implements GachaRepository {
   final Random _random = Random();
 
