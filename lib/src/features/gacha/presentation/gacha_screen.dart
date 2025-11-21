@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/gacha_models_simple.dart';
 import '../widgets/gacha_machine_widget.dart';
 import '../services/gacha_sound_service.dart';
+import '../services/ad_service.dart';
+import '../models/gacha_limits_models.dart';
 import 'providers/gacha_providers.dart';
 import '../../voting/widgets/star_point_balance_widget.dart';
 import '../providers/gacha_attempts_manager.dart';
@@ -241,19 +243,37 @@ class _GachaView extends ConsumerWidget {
                         onPressed: gachaAttemptsState.stats.bonusAttempts >= 3
                             ? null
                             : () async {
-                                final manager = ref.read(
-                                    gachaAttemptsManagerProvider(userId)
-                                        .notifier);
-                                final success =
-                                    await manager.addBonusAttempts(1);
+                                // Show ad using ad service
+                                final adService = ref.read(adServiceProvider);
+                                final result = await adService.showAd(AdType.video);
+                                
                                 if (!context.mounted) return;
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(success
-                                        ? '回数 +1 追加されました'
-                                        : '広告視聴に失敗しました'),
-                                  ),
-                                );
+                                
+                                if (result.success) {
+                                  // Refresh gacha attempts state from server
+                                  final manager = ref.read(
+                                      gachaAttemptsManagerProvider(userId)
+                                          .notifier);
+                                  await manager.refreshAttempts();
+                                  
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        '回数 +${result.rewardedAttempts} 追加されました (残り${result.remainingToday}回)',
+                                      ),
+                                      backgroundColor: Colors.green,
+                                    ),
+                                  );
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        result.errorMessage ?? '広告視聴に失敗しました',
+                                      ),
+                                      backgroundColor: Colors.red,
+                                    ),
+                                  );
+                                }
                               },
                         icon: Icon(
                           Icons.ondemand_video,
