@@ -2,6 +2,32 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Added
+- Ad-view gacha ticket system with server-side control
+  - Server RPC `complete_ad_view_and_grant_ticket()` enforces daily limit of 3 ad-granted tickets per user
+  - Server RPC `consume_gacha_attempts()` handles gacha ticket consumption and history tracking
+  - Server RPC `get_user_gacha_state()` returns current balance and today's granted count
+  - JST timezone support with 03:00 boundary for daily limits via `date_key_jst3()` function
+  - `ad_views` table with device tracking (device_id, user_agent, client_ip) for fraud detection
+  - `gacha_attempts` table for user ticket balance management
+  - `gacha_history` table for comprehensive gacha draw tracking with reward details
+  - All RPCs are race-condition safe with SELECT FOR UPDATE locking
+
+### Changed
+- **BREAKING**: Gacha attempts no longer auto-grant 10 base tickets
+  - Removed automatic 10-ticket daily grant in `gacha_attempts_manager.dart`
+  - Users start with 0 balance and must watch ads to earn tickets
+  - `ad_service.dart` now calls `complete_ad_view_and_grant_ticket()` RPC instead of legacy methods
+  - `gacha_view_model.dart` now calls `consume_gacha_attempts()` RPC to decrement balance and record history
+- Flutter ad service now integrates with server-side ad view logging
+- Gacha view model now records reward_points and reward_silver_ticket in server history
+
+### Deprecated
+- `gacha_attempts_manager.resetToTenAttempts()` - base attempts are no longer auto-granted
+- Legacy ad view recording methods in `ad_service.dart`
+
 ## [0.9.0] - 2025-11-08
 
 ### Added

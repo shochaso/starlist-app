@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/gacha_limits_providers.dart';import '../../voting/providers/voting_providers.dart';
 import '../../../../providers/user_provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' hide Provider;
 
 import '../models/gacha_models_simple.dart';
 import '../domain/draw_gacha_usecase.dart';
@@ -52,58 +53,93 @@ class GachaViewModel extends StateNotifier<GachaState> {
       await Future.delayed(const Duration(milliseconds: 3500));
       final result = await _drawGachaUsecase.execute();
 
-      // 2.5 回数消費はUI側のマネージャーで既に実施済み。ここでは行わない。
-
-      // 3. 獲得ポイントを計算
+      // 3. 獲得ポイント・チケット情報を計算
       final gainedAmount = result.when(
         point: (amount) => amount,
-        ticket: (type, name, color) => 500, // 仮のポイント
+        ticket: (type, name, color) => 0, // チケットの場合はポイント0
+      );
+      
+      final isSilverTicket = result.when(
+        point: (amount) => false,
+        ticket: (type, name, color) => type == 'silver',
+      );
+      
+      final isGoldTicket = result.when(
+        point: (amount) => false,
+        ticket: (type, name, color) => type == 'gold',
       );
 
-      // 4. 残高マネージャーを介して即時加算（DB失敗でもUIは反映）
+      // 4. サーバー側でガチャ回数を消費し、履歴を記録
       try {
-        final balanceManager = _ref.read(starPointBalanceManagerProvider(userId).notifier);
-        await balanceManager.addPoints(gainedAmount, 'ガチャ獲得', 'gacha');
-        balanceManager.debugInfo();
-
-        // 従来のプロバイダーも無効化（互換性のため）
-        _ref.invalidate(userStarPointBalanceProvider(userId));
-        _ref.invalidate(currentUserStarPointBalanceProvider(userId));
+        await Supabase.instance.client.rpc(
+          'consume_gacha_attempts',
+          params: {
+            'p_user_id': userId,
+            'p_consume_count': 1,
+            'p_source': 'normal_gacha',
+            'p_reward_points': gainedAmount,
+            'p_reward_silver_ticket': isSilverTicket,
+            'p_reward_gold_ticket': isGoldTicket,
+          },
+        );
+        print('Successfully consumed gacha attempt and recorded history');
       } catch (e) {
-        print('balanceManager.addPoints failed: $e');
+        print('Failed to consume gacha attempt via RPC: $e');
+        // Fallback to legacy method if RPC not available
+        try {
+          final limitsRepo = _ref.read(gachaLimitsRepositoryProvider);
+          final Map<String, dynamic> resultJson = result.when(
+            point: (amount) => {
+              'type': 'point',
+              'amount': amount,
+            },
+            ticket: (type, name, color) => {
+              'type': 'ticket',
+              'ticketType': type,
+              'displayName': name,
+            },
+          );
+          await limitsRepo.recordGachaResult(userId, resultJson, 1, 'normal');
+        } catch (legacyError) {
+          print('Legacy recordGachaResult also failed: $legacyError');
+        }
       }
 
-      // 5. 新しい残高を計算（UI用ローカル値）
+      // 5. ポイント付与（チケット以外）
+      if (gainedAmount > 0) {
+        try {
+          final balanceManager = _ref.read(starPointBalanceManagerProvider(userId).notifier);
+          await balanceManager.addPoints(gainedAmount, 'ガチャ獲得', 'gacha');
+          balanceManager.debugInfo();
+
+          // 従来のプロバイダーも無効化（互換性のため）
+          _ref.invalidate(userStarPointBalanceProvider(userId));
+          _ref.invalidate(currentUserStarPointBalanceProvider(userId));
+        } catch (e) {
+          print('balanceManager.addPoints failed: $e');
+        }
+      }
+
+      // 6. シルバーチケット処理（該当する場合）
+      if (isSilverTicket) {
+        // TODO: Implement silver ticket issuance flow if needed
+        print('Silver ticket granted - implement issuance flow if needed');
+      }
+
+      // 7. 新しい残高を計算（UI用ローカル値）
       final newBalance = previousBalance + gainedAmount;
 
-      // 6. 成功状態を更新
+      // 8. 成功状態を更新
       state = GachaStateFactory.success(result, previousBalance, newBalance);
 
-      // 7. 成功後、回数/残高を同期（MPマネージャーに任せる）
+      // 9. 成功後、回数/残高を同期（MPマネージャーに任せる）
       try {
         final manager = _ref.read(gachaAttemptsManagerProvider(userId).notifier);
         await manager.refreshAttempts();
-      } catch (e) {}
-      _ref.invalidate(gachaAttemptsStatsProvider);
-
-      // 8. ガチャ履歴を記録（失敗は握り潰し）
-      try {
-        final limitsRepo = _ref.read(gachaLimitsRepositoryProvider);
-        final Map<String, dynamic> resultJson = result.when(
-          point: (amount) => {
-            'type': 'point',
-            'amount': amount,
-          },
-          ticket: (type, name, color) => {
-            'type': 'ticket',
-            'ticketType': type,
-            'displayName': name,
-          },
-        );
-        await limitsRepo.recordGachaResult(userId, resultJson, 1, 'normal');
       } catch (e) {
-        print('recordGachaResult failed: $e');
+        print('Failed to refresh attempts: $e');
       }
+      _ref.invalidate(gachaAttemptsStatsProvider);
 
     } catch (e, stackTrace) {
       print('---------- GachaViewModel Error ----------');
