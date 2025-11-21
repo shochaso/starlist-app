@@ -1,3 +1,8 @@
+// DEPRECATED: AB testing config for legacy gacha system.
+// New implementation uses server-side control with JST 03:00 boundary.
+// See: supabase/migrations/20251121_add_ad_views_logging_and_gacha_rpc.sql
+// The daily limit (3 ad-granted tickets) is now enforced server-side via RPC.
+@Deprecated('Use server-side gacha RPC functions instead of client-side AB config')
 enum GachaVariant { variant1, variant2, variant3 }
 
 class ABConfig {
