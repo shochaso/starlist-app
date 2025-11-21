@@ -652,6 +652,7 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
       padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
           // メインサービス（優先度の高い6つ）
           _buildPriorityServicesSection(),
@@ -886,6 +887,7 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
       children: [
         Text(
           '人気サービス',
@@ -895,8 +897,7 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
             fontWeight: FontWeight.bold,
           ),
         ),
-        const SizedBox(height: 8),
-        const SizedBox(height: 20),
+        const SizedBox(height: 16),
 
         // 3×2グリッドで6つのメインサービス
         GridView.builder(
@@ -906,7 +907,7 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
             crossAxisCount: 3,
             crossAxisSpacing: 12,
             mainAxisSpacing: 12,
-            childAspectRatio: 0.85,
+            childAspectRatio: 0.9,
           ),
           itemCount: mainServices.length,
           itemBuilder: (context, index) {
@@ -925,6 +926,7 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
       children: [
         Text(
           'カテゴリ別サービス',
@@ -934,7 +936,7 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
             fontWeight: FontWeight.bold,
           ),
         ),
-        const SizedBox(height: 20),
+        const SizedBox(height: 16),
         for (final entry in _baseServiceCategories.entries)
           _buildCategorySectionBlock(context, entry.key, isDark),
       ],
@@ -957,6 +959,7 @@ class _DataImportScreenState extends ConsumerState<DataImportScreen>
       padding: const EdgeInsets.only(bottom: 28),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,

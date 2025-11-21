@@ -96,6 +96,12 @@ class YoutubeImportWorkflow extends StateNotifier<YoutubeImportWorkflowState> {
       final text =
           await _ocrService.runOcr(imageBytes: imageBytes, mimeType: mimeType);
       _parseText(text);
+      if (state.items.isNotEmpty) {
+        Future<void>.delayed(
+          const Duration(milliseconds: 200),
+          () => enrichLinks(all: true),
+        );
+      }
     } catch (error) {
       state = state.copyWith(
         isOcrRunning: false,

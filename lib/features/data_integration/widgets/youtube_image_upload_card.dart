@@ -26,8 +26,8 @@ class YoutubeImageUploadCard extends StatelessWidget {
     final hasImage = imageBytes != null;
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 24),
-      padding: const EdgeInsets.all(20),
+      margin: EdgeInsets.zero,
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: const Color(0xFFF7F9FF),
         borderRadius: BorderRadius.circular(20),

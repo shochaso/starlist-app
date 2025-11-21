@@ -45,7 +45,7 @@ class _YouTubeImportScreenState extends ConsumerState<YouTubeImportScreen> {
     final workflowNotifier = ref.read(youtubeImportWorkflowProvider.notifier);
 
     final content = SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -57,7 +57,7 @@ class _YouTubeImportScreenState extends ConsumerState<YouTubeImportScreen> {
             fileName: _selectedImage?.name,
             errorMessage: _imageError,
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 8),
           YoutubeOcrResultCard(
             rawText: workflow.rawText,
             onTextChanged: workflowNotifier.updateRawText,
@@ -71,19 +71,16 @@ class _YouTubeImportScreenState extends ConsumerState<YouTubeImportScreen> {
             isRunning: workflow.isOcrRunning,
             isImageSelected: _selectedImageBytes != null,
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 8),
           YoutubeExtractedResultCard(
             items: workflow.items,
             isLinkEnriching: workflow.isLinkEnriching,
             isUploading: workflow.isUploading,
-            isPublishing: workflow.isPublishing,
             enrichProgress: workflow.enrichProgress,
             enrichTotal: workflow.enrichTotal,
             onToggleSelected: workflowNotifier.toggleSelect,
             onTogglePublic: workflowNotifier.togglePublic,
             onRemove: workflowNotifier.removeItem,
-            onEnrichSelected: () => workflowNotifier.enrichLinks(all: false),
-            onEnrichAll: () => workflowNotifier.enrichLinks(all: true),
             onUpload: () async {
               final user = ref.read(userProvider).value;
               if (user == null) {
@@ -92,7 +89,6 @@ class _YouTubeImportScreenState extends ConsumerState<YouTubeImportScreen> {
               }
               await workflowNotifier.saveSelected();
             },
-            onPublish: workflowNotifier.publishSelected,
             onSelectAll: () => workflowNotifier.selectAll(true),
             onClearSelection: () => workflowNotifier.selectAll(false),
           ),
