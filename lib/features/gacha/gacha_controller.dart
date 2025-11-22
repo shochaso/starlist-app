@@ -1,3 +1,8 @@
+// DEPRECATED: This is legacy gacha controller.
+// New implementation is in lib/src/features/gacha/ with server-side control.
+// See: lib/src/features/gacha/providers/gacha_attempts_manager.dart
+// Migration: 20251121_add_ad_views_logging_and_gacha_rpc.sql
+@Deprecated('Use lib/src/features/gacha/ implementation with server-side RPC control')
 import 'dart:async';
 
 import 'package:starlist/core/ab/ab_config.dart';

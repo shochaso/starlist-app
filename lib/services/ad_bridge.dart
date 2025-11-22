@@ -1,3 +1,7 @@
+// DEPRECATED: Legacy ad bridge for web-based ad system.
+// New implementation: lib/src/features/gacha/services/ad_service.dart
+// Uses server-side RPC complete_ad_view_and_grant_ticket() for ad tracking.
+@Deprecated('Use lib/src/features/gacha/services/ad_service.dart instead')
 import 'dart:async';
 import 'dart:js' as js;
 

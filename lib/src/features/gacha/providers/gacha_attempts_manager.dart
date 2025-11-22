@@ -62,7 +62,7 @@ class GachaAttemptsManager extends StateNotifier<GachaAttemptsState> {
     _initializeAttempts();
   }
 
-  /// 初期化（自動ログイン後に10回設定）
+  /// 初期化（サーバーから状態を取得）
   Future<void> _initializeAttempts() async {
     if (userId.isEmpty) {
       print('GachaAttemptsManager: userId is empty, using default state');
@@ -74,31 +74,76 @@ class GachaAttemptsManager extends StateNotifier<GachaAttemptsState> {
     try {
       print('GachaAttemptsManager: Initializing attempts for user $userId');
       
-      // 1. 今日のガチャ回数を強制的に10回に設定
-      await _repository.setTodayBaseAttempts(userId, 10);
-      
-      // 2. 最新の統計を取得
-      final stats = await _repository.getGachaAttemptsStats(userId);
-      
-      // 3. 状態を更新
-      state = state.copyWith(
-        stats: stats,
-        isLoading: false,
-        isValid: true,
-        error: null,
-        lastUpdated: DateTime.now(),
+      // サーバーから最新の状態を取得（自動10回設定は削除）
+      final result = await Supabase.instance.client.rpc(
+        'get_user_gacha_state',
+        params: {'p_user_id': userId},
       );
       
-      print('GachaAttemptsManager: Successfully initialized attempts: $stats');
+      if (result is List && result.isNotEmpty) {
+        final data = result[0] as Map<String, dynamic>;
+        final balance = data['balance'] as int? ?? 0;
+        final todayGranted = data['today_granted'] as int? ?? 0;
+        
+        // NOTE: Data model mapping explanation:
+        // - Server returns 'balance' (total available tickets)
+        // - Legacy GachaAttemptsStats expects baseAttempts + bonusAttempts
+        // - Since we removed auto-granted base attempts, we map:
+        //   * baseAttempts = 0 (no longer auto-granted)
+        //   * bonusAttempts = balance (all tickets are from ads or other sources)
+        //   * availableAttempts = balance (same as bonusAttempts)
+        // This preserves the UI display logic while reflecting new server reality.
+        final stats = GachaAttemptsStats(
+          baseAttempts: 0, // No longer auto-granting 10 base attempts
+          bonusAttempts: balance,
+          usedAttempts: 0,
+          availableAttempts: balance,
+          date: DateTime.now(),
+        );
+        
+        state = state.copyWith(
+          stats: stats,
+          isLoading: false,
+          isValid: true,
+          error: null,
+          lastUpdated: DateTime.now(),
+        );
+        
+        print('GachaAttemptsManager: Successfully initialized - balance: $balance, today_granted: $todayGranted');
+      } else {
+        // No data yet, start with 0 balance
+        state = state.copyWith(
+          stats: GachaAttemptsStats(
+            baseAttempts: 0,
+            bonusAttempts: 0,
+            usedAttempts: 0,
+            availableAttempts: 0,
+            date: DateTime.now(),
+          ),
+          isLoading: false,
+          isValid: true,
+          error: null,
+          lastUpdated: DateTime.now(),
+        );
+        print('GachaAttemptsManager: Initialized with 0 balance');
+      }
+      
       debugInfo();
     } catch (e) {
       print('GachaAttemptsManager: Failed to initialize attempts: $e');
       
-      // エラー時はローカルの10回をそのまま使用
+      // エラー時は0からスタート
       state = state.copyWith(
+        stats: GachaAttemptsStats(
+          baseAttempts: 0,
+          bonusAttempts: 0,
+          usedAttempts: 0,
+          availableAttempts: 0,
+          date: DateTime.now(),
+        ),
         isLoading: false,
         isValid: false,
-        error: 'ガチャ回数の初期化に失敗しました: $e',
+        error: 'ガチャ回数の取得に失敗しました: $e',
         lastUpdated: DateTime.now(),
       );
     }
@@ -194,16 +239,44 @@ class GachaAttemptsManager extends StateNotifier<GachaAttemptsState> {
     try {
       print('GachaAttemptsManager: Refreshing attempts for user $userId');
       
-      final stats = await _repository.getGachaAttemptsStats(userId);
-      
-      state = state.copyWith(
-        stats: stats,
-        isValid: true,
-        error: null,
-        lastUpdated: DateTime.now(),
+      // サーバーから最新の状態を取得
+      final result = await Supabase.instance.client.rpc(
+        'get_user_gacha_state',
+        params: {'p_user_id': userId},
       );
       
-      print('GachaAttemptsManager: Refreshed attempts: $stats');
+      if (result is List && result.isNotEmpty) {
+        final data = result[0] as Map<String, dynamic>;
+        final balance = data['balance'] as int? ?? 0;
+        final todayGranted = data['today_granted'] as int? ?? 0;
+        
+        final stats = GachaAttemptsStats(
+          baseAttempts: 0,
+          bonusAttempts: balance,
+          usedAttempts: 0,
+          availableAttempts: balance,
+          date: DateTime.now(),
+        );
+        
+        state = state.copyWith(
+          stats: stats,
+          isValid: true,
+          error: null,
+          lastUpdated: DateTime.now(),
+        );
+        
+        print('GachaAttemptsManager: Refreshed - balance: $balance, today_granted: $todayGranted');
+      } else {
+        // Fallback to legacy repository method if RPC not available
+        final stats = await _repository.getGachaAttemptsStats(userId);
+        state = state.copyWith(
+          stats: stats,
+          isValid: true,
+          error: null,
+          lastUpdated: DateTime.now(),
+        );
+        print('GachaAttemptsManager: Refreshed attempts (legacy): $stats');
+      }
     } catch (e) {
       print('GachaAttemptsManager: Failed to refresh attempts: $e');
       
@@ -235,16 +308,18 @@ class GachaAttemptsManager extends StateNotifier<GachaAttemptsState> {
     print('=====================================');
   }
 
-  /// 手動で10回にリセット（テスト用）
+  /// 手動で10回にリセット（テスト用・レガシー）
+  @Deprecated('Base attempts are no longer auto-granted')
   Future<void> resetToTenAttempts() async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      print('GachaAttemptsManager: Resetting to 10 attempts for user $userId');
+      print('GachaAttemptsManager: Legacy resetToTenAttempts called for user $userId');
       
+      // Try legacy method
       await _repository.setTodayBaseAttempts(userId, 10);
       await refreshAttempts();
       
-      print('GachaAttemptsManager: Successfully reset to 10 attempts');
+      print('GachaAttemptsManager: Successfully reset to 10 attempts (legacy)');
       state = state.copyWith(isLoading: false);
 
     } catch (e) {
