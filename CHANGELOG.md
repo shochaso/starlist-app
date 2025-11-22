@@ -11,6 +11,50 @@ owner: STARLIST Docs Automation Team
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Added
+- **Ad-based Gacha Ticket Restriction (Server-side)** - Implements Lv1 server-side control with daily limits
+  - Database migration `20251121_add_ad_views_logging_and_gacha_rpc.sql`
+  - New RPC: `complete_ad_view_and_grant_ticket()` - Records ad view and grants ticket (max 3/day, JST 3:00 reset)
+  - New RPC: `consume_gacha_attempts()` - Atomically consumes attempts and records rewards with point grants
+  - New function: `date_key_jst3()` - Calculates date key based on JST 3:00 AM boundary
+  - Enhanced `ad_views` table with Lv2-Lite logging columns: device_id, user_agent, client_ip, status, date_key, reward_granted
+  - Enhanced `gacha_attempts` table with date_key and source tracking
+  - Enhanced `gacha_history` table with reward_points and reward_silver_ticket columns
+  - New indexes for efficient daily limit checks and device-level analytics
+  - Documentation: Comprehensive migration README with usage examples and analytics queries
+
+### Changed
+- **Gacha Probability Table** - Adjusted for expected value balance
+  - New distribution: 50%→20pt, 30%→40pt, 15%→60pt, 4%→120pt, 1%→silver ticket
+  - Expected value: ~35.8pt per draw + 0.01 silver tickets
+  - Target: 135 draws (3/day × 45 days) ≈ 1 silver ticket equivalent
+- **Flutter Client Architecture** - Migrated to server-side control
+  - `ad_service.dart`: Added `completeAdViewAndGrantTicket()` method using new RPC
+  - `gacha_attempts_manager.dart`: Removed local `setTodayBaseAttempts(10)`, now fetches from server
+  - `gacha_view_model.dart`: Uses `consume_gacha_attempts` RPC for atomic gacha execution
+  - `gacha_limits_repository.dart`: Added `consumeGachaAttemptsWithResult()` method
+
+### Fixed
+- Ad view limit bypass vulnerability - Daily limit now enforced server-side with JST 3:00 reset
+- Point grant inconsistency - Gacha consumption and reward grants now atomic via RPC
+
+### Deprecated
+- `GachaAttemptsManager.addBonusAttempts()` - Use `AdService.completeAdViewAndGrantTicket()` instead
+- Local ad view recording without server validation
+
+### Technical
+- All ad completion events now log device_id, user_agent, client_ip for Lv2-Lite analytics
+- RPC functions use PostgreSQL transactions for data consistency
+- Row Level Security (RLS) enabled on all modified tables
+- Backward compatible: Old code paths continue to work but are deprecated
+
+### Notes
+- **Security**: This PR implements Lv1 (grant limits) server-side control and Lv2-Lite observation infrastructure
+- **Future Work**: Automated ban detection and rate limiting (Lv2) will be implemented separately
+- **Testing**: Integration tests for 4th ad rejection and atomic gacha consumption recommended
+
 ## [0.9.0] - 2025-11-08
 
 ### Added
