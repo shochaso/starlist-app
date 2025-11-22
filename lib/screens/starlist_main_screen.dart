@@ -661,7 +661,12 @@ class _StarlistMainScreenState extends ConsumerState<StarlistMainScreen>
                   _buildDrawerItem(Icons.credit_card, '課金プラン', -1, 'subscription'),
                   _buildDrawerItem(Icons.stars, 'スターポイント購入', -1, 'buy_points'),
                 ],
-                _buildDrawerItem(Icons.grid_view_rounded, 'スターリスト', -1, 'starlist'),
+                _buildDrawerItem(
+                  Icons.grid_view_rounded,
+                  currentUser.isStar ? 'マイデータ' : 'データページ',
+                  -1,
+                  'starlist',
+                ),
                 _buildDrawerItem(Icons.settings, '設定', -1, 'settings'),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 18, 16, 6),

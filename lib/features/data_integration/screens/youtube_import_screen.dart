@@ -2,9 +2,10 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 
-import '../../../src/features/auth/providers/user_provider.dart';
+import 'package:starlist_app/providers/user_provider.dart';
 import '../../data_integration/workflows/youtube_import_workflow.dart';
 import '../widgets/youtube_extracted_result_card.dart';
 import '../widgets/youtube_image_upload_card.dart';
@@ -76,19 +77,31 @@ class _YouTubeImportScreenState extends ConsumerState<YouTubeImportScreen> {
             items: workflow.items,
             isLinkEnriching: workflow.isLinkEnriching,
             isUploading: workflow.isUploading,
+            isPublishing: workflow.isPublishing,
+            uploadCompleted: workflow.uploadCompleted,
+            publishCompleted: workflow.publishCompleted,
             enrichProgress: workflow.enrichProgress,
             enrichTotal: workflow.enrichTotal,
             onToggleSelected: workflowNotifier.toggleSelect,
             onTogglePublic: workflowNotifier.togglePublic,
             onRemove: workflowNotifier.removeItem,
             onUpload: () async {
-              final user = ref.read(userProvider).value;
-              if (user == null) {
+              final user = ref.read(currentUserProvider);
+              if (user.id.isEmpty) {
                 _showSnackBar('保存にはログインが必要です', isError: true);
                 return;
               }
               await workflowNotifier.saveSelected();
             },
+            onPublish: () async {
+              final user = ref.read(currentUserProvider);
+              if (user.id.isEmpty) {
+                _showSnackBar('公開にはログインが必要です', isError: true);
+                return;
+              }
+              await workflowNotifier.publishSelected();
+            },
+            onViewList: () => _openMyList(context),
             onSelectAll: () => workflowNotifier.selectAll(true),
             onClearSelection: () => workflowNotifier.selectAll(false),
           ),
@@ -134,6 +147,11 @@ class _YouTubeImportScreenState extends ConsumerState<YouTubeImportScreen> {
       _selectedImage = null;
       _selectedImageBytes = null;
     });
+  }
+
+  void _openMyList(BuildContext context) {
+    if (!mounted) return;
+    context.go('/mypage');
   }
 
   void _showSnackBar(String message, {bool isError = false}) {

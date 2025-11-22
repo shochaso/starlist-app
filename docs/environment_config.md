@@ -28,6 +28,8 @@ deployments **must** supply explicit values.
 | `BUCKET_PUBLIC_DERIVED` | CDN-friendly bucket for transformed assets (`public/derived`) |
 | `BUCKET_PRIVATE_ORIGINALS` | Private storage bucket for originals that require signed URLs (`private/originals`) |
 | `SIGNED_URL_TTL_SECONDS` | TTL (seconds) for generated Supabase signed URLs |
+| `AUTO_LOGIN_EMAIL` | (Optional) Supabase email used by automated login tests |
+| `AUTO_LOGIN_PASSWORD` | (Optional) Password used by automated login tests |
 
 ### Local development
 

@@ -42,6 +42,7 @@ dependencies:
   auth0_flutter: ^1.4.0
   mime: ^1.0.6
   fl_chart: ^0.68.0
+  supabase: ^2.2.4
 
 dev_dependencies:
   flutter_test:

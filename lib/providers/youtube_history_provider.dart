@@ -1,7 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../config/environment_config.dart';
 import '../features/data_integration/support_matrix.dart';
 import '../features/data_integration/tag_only_saver.dart';
+import '../src/services/supabase_auth_helper.dart';
 
 // YouTube履歴データのモデル
 class YouTubeHistoryItem {
@@ -90,6 +92,7 @@ class YouTubeHistoryNotifier extends StateNotifier<List<YouTubeHistoryItem>> {
     }
 
     // 🆕 Supabaseへの永続化処理を追加
+    final bool sessionReady = await _ensureAuthSession();
     final userId = _supabase.auth.currentUser?.id;
     if (userId != null) {
       await _persistItems(newItems, userId);
@@ -326,6 +329,30 @@ class YouTubeHistoryNotifier extends StateNotifier<List<YouTubeHistoryItem>> {
     tags.addAll(titleWords);
 
     return tags.toList();
+  }
+
+  Future<bool> _ensureAuthSession() async {
+    if (_supabase.auth.currentUser != null) {
+      return true;
+    }
+
+    final autoEmail = EnvironmentConfig.autoLoginEmail;
+    final autoPassword = EnvironmentConfig.autoLoginPassword;
+    if (autoEmail.isEmpty || autoPassword.isEmpty) {
+      print('Auto login credentials not configured, cannot refresh session.');
+      return false;
+    }
+
+    final session = await SupabaseAuthHelper.signInWithPassword(
+      client: _supabase,
+      email: autoEmail,
+      password: autoPassword,
+    );
+    if (session == null) {
+      print('Auto login helper failed to renew Supabase session.');
+      return false;
+    }
+    return true;
   }
 }
 

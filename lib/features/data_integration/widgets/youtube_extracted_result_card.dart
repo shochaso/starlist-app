@@ -8,12 +8,17 @@ class YoutubeExtractedResultCard extends StatelessWidget {
     required this.items,
     required this.isLinkEnriching,
     required this.isUploading,
+    required this.isPublishing,
+    required this.uploadCompleted,
+    required this.publishCompleted,
     required this.enrichProgress,
     required this.enrichTotal,
     required this.onToggleSelected,
     required this.onTogglePublic,
     required this.onRemove,
     required this.onUpload,
+    required this.onPublish,
+    required this.onViewList,
     required this.onSelectAll,
     required this.onClearSelection,
   });
@@ -21,12 +26,17 @@ class YoutubeExtractedResultCard extends StatelessWidget {
   final List<YoutubeImportItem> items;
   final bool isLinkEnriching;
   final bool isUploading;
+  final bool isPublishing;
+  final bool uploadCompleted;
+  final bool publishCompleted;
   final int enrichProgress;
   final int enrichTotal;
   final void Function(String id) onToggleSelected;
   final void Function(String id) onTogglePublic;
   final void Function(String id) onRemove;
   final VoidCallback onUpload;
+  final VoidCallback onPublish;
+  final VoidCallback onViewList;
   final VoidCallback onSelectAll;
   final VoidCallback onClearSelection;
 
@@ -188,24 +198,34 @@ class YoutubeExtractedResultCard extends StatelessWidget {
     required BuildContext context,
     required int selectedCount,
   }) {
+    final hasSelectable = items.isNotEmpty;
+    final canRegister = selectedCount > 0 && !isUploading && !uploadCompleted;
+    final canPublish = uploadCompleted && !isPublishing && !publishCompleted;
+
     final actions = [
       _ToolbarAction(
-        icon: Icons.done_all_rounded,
+        icon: Icons.select_all,
         label: '全件選択',
-        onPressed: items.isEmpty ? null : onSelectAll,
-        isPrimary: true,
-      ),
-      _ToolbarAction(
-        icon: Icons.remove_done,
-        label: '選択解除',
-        onPressed: selectedCount == 0 ? null : onClearSelection,
+        onPressed: hasSelectable ? onSelectAll : null,
         isPrimary: false,
       ),
       _ToolbarAction(
-        icon: Icons.cloud_upload_outlined,
-        label: isUploading ? '登録中…' : 'DB登録',
-        onPressed: isUploading ? null : onUpload,
+        icon: Icons.library_add_check_outlined,
+        label: isUploading ? '登録中…' : 'マイリストに登録',
+        onPressed: canRegister ? onUpload : null,
         isPrimary: true,
+      ),
+      _ToolbarAction(
+        icon: Icons.public,
+        label: isPublishing ? '公開中…' : '公開設定',
+        onPressed: canPublish ? onPublish : null,
+        isPrimary: true,
+      ),
+      _ToolbarAction(
+        icon: Icons.playlist_play,
+        label: 'マイリストを確認',
+        onPressed: hasSelectable ? onViewList : null,
+        isPrimary: false,
       ),
     ];
 
@@ -227,7 +247,7 @@ class YoutubeExtractedResultCard extends StatelessWidget {
           children: [
             for (var i = 0; i < actions.length; i++) ...[
               Expanded(child: _buildActionButton(actions[i])),
-              if (i != actions.length - 1) const SizedBox(width: 12),
+              if (i != actions.length - 1) const SizedBox(width: 10),
             ],
           ],
         );

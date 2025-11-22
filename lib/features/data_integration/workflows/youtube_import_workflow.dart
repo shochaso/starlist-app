@@ -1,8 +1,11 @@
 import 'dart:typed_data';
-
+import 'package:flutter/material.dart'; // for Colors
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../providers/youtube_history_provider.dart';
+import '../../../providers/posts_provider.dart';
+import '../../../providers/user_provider.dart';
+import '../../../data/models/post_model.dart';
 import '../../../src/models/enriched_link_result.dart';
 import '../../../src/models/youtube_import_item.dart';
 import '../../../src/services/openai_ocr_service.dart';
@@ -13,7 +16,7 @@ final youtubeImportWorkflowProvider =
     StateNotifierProvider<YoutubeImportWorkflow, YoutubeImportWorkflowState>(
         (ref) {
   final historyNotifier = ref.read(youtubeHistoryProvider.notifier);
-  return YoutubeImportWorkflow(historyNotifier: historyNotifier);
+  return YoutubeImportWorkflow(historyNotifier: historyNotifier, ref: ref);
 });
 
 class YoutubeImportWorkflowState {
@@ -76,11 +79,15 @@ class YoutubeImportWorkflowState {
 }
 
 class YoutubeImportWorkflow extends StateNotifier<YoutubeImportWorkflowState> {
-  YoutubeImportWorkflow({required YouTubeHistoryNotifier historyNotifier})
-      : _historyNotifier = historyNotifier,
+  YoutubeImportWorkflow({
+    required YouTubeHistoryNotifier historyNotifier,
+    required Ref ref,
+  })  : _historyNotifier = historyNotifier,
+        _ref = ref,
         super(YoutubeImportWorkflowState.initial);
 
   final YouTubeHistoryNotifier _historyNotifier;
+  final Ref _ref;
   final OpenAiOcrService _ocrService = OpenAiOcrService();
   final YoutubeOcrParserService _parserService =
       const YoutubeOcrParserService();
@@ -245,7 +252,32 @@ class YoutubeImportWorkflow extends StateNotifier<YoutubeImportWorkflowState> {
 
     state = state.copyWith(isPublishing: true, clearError: true);
     try {
-      // Placeholder for real publish logic.
+      // Create a single post for the batch
+      final currentUser = _ref.read(currentUserProvider);
+      
+      // Convert items to video map for PostModel
+      final videos = toPublish.map((item) {
+        return {
+          'title': item.title,
+          'channel': item.channel,
+          'url': item.videoUrl,
+          'thumbnail': item.thumbnailUrl,
+          'duration': item.duration,
+        };
+      }).toList();
+
+      final newPost = PostModel.youtubePost(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        authorId: currentUser.id,
+        authorName: currentUser.name,
+        authorAvatar: currentUser.profileImageUrl ?? 'A',
+        authorColor: Colors.blue, // Default color
+        title: '${toPublish.length}件の動画を視聴しました',
+        videos: videos,
+      );
+
+      _ref.read(postsProvider.notifier).addPost(newPost);
+
       await Future<void>.delayed(const Duration(milliseconds: 500));
       state = state.copyWith(isPublishing: false, publishCompleted: true);
     } catch (error) {
