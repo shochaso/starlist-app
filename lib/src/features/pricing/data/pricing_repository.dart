@@ -50,8 +50,6 @@ Map<String, dynamic> _fallbackConfig() {
 // Spec-State:: 確定済み（推奨価格取得）
 // Last-Updated:: 2025-11-08
 
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../core/config/supabase_client_provider.dart';
 
 /// 推奨価格設定を取得するProvider
 final pricingConfigProvider = FutureProvider<Map<String, dynamic>>((ref) async {

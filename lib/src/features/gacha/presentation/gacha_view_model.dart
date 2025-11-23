@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../providers/gacha_limits_providers.dart';import '../../voting/providers/voting_providers.dart';
+import '../providers/gacha_limits_providers.dart';
+import '../../voting/providers/voting_providers.dart';
 import '../../../../providers/user_provider.dart';
 
 import '../models/gacha_models_simple.dart';
@@ -52,18 +53,44 @@ class GachaViewModel extends StateNotifier<GachaState> {
       await Future.delayed(const Duration(milliseconds: 3500));
       final result = await _drawGachaUsecase.execute();
 
-      // 2.5 回数消費はUI側のマネージャーで既に実施済み。ここでは行わない。
-
-      // 3. 獲得ポイントを計算
+      // 3. 獲得ポイント/チケットを計算
       final gainedAmount = result.when(
         point: (amount) => amount,
-        ticket: (type, name, color) => 500, // 仮のポイント
+        ticket: (type, name, color) => 0,
       );
+      final isSilver = result is TicketResult && result.ticketType == 'silver';
+
+      // 3.5 サーバで回数消費＋履歴記録（原子的）
+      final limitsRepo = _ref.read(gachaLimitsRepositoryProvider);
+      final resultJson = result.when(
+        point: (amount) => {
+          'type': 'point',
+          'amount': amount,
+        },
+        ticket: (type, name, color) => {
+          'type': 'ticket',
+          'ticketType': type,
+          'displayName': name,
+        },
+      );
+      final consumed = await limitsRepo.consumeAttemptWithResult(
+        userId,
+        resultJson,
+        rewardPoints: gainedAmount,
+        rewardSilverTicket: isSilver,
+      );
+      if (!consumed) {
+        state = GachaStateFactory.error('ガチャ回数が不足しています');
+        await _ref.read(gachaAttemptsManagerProvider(userId).notifier).refreshAttempts();
+        return;
+      }
 
       // 4. 残高マネージャーを介して即時加算（DB失敗でもUIは反映）
       try {
         final balanceManager = _ref.read(starPointBalanceManagerProvider(userId).notifier);
-        await balanceManager.addPoints(gainedAmount, 'ガチャ獲得', 'gacha');
+        if (gainedAmount > 0) {
+          await balanceManager.addPoints(gainedAmount, 'ガチャ獲得', 'gacha');
+        }
         balanceManager.debugInfo();
 
         // 従来のプロバイダーも無効化（互換性のため）
@@ -85,25 +112,6 @@ class GachaViewModel extends StateNotifier<GachaState> {
         await manager.refreshAttempts();
       } catch (e) {}
       _ref.invalidate(gachaAttemptsStatsProvider);
-
-      // 8. ガチャ履歴を記録（失敗は握り潰し）
-      try {
-        final limitsRepo = _ref.read(gachaLimitsRepositoryProvider);
-        final Map<String, dynamic> resultJson = result.when(
-          point: (amount) => {
-            'type': 'point',
-            'amount': amount,
-          },
-          ticket: (type, name, color) => {
-            'type': 'ticket',
-            'ticketType': type,
-            'displayName': name,
-          },
-        );
-        await limitsRepo.recordGachaResult(userId, resultJson, 1, 'normal');
-      } catch (e) {
-        print('recordGachaResult failed: $e');
-      }
 
     } catch (e, stackTrace) {
       print('---------- GachaViewModel Error ----------');
@@ -129,8 +137,8 @@ class GachaViewModel extends StateNotifier<GachaState> {
           await repo.grantSPointsWithSource(userId, amount, 'ガチャ獲得', 'gacha');
         },
         ticket: (ticketType, displayName, color) async {
-          final amount = ticketType == 'gold' ? 1200 : 500;
-          await repo.grantSPointsWithSource(userId, amount, '$displayName（ガチャ）', 'gacha');
+          // Silver ticket: log flag only (actual ticket issuance deferred to backend)
+          await repo.grantSPointsWithSource(userId, 0, '$displayName（ガチャ）', 'gacha');
         },
       );
       

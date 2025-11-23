@@ -218,3 +218,6 @@ find docs/ops -name "*.md" | head -5 | xargs python scripts/starlist_md_validato
 - 2025-11-15: CIワークフロー統合とテストコード整備。
 
 
+
+
+

@@ -251,7 +251,7 @@ class YoutubeLocalImporter {
     if (text == null) return null;
 
     if (text.startsWith('URL: null')) {
-      return EnrichedLinkResult(
+      return const EnrichedLinkResult(
         url: null,
         score: 0,
         reason: 'No confident match found by the model.',

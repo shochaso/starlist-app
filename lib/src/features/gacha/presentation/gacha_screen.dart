@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/gacha_models_simple.dart';
+import '../models/gacha_limits_models.dart';
 import '../widgets/gacha_machine_widget.dart';
 import '../services/gacha_sound_service.dart';
 import 'providers/gacha_providers.dart';
 import '../../voting/widgets/star_point_balance_widget.dart';
 import '../providers/gacha_attempts_manager.dart';
+import '../services/ad_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// ガチャメイン画面
@@ -241,19 +243,19 @@ class _GachaView extends ConsumerWidget {
                         onPressed: gachaAttemptsState.stats.bonusAttempts >= 3
                             ? null
                             : () async {
-                                final manager = ref.read(
-                                    gachaAttemptsManagerProvider(userId)
-                                        .notifier);
-                                final success =
-                                    await manager.addBonusAttempts(1);
+                                final adService = ref.read(adServiceProvider);
+                                final result = await adService.showAd(AdType.video);
                                 if (!context.mounted) return;
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(success
-                                        ? '回数 +1 追加されました'
-                                        : '広告視聴に失敗しました'),
-                                  ),
-                                );
+                                if (result.success) {
+                                  await ref.read(gachaAttemptsManagerProvider(userId).notifier).refreshAttempts();
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('チケットを1枚付与しました')),
+                                  );
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('広告視聴に失敗しました: ${result.errorMessage ?? ''}')),
+                                  );
+                                }
                               },
                         icon: Icon(
                           Icons.ondemand_video,
@@ -606,24 +608,8 @@ class _GachaView extends ConsumerWidget {
                 if (isSuccess) {
                   ref.read(gachaViewModelProvider.notifier).reset();
                 } else {
-                  // MPマネージャーで回数を消費してからガチャ実行
-                  final manager =
-                      ref.read(gachaAttemptsManagerProvider(userId).notifier);
-                  final success = await manager.consumeAttempt();
-
-                  if (success) {
-                    await GachaSoundService().playLeverPull();
-                    ref.read(gachaViewModelProvider.notifier).draw();
-                  } else {
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('ガチャ回数が不足しています'),
-                          backgroundColor: Colors.orange,
-                        ),
-                      );
-                    }
-                  }
+                  await GachaSoundService().playLeverPull();
+                  await ref.read(gachaViewModelProvider.notifier).draw();
                 }
               },
         style: ElevatedButton.styleFrom(

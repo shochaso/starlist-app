@@ -14,6 +14,8 @@ jobs:
   guard:
     name: Secrets Presence Guard
     runs-on: ubuntu-latest
+    outputs:
+      guard-passed: ${{ steps.guard_summary.outputs.guard-passed }}
     steps:
       - name: Check SUPABASE_SERVICE_KEY presence
         id: check_supabase
@@ -51,4 +53,3 @@ jobs:
             echo "guard-passed=true" >> $GITHUB_OUTPUT
             echo "✅ Guard passed: All required secrets present"
           fi
-

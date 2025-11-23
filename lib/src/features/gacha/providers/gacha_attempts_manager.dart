@@ -40,10 +40,10 @@ class GachaAttemptsState {
   static GachaAttemptsState defaultState() {
     return GachaAttemptsState(
       stats: GachaAttemptsStats(
-        baseAttempts: 10,
+        baseAttempts: 0,
         bonusAttempts: 0,
         usedAttempts: 0,
-        availableAttempts: 10,
+        availableAttempts: 0,
         date: DateTime.now(),
       ),
       isLoading: false,
@@ -73,14 +73,10 @@ class GachaAttemptsManager extends StateNotifier<GachaAttemptsState> {
 
     try {
       print('GachaAttemptsManager: Initializing attempts for user $userId');
-      
-      // 1. 今日のガチャ回数を強制的に10回に設定
-      await _repository.setTodayBaseAttempts(userId, 10);
-      
-      // 2. 最新の統計を取得
+
+      // サーバ値をそのまま採用
       final stats = await _repository.getGachaAttemptsStats(userId);
-      
-      // 3. 状態を更新
+
       state = state.copyWith(
         stats: stats,
         isLoading: false,
@@ -88,7 +84,7 @@ class GachaAttemptsManager extends StateNotifier<GachaAttemptsState> {
         error: null,
         lastUpdated: DateTime.now(),
       );
-      
+
       print('GachaAttemptsManager: Successfully initialized attempts: $stats');
       debugInfo();
     } catch (e) {
@@ -239,12 +235,12 @@ class GachaAttemptsManager extends StateNotifier<GachaAttemptsState> {
   Future<void> resetToTenAttempts() async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      print('GachaAttemptsManager: Resetting to 10 attempts for user $userId');
-      
-      await _repository.setTodayBaseAttempts(userId, 10);
+      print('GachaAttemptsManager: Resetting attempts for user $userId');
+
+      await _repository.setTodayBaseAttempts(userId, 0);
       await refreshAttempts();
-      
-      print('GachaAttemptsManager: Successfully reset to 10 attempts');
+
+      print('GachaAttemptsManager: Successfully reset attempts');
       state = state.copyWith(isLoading: false);
 
     } catch (e) {

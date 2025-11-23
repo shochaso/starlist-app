@@ -1,4 +1,5 @@
-import 'package:supabase_flutter/supabase_flutter.dart' hide Provider;import '../models/gacha_limits_models.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' hide Provider;
+import '../models/gacha_limits_models.dart';
 
 /// ガチャ回数管理のリポジトリ
 class GachaLimitsRepository {
@@ -55,7 +56,7 @@ class GachaLimitsRepository {
   }
 
   Future<GachaAttemptsStats> _getStatsFromTable(String userId) async {
-    final today = DateTime.now().toIso8601String().split('T')[0];
+    final today = _todayKeyJst3();
     final rows = await _supabaseService
         .from('gacha_attempts')
         .select('base_attempts, bonus_attempts, used_attempts, date')
@@ -78,8 +79,8 @@ class GachaLimitsRepository {
       );
     }
 
-    // 行が無ければ作成してから再取得（デフォルト10回）
-    await setTodayBaseAttempts(userId, 10);
+    // 行が無ければ作成してから再取得（デフォルト0回）
+    await setTodayBaseAttempts(userId, 0);
     final retryRows = await _supabaseService
         .from('gacha_attempts')
         .select('base_attempts, bonus_attempts, used_attempts, date')
@@ -103,10 +104,10 @@ class GachaLimitsRepository {
     }
 
     return GachaAttemptsStats(
-      baseAttempts: 10,
+      baseAttempts: 0,
       bonusAttempts: 0,
       usedAttempts: 0,
-      availableAttempts: 10,
+      availableAttempts: 0,
       date: DateTime.now(),
     );
   }
@@ -116,7 +117,7 @@ class GachaLimitsRepository {
     // 1) まずはRPCを試し、JSONB/booleanの両方に対応
     try {
       final result = await _supabaseService
-          .rpc('consume_gacha_attempt', params: {
+          .rpc('consume_gacha_attempt_atomic', params: {
             'user_id_param': userId,
           });
 
@@ -133,10 +134,10 @@ class GachaLimitsRepository {
 
     // 2) フォールバック: テーブルを直接更新（確実に1回消費）
     try {
-      final today = DateTime.now().toIso8601String().split('T')[0];
+      final today = _todayKeyJst3();
 
       // 行が無ければ作成
-      await setTodayBaseAttempts(userId, 10);
+      await setTodayBaseAttempts(userId, 0);
 
       // 現状を取得
       final rows = await _supabaseService
@@ -172,6 +173,31 @@ class GachaLimitsRepository {
       return true;
     } catch (e) {
       print('consumeGachaAttempt fallback failed: $e');
+      return false;
+    }
+  }
+
+  /// ガチャ結果を含めて原子的に消費＋履歴保存
+  Future<bool> consumeAttemptWithResult(
+    String userId,
+    Map<String, dynamic> gachaResult, {
+    int? rewardPoints,
+    bool rewardSilverTicket = false,
+  }) async {
+    try {
+      final result = await _supabaseService.rpc('consume_gacha_attempt_atomic', params: {
+        'user_id_param': userId,
+        'gacha_result': gachaResult,
+        'reward_points': rewardPoints,
+        'reward_silver_ticket': rewardSilverTicket,
+        'source': 'ad_gacha',
+      });
+      if (result is Map && result['success'] == true) {
+        return true;
+      }
+      return false;
+    } catch (e) {
+      print('consumeAttemptWithResult failed: $e');
       return false;
     }
   }
@@ -217,8 +243,10 @@ class GachaLimitsRepository {
     String userId,
     Map<String, dynamic> gachaResult,
     int attemptsUsed,
-    String source,
-  ) async {
+    String source, {
+    int? rewardPoints,
+    bool rewardSilverTicket = false,
+  }) async {
     try {
       await _supabaseService.from('gacha_history').insert({
         'user_id': userId,
@@ -226,6 +254,8 @@ class GachaLimitsRepository {
         'attempts_used': attemptsUsed,
         'source': source,
         'created_at': DateTime.now().toIso8601String(),
+        'reward_points': rewardPoints,
+        'reward_silver_ticket': rewardSilverTicket,
       });
     } catch (e) {
       // エラー時はログ出力のみ（アプリの動作を止めたくない）
@@ -243,7 +273,7 @@ class GachaLimitsRepository {
             'updated_at': DateTime.now().toIso8601String(),
           })
           .eq('user_id', userId)
-          .eq('date', DateTime.now().toIso8601String().split('T')[0]);
+          .eq('date', _todayKeyJst3());
     } catch (e) {
       print('Failed to reset gacha attempts: $e');
     }
@@ -252,12 +282,12 @@ class GachaLimitsRepository {
   /// 本日分の基本回数を設定（テスト用）
   Future<void> setTodayBaseAttempts(String userId, int baseAttempts) async {
     // 1) RPCは存在しない環境でもスキップして続行できるようにする
+    final todayKey = _todayKeyJst3();
     try {
-      await _supabaseService.rpc('initialize_daily_gacha_attempts', params: {
+      await _supabaseService.rpc('initialize_daily_gacha_attempts_jst3', params: {
         'user_id_param': userId,
       });
     } catch (e) {
-      // RPC未定義でも処理続行（初期化は下のupsertで担保）
       print('initialize_daily_gacha_attempts skipped: $e');
     }
 
@@ -267,15 +297,21 @@ class GachaLimitsRepository {
           .from('gacha_attempts')
           .upsert({
             'user_id': userId,
-            'date': DateTime.now().toIso8601String().split('T')[0],
+            'date': todayKey,
+            'date_key': todayKey,
             'base_attempts': baseAttempts,
-            'used_attempts': 0, // ★★★ 使用回数を0にリセットする処理を追加
+            'used_attempts': 0,
             'updated_at': DateTime.now().toIso8601String(),
           }, onConflict: 'user_id,date');
     } catch (e) {
       print('setTodayBaseAttempts upsert failed: $e');
-      // エラーを呼び出し元に伝えるために再スロー
       rethrow;
     }
+  }
+
+  String _todayKeyJst3() {
+    final nowJst = DateTime.now().toUtc().add(const Duration(hours: 9));
+    final shifted = nowJst.subtract(const Duration(hours: 3));
+    return shifted.toIso8601String().split('T')[0];
   }
 }

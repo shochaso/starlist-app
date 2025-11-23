@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide Provider;
 import '../models/gacha_limits_models.dart';
+import '../../../core/device/device_id.dart';
 
 /// 広告サービスの抽象クラス
 abstract class AdService {
@@ -47,43 +48,23 @@ class MockAdService implements AdService {
   @override
   Future<AdViewResult> showAd(AdType adType) async {
     try {
-      // 事前に当日の追加回数上限(3)をチェック
-      try {
-        final userId = _supabaseService.auth.currentUser?.id;
-        if (userId != null) {
-          final stats = await _supabaseService.rpc('get_available_gacha_attempts', params: {
-            'user_id_param': userId,
-          });
-          if (stats is Map && (stats['bonus_attempts'] as int? ?? 0) >= 3) {
-            return AdViewResult(
-              success: false,
-              errorMessage: '本日はこれ以上回数を追加できません（上限3回）',
-            );
-          }
-        }
-      } catch (_) {}
+      final userId = _supabaseService.auth.currentUser?.id;
+      if (userId == null) {
+        return AdViewResult(success: false, errorMessage: 'not_logged_in');
+      }
 
-      // 広告視聴のシミュレーション（3秒待つ）
+      final adViewId = await _recordAdViewInitiated(adType);
+
+      // モック視聴: 3秒待って成功扱い
       final completer = Completer<AdViewResult>();
-      
       _adTimer?.cancel();
       _adTimer = Timer(const Duration(seconds: 3), () async {
         try {
-          // 広告視聴成功を記録
-          final rewardedAttempts = _getRewardedAttempts(adType);
-          
-          // データベースに広告視聴を記録
-          await _recordAdView(adType, rewardedAttempts);
-          
-          completer.complete(AdViewResult(
-            success: true,
-            rewardedAttempts: rewardedAttempts,
-          ));
+          final deviceId = await DeviceId.get();
+          final granted = await _completeAndGrant(userId, adViewId, deviceId);
+          completer.complete(granted);
         } catch (e) {
-          completer.complete(AdViewResult(
-            success: false,
-            errorMessage: e.toString(),
-          ));
+          completer.complete(AdViewResult(success: false, errorMessage: e.toString()));
         }
       });
 
@@ -108,39 +89,43 @@ class MockAdService implements AdService {
     _adTimer = null;
   }
 
-  /// 広告タイプに応じた報酬回数を決定
-  int _getRewardedAttempts(AdType adType) {
-    switch (adType) {
-      case AdType.video:
-        return 1; // 動画広告：1回
-      case AdType.banner:
-        return 1; // バナー広告：1回
-      case AdType.interstitial:
-        return 2; // インタースティシャル広告：2回
-    }
-  }
-
-  /// 広告視聴をデータベースに記録
-  Future<void> _recordAdView(AdType adType, int rewardedAttempts) async {
+  /// 広告視聴開始を記録し ad_view_id を返す
+  Future<String> _recordAdViewInitiated(AdType adType) async {
     final userId = _supabaseService.auth.currentUser?.id;
-    if (userId == null) return;
+    if (userId == null) throw Exception('not_logged_in');
 
-    await _supabaseService.from('ad_views').insert({
+    final deviceId = await DeviceId.get();
+    final data = await _supabaseService.from('ad_views').insert({
       'user_id': userId,
       'ad_type': adType.name,
       'ad_provider': 'mock_provider',
       'ad_id': 'mock_ad_${DateTime.now().millisecondsSinceEpoch}',
-      'view_duration': 30, // 30秒の視聴を想定
-      'completed': true,
-      'reward_attempts': rewardedAttempts,
+      'view_duration': 0,
+      'completed': false,
+      'reward_attempts': 1,
       'viewed_at': DateTime.now().toIso8601String(),
+      'device_id': deviceId,
+      'status': 'initiated',
+      'date_key': null,
+    }).select('id').single();
+
+    return data['id'] as String;
+  }
+
+  Future<AdViewResult> _completeAndGrant(String userId, String adViewId, String deviceId) async {
+    final res = await _supabaseService.rpc('complete_ad_view_and_grant_ticket', params: {
+      'user_id_param': userId,
+      'ad_view_id_param': adViewId,
+      'device_id_param': deviceId,
+      'user_agent_param': null,
     });
 
-    // ガチャ回数を追加
-    await _supabaseService.rpc('add_gacha_bonus_attempts', params: {
-      'user_id_param': userId,
-      'bonus_count': rewardedAttempts,
-    });
+    if (res is Map && res['success'] == true) {
+      return AdViewResult(success: true, rewardedAttempts: 1);
+    }
+
+    final error = (res is Map && res['error'] != null) ? res['error'].toString() : 'ad_grant_failed';
+    return AdViewResult(success: false, errorMessage: error);
   }
 }
 
