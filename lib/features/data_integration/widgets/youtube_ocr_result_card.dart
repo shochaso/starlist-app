@@ -35,7 +35,7 @@ class _YoutubeOcrResultCardState extends State<YoutubeOcrResultCard> {
             .length;
 
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: const Color(0xFFF7F9FF),
         borderRadius: BorderRadius.circular(20),

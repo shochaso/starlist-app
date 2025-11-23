@@ -9,15 +9,16 @@ class YoutubeExtractedResultCard extends StatelessWidget {
     required this.isLinkEnriching,
     required this.isUploading,
     required this.isPublishing,
+    required this.uploadCompleted,
+    required this.publishCompleted,
     required this.enrichProgress,
     required this.enrichTotal,
     required this.onToggleSelected,
     required this.onTogglePublic,
     required this.onRemove,
-    required this.onEnrichSelected,
-    required this.onEnrichAll,
     required this.onUpload,
     required this.onPublish,
+    required this.onViewList,
     required this.onSelectAll,
     required this.onClearSelection,
   });
@@ -26,15 +27,16 @@ class YoutubeExtractedResultCard extends StatelessWidget {
   final bool isLinkEnriching;
   final bool isUploading;
   final bool isPublishing;
+  final bool uploadCompleted;
+  final bool publishCompleted;
   final int enrichProgress;
   final int enrichTotal;
   final void Function(String id) onToggleSelected;
   final void Function(String id) onTogglePublic;
   final void Function(String id) onRemove;
-  final VoidCallback onEnrichSelected;
-  final VoidCallback onEnrichAll;
   final VoidCallback onUpload;
   final VoidCallback onPublish;
+  final VoidCallback onViewList;
   final VoidCallback onSelectAll;
   final VoidCallback onClearSelection;
 
@@ -64,7 +66,7 @@ class YoutubeExtractedResultCard extends StatelessWidget {
     final publicCount = items.where((item) => item.isPublic).length;
 
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: const Color(0xFFF7F9FF),
         borderRadius: BorderRadius.circular(20),
@@ -112,73 +114,19 @@ class YoutubeExtractedResultCard extends StatelessWidget {
     required int selectedCount,
     required int publicCount,
   }) {
-    final theme = Theme.of(context);
-
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Wrap(
-            spacing: 12,
-            runSpacing: 8,
-            children: [
-              _buildStatChip(
-                label: '総数',
-                value: '${items.length}',
-                color: theme.colorScheme.primary,
-              ),
-              _buildStatChip(
-                label: '選択中',
-                value: '$selectedCount',
-                color: theme.colorScheme.secondary,
-              ),
-              _buildStatChip(
-                label: '公開予定',
-                value: '$publicCount',
-                color: Colors.teal,
-              ),
-            ],
+          _buildStatSummary(
+            selectedCount: selectedCount,
+            publicCount: publicCount,
           ),
-          const SizedBox(height: 12),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              _toolbarButton(
-                icon: Icons.done_all,
-                label: '全件選択',
-                onPressed: onSelectAll,
-              ),
-              _toolbarButton(
-                icon: Icons.remove_done,
-                label: '選択解除',
-                onPressed: onClearSelection,
-                outlined: true,
-              ),
-              _toolbarButton(
-                icon: Icons.auto_fix_high_outlined,
-                label: '選択をリンク補完',
-                onPressed: isLinkEnriching ? null : onEnrichSelected,
-              ),
-              _toolbarButton(
-                icon: Icons.search,
-                label: '全件検索',
-                onPressed: isLinkEnriching ? null : onEnrichAll,
-                outlined: true,
-              ),
-              _toolbarButton(
-                icon: Icons.cloud_upload_outlined,
-                label: isUploading ? '登録中…' : 'DB登録',
-                onPressed: isUploading ? null : onUpload,
-              ),
-              _toolbarButton(
-                icon: Icons.public,
-                label: isPublishing ? '公開中…' : '公開設定',
-                onPressed: isPublishing ? null : onPublish,
-                outlined: true,
-              ),
-            ],
+          const SizedBox(height: 18),
+          _buildActionButtons(
+            context: context,
+            selectedCount: selectedCount,
           ),
           if (isLinkEnriching)
             Padding(
@@ -189,6 +137,157 @@ class YoutubeExtractedResultCard extends StatelessWidget {
             ),
         ],
       ),
+    );
+  }
+
+  Widget _buildStatSummary({
+    required int selectedCount,
+    required int publicCount,
+  }) {
+    final stats = [
+      _StatSummaryData(
+        label: '総数',
+        value: '${items.length}',
+        caption: '読み込み済み',
+        icon: Icons.inventory_2_outlined,
+        color: const Color(0xFF5A6AF0),
+      ),
+      _StatSummaryData(
+        label: '選択中',
+        value: '$selectedCount',
+        caption: '登録候補',
+        icon: Icons.check_circle_outline,
+        color: const Color(0xFF1BC47D),
+      ),
+      _StatSummaryData(
+        label: '公開予定',
+        value: '$publicCount',
+        caption: '公開待ち',
+        icon: Icons.public_outlined,
+        color: const Color(0xFF1AA7EC),
+      ),
+    ];
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isCompact = constraints.maxWidth < 640;
+        if (isCompact) {
+          return Column(
+            children: [
+              for (final stat in stats) ...[
+                _StatSummaryCard(data: stat, isCompact: true),
+                const SizedBox(height: 12),
+              ],
+            ],
+          );
+        }
+
+        return Row(
+          children: [
+            for (var i = 0; i < stats.length; i++) ...[
+              Expanded(child: _StatSummaryCard(data: stats[i])),
+              if (i != stats.length - 1) const SizedBox(width: 12),
+            ],
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildActionButtons({
+    required BuildContext context,
+    required int selectedCount,
+  }) {
+    final hasSelectable = items.isNotEmpty;
+    final canRegister = selectedCount > 0 && !isUploading && !uploadCompleted;
+    final canPublish = uploadCompleted && !isPublishing && !publishCompleted;
+
+    final actions = [
+      _ToolbarAction(
+        icon: Icons.select_all,
+        label: '全件選択',
+        onPressed: hasSelectable ? onSelectAll : null,
+        isPrimary: false,
+      ),
+      _ToolbarAction(
+        icon: Icons.library_add_check_outlined,
+        label: isUploading ? '登録中…' : 'マイリストに登録',
+        onPressed: canRegister ? onUpload : null,
+        isPrimary: true,
+      ),
+      _ToolbarAction(
+        icon: Icons.public,
+        label: isPublishing ? '公開中…' : '公開設定',
+        onPressed: canPublish ? onPublish : null,
+        isPrimary: true,
+      ),
+      _ToolbarAction(
+        icon: Icons.playlist_play,
+        label: 'マイリストを確認',
+        onPressed: hasSelectable ? onViewList : null,
+        isPrimary: false,
+      ),
+    ];
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isCompact = constraints.maxWidth < 720;
+        if (isCompact) {
+          final children = <Widget>[];
+          for (var i = 0; i < actions.length; i++) {
+            children.add(_buildActionButton(actions[i]));
+            if (i != actions.length - 1) {
+              children.add(const SizedBox(height: 12));
+            }
+          }
+          return Column(children: children);
+        }
+
+        return Row(
+          children: [
+            for (var i = 0; i < actions.length; i++) ...[
+              Expanded(child: _buildActionButton(actions[i])),
+              if (i != actions.length - 1) const SizedBox(width: 10),
+            ],
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildActionButton(_ToolbarAction action) {
+    final primaryStyle = FilledButton.styleFrom(
+      minimumSize: const Size.fromHeight(48),
+      backgroundColor: const Color(0xFF4C63F5),
+      foregroundColor: Colors.white,
+      textStyle: const TextStyle(fontWeight: FontWeight.w700),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+    );
+    final secondaryStyle = OutlinedButton.styleFrom(
+      minimumSize: const Size.fromHeight(48),
+      foregroundColor: const Color(0xFF4C63F5),
+      textStyle: const TextStyle(fontWeight: FontWeight.w600),
+      side: const BorderSide(color: Color(0xFFCAD5FD), width: 1.2),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+    );
+
+    final button = action.isPrimary
+        ? FilledButton.icon(
+            onPressed: action.onPressed,
+            icon: Icon(action.icon, size: 18),
+            label: Text(action.label),
+            style: primaryStyle,
+          )
+        : OutlinedButton.icon(
+            onPressed: action.onPressed,
+            icon: Icon(action.icon, size: 18),
+            label: Text(action.label),
+            style: secondaryStyle,
+          );
+
+    return SizedBox(
+      height: 48,
+      child: button,
     );
   }
 
@@ -321,40 +420,138 @@ class YoutubeExtractedResultCard extends StatelessWidget {
     );
   }
 
-  Widget _buildStatChip({
-    required String label,
-    required String value,
-    required Color color,
-  }) {
-    return Chip(
-      avatar: CircleAvatar(
-        backgroundColor: color.withOpacity(0.15),
-        child: Text(
-          label.substring(0, 1),
-          style: TextStyle(color: color),
+}
+
+class _StatSummaryData {
+  const _StatSummaryData({
+    required this.label,
+    required this.value,
+    required this.caption,
+    required this.icon,
+    required this.color,
+  });
+
+  final String label;
+  final String value;
+  final String caption;
+  final IconData icon;
+  final Color color;
+}
+
+class _StatSummaryCard extends StatelessWidget {
+  const _StatSummaryCard({
+    required this.data,
+    this.isCompact = false,
+  });
+
+  final _StatSummaryData data;
+  final bool isCompact;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: isCompact ? null : 90,
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            data.color.withOpacity(0.16),
+            data.color.withOpacity(0.03),
+          ],
         ),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: data.color.withOpacity(0.2)),
+        boxShadow: [
+          BoxShadow(
+            color: data.color.withOpacity(0.08),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
-      label: Text('$label: $value'),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: data.color.withOpacity(0.15),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Icon(
+              data.icon,
+              color: data.color,
+              size: 22,
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  data.label,
+                  style: TextStyle(
+                    color: data.color.withOpacity(0.85),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  data.value,
+                  style: TextStyle(
+                    color: data.color.darken(),
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  data.caption,
+                  style: TextStyle(
+                    color: data.color.withOpacity(0.6),
+                    fontSize: 11,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
+}
 
-  Widget _toolbarButton({
-    required IconData icon,
-    required String label,
-    required VoidCallback? onPressed,
-    bool outlined = false,
-  }) {
-    return outlined
-        ? OutlinedButton.icon(
-            onPressed: onPressed,
-            icon: Icon(icon, size: 18),
-            label: Text(label),
-          )
-        : FilledButton.icon(
-            onPressed: onPressed,
-            icon: Icon(icon, size: 18),
-            label: Text(label),
-          );
+class _ToolbarAction {
+  const _ToolbarAction({
+    required this.icon,
+    required this.label,
+    required this.onPressed,
+    this.isPrimary = true,
+  });
+
+  final IconData icon;
+  final String label;
+  final VoidCallback? onPressed;
+  final bool isPrimary;
+}
+
+extension on Color {
+  Color darken([double amount = 0.1]) {
+    final hsl = HSLColor.fromColor(this);
+    final hslDark = hsl.withLightness((hsl.lightness - amount).clamp(0.0, 1.0));
+    return hslDark.toColor();
   }
 }
 

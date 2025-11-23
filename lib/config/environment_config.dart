@@ -61,4 +61,14 @@ class EnvironmentConfig {
     'YOUTUBE_API_KEY',
     defaultValue: '',
   );
+
+  static const String autoLoginEmail = String.fromEnvironment(
+    'AUTO_LOGIN_EMAIL',
+    defaultValue: '',
+  );
+
+  static const String autoLoginPassword = String.fromEnvironment(
+    'AUTO_LOGIN_PASSWORD',
+    defaultValue: '',
+  );
 }

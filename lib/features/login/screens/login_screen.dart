@@ -9,6 +9,9 @@ import 'package:starlist_app/models/user.dart';
 import 'package:starlist_app/providers/user_provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'package:starlist_app/config/environment_config.dart';
+import 'package:starlist_app/src/services/supabase_auth_helper.dart';
+
 class _DemoAccount {
   final String email;
   final String password;
@@ -105,15 +108,28 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         return;
       }
 
-      _emailController.text = 'hanayama@gmail.com';
-      _passwordController.text = 'bokudareyo12';
+      final autoEmail = EnvironmentConfig.autoLoginEmail.isNotEmpty
+          ? EnvironmentConfig.autoLoginEmail
+          : 'hanayama@gmail.com';
+      final autoPassword = EnvironmentConfig.autoLoginPassword.isNotEmpty
+          ? EnvironmentConfig.autoLoginPassword
+          : 'bokudareyo12';
+
+      _emailController.text = autoEmail;
+      _passwordController.text = autoPassword;
 
       // Supabase セッション付与を試みる（失敗しても demo login が続行）
       try {
-        await Supabase.instance.client.auth.signInWithPassword(
-          email: 'hanayama@gmail.com',
-          password: 'bokudareyo12',
+        final session = await SupabaseAuthHelper.signInWithPassword(
+          client: client,
+          email: autoEmail,
+          password: autoPassword,
         );
+        if (session != null) {
+          print('[AutoLogin] LoginScreen: Supabase auto-login succeeded');
+        } else {
+          print('[AutoLogin] LoginScreen: Supabase auto-login returned null');
+        }
       } catch (error) {
         debugPrint('[AutoLogin] Supabase signIn failed: $error');
       }

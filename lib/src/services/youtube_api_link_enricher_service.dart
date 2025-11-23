@@ -26,7 +26,11 @@ class YoutubeApiLinkEnricherService {
       throw StateError('YOUTUBE_API_KEY is not configured.');
     }
 
-    final query = '$title $channel'.trim();
+    final sanitizedChannel = channel.trim();
+    final bool hasEllipsis = sanitizedChannel.contains('…') || sanitizedChannel.contains('...');
+    final bool hasReliableChannel =
+        sanitizedChannel.isNotEmpty && sanitizedChannel.length >= 3 && !hasEllipsis;
+    final query = hasReliableChannel ? '$title $sanitizedChannel'.trim() : title.trim();
     final uri = Uri.parse(_endpoint).replace(queryParameters: {
       'part': 'snippet',
       'type': 'video',
@@ -64,14 +68,18 @@ class YoutubeApiLinkEnricherService {
           (snippet['channelTitle'] as String? ?? '').trim();
 
       final titleScore = _scoreStrings(candidateTitle, title);
-      final channelScore = _scoreStrings(candidateChannel, channel);
-      final combined = (titleScore * 0.7) + (channelScore * 0.3);
+      final channelScore =
+          hasReliableChannel ? _scoreStrings(candidateChannel, sanitizedChannel) : 0;
+      final combined = hasReliableChannel
+          ? (titleScore * 0.7) + (channelScore * 0.3)
+          : titleScore;
 
       if (combined > bestScore) {
         bestScore = combined;
         final url = 'https://www.youtube.com/watch?v=$videoId';
-        final reason =
-            'Matched title ${(titleScore * 100).round()}% / channel ${(channelScore * 100).round()}%.';
+        final reason = hasReliableChannel
+            ? 'Matched title ${(titleScore * 100).round()}% / channel ${(channelScore * 100).round()}%.'
+            : 'Matched by title ${(titleScore * 100).round()}% (channel omitted due to low confidence).';
         bestResult = EnrichedLinkResult(
           url: url,
           score: combined,

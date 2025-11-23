@@ -444,6 +444,7 @@ class PostCard extends ConsumerWidget {
 
     const Color accent = Color(0xFFFF0000);
     final mainVideo = videos.isNotEmpty ? videos.first : null;
+    final remainingCount = videos.length > 1 ? videos.length - 1 : 0;
     final otherVideos =
         videos.length > 1 ? videos.skip(1).take(2).toList() : [];
 
@@ -671,7 +672,7 @@ class PostCard extends ConsumerWidget {
                     ),
                     const SizedBox(width: 6),
                     Text(
-                      '他 ${otherVideos.length}本の動画を視聴',
+                      '他 ${remainingCount}本の動画を視聴',
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
@@ -711,6 +712,17 @@ class PostCard extends ConsumerWidget {
                         ],
                       ),
                     )),
+                if (remainingCount > otherVideos.length)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4, left: 12),
+                    child: Text(
+                      '...他 ${remainingCount - otherVideos.length}件',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: isDark ? Colors.white54 : const Color(0xFF94A3B8),
+                      ),
+                    ),
+                  ),
               ],
             ),
           ),
