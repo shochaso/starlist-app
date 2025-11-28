@@ -3,14 +3,15 @@
   "version": "1.0.0",
   "description": "Flutter Web with BrowserSync for instant reload",
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
   "engineStrict": true,
   "scripts": {
-    "preinstall": "node -e \"const v=Number(process.versions.node.split('.')[0]); if(Number.isNaN(v)||v<18){console.error('Node>=18 required (use `nvm use 18`).'); process.exit(1)}\"",
+    "preinstall": "node -e \"const v=Number(process.versions.node.split('.')[0]); if(Number.isNaN(v)||v<20){console.error('Node>=20 required (use `nvm use 20`).'); process.exit(1)}\"",
     "start:bs": "browser-sync start --config bs-config.js",
-    "dev": "next dev",
+    "dev": "next dev -p 8080",
     "build": "next build",
+    "start": "next start",
     "lint": "next lint",
     "report": "bash scripts/progress-report.sh",
     "lint:md": "node scripts/ensure-node20.js && NODE_OPTIONS=--require=./scripts/polyfill-file.js markdown-link-check -c .mlc.json -q **/*.md",
@@ -66,6 +67,7 @@
     "next": "^13.5.0",
     "openai": "^6.9.0",
     "react": "^18.3.0",
-    "react-dom": "^18.3.0"
+    "react-dom": "^18.3.0",
+    "recharts": "^3.5.1"
   }
 }

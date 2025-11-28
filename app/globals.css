@@ -6,6 +6,10 @@
   font-family: "Inter", "Noto Sans JP", system-ui, -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic Pro", sans-serif;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   @apply bg-slate-950 text-slate-50 antialiased;
 }

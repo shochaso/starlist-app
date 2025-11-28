@@ -270,7 +270,10 @@ class YoutubeImportWorkflow extends StateNotifier<YoutubeImportWorkflowState> {
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         authorId: currentUser.id,
         authorName: currentUser.name,
-        authorAvatar: currentUser.profileImageUrl ?? 'A',
+        authorAvatar: (currentUser.name.isNotEmpty
+                ? currentUser.name.substring(0, 1)
+                : 'A')
+            .toUpperCase(),
         authorColor: Colors.blue, // Default color
         title: '${toPublish.length}件の動画を視聴しました',
         videos: videos,
